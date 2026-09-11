@@ -827,7 +827,22 @@ function isSelected(mId,mK,o){
   if(mK)return bets.some(b=>b.matchId===mId&&b.marketKey===mK&&b.outcome===o);
   return bets.some(b=>b.matchId===mId&&!b.marketKey&&b.outcome===o);
 }
+
+// ⬇️⬇️⬇️ ПРАВКА №1: addBet теперь понимает UFC
 function addBet(mId,market,outcome,odds,label,mK){
+  if(String(mId).indexOf('ufc_') === 0){
+    const fId = parseInt(String(mId).replace('ufc_',''));
+    const fight = ufcGetFight(fId);
+    if(!fight) return;
+    const st = ufcGetState(fight);
+    if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
+    const k = mK || null;
+    const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
+    if(idx !== -1) bets.splice(idx, 1);
+    else bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: fight.home, away: fight.away, market: market, marketKey: k, isUfc: true, fightId: fId});
+    renderSlip();
+    return;
+  }
   const m=findMatchById(mId);
   if(!m)return;
   const s=getMatchState(m);
@@ -848,6 +863,7 @@ function cleanLockedBets(){
   let ch=false;
   for(let i=bets.length-1;i>=0;i--){
     const b=bets[i];
+    if(b.isUfc){ if(bets[i].fightId) { /* UFC чистим отдельно */ } continue; }
     const m=findMatchById(b.matchId);
     if(!m)continue;
     const s=getMatchState(m);
@@ -899,13 +915,16 @@ function placeBet(){
   balance-=rms;
   freebet-=fbu;
   const items=bets.map(b=>{
+    if(b.isUfc){
+      return {...b, epoch: Math.floor(Date.now() / 180000)};
+    }
     const m=findMatchById(b.matchId);
     const s=getMatchState(m);
     return{...b,cycleIndex:s.cycleIndex};
   });
   const record={id:Date.now(),items,stake,freebetUsed:fbu,totalOdds:tO,potentialWin:pw,status:'pending',createdAt:Date.now()};
   betHistory.push(record);
-  items.forEach(it=>{myBetMatchIds[it.matchId]=true;});
+  items.forEach(it=>{if(!it.isUfc)myBetMatchIds[it.matchId]=true;});
   DB[currentUser].balance=balance;
   DB[currentUser].freebet=freebet;
   DB[currentUser].history=betHistory;
@@ -925,7 +944,13 @@ function placeBet(){
   renderSlip();
   toggleSlip();
 }
+
+// ⬇️⬇️⬇️ ПРАВКА №2: openSpread теперь понимает UFC
 function openSpread(mId){
+  if(String(mId).indexOf('ufc_') === 0){
+    ufcOpenSpread(parseInt(String(mId).replace('ufc_','')));
+    return;
+  }
   const m=findMatchById(mId);
   if(!m)return;
   currentSpreadMatch=mId;
@@ -1086,6 +1111,8 @@ function checkBetResults(){
     if(bet.status!=='pending')return;
     let allFin=true,allWon=true,anyRet=false;
     for(const item of bet.items){
+      // UFC обрабатывается отдельно в ufcSettleBets
+      if(item.isUfc){ allFin=false; continue; }
       const m=findMatchById(item.matchId);
       if(!m){allFin=false;break;}
       const s=getMatchState(m);
@@ -1156,40 +1183,7 @@ function checkGoals(){
     shownGoalKeys[key]=cur;
   });
 }
-setInterval(()=>{
-  if(!currentUser)return;
-  const now=new Date();
-  const hh=String(now.getHours()).padStart(2,'0');
-  const mm=String(now.getMinutes()).padStart(2,'0');
-  const ss=String(now.getSeconds()).padStart(2,'0');
-  const se=document.getElementById('syncInfo');
-  if(se)se.textContent='🕒 '+hh+':'+mm+':'+ss+' • Синхр. у всех';
-  if(!currentSpreadMatch)renderMatches();
-  checkGoals();
-  checkBetResults();
-  cleanLockedBets();
-  if(currentSpreadMatch){renderSpreadHead();renderSpreadBody();}
-  if(document.getElementById('pageProfile').style.display!=='none')renderProfile();
-},1000);
-setInterval(()=>{if(currentUser&&document.getElementById('pageRoulette').style.display!=='none')renderRoulette();},60000);
-let toastTimer;
-function showToast(text,ok=true){
-  const t=document.getElementById('toast');
-  t.textContent=text;
-  t.style.background=ok?'var(--green)':'var(--red)';
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
-}
-if(currentUser&&DB[currentUser]){
-  balance=DB[currentUser].balance;
-  freebet=DB[currentUser].freebet||0;
-  betHistory=DB[currentUser].history||[];
-  enterApp();
-}
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('authScreen').style.display!=='none')submitAuth();
-});
+
 // ==========================================
 // ============ 🥊 UFC МОДУЛЬ v5 ==========
 // ==========================================
@@ -1344,6 +1338,7 @@ function ufcGetState(fight){
       phase: 'fight', live: true, locked: false,
       round: rIdx + 1, totalRounds: sc.totalRounds, finalRound: sc.finalRound,
       timeStr: 'R' + (rIdx + 1) + ' • ' + Math.ceil(secLeft) + 'с',
+      secLeft: secLeft,
       currentTotal: (sc.totalRounds - rIdx) + 0.5,
       score: null, winner: null, method: null, scenario: sc
     };
@@ -1434,14 +1429,30 @@ function ufcTotalRoundOdds(fight, state, line){
 
   if(roundsToLine <= 0) return [1.01, 99.00];
 
+  // Прогресс ТЕКУЩЕГО раунда (0 = только начался, 1 = конец)
+  const secLeft = state.secLeft || UFC_ROUND_SEC;
+  const roundProgress = 1 - (secLeft / UFC_ROUND_SEC);
+
+  // Базовая вероятность
   const ratio = roundsToLine / Math.max(1, roundsLeft);
   let pOver = 1 - ratio * 0.7;
-  pOver = Math.max(0.15, Math.min(0.92, pOver));
+
+  // Чем ближе к концу раунда — тем вероятнее что бой пойдёт дальше
+  // Особенно если до line осталось всего 1 раунд
+  if(roundsToLine <= 1){
+    pOver += roundProgress * 0.40;
+  } else if(roundsToLine <= 2){
+    pOver += roundProgress * 0.18;
+  } else {
+    pOver += roundProgress * 0.06;
+  }
+
+  pOver = Math.max(0.10, Math.min(0.95, pOver));
 
   let oOver = Math.round((1/pOver) * 100) / 100;
   let oUnder = Math.round((1/(1-pOver)) * 100) / 100;
-  oOver = Math.max(1.10, Math.min(10, oOver));
-  oUnder = Math.max(1.10, Math.min(10, oUnder));
+  oOver = Math.max(1.05, Math.min(10, oOver));
+  oUnder = Math.max(1.05, Math.min(10, oUnder));
 
   return [oOver, oUnder];
 }
@@ -1509,8 +1520,6 @@ function ufcRoundWinOdds(fight, state){
   return odds;
 }
 
-// ============ АВАТАР И ПОИСК ============
-
 function ufcAvatar(fighter, size, status){
   size = size || 44;
   const initials = fighter.name.split(' ').map(function(w){return w[0]||'';}).join('').substring(0,2).toUpperCase();
@@ -1530,8 +1539,6 @@ function ufcAvatar(fighter, size, status){
 function ufcFind(name){
   return UFC_FIGHTERS.find(function(f){return f.name === name;}) || {name:name, nickname:'', color:'#555'};
 }
-
-// ============ КАРТОЧКА В СПИСКЕ ============
 
 function ufcRenderCard(fight){
   const st = ufcGetState(fight);
@@ -1618,8 +1625,6 @@ function ufcRender(){
   cont.innerHTML = html;
 }
 
-// ============ МОДАЛКА UFC ============
-
 function ufcOpenSpread(fightId){
   currentSpreadMatch = 'ufc_' + fightId;
   currentSpreadTab = 'ufc';
@@ -1669,7 +1674,7 @@ function ufcMarketClick(fightId, outcome, odds, label, market, marketKey){
     market: market, marketKey: k, isUfc: true, fightId: fightId
   });
   renderSlip();
-  if(currentSpreadMatch === matchId) ufcRenderSpreadBody();
+  ufcRenderSpreadBody();
 }
 
 function ufcQuickBet(fightId, side){
@@ -1703,13 +1708,11 @@ function ufcRenderSpreadBody(){
 
   let html = '';
 
-  // ИСХОД БОЯ
   html += '<div class="market-section"><div class="market-title">Исход боя</div><div class="market-row">';
   html += ufcMarketBtn(fight.home, odds[0], fightId, 0, 'П1', 'Исход', 'ufc_main_0', locked);
   html += ufcMarketBtn(fight.away, odds[2], fightId, 1, 'П2', 'Исход', 'ufc_main_1', locked);
   html += '</div></div>';
 
-  // ТОТАЛ РАУНДОВ
   html += '<div class="market-section"><div class="market-title">Тотал раундов</div>';
   const totalLines = [1.5, 2.5, 3.5, 4.5];
   let hasAnyTotal = false;
@@ -1727,7 +1730,6 @@ function ufcRenderSpreadBody(){
   if(!hasAnyTotal) html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Все тоталы сыграли</div>';
   html += '</div>';
 
-  // СПОСОБ ПОБЕДЫ
   const methodOdds = ufcMethodOdds(fight, st);
   html += '<div class="market-section"><div class="market-title">Способ победы</div><div class="market-row">';
   html += ufcMarketBtn('KO/TKO', methodOdds['KO'], fightId, 0, 'KO/TKO', 'Способ победы', 'ufc_method_KO', locked);
@@ -1735,7 +1737,6 @@ function ufcRenderSpreadBody(){
   html += ufcMarketBtn('Решение', methodOdds['DEC'], fightId, 2, 'Решение', 'Способ победы', 'ufc_method_DEC', locked);
   html += '</div></div>';
 
-  // ПОБЕДА В РАУНДЕ
   const roundOdds = ufcRoundWinOdds(fight, st);
   html += '<div class="market-section"><div class="market-title">Победа в раунде</div>';
   const rArr = [];
@@ -1792,7 +1793,7 @@ toggleStats = function(){
   _origToggleStats();
 };
 
-// ============ РАСЧЁТ СТАВОК UFC ============
+// ============ РАСЧЁТ UFC ============
 
 function ufcSettleBets(){
   const epoch = Math.floor(Date.now() / 180000);
@@ -1881,6 +1882,45 @@ if(document.readyState === 'loading'){
 // ==========================================
 // ============ КОНЕЦ UFC МОДУЛЯ v5 ==========
 // ==========================================
+
+// ============ ОБЩИЙ ЦИКЛ ============
+
+setInterval(()=>{
+  if(!currentUser)return;
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const ss=String(now.getSeconds()).padStart(2,'0');
+  const se=document.getElementById('syncInfo');
+  if(se)se.textContent='🕒 '+hh+':'+mm+':'+ss+' • Синхр. у всех';
+  if(!currentSpreadMatch)renderMatches();
+  checkGoals();
+  checkBetResults();
+  cleanLockedBets();
+  if(currentSpreadMatch){renderSpreadHead();renderSpreadBody();}
+  if(document.getElementById('pageProfile').style.display!=='none')renderProfile();
+},1000);
+setInterval(()=>{if(currentUser&&document.getElementById('pageRoulette').style.display!=='none')renderRoulette();},60000);
+
+let toastTimer;
+function showToast(text,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=text;
+  t.style.background=ok?'var(--green)':'var(--red)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+if(currentUser&&DB[currentUser]){
+  balance=DB[currentUser].balance;
+  freebet=DB[currentUser].freebet||0;
+  betHistory=DB[currentUser].history||[];
+  enterApp();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('authScreen').style.display!=='none')submitAuth();
+});
 </script>
 </body>
 </html>
