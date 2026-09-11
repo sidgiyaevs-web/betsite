@@ -828,7 +828,7 @@ function isSelected(mId,mK,o){
   return bets.some(b=>b.matchId===mId&&!b.marketKey&&b.outcome===o);
 }
 
-// ⬇️⬇️⬇️ ПРАВКА №1: addBet теперь понимает UFC
+// ⬇️⬇️⬇️ ПРАВКА №1: addBet теперь понимает UFC + один рынок = одна ставка
 function addBet(mId,market,outcome,odds,label,mK){
   if(String(mId).indexOf('ufc_') === 0){
     const fId = parseInt(String(mId).replace('ufc_',''));
@@ -837,10 +837,17 @@ function addBet(mId,market,outcome,odds,label,mK){
     const st = ufcGetState(fight);
     if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
     const k = mK || null;
-    const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
-    if(idx !== -1) bets.splice(idx, 1);
-    else bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: fight.home, away: fight.away, market: market, marketKey: k, isUfc: true, fightId: fId});
+    const idxSame = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
+    if(idxSame !== -1){
+      bets.splice(idxSame, 1);
+    } else {
+      for(let i = bets.length - 1; i >= 0; i--){
+        if(bets[i].matchId === mId && bets[i].marketKey === k) bets.splice(i, 1);
+      }
+      bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: fight.home, away: fight.away, market: market, marketKey: k, isUfc: true, fightId: fId});
+    }
     renderSlip();
+    if(currentSpreadMatch) ufcRenderSpreadBody();
     return;
   }
   const m=findMatchById(mId);
@@ -850,9 +857,15 @@ function addBet(mId,market,outcome,odds,label,mK){
   if(lock.locked){showToast('⏸ '+lock.reason,false);return;}
   const k=mK||null;
   const fl=label||['1','X','2'][outcome]||'';
-  const idx=bets.findIndex(b=>b.matchId===mId&&b.marketKey===k&&b.outcome===outcome);
-  if(idx!==-1)bets.splice(idx,1);
-  else bets.push({matchId:mId,outcome,odds,label:fl,home:m.home,away:m.away,market:market||'Исход',marketKey:k});
+  const idxSame=bets.findIndex(b=>b.matchId===mId&&b.marketKey===k&&b.outcome===outcome);
+  if(idxSame!==-1){
+    bets.splice(idxSame,1);
+  } else {
+    for(let i = bets.length - 1; i >= 0; i--){
+      if(bets[i].matchId === mId && bets[i].marketKey === k) bets.splice(i, 1);
+    }
+    bets.push({matchId:mId,outcome,odds,label:fl,home:m.home,away:m.away,market:market||'Исход',marketKey:k});
+  }
   renderMatches();
   renderSlip();
   if(currentSpreadMatch===mId)renderSpreadBody();
