@@ -827,56 +827,50 @@ function isSelected(mId,mK,o){
   if(mK)return bets.some(b=>b.matchId===mId&&b.marketKey===mK&&b.outcome===o);
   return bets.some(b=>b.matchId===mId&&!b.marketKey&&b.outcome===o);
 }
-// ⬇️⬇️⬇️ addBet — одна ставка на рынок (всё остальное можно)
+
+function getMarketBase(key){
+  if(!key) return 'main';
+  if(key.indexOf('main_') === 0) return 'main';
+  if(key.indexOf('dc_') === 0) return 'dc';
+  if(key.indexOf('total_over_') === 0) return 'total';
+  if(key.indexOf('total_under_') === 0) return 'total';
+  if(key.indexOf('h1_over_') === 0) return 'h1_total';
+  if(key.indexOf('h1_under_') === 0) return 'h1_total';
+  if(key.indexOf('h2_over_') === 0) return 'h2_total';
+  if(key.indexOf('h2_under_') === 0) return 'h2_total';
+  if(key === 'btts_yes' || key === 'btts_no') return 'btts';
+  if(key.indexOf('next_') === 0) return 'next';
+  if(key.indexOf('exact_') === 0) return 'exact';
+  if(key === 'ufc_main_0' || key === 'ufc_main_1') return 'ufc_main';
+  if(key.indexOf('ufc_total_over_') === 0) return 'ufc_total';
+  if(key.indexOf('ufc_total_under_') === 0) return 'ufc_total';
+  if(key.indexOf('ufc_method_') === 0) return 'ufc_method';
+  if(key.indexOf('ufc_roundwin_') === 0) return 'ufc_roundwin';
+  return key;
+}
+
 function addBet(mId,market,outcome,odds,label,mK){
   const k = mK || null;
-  
-  // Определяем базовый рынок (без варианта)
-  function getMarketBase(key){
-    if(!key) return 'main';
-    if(key.indexOf('main_') === 0) return 'main';
-    if(key.indexOf('dc_') === 0) return 'dc';
-    if(key.indexOf('total_over_') === 0) return 'total';
-    if(key.indexOf('total_under_') === 0) return 'total';
-    if(key.indexOf('h1_over_') === 0) return 'h1_total';
-    if(key.indexOf('h1_under_') === 0) return 'h1_total';
-    if(key.indexOf('h2_over_') === 0) return 'h2_total';
-    if(key.indexOf('h2_under_') === 0) return 'h2_total';
-    if(key === 'btts_yes' || key === 'btts_no') return 'btts';
-    if(key.indexOf('next_') === 0) return 'next';
-    if(key.indexOf('exact_') === 0) return 'exact';
-    if(key === 'ufc_main_0' || key === 'ufc_main_1') return 'ufc_main';
-    if(key.indexOf('ufc_total_over_') === 0) return 'ufc_total';
-    if(key.indexOf('ufc_total_under_') === 0) return 'ufc_total';
-    if(key.indexOf('ufc_method_') === 0) return 'ufc_method';
-    if(key.indexOf('ufc_roundwin_') === 0) return 'ufc_roundwin';
-    return key;
-  }
-  
   if(String(mId).indexOf('ufc_') === 0){
     const fId = parseInt(String(mId).replace('ufc_',''));
     const fight = ufcGetFight(fId);
     if(!fight) return;
     const st = ufcGetState(fight);
     if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
-    
     const base = getMarketBase(k);
-    const idx = bets.findIndex(b => b.matchId === mId && b.marketKey === k && b.outcome === outcome);
+    const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
     if(idx !== -1){
-      // тап на ту же — снять
       bets.splice(idx, 1);
     } else {
-      // удаляем ставки на ТОТ ЖЕ рынок этого боя
       for(let i = bets.length - 1; i >= 0; i--){
         if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
       }
       bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: fight.home, away: fight.away, market: market, marketKey: k, isUfc: true, fightId: fId});
     }
     renderSlip();
-    if(currentSpreadMatch) ufcRenderSpreadBody();
+    if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0) ufcRenderSpreadBody();
     return;
   }
-  
   const m=findMatchById(mId);
   if(!m)return;
   const s=getMatchState(m);
@@ -888,7 +882,6 @@ function addBet(mId,market,outcome,odds,label,mK){
   if(idx!==-1){
     bets.splice(idx,1);
   } else {
-    // удаляем ставки на ТОТ ЖЕ рынок этого матча
     for(let i = bets.length - 1; i >= 0; i--){
       if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
     }
@@ -898,13 +891,14 @@ function addBet(mId,market,outcome,odds,label,mK){
   renderSlip();
   if(currentSpreadMatch===mId)renderSpreadBody();
 }
+
 function removeBet(i){bets.splice(i,1);renderMatches();renderSlip();if(currentSpreadMatch)renderSpreadBody();}
 function cleanLockedBets(){
   if(!bets.length)return;
   let ch=false;
   for(let i=bets.length-1;i>=0;i--){
     const b=bets[i];
-    if(b.isUfc){ if(bets[i].fightId) { /* UFC чистим отдельно */ } continue; }
+    if(b.isUfc) continue;
     const m=findMatchById(b.matchId);
     if(!m)continue;
     const s=getMatchState(m);
@@ -986,7 +980,6 @@ function placeBet(){
   toggleSlip();
 }
 
-// ⬇️⬇️⬇️ ПРАВКА №2: openSpread теперь понимает UFC
 function openSpread(mId){
   if(String(mId).indexOf('ufc_') === 0){
     ufcOpenSpread(parseInt(String(mId).replace('ufc_','')));
@@ -1152,7 +1145,6 @@ function checkBetResults(){
     if(bet.status!=='pending')return;
     let allFin=true,allWon=true,anyRet=false;
     for(const item of bet.items){
-      // UFC обрабатывается отдельно в ufcSettleBets
       if(item.isUfc){ allFin=false; continue; }
       const m=findMatchById(item.matchId);
       if(!m){allFin=false;break;}
@@ -1415,8 +1407,6 @@ function ufcFmtTime(sec){
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
 
-// ============ ЖИВЫЕ КЭФЫ ============
-
 function ufcGetOdds(fight, state){
   const base = fight.baseOdds;
   if(state.locked){
@@ -1425,31 +1415,25 @@ function ufcGetOdds(fight, state){
     return [1.01, 0, 1.01];
   }
   if(!state.live) return [base[0], 0, base[2]];
-
   const sc = fight.scenario;
   const total = sc.totalRounds;
   const currentRound = state.round;
   const pHome = 1 / base[0];
   const pAway = 1 / base[2];
   const progress = (currentRound - 1) / total;
-
   const winner = sc.winner;
   let pW, pL;
   if(winner === 0){ pW = pHome; pL = pAway; }
   else { pW = pAway; pL = pHome; }
-
   const boost = 1 + progress * 1.5;
   pW = Math.min(0.97, pW * boost);
   pL = Math.max(0.03, pL / boost);
-
   const sum = pW + pL;
   pW /= sum; pL /= sum;
-
   let oW = Math.max(1.01, Math.round((1/pW) * 100) / 100);
   let oL = Math.max(1.05, Math.round((1/pL) * 100) / 100);
   oW = Math.min(15, oW);
   oL = Math.min(25, oL);
-
   if(winner === 0) return [oW, 0, oL];
   return [oL, 0, oW];
 }
@@ -1462,39 +1446,23 @@ function ufcTotalRoundOdds(fight, state, line){
     if(af < line) return [99.00, 1.01];
     return [1.01, 1.01];
   }
-
   const currentRound = state.round;
   const totalRounds = sc.totalRounds;
   const roundsLeft = totalRounds - (currentRound - 1);
   const roundsToLine = line - (currentRound - 1);
-
   if(roundsToLine <= 0) return [1.01, 99.00];
-
-  // Прогресс ТЕКУЩЕГО раунда (0 = только начался, 1 = конец)
   const secLeft = state.secLeft || UFC_ROUND_SEC;
   const roundProgress = 1 - (secLeft / UFC_ROUND_SEC);
-
-  // Базовая вероятность
   const ratio = roundsToLine / Math.max(1, roundsLeft);
   let pOver = 1 - ratio * 0.7;
-
-  // Чем ближе к концу раунда — тем вероятнее что бой пойдёт дальше
-  // Особенно если до line осталось всего 1 раунд
-  if(roundsToLine <= 1){
-    pOver += roundProgress * 0.40;
-  } else if(roundsToLine <= 2){
-    pOver += roundProgress * 0.18;
-  } else {
-    pOver += roundProgress * 0.06;
-  }
-
+  if(roundsToLine <= 1){ pOver += roundProgress * 0.40; }
+  else if(roundsToLine <= 2){ pOver += roundProgress * 0.18; }
+  else { pOver += roundProgress * 0.06; }
   pOver = Math.max(0.10, Math.min(0.95, pOver));
-
   let oOver = Math.round((1/pOver) * 100) / 100;
   let oUnder = Math.round((1/(1-pOver)) * 100) / 100;
   oOver = Math.max(1.05, Math.min(10, oOver));
   oUnder = Math.max(1.05, Math.min(10, oUnder));
-
   return [oOver, oUnder];
 }
 
@@ -1503,13 +1471,11 @@ function ufcMethodOdds(fight, state){
   const method = sc.method;
   const totalRounds = sc.totalRounds;
   const currentRound = state.live ? state.round : 1;
-
   if(state.locked){
     if(method === 'KO') return { KO: 1.01, SUB: 99.00, DEC: 99.00 };
     if(method === 'SUB') return { KO: 99.00, SUB: 1.01, DEC: 99.00 };
     return { KO: 99.00, SUB: 99.00, DEC: 1.01 };
   }
-
   let pKO = 0.40, pSUB = 0.25, pDEC = 0.35;
   if(state.live){
     const progress = (currentRound - 1) / totalRounds;
@@ -1522,7 +1488,6 @@ function ufcMethodOdds(fight, state){
   pDEC = Math.max(0.05, pDEC);
   const s = pKO + pSUB + pDEC;
   pKO /= s; pSUB /= s; pDEC /= s;
-
   return {
     KO: Math.max(1.30, Math.round((1/pKO) * 100) / 100),
     SUB: Math.max(1.50, Math.round((1/pSUB) * 100) / 100),
@@ -1534,7 +1499,6 @@ function ufcRoundWinOdds(fight, state){
   const sc = fight.scenario;
   const totalRounds = sc.totalRounds;
   const currentRound = state.live ? state.round : 1;
-
   const odds = {};
   for(let i = 1; i <= totalRounds; i++){
     if(state.locked){
@@ -1586,23 +1550,19 @@ function ufcRenderCard(fight){
   const odds = ufcGetOdds(fight, st);
   const f1 = ufcFind(fight.home);
   const f2 = ufcFind(fight.away);
-
   let status1 = '', status2 = '';
   if(st.phase === 'result' || st.phase === 'wait'){
     if(st.winner === 0){ status1 = 'win'; status2 = 'lose'; }
     else { status1 = 'lose'; status2 = 'win'; }
   }
-
   const liveBadge = st.live ? '<span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔴 LIVE</span>' : '';
   const doneBadge = (st.phase === 'result') ? '<span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">✅ ЗАВЕРШЁН</span>' : '';
   const lockBadge = (st.phase === 'wait') ? '<span style="background:#555;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔒 СТАВКИ ЗАКРЫТЫ</span>' : '';
-
   let score1 = '', score2 = '';
   if(st.phase === 'result' || st.phase === 'wait'){
     score1 = '<div style="font-size:22px;font-weight:900;color:'+(st.winner===0?'var(--green)':'var(--red)')+'">'+st.score[0]+'</div>';
     score2 = '<div style="font-size:22px;font-weight:900;color:'+(st.winner===1?'var(--green)':'var(--red)')+'">'+st.score[1]+'</div>';
   }
-
   let body = '';
   if(st.phase === 'fight'){
     body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;color:var(--text-dim);">'
@@ -1623,15 +1583,12 @@ function ufcRenderCard(fight){
       + '<div style="font-size:11px;color:var(--text-dim);margin-top:8px;">⏸ Следующий бой через '+ufcFmtTime(st.waitLeft)+'</div>'
       + '</div>';
   }
-
   function oddBtn(label, odd, action, disabled){
     const bg = 'var(--bg3)';
     const col = disabled ? 'var(--text-dim)' : 'var(--text)';
     return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:'+bg+';color:'+col+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+'</span></button>';
   }
-
   const locked = st.locked;
-
   return '<div class="match" onclick="ufcOpenSpread('+fight.id+')" style="cursor:pointer;">'
     + '<div class="match-header">'
     + '<span class="league">'+fight.league+'</span>'
@@ -1706,6 +1663,7 @@ function ufcMarketClick(fightId, outcome, odds, label, market, marketKey){
   if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
   addBet('ufc_' + fightId, market, outcome, odds, label, marketKey);
 }
+
 function ufcQuickBet(fightId, side){
   const fight = ufcGetFight(fightId);
   if(!fight) return;
@@ -1717,25 +1675,20 @@ function ufcQuickBet(fightId, side){
   const oddsVal = side === 0 ? odds[0] : odds[2];
   addBet('ufc_' + fightId, 'Исход', side, oddsVal, label, marketKey);
 }
-}
 
 function ufcRenderSpreadBody(){
   const body = document.getElementById('spreadBody');
   const fightId = parseInt(currentSpreadMatch.replace('ufc_',''));
   const fight = ufcGetFight(fightId);
   if(!fight){ body.innerHTML = '<div class="no-data">Бой не найден</div>'; return; }
-
   const st = ufcGetState(fight);
   const locked = st.locked;
   const odds = ufcGetOdds(fight, st);
-
   let html = '';
-
   html += '<div class="market-section"><div class="market-title">Исход боя</div><div class="market-row">';
   html += ufcMarketBtn(fight.home, odds[0], fightId, 0, 'П1', 'Исход', 'ufc_main_0', locked);
   html += ufcMarketBtn(fight.away, odds[2], fightId, 1, 'П2', 'Исход', 'ufc_main_1', locked);
   html += '</div></div>';
-
   html += '<div class="market-section"><div class="market-title">Тотал раундов</div>';
   const totalLines = [1.5, 2.5, 3.5, 4.5];
   let hasAnyTotal = false;
@@ -1752,14 +1705,12 @@ function ufcRenderSpreadBody(){
   });
   if(!hasAnyTotal) html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Все тоталы сыграли</div>';
   html += '</div>';
-
   const methodOdds = ufcMethodOdds(fight, st);
   html += '<div class="market-section"><div class="market-title">Способ победы</div><div class="market-row">';
   html += ufcMarketBtn('KO/TKO', methodOdds['KO'], fightId, 0, 'KO/TKO', 'Способ победы', 'ufc_method_KO', locked);
   html += ufcMarketBtn('Сабмишен', methodOdds['SUB'], fightId, 1, 'Сабмишен', 'Способ победы', 'ufc_method_SUB', locked);
   html += ufcMarketBtn('Решение', methodOdds['DEC'], fightId, 2, 'Решение', 'Способ победы', 'ufc_method_DEC', locked);
   html += '</div></div>';
-
   const roundOdds = ufcRoundWinOdds(fight, st);
   html += '<div class="market-section"><div class="market-title">Победа в раунде</div>';
   const rArr = [];
@@ -1775,11 +1726,8 @@ function ufcRenderSpreadBody(){
       + '</div>';
   });
   html += '</div>';
-
   body.innerHTML = html;
 }
-
-// ============ ПЕРЕХВАТ МОДАЛКИ ============
 
 const _origRenderSpreadHead = renderSpreadHead;
 renderSpreadHead = function(){
@@ -1816,8 +1764,6 @@ toggleStats = function(){
   _origToggleStats();
 };
 
-// ============ РАСЧЁТ UFC ============
-
 function ufcSettleBets(){
   const epoch = Math.floor(Date.now() / 180000);
   betHistory.forEach(function(bet){
@@ -1825,20 +1771,17 @@ function ufcSettleBets(){
     let hasUfc = false;
     bet.items.forEach(function(it){ if(it.isUfc) hasUfc = true; });
     if(!hasUfc) return;
-
     let allFin = true, allWon = true, anyRet = false;
     for(const item of bet.items){
       if(!item.isUfc) continue;
       if(item.epoch === undefined) item.epoch = epoch;
       if(item.epoch >= epoch){ allFin = false; break; }
-
       const fights = ufcGenerateFights(item.epoch);
       const fight = fights.find(function(f){return f.id === item.fightId;});
       if(!fight){ allFin = false; break; }
       const sc = fight.scenario;
       let won = false, isRet = false;
       const mk = item.marketKey || '';
-
       if(mk === 'ufc_main_0'){ won = (sc.winner === 0); }
       else if(mk === 'ufc_main_1'){ won = (sc.winner === 1); }
       else if(mk.indexOf('ufc_total_over_') === 0){
@@ -1861,11 +1804,9 @@ function ufcSettleBets(){
         if(r === 'DEC'){ won = (sc.method === 'DEC'); }
         else { won = (sc.finalRound === parseInt(r)); }
       }
-
       if(isRet) anyRet = true;
       if(!won && !isRet) allWon = false;
     }
-
     if(allFin){
       let res = 'lose';
       if(anyRet && !allWon) res = 'lose';
@@ -1880,8 +1821,6 @@ function ufcSettleBets(){
     }
   });
 }
-
-// ============ ЦИКЛ ============
 
 function ufcTick(){
   if(selectedSport === '🥊 UFC') ufcRender();
