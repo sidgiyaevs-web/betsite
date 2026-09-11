@@ -1295,7 +1295,7 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Enter' && document.getElementById('authScreen').style.display !== 'none') submitAuth();
 });
 // ==========================================
-// ============ 🥊 UFC МОДУЛЬ — ФИНАЛ ==========
+// ============ 🥊 UFC МОДУЛЬ — ФИНАЛ v2 ==========
 // ==========================================
 
 const UFC_FIGHTERS = [
@@ -1406,7 +1406,6 @@ function ufcGenerateFights(epoch){
       if(winner === 0) hR++; else aR++;
     }
 
-    // Исходный тотал ДО боя = totalRounds + 0.5
     const baseTotal = totalRounds + 0.5;
 
     fights.push({
@@ -1497,7 +1496,6 @@ function ufcGetOdds(fight, state){
 }
 
 function ufcTotalOdds(state){
-  // Чем больше раундов осталось — тем выше кэф на «больше»
   if(state.phase === 'fight'){
     const left = state.totalRounds - (state.round - 1);
     const overOdds = Math.round((1.50 + left * 0.12) * 100) / 100;
@@ -1619,7 +1617,7 @@ function ufcRender(){
   const cont = document.getElementById('ufcContainer');
   if(!cont) return;
   const fights = ufcGetFights();
-  let html = '<div style="padding:10px;max-width:600px;margin:0 auto;">';
+  let html = '<div style="padding:10px 10px 100px 10px;max-width:600px;margin:0 auto;">';
   html += '<div style="font-size:20px;font-weight:900;color:#fff;padding:10px 0;">🥊 UFC</div>';
   fights.forEach(function(f){ html += ufcRenderCard(f); });
   html += '</div>';
@@ -1721,16 +1719,21 @@ function ufcShowTab(){
 }
 
 function ufcInjectTab(){
-  // Ищем навигацию
   const navs = document.querySelectorAll('nav, .nav, .navbar, .bottom-nav, #nav');
   if(!navs.length) return;
   const nav = navs[0];
   if(nav.querySelector('[data-ufc-tab]')) return;
+
+  const sample = nav.querySelector('button, a, div[onclick]');
   const btn = document.createElement('button');
   btn.setAttribute('data-ufc-tab', '1');
-  btn.innerHTML = '🥊 UFC';
+  btn.innerHTML = '<div style="font-size:22px;line-height:1;">🥊</div><div style="font-size:11px;font-weight:700;margin-top:2px;">UFC</div>';
   btn.onclick = ufcShowTab;
-  btn.style.cssText = 'padding:8px 12px;background:transparent;border:none;color:inherit;font-weight:700;cursor:pointer;font-size:14px;';
+
+  if(sample && sample.className) btn.className = sample.className;
+
+  btn.style.cssText = 'background:transparent;border:none;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;font-family:inherit;';
+
   nav.appendChild(btn);
 }
 
@@ -1747,7 +1750,6 @@ function ufcTick(){
   ufcSettleBets();
 }
 
-// Автозапуск
 function ufcInit(){
   ufcInjectContainer();
   ufcInjectTab();
@@ -1761,7 +1763,7 @@ if(document.readyState === 'loading'){
 }
 
 // ==========================================
-// ============ КОНЕЦ UFC МОДУЛЯ ==========
+// ============ КОНЕЦ UFC МОДУЛЯ v2 ==========
 // ==========================================
 </script>
 </body>
