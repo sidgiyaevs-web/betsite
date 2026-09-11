@@ -1704,37 +1704,19 @@ function ufcMarketClick(fightId, outcome, odds, label, market, marketKey){
   if(!fight) return;
   const st = ufcGetState(fight);
   if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
-
-  const k = marketKey;
-  const matchId = 'ufc_' + fightId;
-  const idx = bets.findIndex(function(b){ return b.matchId === matchId && b.marketKey === k && b.outcome === outcome; });
-  if(idx !== -1) bets.splice(idx, 1);
-  else bets.push({
-    matchId: matchId, outcome: outcome, odds: odds,
-    label: label, home: fight.home, away: fight.away,
-    market: market, marketKey: k, isUfc: true, fightId: fightId
-  });
-  renderSlip();
-  ufcRenderSpreadBody();
+  addBet('ufc_' + fightId, market, outcome, odds, label, marketKey);
 }
-
 function ufcQuickBet(fightId, side){
   const fight = ufcGetFight(fightId);
   if(!fight) return;
   const st = ufcGetState(fight);
   if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
   const odds = ufcGetOdds(fight, st);
-  const k = 'ufc_main_' + side;
-  const matchId = 'ufc_' + fightId;
-  const idx = bets.findIndex(function(b){ return b.matchId === matchId && b.marketKey === k; });
-  if(idx !== -1) bets.splice(idx, 1);
-  else bets.push({
-    matchId: matchId, outcome: side, odds: side === 0 ? odds[0] : odds[2],
-    label: side === 0 ? 'П1' : 'П2',
-    home: fight.home, away: fight.away,
-    market: 'Исход', marketKey: k, isUfc: true, fightId: fightId
-  });
-  renderSlip();
+  const marketKey = 'ufc_main_' + side;
+  const label = side === 0 ? 'П1' : 'П2';
+  const oddsVal = side === 0 ? odds[0] : odds[2];
+  addBet('ufc_' + fightId, 'Исход', side, oddsVal, label, marketKey);
+}
 }
 
 function ufcRenderSpreadBody(){
