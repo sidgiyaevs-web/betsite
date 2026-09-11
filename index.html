@@ -468,13 +468,14 @@ function getMatchOdds(match,state){
   let o1=p1>0.01?1/(p1*margin):50;
   let oX=pX>0.01?1/(pX*margin):25;
   let o2=p2>0.01?1/(p2*margin):50;
-  if(diff===0&&progress>0.75){oX=Math.max(1.20,oX*(1-(progress-0.75)*2.5));}
+  // Ничья падает в конце при равном счёте (до 1.05)
+  if(diff===0&&progress>0.75){oX=Math.max(1.05,oX*(1-(progress-0.75)*3.5));}
   if(progress>0.75){
     if(diff>0)o1=Math.max(1.10,o1*(1-(progress-0.75)*2));
     if(diff<0)o2=Math.max(1.10,o2*(1-(progress-0.75)*2));
   }
   o1=Math.max(1.10,Math.min(50,o1));
-  oX=Math.max(1.20,Math.min(30,oX));
+  oX=Math.max(1.05,Math.min(30,oX));
   o2=Math.max(1.10,Math.min(50,o2));
   return [Math.round(o1*100)/100,Math.round(oX*100)/100,Math.round(o2*100)/100];
 }
@@ -512,9 +513,17 @@ const FIRST_HALF_SEC=145,SECOND_HALF_SEC=145;
 function generateScenario(match,cI){
   const seed=match.id*7777777+cI*13;
   const r=(o)=>seededRandom(seed+o);
+  // Распределение голов (среднее ~2.7):
+  // 0 — 8%, 1 — 20%, 2 — 27%, 3 — 23%, 4 — 13%, 5 — 6%, 6 — 3%
   const rG=r(1);
   let tg;
-  if(rG<0.25)tg=0;else if(rG<0.55)tg=1;else if(rG<0.78)tg=2;else if(rG<0.92)tg=3;else if(rG<0.98)tg=4;else tg=5;
+  if(rG<0.08)tg=0;
+  else if(rG<0.28)tg=1;
+  else if(rG<0.55)tg=2;
+  else if(rG<0.78)tg=3;
+  else if(rG<0.91)tg=4;
+  else if(rG<0.97)tg=5;
+  else tg=6;
   const hs=match.homeRating+0.5,as=match.awayRating;
   const hp=hs/(hs+as);
   const i1=1+Math.floor(r(2)*4),i2=2+Math.floor(r(3)*5);
@@ -1531,7 +1540,6 @@ function ufcGenerateFights(epoch){
       if(finalRound > totalRounds) finalRound = totalRounds;
     }
     const winner = ufcSeed(epoch * 29 + idx * 57 + 6) < pH ? 0 : 1;
-    // Раунды: массив [0 или 1] — кто выиграл каждый раунд
     const roundWinners = [];
     for(let i = 0; i < finalRound; i++){
       const r = ufcSeed(epoch * 31 + idx * 59 + 10 + i);
@@ -1600,24 +1608,19 @@ function ufcGetOdds(fight, state){
     return [1.01, 0, 1.01];
   }
   if(!state.live) return [base[0], 0, base[2]];
-
   const sc = fight.scenario;
   const total = sc.totalRounds;
   const currentRound = state.round;
   const secLeft = state.secLeft || UFC_ROUND_SEC;
   const roundProgress = 1 - (secLeft / UFC_ROUND_SEC);
   const fightProgress = ((currentRound - 1) + roundProgress) / total;
-
-  // Считаем кто сколько раундов выиграл среди ЗАВЕРШЁННЫХ
   let hWins = 0, aWins = 0;
   for(let i = 0; i < currentRound - 1; i++){
     if(sc.roundWinners[i] === 0) hWins++; else aWins++;
   }
-
   const pHome = 1 / base[0];
   const pAway = 1 / base[2];
   let pH = pHome, pA = pAway;
-
   if(hWins > aWins){
     const boost = 1 + fightProgress * 1.8;
     pH = Math.min(0.96, pH * boost);
@@ -1627,7 +1630,6 @@ function ufcGetOdds(fight, state){
     pA = Math.min(0.96, pA * boost);
     pH = Math.max(0.04, pH / boost);
   } else {
-    // равно — небольшой перекос в сторону фаворита по сценарию
     const winner = sc.winner;
     const boost = 1 + fightProgress * 0.5;
     if(winner === 0){
@@ -1638,15 +1640,12 @@ function ufcGetOdds(fight, state){
       pH = Math.max(0.08, pH / boost);
     }
   }
-
   const sum = pH + pA;
   pH /= sum; pA /= sum;
-
   let o1 = Math.max(1.10, Math.round((1/pH) * 100) / 100);
   let o2 = Math.max(1.10, Math.round((1/pA) * 100) / 100);
   o1 = Math.min(15, o1);
   o2 = Math.min(15, o2);
-
   return [o1, 0, o2];
 }
 
@@ -1767,17 +1766,14 @@ function ufcRenderCard(fight){
     const winnerName = st.winner === 0 ? fight.home : fight.away;
     body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:14px;font-weight:900;color:var(--text);">Победил '+winnerName+'</div><div style="font-size:11px;color:var(--accent);margin-top:2px;">'+st.method+' в '+st.finalRound+' раунде &nbsp; '+st.score[0]+':'+st.score[1]+'</div><div style="font-size:11px;color:var(--text-dim);margin-top:8px;">⏸ Следующий бой через '+ufcFmtTime(st.waitLeft)+'</div></div>';
   }
-
   const odd1 = updateOddArrow('ufc_'+fight.id+'_0', odds[0]);
   const odd2 = updateOddArrow('ufc_'+fight.id+'_2', odds[2]);
   const locked = st.locked;
-
   function oddBtn(label, odd, action, disabled, arrow, flash){
     const bg = 'var(--bg3)';
     const col = disabled ? 'var(--text-dim)' : 'var(--text)';
     return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" class="'+(flash||'')+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:'+bg+';color:'+col+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+arrow+'</span></button>';
   }
-
   return '<div class="match" onclick="ufcOpenSpread('+fight.id+')" style="cursor:pointer;"><div class="match-header"><span class="league">'+fight.league+'</span><span class="time">'+liveBadge+doneBadge+lockBadge+'</span></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+ufcAvatar(f1, 44, status1)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.home+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.homeNick+'</div></div>'+score1+'</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+ufcAvatar(f2, 44, status2)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.away+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.awayNick+'</div></div>'+score2+'</div>'+body+'<div class="odds-row" style="margin-top:8px;">'+oddBtn('П1', odds[0], "ufcQuickBet("+fight.id+",0)", locked, odd1.arrow, odd1.flash)+oddBtn('П2', odds[2], "ufcQuickBet("+fight.id+",1)", locked, odd2.arrow, odd2.flash)+'</div><div class="match-hint">👆 Тапни — открыть все рынки</div></div>';
 }
 
@@ -2094,13 +2090,13 @@ function hockeyGetOdds(match, state){
   let o1 = p1 > 0.01 ? 1 / (p1 * margin) : 50;
   let oX = pX > 0.01 ? 1 / (pX * margin) : 25;
   let o2 = p2 > 0.01 ? 1 / (p2 * margin) : 50;
-  if(diff === 0 && progress > 0.75){ oX = Math.max(1.20, oX * (1 - (progress - 0.75) * 2.5)); }
+  if(diff === 0 && progress > 0.75){ oX = Math.max(1.05, oX * (1 - (progress - 0.75) * 3.5)); }
   if(progress > 0.75){
     if(diff > 0) o1 = Math.max(1.10, o1 * (1 - (progress - 0.75) * 2));
     if(diff < 0) o2 = Math.max(1.10, o2 * (1 - (progress - 0.75) * 2));
   }
   o1 = Math.max(1.10, Math.min(50, o1));
-  oX = Math.max(1.20, Math.min(30, oX));
+  oX = Math.max(1.05, Math.min(30, oX));
   o2 = Math.max(1.10, Math.min(50, o2));
   return [Math.round(o1*100)/100, Math.round(oX*100)/100, Math.round(o2*100)/100];
 }
@@ -2324,7 +2320,7 @@ function hockeyTick(){
 }
 
 // ==========================================
-// ============ 🎮 ИГРЫ МОДУЛЬ ==========
+// ============ 🎮 ИГРЫ МОДУЛЬ ============
 // ==========================================
 
 let currentGame=null;
@@ -2365,7 +2361,6 @@ function renderGameBody(){
 }
 
 function renderDiceGame(){
-  const stake=100;
   let pickBtns='';
   for(let i=1;i<=6;i++){
     pickBtns+='<div class="dice-btn '+(dicePick===i?'selected':'')+'" onclick="dicePickNum('+i+')">'+i+'</div>';
@@ -2373,7 +2368,7 @@ function renderDiceGame(){
   return '<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:12px">Угадай число 1-6 — выиграешь ×5</div>'+
     '<div class="dice-display" id="diceDisplay">🎲</div>'+
     '<div class="dice-btns">'+pickBtns+'</div>'+
-    '<div class="bet-input-row"><input type="number" id="diceStake" value="'+stake+'" min="10"></div>'+
+    '<div class="bet-input-row"><input type="number" id="diceStake" value="100" min="10"></div>'+
     '<button class="play-btn" id="dicePlayBtn" onclick="playDice()" '+(dicePick?'':'disabled')+'>'+(dicePick?'БРОСИТЬ КУБИК':'Выбери число')+'</button>';
 }
 
@@ -2419,14 +2414,13 @@ function playDice(){
 }
 
 function renderCoinGame(){
-  const stake=100;
   return '<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:12px">Орёл или решка — выиграешь ×2</div>'+
     '<div class="coin-display" id="coinDisplay">🪙</div>'+
     '<div class="coin-btns">'+
       '<div class="coin-btn '+(coinPick==='heads'?'selected':'')+'" onclick="coinPickSide(\'heads\')">🦅 Орёл</div>'+
       '<div class="coin-btn '+(coinPick==='tails'?'selected':'')+'" onclick="coinPickSide(\'tails\')">🪙 Решка</div>'+
     '</div>'+
-    '<div class="bet-input-row"><input type="number" id="coinStake" value="'+stake+'" min="10"></div>'+
+    '<div class="bet-input-row"><input type="number" id="coinStake" value="100" min="10"></div>'+
     '<button class="play-btn" id="coinPlayBtn" onclick="playCoin()" '+(coinPick?'':'disabled')+'>'+(coinPick?'ПОДБРОСИТЬ':'Выбери сторону')+'</button>';
 }
 
@@ -2497,11 +2491,10 @@ function cardHtml(c,hidden){
 }
 
 function renderBjGame(){
-  const stake=100;
   if(!bjState){
     return '<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:12px">Блэкджек против дилера — выиграешь ×2</div>'+
       '<div style="text-align:center;font-size:80px;margin:20px 0">🃏</div>'+
-      '<div class="bet-input-row"><input type="number" id="bjStake" value="'+stake+'" min="10"></div>'+
+      '<div class="bet-input-row"><input type="number" id="bjStake" value="100" min="10"></div>'+
       '<button class="play-btn" onclick="startBj()">РАЗДАТЬ КАРТЫ</button>';
   }
   const pScore=handVal(bjState.player);
@@ -2533,20 +2526,8 @@ function startBj(){
   balance-=stake;
   updateBalanceUI();
   const deck=newDeck();
-  bjState={
-    deck,
-    player:[deck.pop(),deck.pop()],
-    dealer:[deck.pop(),deck.pop()],
-    dealerHidden:true,
-    stake,
-    finished:false,
-    result:null
-  };
-  if(handVal(bjState.player)===21){
-    bjStand();
-  } else {
-    renderGameBody();
-  }
+  bjState={ deck, player:[deck.pop(),deck.pop()], dealer:[deck.pop(),deck.pop()], dealerHidden:true, stake, finished:false, result:null };
+  if(handVal(bjState.player)===21){ bjStand(); } else { renderGameBody(); }
 }
 
 function bjHit(){
@@ -2579,10 +2560,9 @@ function bjReset(){ bjState=null; renderGameBody(); }
 
 function renderCrashGame(){
   if(!crashState){
-    const stake=100;
     return '<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:12px">Кэф растёт — успей забрать!</div>'+
       '<div class="crash-display">1.00×</div>'+
-      '<div class="bet-input-row"><input type="number" id="crashStake" value="'+stake+'" min="10"></div>'+
+      '<div class="bet-input-row"><input type="number" id="crashStake" value="100" min="10"></div>'+
       '<button class="play-btn" onclick="startCrash()">НАЧАТЬ</button>';
   }
   if(crashState.active){
@@ -2605,13 +2585,6 @@ function startCrash(){
   if(stake>balance)return showToast('Мало средств',false);
   balance-=stake;
   updateBalanceUI();
-
-  // Распределение краша:
-  // 37.5% — 1.00-1.50
-  // 25%   — 1.50-2.00
-  // 18.75% — 2.00-2.50
-  // 12.5% — 2.50-4.00
-  // 6.25% — 4.00-10.00
   const _cr=Math.random();
   let crashPoint;
   if(_cr < 0.375) crashPoint = 1.00 + Math.random() * 0.50;
@@ -2620,7 +2593,6 @@ function startCrash(){
   else if(_cr < 0.9375) crashPoint = 2.50 + Math.random() * 1.50;
   else crashPoint = 4.00 + Math.random() * 6.00;
   crashPoint = Math.round(crashPoint * 100) / 100;
-
   crashState={ active:true, stake, mult:1.00, crashPoint, crashed:false, finalMult:1.00, timer:null };
   renderGameBody();
   crashState.timer=setInterval(()=>{
@@ -2712,7 +2684,7 @@ toggleStats = function(){
 
 // ==========================================
 // ============ ОБЩИЙ ЦИКЛ ============
-// ==========================================
+// ============================================
 
 setInterval(()=>{
   if(!currentUser)return;
