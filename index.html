@@ -174,6 +174,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
     <div class="sync-info" id="syncInfo">🕒 Синхронизация</div>
     <div id="matches"></div>
     <div id="ufcContainer" style="display:none"></div>
+    <div id="hockeyContainer" style="display:none"></div>
   </div>
   <div id="pageRoulette" style="display:none">
     <div style="padding:20px 16px;text-align:center">
@@ -259,7 +260,7 @@ let totalLine=2.5,half1TotalLine=0.5,half2TotalLine=0.5,myBetMatchIds={};
 const DAILY_LIMIT=1500000,WEEK_MS=7*24*60*60*1000;
 const PRIZES=[500,1000,2500,5000,10000,15000];
 const EPOCH_OFFSET=1735689600;
-const SPORTS=['⚽ Футбол','🥊 UFC'];
+const SPORTS=['⚽ Футбол','🥊 UFC','🏒 Хоккей'];
 const AVG_GOALS_PER_MATCH=2.7;
 
 function toggleTheme(){const l=document.body.classList.toggle('light');localStorage.setItem('betapp_theme',l?'light':'dark');document.getElementById('themeBtn').textContent=l?'☀️':'🌙';}
@@ -772,13 +773,21 @@ function selectSport(s){
   selectedSport=s;
   renderTabs();
   const uc=document.getElementById('ufcContainer');
+  const hc=document.getElementById('hockeyContainer');
   const ml=document.getElementById('matches');
   if(s==='🥊 UFC'){
     if(ml)ml.style.display='none';
     if(uc)uc.style.display='block';
+    if(hc)hc.style.display='none';
     if(typeof ufcRender==='function')ufcRender();
+  } else if(s==='🏒 Хоккей'){
+    if(ml)ml.style.display='none';
+    if(uc)uc.style.display='none';
+    if(hc)hc.style.display='block';
+    if(typeof hockeyRender==='function')hockeyRender();
   } else {
     if(uc)uc.style.display='none';
+    if(hc)hc.style.display='none';
     if(ml)ml.style.display='block';
     renderMatches();
   }
@@ -789,11 +798,25 @@ function renderMatches(){
     if(uc)uc.style.display='block';
     const ml=document.getElementById('matches');
     if(ml)ml.style.display='none';
+    const hc=document.getElementById('hockeyContainer');
+    if(hc)hc.style.display='none';
     if(typeof ufcRender==='function')ufcRender();
+    return;
+  }
+  if(selectedSport==='🏒 Хоккей'){
+    const hc=document.getElementById('hockeyContainer');
+    if(hc)hc.style.display='block';
+    const ml=document.getElementById('matches');
+    if(ml)ml.style.display='none';
+    const uc=document.getElementById('ufcContainer');
+    if(uc)uc.style.display='none';
+    if(typeof hockeyRender==='function')hockeyRender();
     return;
   }
   const uc=document.getElementById('ufcContainer');
   if(uc)uc.style.display='none';
+  const hc=document.getElementById('hockeyContainer');
+  if(hc)hc.style.display='none';
   const mlEl=document.getElementById('matches');
   if(mlEl)mlEl.style.display='block';
   refreshMatches();
@@ -859,9 +882,8 @@ function addBet(mId,market,outcome,odds,label,mK){
     if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
     const base = getMarketBase(k);
     const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
-    if(idx !== -1){
-      bets.splice(idx, 1);
-    } else {
+    if(idx !== -1){ bets.splice(idx, 1); }
+    else {
       for(let i = bets.length - 1; i >= 0; i--){
         if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
       }
@@ -869,6 +891,26 @@ function addBet(mId,market,outcome,odds,label,mK){
     }
     renderSlip();
     if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0) ufcRenderSpreadBody();
+    return;
+  }
+  if(String(mId).indexOf('h_') === 0){
+    const hId = parseInt(String(mId).replace('h_',''));
+    const match = hockeyFindMatchById(hId);
+    if(!match) return;
+    const st = hockeyGetMatchState(match);
+    const lock = hockeyCheckLock(match, st);
+    if(lock.locked){ showToast('⏸ ' + lock.reason, false); return; }
+    const base = getMarketBase(k);
+    const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
+    if(idx !== -1){ bets.splice(idx, 1); }
+    else {
+      for(let i = bets.length - 1; i >= 0; i--){
+        if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
+      }
+      bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: match.home, away: match.away, market: market, marketKey: k, isHockey: true, hockeyMatchId: hId});
+    }
+    renderSlip();
+    if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0) hockeyRenderSpreadBody();
     return;
   }
   const m=findMatchById(mId);
@@ -879,9 +921,8 @@ function addBet(mId,market,outcome,odds,label,mK){
   const fl=label||['1','X','2'][outcome]||'';
   const base = getMarketBase(k);
   const idx=bets.findIndex(b=>b.matchId===mId&&b.marketKey===k&&b.outcome===outcome);
-  if(idx!==-1){
-    bets.splice(idx,1);
-  } else {
+  if(idx!==-1){ bets.splice(idx,1); }
+  else {
     for(let i = bets.length - 1; i >= 0; i--){
       if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
     }
@@ -898,7 +939,7 @@ function cleanLockedBets(){
   let ch=false;
   for(let i=bets.length-1;i>=0;i--){
     const b=bets[i];
-    if(b.isUfc) continue;
+    if(b.isUfc||b.isHockey) continue;
     const m=findMatchById(b.matchId);
     if(!m)continue;
     const s=getMatchState(m);
@@ -950,16 +991,15 @@ function placeBet(){
   balance-=rms;
   freebet-=fbu;
   const items=bets.map(b=>{
-    if(b.isUfc){
-      return {...b, epoch: Math.floor(Date.now() / 180000)};
-    }
+    if(b.isUfc){ return {...b, epoch: Math.floor(Date.now() / 180000)}; }
+    if(b.isHockey){ return {...b, epoch: Math.floor(Date.now() / 120000)}; }
     const m=findMatchById(b.matchId);
     const s=getMatchState(m);
     return{...b,cycleIndex:s.cycleIndex};
   });
   const record={id:Date.now(),items,stake,freebetUsed:fbu,totalOdds:tO,potentialWin:pw,status:'pending',createdAt:Date.now()};
   betHistory.push(record);
-  items.forEach(it=>{if(!it.isUfc)myBetMatchIds[it.matchId]=true;});
+  items.forEach(it=>{myBetMatchIds[it.matchId]=true;});
   DB[currentUser].balance=balance;
   DB[currentUser].freebet=freebet;
   DB[currentUser].history=betHistory;
@@ -983,6 +1023,10 @@ function placeBet(){
 function openSpread(mId){
   if(String(mId).indexOf('ufc_') === 0){
     ufcOpenSpread(parseInt(String(mId).replace('ufc_','')));
+    return;
+  }
+  if(String(mId).indexOf('h_') === 0){
+    hockeyOpenSpread(parseInt(String(mId).replace('h_','')));
     return;
   }
   const m=findMatchById(mId);
@@ -1145,7 +1189,7 @@ function checkBetResults(){
     if(bet.status!=='pending')return;
     let allFin=true,allWon=true,anyRet=false;
     for(const item of bet.items){
-      if(item.isUfc){ allFin=false; continue; }
+      if(item.isUfc||item.isHockey){ allFin=false; continue; }
       const m=findMatchById(item.matchId);
       if(!m){allFin=false;break;}
       const s=getMatchState(m);
@@ -1218,7 +1262,7 @@ function checkGoals(){
 }
 
 // ==========================================
-// ============ 🥊 UFC МОДУЛЬ v5 ==========
+// ============ 🥊 UFC МОДУЛЬ ==========
 // ==========================================
 
 const UFC_FIGHTERS = [
@@ -1268,10 +1312,7 @@ const UFC_FIGHTERS = [
 const UFC_ROUND_SEC = 24;
 const UFC_AFTER_SEC = 30;
 
-function ufcSeed(n){
-  const x = Math.sin(n * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
-}
+function ufcSeed(n){const x = Math.sin(n * 12.9898) * 43758.5453;return x - Math.floor(x);}
 
 function ufcGenerateFights(epoch){
   const weights = ['Тяжёлый','Полутяжёлый','Средний','Полусредний','Лёгкий','Полулёгкий','Легчайший','Наилегчайший'];
@@ -1281,7 +1322,6 @@ function ufcGenerateFights(epoch){
   const chosen = [weights[w1], weights[w2]];
   const fights = [];
   let id = 9000;
-
   chosen.forEach(function(weight, idx){
     const pool = UFC_FIGHTERS.filter(function(f){return f.weight === weight;});
     if(pool.length < 2) return;
@@ -1289,31 +1329,24 @@ function ufcGenerateFights(epoch){
     let s2 = Math.floor(ufcSeed(epoch * 13 + idx * 31 + 2) * pool.length);
     if(s2 === s1) s2 = (s1 + 1) % pool.length;
     const f1 = pool[s1], f2 = pool[s2];
-
     const rankDiff = f2.rank - f1.rank;
     let pH = 1 / (1 + Math.exp(-rankDiff * 0.45));
     pH = Math.max(0.25, Math.min(0.75, pH));
     const o1 = Math.max(1.10, Math.min(8, Math.round((1/(pH*1.05))*100)/100));
     const o2 = Math.max(1.10, Math.min(8, Math.round((1/((1-pH)*1.05))*100)/100));
-
     const totalRounds = ufcSeed(epoch * 17 + idx * 51 + 3) < 0.70 ? 3 : 5;
-
     const mSc = ufcSeed(epoch * 19 + idx * 53 + 4);
     let method, methodLabel;
     if(mSc < 0.40){ method = 'KO'; methodLabel = 'KO/TKO'; }
     else if(mSc < 0.65){ method = 'SUB'; methodLabel = 'Сабмишен'; }
     else { method = 'DEC'; methodLabel = 'Решением'; }
-
     let finalRound;
-    if(method === 'DEC'){
-      finalRound = totalRounds;
-    } else {
+    if(method === 'DEC'){ finalRound = totalRounds; }
+    else {
       finalRound = 1 + Math.floor(ufcSeed(epoch * 23 + idx * 55 + 5) * totalRounds);
       if(finalRound > totalRounds) finalRound = totalRounds;
     }
-
     const winner = ufcSeed(epoch * 29 + idx * 57 + 6) < pH ? 0 : 1;
-
     let hR = 0, aR = 0;
     for(let i = 0; i < finalRound; i++){
       const r = ufcSeed(epoch * 31 + idx * 59 + 10 + i);
@@ -1323,25 +1356,17 @@ function ufcGenerateFights(epoch){
       if(i === finalRound - 1 && method !== 'DEC') rw = winner;
       if(rw === 0) hR++; else aR++;
     }
-    if(method === 'DEC' && hR === aR){
-      if(winner === 0) hR++; else aR++;
-    }
-
+    if(method === 'DEC' && hR === aR){ if(winner === 0) hR++; else aR++; }
     fights.push({
-      id: id++,
-      league: '🥊 UFC • ' + weight,
+      id: id++, league: '🥊 UFC • ' + weight,
       home: f1.name, away: f2.name,
       homeNick: f1.nickname, awayNick: f2.nickname,
       homeColor: f1.color, awayColor: f2.color,
-      baseOdds: [o1, 0, o2],
-      weight: weight,
-      isUfc: true,
-      totalRounds: totalRounds,
-      baseTotal: totalRounds + 0.5,
+      baseOdds: [o1, 0, o2], weight: weight, isUfc: true,
+      totalRounds: totalRounds, baseTotal: totalRounds + 0.5,
       scenario: {totalRounds: totalRounds, finalRound: finalRound, roundsH: hR, roundsA: aR, winner: winner, method: method, methodLabel: methodLabel}
     });
   });
-
   return fights;
 }
 
@@ -1353,9 +1378,7 @@ function ufcGetFights(){
   return window.UFC_CACHE.fights;
 }
 
-function ufcGetFight(id){
-  return ufcGetFights().find(function(f){return f.id === id;});
-}
+function ufcGetFight(id){ return ufcGetFights().find(function(f){return f.id === id;}); }
 
 function ufcGetState(fight){
   const nowMs = Date.now();
@@ -1363,49 +1386,19 @@ function ufcGetState(fight){
   const posSec = (nowMs - epoch * 180000) / 1000;
   const sc = fight.scenario;
   const FIGHT_SEC = UFC_ROUND_SEC * sc.finalRound;
-
   if(posSec < FIGHT_SEC){
     const rIdx = Math.floor(posSec / UFC_ROUND_SEC);
     const secLeft = UFC_ROUND_SEC - (posSec - rIdx * UFC_ROUND_SEC);
-    return {
-      phase: 'fight', live: true, locked: false,
-      round: rIdx + 1, totalRounds: sc.totalRounds, finalRound: sc.finalRound,
-      timeStr: 'R' + (rIdx + 1) + ' • ' + Math.ceil(secLeft) + 'с',
-      secLeft: secLeft,
-      currentTotal: (sc.totalRounds - rIdx) + 0.5,
-      score: null, winner: null, method: null, scenario: sc
-    };
+    return {phase:'fight',live:true,locked:false,round:rIdx+1,totalRounds:sc.totalRounds,finalRound:sc.finalRound,timeStr:'R'+(rIdx+1)+' • '+Math.ceil(secLeft)+'с',secLeft:secLeft,currentTotal:(sc.totalRounds-rIdx)+0.5,score:null,winner:null,method:null,scenario:sc};
   }
   if(posSec < FIGHT_SEC + UFC_AFTER_SEC){
-    return {
-      phase: 'result', live: false, locked: true,
-      round: sc.finalRound, totalRounds: sc.totalRounds, finalRound: sc.finalRound,
-      timeStr: '✅ Завершён',
-      currentTotal: fight.baseTotal,
-      score: [sc.roundsH, sc.roundsA],
-      winner: sc.winner, method: sc.methodLabel, methodShort: sc.method,
-      scenario: sc
-    };
+    return {phase:'result',live:false,locked:true,round:sc.finalRound,totalRounds:sc.totalRounds,finalRound:sc.finalRound,timeStr:'✅ Завершён',currentTotal:fight.baseTotal,score:[sc.roundsH,sc.roundsA],winner:sc.winner,method:sc.methodLabel,methodShort:sc.method,scenario:sc};
   }
   const waitLeft = Math.ceil(180 - posSec);
-  return {
-    phase: 'wait', live: false, locked: true,
-    round: 0, totalRounds: sc.totalRounds, finalRound: sc.finalRound,
-    timeStr: '⏸ Следующий бой через ' + ufcFmtTime(waitLeft),
-    waitLeft: waitLeft,
-    currentTotal: fight.baseTotal,
-    score: [sc.roundsH, sc.roundsA],
-    winner: sc.winner, method: sc.methodLabel, methodShort: sc.method,
-    scenario: sc
-  };
+  return {phase:'wait',live:false,locked:true,round:0,totalRounds:sc.totalRounds,finalRound:sc.finalRound,timeStr:'⏸ Следующий бой через '+ufcFmtTime(waitLeft),waitLeft:waitLeft,currentTotal:fight.baseTotal,score:[sc.roundsH,sc.roundsA],winner:sc.winner,method:sc.methodLabel,methodShort:sc.method,scenario:sc};
 }
 
-function ufcFmtTime(sec){
-  sec = Math.max(0, Math.floor(sec));
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return m + ':' + (s < 10 ? '0' : '') + s;
-}
+function ufcFmtTime(sec){sec = Math.max(0, Math.floor(sec));const m = Math.floor(sec / 60);const s = sec % 60;return m + ':' + (s < 10 ? '0' : '') + s;}
 
 function ufcGetOdds(fight, state){
   const base = fight.baseOdds;
@@ -1423,8 +1416,7 @@ function ufcGetOdds(fight, state){
   const progress = (currentRound - 1) / total;
   const winner = sc.winner;
   let pW, pL;
-  if(winner === 0){ pW = pHome; pL = pAway; }
-  else { pW = pAway; pL = pHome; }
+  if(winner === 0){ pW = pHome; pL = pAway; } else { pW = pAway; pL = pHome; }
   const boost = 1 + progress * 1.5;
   pW = Math.min(0.97, pW * boost);
   pL = Math.max(0.03, pL / boost);
@@ -1488,11 +1480,7 @@ function ufcMethodOdds(fight, state){
   pDEC = Math.max(0.05, pDEC);
   const s = pKO + pSUB + pDEC;
   pKO /= s; pSUB /= s; pDEC /= s;
-  return {
-    KO: Math.max(1.30, Math.round((1/pKO) * 100) / 100),
-    SUB: Math.max(1.50, Math.round((1/pSUB) * 100) / 100),
-    DEC: Math.max(1.50, Math.round((1/pDEC) * 100) / 100)
-  };
+  return {KO: Math.max(1.30, Math.round((1/pKO) * 100) / 100),SUB: Math.max(1.50, Math.round((1/pSUB) * 100) / 100),DEC: Math.max(1.50, Math.round((1/pDEC) * 100) / 100)};
 }
 
 function ufcRoundWinOdds(fight, state){
@@ -1505,23 +1493,17 @@ function ufcRoundWinOdds(fight, state){
       if(sc.method !== 'DEC' && i === sc.finalRound) odds[i] = 1.01;
       else if(sc.method === 'DEC' && i === totalRounds) odds[i] = 1.01;
       else odds[i] = 99.00;
-    } else if(state.live && i < currentRound){
-      odds[i] = null;
-    } else {
+    } else if(state.live && i < currentRound){ odds[i] = null; }
+    else {
       const base = 2.50 + i * 0.80;
       const progress = (currentRound - 1) / totalRounds;
       const bump = (i === currentRound && state.live) ? 1.4 : 1;
       odds[i] = Math.max(2.00, Math.round(base * (1 + progress * 0.3) * bump * 100) / 100);
     }
   }
-  if(state.locked){
-    odds['DEC'] = (sc.method === 'DEC') ? 1.01 : 99.00;
-  } else if(state.live){
-    const progress = (currentRound - 1) / totalRounds;
-    odds['DEC'] = Math.round((2.80 + progress * 1.5) * 100) / 100;
-  } else {
-    odds['DEC'] = totalRounds === 3 ? 2.80 : 3.50;
-  }
+  if(state.locked){ odds['DEC'] = (sc.method === 'DEC') ? 1.01 : 99.00; }
+  else if(state.live){ const progress = (currentRound - 1) / totalRounds; odds['DEC'] = Math.round((2.80 + progress * 1.5) * 100) / 100; }
+  else { odds['DEC'] = totalRounds === 3 ? 2.80 : 3.50; }
   return odds;
 }
 
@@ -1531,19 +1513,12 @@ function ufcAvatar(fighter, size, status){
   const color = fighter.color || '#ffcc00';
   let ring = 'border:2px solid rgba(255,255,255,.15);';
   let glow = '';
-  if(status === 'win'){
-    ring = 'border:3px solid var(--green);';
-    glow = 'box-shadow:0 0 0 2px rgba(35,134,54,.4),0 0 12px rgba(35,134,54,.6);';
-  } else if(status === 'lose'){
-    ring = 'border:3px solid var(--red);';
-    glow = 'box-shadow:0 0 0 2px rgba(218,54,51,.4),0 0 12px rgba(218,54,51,.6);';
-  }
+  if(status === 'win'){ ring = 'border:3px solid var(--green);'; glow = 'box-shadow:0 0 0 2px rgba(35,134,54,.4),0 0 12px rgba(35,134,54,.6);'; }
+  else if(status === 'lose'){ ring = 'border:3px solid var(--red);'; glow = 'box-shadow:0 0 0 2px rgba(218,54,51,.4),0 0 12px rgba(218,54,51,.6);'; }
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;flex-shrink:0;'+ring+glow+'">'+initials+'</div>';
 }
 
-function ufcFind(name){
-  return UFC_FIGHTERS.find(function(f){return f.name === name;}) || {name:name, nickname:'', color:'#555'};
-}
+function ufcFind(name){ return UFC_FIGHTERS.find(function(f){return f.name === name;}) || {name:name, nickname:'', color:'#555'}; }
 
 function ufcRenderCard(fight){
   const st = ufcGetState(fight);
@@ -1552,8 +1527,7 @@ function ufcRenderCard(fight){
   const f2 = ufcFind(fight.away);
   let status1 = '', status2 = '';
   if(st.phase === 'result' || st.phase === 'wait'){
-    if(st.winner === 0){ status1 = 'win'; status2 = 'lose'; }
-    else { status1 = 'lose'; status2 = 'win'; }
+    if(st.winner === 0){ status1 = 'win'; status2 = 'lose'; } else { status1 = 'lose'; status2 = 'win'; }
   }
   const liveBadge = st.live ? '<span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔴 LIVE</span>' : '';
   const doneBadge = (st.phase === 'result') ? '<span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">✅ ЗАВЕРШЁН</span>' : '';
@@ -1565,23 +1539,13 @@ function ufcRenderCard(fight){
   }
   let body = '';
   if(st.phase === 'fight'){
-    body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;color:var(--text-dim);">'
-      + '<span style="font-weight:800;color:var(--accent);">'+st.timeStr+'</span>'
-      + '<span>Раунд '+st.round+'</span>'
-      + '</div>';
+    body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;color:var(--text-dim);"><span style="font-weight:800;color:var(--accent);">'+st.timeStr+'</span><span>Раунд '+st.round+'</span></div>';
   } else if(st.phase === 'result'){
     const winnerName = st.winner === 0 ? fight.home : fight.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:15px;font-weight:900;color:var(--text);">Победил '+winnerName+'</div>'
-      + '<div style="font-size:13px;color:var(--accent);margin-top:2px;">'+st.method+' в '+st.finalRound+' раунде &nbsp; '+st.score[0]+':'+st.score[1]+'</div>'
-      + '</div>';
+    body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:15px;font-weight:900;color:var(--text);">Победил '+winnerName+'</div><div style="font-size:13px;color:var(--accent);margin-top:2px;">'+st.method+' в '+st.finalRound+' раунде &nbsp; '+st.score[0]+':'+st.score[1]+'</div></div>';
   } else {
     const winnerName = st.winner === 0 ? fight.home : fight.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:14px;font-weight:900;color:var(--text);">Победил '+winnerName+'</div>'
-      + '<div style="font-size:11px;color:var(--accent);margin-top:2px;">'+st.method+' в '+st.finalRound+' раунде &nbsp; '+st.score[0]+':'+st.score[1]+'</div>'
-      + '<div style="font-size:11px;color:var(--text-dim);margin-top:8px;">⏸ Следующий бой через '+ufcFmtTime(st.waitLeft)+'</div>'
-      + '</div>';
+    body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:14px;font-weight:900;color:var(--text);">Победил '+winnerName+'</div><div style="font-size:11px;color:var(--accent);margin-top:2px;">'+st.method+' в '+st.finalRound+' раунде &nbsp; '+st.score[0]+':'+st.score[1]+'</div><div style="font-size:11px;color:var(--text-dim);margin-top:8px;">⏸ Следующий бой через '+ufcFmtTime(st.waitLeft)+'</div></div>';
   }
   function oddBtn(label, odd, action, disabled){
     const bg = 'var(--bg3)';
@@ -1589,28 +1553,7 @@ function ufcRenderCard(fight){
     return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:'+bg+';color:'+col+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+'</span></button>';
   }
   const locked = st.locked;
-  return '<div class="match" onclick="ufcOpenSpread('+fight.id+')" style="cursor:pointer;">'
-    + '<div class="match-header">'
-    + '<span class="league">'+fight.league+'</span>'
-    + '<span class="time">'+liveBadge+doneBadge+lockBadge+'</span>'
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'
-    + ufcAvatar(f1, 44, status1)
-    + '<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.home+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.homeNick+'</div></div>'
-    + score1
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
-    + ufcAvatar(f2, 44, status2)
-    + '<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.away+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.awayNick+'</div></div>'
-    + score2
-    + '</div>'
-    + body
-    + '<div class="odds-row" style="margin-top:8px;">'
-    + oddBtn('П1', odds[0], "ufcQuickBet("+fight.id+",0)", locked)
-    + oddBtn('П2', odds[2], "ufcQuickBet("+fight.id+",1)", locked)
-    + '</div>'
-    + '<div class="match-hint">👆 Тапни — открыть все рынки</div>'
-    + '</div>';
+  return '<div class="match" onclick="ufcOpenSpread('+fight.id+')" style="cursor:pointer;"><div class="match-header"><span class="league">'+fight.league+'</span><span class="time">'+liveBadge+doneBadge+lockBadge+'</span></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+ufcAvatar(f1, 44, status1)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.home+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.homeNick+'</div></div>'+score1+'</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+ufcAvatar(f2, 44, status2)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.away+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.awayNick+'</div></div>'+score2+'</div>'+body+'<div class="odds-row" style="margin-top:8px;">'+oddBtn('П1', odds[0], "ufcQuickBet("+fight.id+",0)", locked)+oddBtn('П2', odds[2], "ufcQuickBet("+fight.id+",1)", locked)+'</div><div class="match-hint">👆 Тапни — открыть все рынки</div></div>';
 }
 
 function ufcRender(){
@@ -1640,9 +1583,7 @@ function ufcRenderSpreadHead(){
   const st = ufcGetState(fight);
   const t = st.live ? '🔴 ' + st.timeStr : (st.phase === 'result' ? '✅ Завершён' : '⏸ ' + ufcFmtTime(st.waitLeft || 0));
   const scLine = (st.phase === 'result' || st.phase === 'wait') && st.score ? '<span class="sc">'+st.score[0]+':'+st.score[1]+'</span>' : '';
-  return '<div class="spread-league">'+fight.league+'</div>'
-    + '<div class="spread-teams-line"><span>'+fight.home+' — '+fight.away+'</span>'+scLine+'</div>'
-    + '<div class="spread-meta">'+t+'</div>';
+  return '<div class="spread-league">'+fight.league+'</div><div class="spread-teams-line"><span>'+fight.home+' — '+fight.away+'</span>'+scLine+'</div><div class="spread-meta">'+t+'</div>';
 }
 
 function ufcMarketBtn(label, value, fightId, outcome, lblShort, market, marketKey, locked){
@@ -1650,10 +1591,7 @@ function ufcMarketBtn(label, value, fightId, outcome, lblShort, market, marketKe
   const oddsStr = (value > 0) ? value.toFixed(2) : '—';
   const disabled = locked ? ' locked' : '';
   const click = locked ? '' : ' onclick="event.stopPropagation();ufcMarketClick('+fightId+','+outcome+','+value+',\''+lblShort+'\',\''+market+'\',\''+marketKey+'\')"';
-  return '<div class="market-btn'+(sel?' selected':'')+disabled+'"'+click+'>'
-    + '<span class="mbl">'+label+'</span>'
-    + '<span class="mbv">'+oddsStr+'</span>'
-    + '</div>';
+  return '<div class="market-btn'+(sel?' selected':'')+disabled+'"'+click+'><span class="mbl">'+label+'</span><span class="mbv">'+oddsStr+'</span></div>';
 }
 
 function ufcMarketClick(fightId, outcome, odds, label, market, marketKey){
@@ -1697,11 +1635,7 @@ function ufcRenderSpreadBody(){
     if(st.locked) return;
     const totalOdds = ufcTotalRoundOdds(fight, st, line);
     hasAnyTotal = true;
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-      + '<div style="width:40px;color:var(--text-dim);font-weight:700;font-size:14px;">'+line+'</div>'
-      + ufcMarketBtn('Больше', totalOdds[0], fightId, 0, 'ТБ '+line, 'Тотал раундов', 'ufc_total_over_'+line, locked)
-      + ufcMarketBtn('Меньше', totalOdds[1], fightId, 1, 'ТМ '+line, 'Тотал раундов', 'ufc_total_under_'+line, locked)
-      + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:40px;color:var(--text-dim);font-weight:700;font-size:14px;">'+line+'</div>'+ufcMarketBtn('Больше', totalOdds[0], fightId, 0, 'ТБ '+line, 'Тотал раундов', 'ufc_total_over_'+line, locked)+ufcMarketBtn('Меньше', totalOdds[1], fightId, 1, 'ТМ '+line, 'Тотал раундов', 'ufc_total_under_'+line, locked)+'</div>';
   });
   if(!hasAnyTotal) html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Все тоталы сыграли</div>';
   html += '</div>';
@@ -1720,10 +1654,7 @@ function ufcRenderSpreadBody(){
     if(roundOdds[r] === null) return;
     const lbl = (r === 'DEC') ? 'Решением' : 'Раунд ' + r;
     const sub = (r === st.round && st.phase === 'fight') ? ' (текущий)' : '';
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-      + '<div style="width:110px;color:var(--text-dim);font-weight:700;font-size:13px;">'+lbl+sub+'</div>'
-      + ufcMarketBtn('Да', roundOdds[r], fightId, 0, lbl, 'Победа в раунде', 'ufc_roundwin_'+r, locked)
-      + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:110px;color:var(--text-dim);font-weight:700;font-size:13px;">'+lbl+sub+'</div>'+ufcMarketBtn('Да', roundOdds[r], fightId, 0, lbl, 'Победа в раунде', 'ufc_roundwin_'+r, locked)+'</div>';
   });
   html += '</div>';
   body.innerHTML = html;
@@ -1731,36 +1662,28 @@ function ufcRenderSpreadBody(){
 
 const _origRenderSpreadHead = renderSpreadHead;
 renderSpreadHead = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
-    document.getElementById('spreadHeadInfo').innerHTML = ufcRenderSpreadHead();
-    return;
-  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ document.getElementById('spreadHeadInfo').innerHTML = ufcRenderSpreadHead(); return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ document.getElementById('spreadHeadInfo').innerHTML = hockeyRenderSpreadHead(); return; }
   _origRenderSpreadHead();
 };
 
 const _origRenderSpreadTabs = renderSpreadTabs;
 renderSpreadTabs = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
-    document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки UFC</button>';
-    return;
-  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки UFC</button>'; return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки Хоккея</button>'; return; }
   _origRenderSpreadTabs();
 };
 
 const _origRenderSpreadBody = renderSpreadBody;
 renderSpreadBody = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
-    ufcRenderSpreadBody();
-    return;
-  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ ufcRenderSpreadBody(); return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ hockeyRenderSpreadBody(); return; }
   _origRenderSpreadBody();
 };
 
 const _origToggleStats = toggleStats;
 toggleStats = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
-    return;
-  }
+  if(currentSpreadMatch && (String(currentSpreadMatch).indexOf('ufc_') === 0 || String(currentSpreadMatch).indexOf('h_') === 0)) return;
   _origToggleStats();
 };
 
@@ -1784,26 +1707,12 @@ function ufcSettleBets(){
       const mk = item.marketKey || '';
       if(mk === 'ufc_main_0'){ won = (sc.winner === 0); }
       else if(mk === 'ufc_main_1'){ won = (sc.winner === 1); }
-      else if(mk.indexOf('ufc_total_over_') === 0){
-        const line = parseFloat(mk.replace('ufc_total_over_',''));
-        if(sc.finalRound > line) won = true;
-        else if(sc.finalRound < line) won = false;
-        else isRet = true;
-      }
-      else if(mk.indexOf('ufc_total_under_') === 0){
-        const line = parseFloat(mk.replace('ufc_total_under_',''));
-        if(sc.finalRound < line) won = true;
-        else if(sc.finalRound > line) won = false;
-        else isRet = true;
-      }
+      else if(mk.indexOf('ufc_total_over_') === 0){ const line = parseFloat(mk.replace('ufc_total_over_','')); if(sc.finalRound > line) won = true; else if(sc.finalRound < line) won = false; else isRet = true; }
+      else if(mk.indexOf('ufc_total_under_') === 0){ const line = parseFloat(mk.replace('ufc_total_under_','')); if(sc.finalRound < line) won = true; else if(sc.finalRound > line) won = false; else isRet = true; }
       else if(mk === 'ufc_method_KO'){ won = (sc.method === 'KO'); }
       else if(mk === 'ufc_method_SUB'){ won = (sc.method === 'SUB'); }
       else if(mk === 'ufc_method_DEC'){ won = (sc.method === 'DEC'); }
-      else if(mk.indexOf('ufc_roundwin_') === 0){
-        const r = mk.replace('ufc_roundwin_','');
-        if(r === 'DEC'){ won = (sc.method === 'DEC'); }
-        else { won = (sc.finalRound === parseInt(r)); }
-      }
+      else if(mk.indexOf('ufc_roundwin_') === 0){ const r = mk.replace('ufc_roundwin_',''); if(r === 'DEC'){ won = (sc.method === 'DEC'); } else { won = (sc.finalRound === parseInt(r)); } }
       if(isRet) anyRet = true;
       if(!won && !isRet) allWon = false;
     }
@@ -1822,30 +1731,416 @@ function ufcSettleBets(){
   });
 }
 
-function ufcTick(){
-  if(selectedSport === '🥊 UFC') ufcRender();
-  if(currentUser) ufcSettleBets();
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
+// ==========================================
+// ============ 🏒 ХОККЕЙ МОДУЛЬ ==========
+// ==========================================
+
+const HOCKEY_TEAMS = {
+'🏒 НХЛ': [['Тампа-Бэй',9],['Колорадо',9],['Рейнджерс',8],['Бостон',8],['Торонто',8],['Эдмонтон',8],['Вегас',7],['Флорида',8],['Даллас',7],['Каролина',7],['Нью-Джерси',7],['Питтсбург',6],['Вашингтон',6],['Миннесота',6],['Лос-Анджелес',6],['Ванкувер',6]],
+'🇷🇺 КХЛ': [['ЦСКА',9],['СКА',9],['Ак Барс',8],['Динамо М',8],['Металлург Мг',8],['Авангард',7],['Спартак',7],['Локомотив',7],['Салават Юлаев',7],['Трактор',6],['Автомобилист',6],['Северсталь',6],['Торпедо',5],['Сибирь',5],['Барыс',5],['Адмирал',5]]
+};
+
+const HOCKEY_PERIOD_SEC = 30;
+const HOCKEY_PERIODS = 3;
+const HOCKEY_MATCH_SEC = HOCKEY_PERIOD_SEC * HOCKEY_PERIODS;
+const HOCKEY_AFTER_SEC = 30;
+const HOCKEY_CYCLE = 120;
+const HOCKEY_AVG_GOALS = 5.5;
+
+let HOCKEY_CACHE = [], HOCKEY_EPOCH = -1;
+let hockeyTotalLine = 5.5;
+
+function hockeyGenerateMatches(epoch){
+  const matches = [];
+  let id = 8000;
+  Object.keys(HOCKEY_TEAMS).forEach(league => {
+    const teams = HOCKEY_TEAMS[league];
+    const r = (o) => seededRandom(epoch * 137 + league.length * 17 + o);
+    let t1 = Math.floor(r(10) * teams.length);
+    let t2 = Math.floor(r(11) * teams.length);
+    if(t2 === t1) t2 = (t1 + 1) % teams.length;
+    const T1 = teams[t1], T2 = teams[t2];
+    matches.push({
+      id: id++, league: league,
+      home: T1[0], away: T2[0],
+      homeRating: T1[1], awayRating: T2[1],
+      baseOdds: hockeyRatingToOdds(T1[1], T2[1]),
+      isHockey: true
+    });
+  });
+  return matches;
+}
+
+function hockeyRefreshMatches(){
+  const e = Math.floor(Date.now() / 120000);
+  if(e === HOCKEY_EPOCH) return;
+  HOCKEY_EPOCH = e;
+  HOCKEY_CACHE = hockeyGenerateMatches(e);
+}
+
+function hockeyFindMatchById(id){ hockeyRefreshMatches(); return HOCKEY_CACHE.find(m => m.id === id); }
+
+function hockeyRatingToOdds(rH, rA){
+  const diff = (rH + 0.5) - rA;
+  let pH = 1 / (1 + Math.exp(-diff * 0.5));
+  let pD = 0.20 + Math.max(0, (1 - Math.abs(diff) / 10) * 0.05);
+  pD = Math.max(0.15, Math.min(0.25, pD));
+  let pA = 1 - pH - pD;
+  if(pA < 0.04){ pA = 0.04; pH = 1 - pD - pA; }
+  if(pH < 0.04){ pH = 0.04; pA = 1 - pD - pH; }
+  const margin = 1.05;
+  let o1 = 1 / (pH * margin);
+  let oX = 1 / (pD * margin);
+  let o2 = 1 / (pA * margin);
+  o1 = Math.max(1.30, Math.min(20, o1));
+  oX = Math.max(3.20, Math.min(6.00, oX));
+  o2 = Math.max(1.30, Math.min(20, o2));
+  return [Math.round(o1*100)/100, Math.round(oX*100)/100, Math.round(o2*100)/100];
+}
+
+function hockeyGenerateScenario(match, cI){
+  const seed = match.id * 777 + cI * 31;
+  const r = (o) => seededRandom(seed + o);
+  const rG = r(1);
+  let totalGoals;
+  if(rG < 0.15) totalGoals = Math.floor(r(2) * 4);
+  else if(rG < 0.50) totalGoals = 4 + Math.floor(r(2) * 2);
+  else if(rG < 0.80) totalGoals = 6 + Math.floor(r(2) * 2);
+  else totalGoals = 8 + Math.floor(r(2) * 3);
+  const hs = match.homeRating + 0.5, as = match.awayRating;
+  const hp = hs / (hs + as);
+  const goals = [];
+  for(let i = 0; i < totalGoals; i++){
+    const period = Math.floor(r(100 + i) * 3);
+    const minInPeriod = 1 + Math.floor(r(200 + i) * 20);
+    const totalMinute = period * 20 + minInPeriod;
+    const ha = r(300 + i) < hp ? 0 : 1;
+    goals.push([ha, totalMinute]);
+  }
+  goals.sort((a, b) => a[1] - b[1]);
+  return {goals, totalGoals};
+}
+
+function hockeyGetMatchState(match){
+  const nowMs = Date.now();
+  const epoch = Math.floor(nowMs / 120000);
+  const posMs = nowMs - epoch * 120000;
+  const posSec = posMs / 1000;
+  const cI = epoch;
+  const sc = hockeyGenerateScenario(match, cI);
+  if(posSec < HOCKEY_MATCH_SEC){
+    const totalMinute = Math.floor((posSec / HOCKEY_MATCH_SEC) * 60);
+    const period = Math.min(2, Math.floor(totalMinute / 20));
+    const minuteInPeriod = totalMinute - period * 20;
+    let h = 0, a = 0;
+    sc.goals.forEach(g => { if(g[1] <= totalMinute){ if(g[0] === 0) h++; else a++; } });
+    return {phase:'live',live:true,isFinished:false,isWaiting:false,period:period+1,minuteInPeriod:minuteInPeriod,minute:totalMinute,timeStr:'П'+(period+1)+' • '+minuteInPeriod+"'",score:[h,a],scenario:sc,cycleIndex:cI};
+  }
+  if(posSec < HOCKEY_MATCH_SEC + HOCKEY_AFTER_SEC){
+    let h = 0, a = 0;
+    sc.goals.forEach(g => { if(g[0] === 0) h++; else a++; });
+    const afterLeft = Math.ceil(HOCKEY_MATCH_SEC + HOCKEY_AFTER_SEC - posSec);
+    return {phase:'after',live:false,isFinished:true,isWaiting:false,afterLeft:afterLeft,period:3,minute:60,timeStr:'✅ Завершён',score:[h,a],scenario:sc,cycleIndex:cI};
+  }
+  const waitLeft = Math.ceil(HOCKEY_CYCLE - posSec);
+  let h = 0, a = 0;
+  sc.goals.forEach(g => { if(g[0] === 0) h++; else a++; });
+  return {phase:'wait',live:false,isFinished:false,isWaiting:true,waitLeft:waitLeft,period:0,timeStr:'⏸ Скоро',score:[h,a],scenario:sc,cycleIndex:cI};
+}
+
+function hockeyFactorial(n){ if(n <= 1) return 1; let r = 1; for(let i = 2; i <= n; i++) r *= i; return r; }
+
+function hockeyGetOdds(match, state){
+  const base = match.baseOdds;
+  if(!state.live){
+    if(state.isFinished){
+      const [h, a] = state.score;
+      if(h > a) return [1.01, 25.00, 50.00];
+      if(h === a) return [50.00, 1.01, 50.00];
+      return [50.00, 25.00, 1.01];
+    }
+    return [base[0], base[1], base[2]];
+  }
+  const [h, a] = state.score;
+  const diff = h - a;
+  const min = state.minute;
+  const timeLeft = Math.max(1, 60 - min);
+  const progress = Math.min(min / 60, 1);
+  const avgRate = HOCKEY_AVG_GOALS / 60;
+  const expRemaining = timeLeft * avgRate;
+  const hs = match.homeRating + 0.5, as = match.awayRating;
+  const homeShare = hs / (hs + as);
+  const lambdaHome = expRemaining * homeShare;
+  const lambdaAway = expRemaining * (1 - homeShare);
+  let p1 = 0, pX = 0, p2 = 0;
+  for(let gh = 0; gh <= 6; gh++){
+    for(let ga = 0; ga <= 6; ga++){
+      const pH = Math.exp(-lambdaHome) * Math.pow(lambdaHome, gh) / hockeyFactorial(gh);
+      const pA = Math.exp(-lambdaAway) * Math.pow(lambdaAway, ga) / hockeyFactorial(ga);
+      const p = pH * pA;
+      const fH = h + gh, fA = a + ga;
+      if(fH > fA) p1 += p;
+      else if(fH === fA) pX += p;
+      else p2 += p;
+    }
+  }
+  const total = p1 + pX + p2;
+  if(total > 0){ p1 /= total; pX /= total; p2 /= total; }
+  const margin = 1.06;
+  let o1 = p1 > 0.01 ? 1 / (p1 * margin) : 50;
+  let oX = pX > 0.01 ? 1 / (pX * margin) : 25;
+  let o2 = p2 > 0.01 ? 1 / (p2 * margin) : 50;
+  if(diff === 0 && progress > 0.85){ oX = Math.max(1.15, oX * (1 - (progress - 0.85) * 3)); }
+  if(progress > 0.85){
+    if(diff > 0) o1 = Math.max(1.03, o1 * 0.5);
+    if(diff < 0) o2 = Math.max(1.03, o2 * 0.5);
+  }
+  o1 = Math.max(1.01, Math.min(50, o1));
+  oX = Math.max(1.15, Math.min(30, oX));
+  o2 = Math.max(1.01, Math.min(50, o2));
+  return [Math.round(o1*100)/100, Math.round(oX*100)/100, Math.round(o2*100)/100];
+}
+
+function hockeyGetTotalOdds(state, line){
+  const [h, a] = state.score;
+  const tG = h + a;
+  const mn = state.minute;
+  const tL = Math.max(1, 60 - mn);
+  if(state.isFinished){
+    if(tG > line) return [1.01, 99.00];
+    if(tG === line) return [1.01, 1.01];
+    return [99.00, 1.01];
+  }
+  if(tG > line) return [1.01, 99.00];
+  if(tG === line) return [1.01, 1.01];
+  const needed = Math.floor(line) - tG + 1;
+  const eG = tL * (HOCKEY_AVG_GOALS / 60);
+  let cumul = Math.exp(-eG), p = cumul;
+  for(let k = 1; k < needed; k++){ p = p * eG / k; cumul += p; }
+  let pO = 1 - cumul;
+  pO = Math.max(0.10, Math.min(0.90, pO));
+  let o = Math.round((1/pO) * 100) / 100;
+  let u = Math.round((1/(1-pO)) * 100) / 100;
+  if(o < 1.10) o = 1.10;
+  if(u < 1.10) u = 1.10;
+  if(o > 10) o = 10;
+  if(u > 10) u = 10;
+  return [o, u];
+}
+
+function hockeyGetBttsOdds(state){
+  const [h, a] = state.score;
+  if(h > 0 && a > 0) return [1.01, 20.00];
+  const prog = state.minute / 60;
+  let y = 0.75 - prog * 0.5;
+  if(h > 0 || a > 0) y += 0.10;
+  y = Math.max(0.05, Math.min(0.92, y));
+  return [Math.round((1/y)*100)/100, Math.round((1/(1-y))*100)/100];
+}
+
+function hockeyGetExactScoreOdds(state){
+  const [h, a] = state.score;
+  const mn = state.minute;
+  const tl = Math.max(3, 60 - mn);
+  const scores = ['0:0','1:0','0:1','1:1','2:0','0:2','2:1','1:2','2:2','3:1','1:3','3:2','2:3','3:3','4:2','2:4'];
+  const cur = h + ':' + a;
+  return scores.map(s => {
+    const [sh, sa] = s.split(':').map(Number);
+    let prob;
+    if(s === cur) prob = 0.35 + (1 - tl/60) * 0.45;
+    else if(sh < h || sa < a) prob = 0.005;
+    else { const gd = (sh - h) + (sa - a); prob = Math.pow(0.35, gd) * (tl/60) * 0.2; }
+    prob = Math.max(0.003, Math.min(0.99, prob));
+    return {score: s, odds: Math.min(99, Math.round((1/prob)*100)/100)};
+  });
+}
+
+function hockeyCheckLock(match, state){
+  if(state.isFinished) return {locked: true, reason: '⏸ Матч завершён'};
+  if(state.isWaiting) return {locked: true, reason: '⏸ Скоро'};
+  return {locked: false, reason: ''};
+}
+
+function hockeyRenderCard(match){
+  const st = hockeyGetMatchState(match);
+  const odds = hockeyGetOdds(match, st);
+  const lock = hockeyCheckLock(match, st);
+  let tD = '';
+  if(st.live) tD = '<span class="live-dot"></span>' + st.timeStr;
+  else if(st.isFinished) tD = '⏱ Новый через ' + formatTimeLeft(st.afterLeft);
+  else tD = '⏸ Скоро';
+  let banner = '';
+  if(st.isFinished) banner = '<div class="lock-banner restart">✅ Матч завершён. Новый через ' + formatTimeLeft(st.afterLeft) + '</div>';
+  else if(lock.locked) banner = '<div class="lock-banner">' + lock.reason + '</div>';
+  const sS = st.live || st.isFinished;
+  const labels = ['1', 'X', '2'];
+  const myB = myBetMatchIds['h_' + match.id] ? ' mybet' : '';
+  return '<div class="match' + myB + '" id="hmatch-' + match.id + '" onclick="hockeyOpenSpread(' + match.id + ')">' +
+    '<div class="match-header"><span class="league">' + match.league + '</span><span class="time">' + tD + '</span></div>' +
+    '<div class="teams">' + match.home + ' — ' + match.away + (sS ? '<span class="score">' + st.score[0] + ':' + st.score[1] + '</span>' : '') + '</div>' +
+    banner +
+    '<div class="odds-row">' + odds.map((o, i) => '<div class="odd ' + (isSelected('h_' + match.id, null, i) ? 'selected ' : '') + (lock.locked ? 'locked' : '') + '" ' + (lock.locked ? '' : 'onclick="event.stopPropagation();hockeyAddBet(' + match.id + ',null,' + i + ',' + o + ')"') + '><div class="odd-label">' + labels[i] + '</div><div class="odd-value">' + o.toFixed(2) + '</div></div>').join('') + '</div>' +
+    '<div class="match-hint">👆 Тапни — открыть все рынки</div>' +
+  '</div>';
+}
+
+function hockeyRender(){
+  const cont = document.getElementById('hockeyContainer');
+  if(!cont) return;
+  hockeyRefreshMatches();
+  const list = HOCKEY_CACHE || [];
+  let html = '<div style="padding:10px 0;">';
+  list.forEach(m => { html += hockeyRenderCard(m); });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function hockeyOpenSpread(matchId){
+  currentSpreadMatch = 'h_' + matchId;
+  currentSpreadTab = 'hockey';
+  currentSpreadStat = false;
+  document.getElementById('spreadModal').classList.add('show');
+  renderSpreadHead();
+  renderSpreadTabs();
+  renderSpreadBody();
+}
+
+function hockeyRenderSpreadHead(){
+  const matchId = parseInt(currentSpreadMatch.replace('h_', ''));
+  const match = hockeyFindMatchById(matchId);
+  if(!match) return '';
+  const st = hockeyGetMatchState(match);
+  const t = st.live ? '🔴 ' + st.timeStr : (st.isFinished ? '✅ Завершён' : '⏸ Скоро');
+  const scLine = (st.live || st.isFinished) ? '<span class="sc">' + st.score[0] + ':' + st.score[1] + '</span>' : '';
+  return '<div class="spread-league">' + match.league + '</div><div class="spread-teams-line"><span>' + match.home + ' — ' + match.away + '</span>' + scLine + '</div><div class="spread-meta">' + t + '</div>';
+}
+
+function hockeyMarketBtn(label, value, matchId, outcome, lblShort, market, marketKey, locked){
+  const sel = isSelected('h_' + matchId, marketKey, outcome);
+  const oddsStr = (value > 0) ? value.toFixed(2) : '—';
+  const disabled = locked ? ' locked' : '';
+  const click = locked ? '' : ' onclick="event.stopPropagation();hockeyMarketClick(' + matchId + ',' + outcome + ',' + value + ',\'' + lblShort + '\',\'' + market + '\',\'' + marketKey + '\')"';
+  return '<div class="market-btn' + (sel ? ' selected' : '') + disabled + '"' + click + '><span class="mbl">' + label + '</span><span class="mbv">' + oddsStr + '</span></div>';
+}
+
+function hockeyAddBet(matchId, market, outcome, odds, label, mK){
+  const match = hockeyFindMatchById(matchId);
+  if(!match) return;
+  const st = hockeyGetMatchState(match);
+  const lock = hockeyCheckLock(match, st);
+  if(lock.locked){ showToast('⏸ ' + lock.reason, false); return; }
+  addBet('h_' + matchId, market || 'Исход', outcome, odds, label || ['1','X','2'][outcome], mK);
+}
+
+function hockeyMarketClick(matchId, outcome, odds, label, market, marketKey){
+  const match = hockeyFindMatchById(matchId);
+  if(!match) return;
+  const st = hockeyGetMatchState(match);
+  const lock = hockeyCheckLock(match, st);
+  if(lock.locked){ showToast('⏸ ' + lock.reason, false); return; }
+  addBet('h_' + matchId, market, outcome, odds, label, marketKey);
+}
+
+function hockeyRenderSpreadBody(){
+  const body = document.getElementById('spreadBody');
+  const matchId = parseInt(currentSpreadMatch.replace('h_', ''));
+  const match = hockeyFindMatchById(matchId);
+  if(!match){ body.innerHTML = '<div class="no-data">Матч не найден</div>'; return; }
+  const st = hockeyGetMatchState(match);
+  const lock = hockeyCheckLock(match, st);
+  const locked = lock.locked;
+  const odds = hockeyGetOdds(match, st);
+  const tG = st.score[0] + st.score[1];
+  let html = '';
+  html += '<div class="market-section"><div class="market-title">Исход матча</div><div class="market-row">';
+  html += hockeyMarketBtn('1', odds[0], matchId, 0, '1', 'Исход', 'main_1', locked);
+  html += hockeyMarketBtn('X', odds[1], matchId, 1, 'X', 'Исход', 'main_X', locked);
+  html += hockeyMarketBtn('2', odds[2], matchId, 2, '2', 'Исход', 'main_2', locked);
+  html += '</div></div>';
+  html += '<div class="market-section"><div class="market-title">Тотал голов</div>';
+  const tL = [3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
+  const av = tL.filter(l => tG < l);
+  if(av.length > 0){
+    if(!av.includes(hockeyTotalLine)) hockeyTotalLine = av[0];
+    html += '<div class="total-selector">';
+    av.forEach(n => { html += '<button class="total-num ' + (hockeyTotalLine === n ? 'active' : '') + '" onclick="hockeySetTotal(' + n + ')">' + n + '</button>'; });
+    html += '</div>';
+    const tO = hockeyGetTotalOdds(st, hockeyTotalLine);
+    html += '<div class="market-row">' + hockeyMarketBtn('Больше ' + hockeyTotalLine, tO[0], matchId, 0, 'ТБ ' + hockeyTotalLine, 'Тотал ' + hockeyTotalLine, 'total_over_' + hockeyTotalLine, locked) + hockeyMarketBtn('Меньше ' + hockeyTotalLine, tO[1], matchId, 1, 'ТМ ' + hockeyTotalLine, 'Тотал ' + hockeyTotalLine, 'total_under_' + hockeyTotalLine, locked) + '</div>';
+  } else {
+    html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Все тоталы сыграли</div>';
+  }
+  html += '</div>';
+  const bt = hockeyGetBttsOdds(st);
+  html += '<div class="market-section"><div class="market-title">Обе забьют</div><div class="market-row">' + hockeyMarketBtn('Да', bt[0], matchId, 0, 'Да', 'Обе забьют', 'btts_yes', locked) + hockeyMarketBtn('Нет', bt[1], matchId, 1, 'Нет', 'Обе забьют', 'btts_no', locked) + '</div></div>';
+  const ex = hockeyGetExactScoreOdds(st);
+  html += '<div class="market-section"><div class="market-title">Точный счёт</div><div class="score-grid">';
+  ex.forEach(e => { html += '<div class="score-cell ' + (isSelected('h_' + matchId, 'exact_' + e.score, e.score) ? 'selected' : '') + '" onclick="event.stopPropagation();hockeyMarketClick(' + matchId + ',\'' + e.score + '\',' + e.odds + ',\'' + e.score + '\',\'Точный счёт\',\'exact_' + e.score + '\')"><div class="scl">' + e.score + '</div><div class="scv">' + e.odds.toFixed(2) + '</div></div>'; });
+  html += '</div></div>';
+  body.innerHTML = html;
+}
+
+function hockeySetTotal(n){ hockeyTotalLine = n; hockeyRenderSpreadBody(); }
+
+function hockeySettleBets(){
+  const epoch = Math.floor(Date.now() / 120000);
+  betHistory.forEach(function(bet){
+    if(bet.status !== 'pending') return;
+    let hasHockey = false;
+    bet.items.forEach(function(it){ if(it.isHockey) hasHockey = true; });
+    if(!hasHockey) return;
+    let allFin = true, allWon = true, anyRet = false;
+    for(const item of bet.items){
+      if(!item.isHockey) continue;
+      if(item.epoch === undefined) item.epoch = epoch;
+      if(item.epoch >= epoch){ allFin = false; break; }
+      const matches = hockeyGenerateMatches(item.epoch);
+      const match = matches.find(function(m){ return m.id === item.matchId; });
+      if(!match){ allFin = false; break; }
+      const sc = hockeyGenerateScenario(match, item.epoch);
+      let h = 0, a = 0;
+      sc.goals.forEach(g => { if(g[0] === 0) h++; else a++; });
+      const tG = h + a;
+      let won = false, isRet = false;
+      const mk = item.marketKey || '';
+      if(mk === 'main_1'){ won = (h > a); }
+      else if(mk === 'main_X'){ won = (h === a); }
+      else if(mk === 'main_2'){ won = (h < a); }
+      else if(mk.indexOf('total_over_') === 0){ const line = parseFloat(mk.replace('total_over_', '')); if(tG > line) won = true; else if(tG === line) isRet = true; }
+      else if(mk.indexOf('total_under_') === 0){ const line = parseFloat(mk.replace('total_under_', '')); if(tG < line) won = true; else if(tG === line) isRet = true; }
+      else if(mk === 'btts_yes') won = (h > 0 && a > 0);
+      else if(mk === 'btts_no') won = !(h > 0 && a > 0);
+      else if(mk.indexOf('exact_') === 0){ const sc2 = mk.replace('exact_', ''); won = (sc2 === h + ':' + a); }
+      if(isRet) anyRet = true;
+      if(!won && !isRet) allWon = false;
+    }
+    if(allFin){
+      let res = 'lose';
+      if(anyRet && !allWon) res = 'lose';
+      else if(anyRet && allWon){ res = 'win'; balance += bet.stake; DB[currentUser].balance = balance; showToast('🔄 Хоккей возврат: +' + bet.stake + ' ₽', true); }
+      else if(anyRet){ res = 'return'; balance += bet.stake; DB[currentUser].balance = balance; showToast('🔄 Хоккей возврат: +' + bet.stake + ' ₽', true); }
+      else if(allWon){ res = 'win'; balance += bet.potentialWin; DB[currentUser].balance = balance; showToast('🏒 Хоккей выигрыш: +' + bet.potentialWin.toFixed(0) + ' ₽', true); }
+      else { showToast('😔 Хоккей не сыграл', false); }
+      bet.status = res;
+      bet.settled = true;
+      updateBalanceUI();
+      saveDB();
+    }
+  });
+}
+
+function hockeyTick(){
+  if(selectedSport === '🏒 Хоккей') hockeyRender();
+  if(currentUser) hockeySettleBets();
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){
     renderSpreadHead();
-    ufcRenderSpreadBody();
+    hockeyRenderSpreadBody();
   }
 }
 
-function ufcInit(){
-  setInterval(ufcTick, 1000);
-}
-
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', ufcInit);
-} else {
-  ufcInit();
-}
-
 // ==========================================
-// ============ КОНЕЦ UFC МОДУЛЯ v5 ==========
-// ==========================================
-
 // ============ ОБЩИЙ ЦИКЛ ============
+// ==========================================
 
 setInterval(()=>{
   if(!currentUser)return;
@@ -1858,11 +2153,18 @@ setInterval(()=>{
   if(!currentSpreadMatch)renderMatches();
   checkGoals();
   checkBetResults();
+  if(typeof ufcTick==='function') ufcTick();
+  if(typeof hockeyTick==='function') hockeyTick();
   cleanLockedBets();
   if(currentSpreadMatch){renderSpreadHead();renderSpreadBody();}
   if(document.getElementById('pageProfile').style.display!=='none')renderProfile();
 },1000);
 setInterval(()=>{if(currentUser&&document.getElementById('pageRoulette').style.display!=='none')renderRoulette();},60000);
+
+function ufcTick(){
+  if(selectedSport === '🥊 UFC') ufcRender();
+  if(currentUser) ufcSettleBets();
+}
 
 let toastTimer;
 function showToast(text,ok=true){
