@@ -1913,16 +1913,40 @@ function renderFootballSpread(body, m){
   });
   html += accSection('hc', 'Исход с учетом форы', hcBody);
 
-  var yes = h > 0 && a > 0;
-  var pY = yes ? 0.02 : Math.max(0.05, Math.min(0.9, 0.7 - (st.minute / 90) * 0.6));
-  var oY = Math.min(50, 1 / (pY * 1.05));
-  var oN = Math.min(50, 1 / ((1 - pY) * 1.05));
-  var bttsBody = '<div class="market-table"><div class="market-row">' +
-    cellHtml('Да', oY, 0, 'btts_yes', locked, m.id, 'Обе забьют') +
-    cellHtml('Нет', oN, 1, 'btts_no', locked, m.id, 'Обе забьют') +
-  '</div></div>';
+var bothScored = h > 0 && a > 0;
+  var impossible = false;
+  // Если одна команда уже не может забить (0:0 близко к концу, или 1:0 и уже 89')
+  if(!bothScored){
+    var minLeft = 90 - st.minute;
+    if(h === 0 && a === 0 && minLeft <= 3) impossible = true;
+    if((h === 0 && a > 0) || (h > 0 && a === 0)){
+      // Одна уже забила, вторая нет — если мало времени, шанс мал
+      if(minLeft <= 2) impossible = true;
+    }
+  }
+  var bttsBody = '';
+  if(bothScored){
+    // Обе уже забили — Да выиграл, Нет проиграл
+    bttsBody = '<div class="market-table"><div class="market-row">' +
+      '<div class="market-cell done"><span class="ml">Да</span><span class="mv">✅</span></div>' +
+      '<div class="market-cell done-fail"><span class="ml">Нет</span><span class="mv">❌</span></div>' +
+    '</div></div>';
+  } else if(impossible){
+    // Уже не сыграет Да — Нет близко к выигрышу
+    bttsBody = '<div class="market-table"><div class="market-row">' +
+      '<div class="market-cell locked"><span class="ml">Да</span><span class="mv">—</span></div>' +
+      '<div class="market-cell done"><span class="ml">Нет</span><span class="mv">✅</span></div>' +
+    '</div></div>';
+  } else {
+    var pY = Math.max(0.05, Math.min(0.9, 0.7 - (st.minute / 90) * 0.6));
+    var oY = Math.min(50, 1 / (pY * 1.05));
+    var oN = Math.min(50, 1 / ((1 - pY) * 1.05));
+    bttsBody = '<div class="market-table"><div class="market-row">' +
+      cellHtml('Да', oY, 0, 'btts_yes', locked, m.id, 'Обе забьют') +
+      cellHtml('Нет', oN, 1, 'btts_no', locked, m.id, 'Обе забьют') +
+    '</div></div>';
+  }
   html += accSection('btts', 'Обе забьют', bttsBody);
-
   var itLines = [0.5, 1.5, 2.5];
   var itBody = '';
   itLines.forEach(function(l){
