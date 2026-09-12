@@ -488,25 +488,166 @@ function getMatchOdds(match,state){
   o2=Math.max(1.10,Math.min(50,o2));
   return [Math.round(o1*100)/100,Math.round(oX*100)/100,Math.round(o2*100)/100];
 }
+// ============================================
+// РЕАЛЬНЫЕ МАТЧИ (обновляй этот список вручную)
+// ============================================
+
+const REAL_MATCHES = [
+  {league:'🇷🇺 РПЛ', home:'Динамо Москва', away:'Оренбург',
+   status:'live', minute:70, score:[0,0], homeRating:7, awayRating:6},
+  {league:'🇪🇸 Ла Лига', home:'Атлетик Бильбао', away:'Эльче',
+   status:'live', minute:23, score:[0,0], homeRating:8, awayRating:5},
+  {league:'🏴 АПЛ', home:'Тоттенхэм', away:'Эвертон',
+   status:'live', minute:30, score:[0,0], homeRating:8, awayRating:6},
+  {league:'🇮🇹 Серия А', home:'Лацио', away:'Милан',
+   status:'break', minute:45, score:[2,0], homeRating:7, awayRating:8},
+  {league:'🇪🇸 Ла Лига', home:'Реал Мадрид', away:'Райо Вальекано',
+   status:'soon', time:'22:00', homeRating:10, awayRating:4},
+  {league:'🇷🇺 РПЛ', home:'ЦСКА', away:'Рубин',
+   status:'soon', time:'22:00', homeRating:7, awayRating:6},
+  {league:'🏴 АПЛ', home:'Сандерленд', away:'Арсенал',
+   status:'soon', time:'22:00', homeRating:5, awayRating:9},
+  {league:'🇮🇹 Серия А', home:'Аталанта', away:'Кальяри',
+   status:'soon', time:'21:45', homeRating:7, awayRating:5}
+];
+
+let REAL_MATCHES_STARTED_AT = Date.now();
+
+function getRealMatchState(match, idx){
+  // Время в миллисекундах с момента загрузки страницы
+  const elapsedSec = Math.floor((Date.now() - REAL_MATCHES_STARTED_AT) / 1000);
+  
+  if(match.status === 'soon'){
+    // Проверяем, наступило ли время МСК
+    const now = new Date();
+    // МСК = UTC+3
+    const mskHours = (now.getUTCHours() + 3) % 24;
+    const mskMinutes = now.getUTCMinutes();
+    const [h, m] = match.time.split(':').map(Number);
+    const nowTotal = mskHours * 60 + mskMinutes;
+    const matchTotal = h * 60 + m;
+    
+    if(nowTotal < matchTotal){
+      const diffMin = matchTotal - nowTotal;
+      return {
+        phase:'soon', live:false, isFinished:false, isBreak:false,
+        minute:0, timeStr:'⏸ Матч в ' + match.time,
+        score:[0,0], cycleIndex:0,
+        soonSecondsLeft: diffMin * 60,
+        waitLeft: diffMin * 60
+      };
+    }
+    // Матч уже начался (по МСК), идёт
+    const minutesPlayed = nowTotal - matchTotal;
+    // 90 мин реальных = 90 мин матча
+    const totalSecPlayed = minutesPlayed * 60 + now.getUTCSeconds();
+    
+    return generateRealtimeState(match, totalSecPlayed, idx);
+  }
+  
+  if(match.status === 'live' || match.status === 'break'){
+    // Матч УЖЕ идёт с указанной минуты
+    const totalSecPlayed = match.minute * 60 + elapsedSec;
+    return generateRealtimeState(match, totalSecPlayed, idx, match.score);
+  }
+  
+  return null;
+}
+
+function generateRealtimeState(match, totalSecPlayed, idx, initialScore){
+  // 1 мин матча = 60 сек реального времени (реальный темп)
+  const minute = Math.floor(totalSecPlayed / 60);
+  
+  // Базовый сценарий голов генерируется seed'ом
+  const seed = idx * 7777 + match.homeRating * 100 + match.awayRating;
+  const r = (o) => seededRandom(seed + o);
+  
+  // Общее количество голов в матче
+  const rG = r(1);
+  let totalGoals;
+  if(rG < 0.08) totalGoals = 0;
+  else if(rG < 0.28) totalGoals = 1;
+  else if(rG < 0.55) totalGoals = 2;
+  else if(rG < 0.78) totalGoals = 3;
+  else if(rG < 0.91) totalGoals = 4;
+  else if(rG < 0.97) totalGoals = 5;
+  else totalGoals = 6;
+  
+  // Если Лацио уже 2:0 — добавим ещё
+  const baseH = initialScore ? initialScore[0] : 0;
+  const baseA = initialScore ? initialScore[1] : 0;
+  
+  // Голы генерируются
+  const goals = [];
+  const hp = (match.homeRating + 0.5) / (match.homeRating + match.awayRating + 0.5);
+  for(let i = 0; i < totalGoals; i++){
+    const mn = 1 + Math.floor(r(100 + i) * 90);
+    const ha = r(200 + i) < hp ? 0 : 1;
+    goals.push([ha, mn]);
+  }
+  goals.sort((a,b) => a[1] - b[1]);
+  
+  // Считаем счёт на текущей минуте
+  let h = baseH, a = baseA;
+  goals.forEach(g => {
+    if(g[1] <= minute){
+      if(g[0] === 0) h++;
+      else a++;
+    }
+  });
+  
+  // Фаза
+  let phase = 'first';
+  let isBreak = false;
+  let isFinished = false;
+  let breakLeft = 0;
+  let afterLeft = 0;
+  let timeStr = minute + "'";
+  
+  if(minute >= 45 && minute < 48){
+    // Небольшой перерыв на 45'
+    phase = 'break';
+    isBreak = true;
+    breakLeft = (48 - minute) * 60;
+    timeStr = 'Перерыв';
+  } else if(minute >= 90){
+    phase = 'after';
+    isFinished = true;
+    timeStr = 'Завершён';
+    afterLeft = 60;
+  } else if(minute > 45){
+    timeStr = minute + "'";
+  }
+  
+  return {
+    phase: phase,
+    live: !isBreak && !isFinished,
+    isFinished: isFinished,
+    isBreak: isBreak,
+    minute: minute,
+    timeStr: timeStr,
+    score: [h, a],
+    cycleIndex: idx,
+    breakLeft: breakLeft,
+    afterLeft: afterLeft,
+    waitLeft: 0
+  };
+}
 
 function generateMatches(epoch){
-  const matches=[];
-  let id=100;
-  let tOff=0;
-  Object.keys(LEAGUES).forEach(league=>{
-    const teams=LEAGUES[league];
-    const r=(o)=>seededRandom(epoch*97+league.length*13+o);
-    let count=1;
-    if(league==='🏴 АПЛ'||league==='🇪🇸 Ла Лига'||league==='🇮🇹 Серия А'||league==='🏆 Лига Чемпионов')count=2;
-    for(let i=0;i<count;i++){
-      let t1=Math.floor(r(10+i*7)*teams.length);
-      let t2=Math.floor(r(11+i*7)*teams.length);
-      if(t2===t1)t2=(t1+1)%teams.length;
-      const T1=teams[t1],T2=teams[t2];
-      const odds=ratingToOdds(T1[1],T2[1]);
-      tOff+=25+Math.floor(r(50+i)*25);
-      matches.push({id:id++,league,home:T1[0],away:T2[0],homeRating:T1[1],awayRating:T2[1],baseOdds:odds,startOffset:tOff});
-    }
+  const matches = [];
+  REAL_MATCHES.forEach((m, idx) => {
+    matches.push({
+      id: 500 + idx,
+      league: m.league,
+      home: m.home,
+      away: m.away,
+      homeRating: m.homeRating,
+      awayRating: m.awayRating,
+      baseOdds: ratingToOdds(m.homeRating, m.awayRating),
+      isReal: true,
+      realIdx: idx
+    });
   });
   return matches;
 }
@@ -543,8 +684,11 @@ function generateScenario(match,cI){
   goals.sort((a,b)=>a[1]-b[1]);
   return {goals,injury1:i1,injury2:i2,totalGoals:tg,redHome:r(300)>0.92?(40+Math.floor(r(301)*40)):0,redAway:r(310)>0.92?(40+Math.floor(r(311)*40)):0,yellowHome:1+Math.floor(r(320)*4),yellowAway:1+Math.floor(r(330)*4)};
 }
-
 function getMatchState(match){
+  if(match.isReal){
+    return getRealMatchState(REAL_MATCHES[match.realIdx], match.realIdx);
+  }
+  // fallback на старую логику
   const nowSec=Math.floor(Date.now()/1000)-EPOCH_OFFSET;
   const epochShift=Math.floor(Date.now()/900000);
   const cycleTotalSec=epochShift*5400+match.startOffset;
