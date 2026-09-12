@@ -2377,7 +2377,6 @@ function hockeyTick(){
 // ============ 🎾 ТЕННИС МОДУЛЬ ============
 // ==========================================
 
-// Коды игроков для ATP Tour CDN (официальные фото)
 const TENNIS_PLAYERS = [
   {name:'Новак Джокович', rank:20, color:'#1976d2', code:'D643'},
   {name:'Карлос Алькарас', rank:19, color:'#d32f2f', code:'A0E2'},
@@ -2401,10 +2400,9 @@ const TENNIS_PLAYERS = [
   {name:'Алекс де Минор', rank:1, color:'#0097a7', code:'D0F1'}
 ];
 
-const TENNIS_MATCH_SEC = 330;
+const TENNIS_MATCH_SEC = 300;
 const TENNIS_AFTER_SEC = 30;
-const TENNIS_CYCLE = 360;
-const TENNIS_MAX_SETS = 2;
+const TENNIS_CYCLE = 330;
 
 let TENNIS_CACHE = [], TENNIS_EPOCH = -1;
 
@@ -2429,7 +2427,7 @@ function tennisGenerateMatch(epoch){
   const sets = [];
   let setsH = 0, setsA = 0;
 
-  for(let setIdx = 0; setIdx < TENNIS_MAX_SETS; setIdx++){
+  for(let setIdx = 0; setIdx < 2; setIdx++){
     let setWinner;
     if(setIdx === 1){ setWinner = winnerOverall; }
     else {
@@ -2476,10 +2474,7 @@ function tennisGenerateMatch(epoch){
         if(winnerOfPoint === gameWinner) pw++; else pl++;
         seq.push(winnerOfPoint);
       }
-      while(pw < 4 || (pw - pl) < 2){
-        pw++;
-        seq.push(gameWinner);
-      }
+      while(pw < 4 || (pw - pl) < 2){ pw++; seq.push(gameWinner); }
       games.push({winner: gameWinner, server: server, seq: seq});
       if(gameWinner === 0) curH++; else curA++;
       server = 1 - server;
@@ -2506,7 +2501,7 @@ function tennisGenerateMatch(epoch){
 }
 
 function tennisGetMatch(){
-  const epoch = Math.floor(Date.now() / 360000);
+  const epoch = Math.floor(Date.now() / 330000);
   if(!window.TENNIS_CACHE || window.TENNIS_CACHE.epoch !== epoch){
     window.TENNIS_CACHE = { epoch: epoch, match: tennisGenerateMatch(epoch) };
   }
@@ -2536,18 +2531,25 @@ function tennisFormatPoint(p, opp){
 function tennisGetMatchState(match){
   if(!match) return {locked:true};
   const nowMs = Date.now();
-  const epoch = Math.floor(nowMs / 360000);
-  const posMs = nowMs - epoch * 360000;
+  const epoch = Math.floor(nowMs / 330000);
+  const posMs = nowMs - epoch * 330000;
   const posSec = posMs / 1000;
 
   const sc = match.scenario;
 
+  // Общее количество очков
   let totalPoints = 0;
   sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
+
   const pointSec = TENNIS_MATCH_SEC / Math.max(1, totalPoints);
   const totalMatchSec = TENNIS_MATCH_SEC;
 
-  if(posSec >= totalMatchSec){
+  // Сколько очков уже прошло
+  const passedPoints = Math.floor(posSec / pointSec);
+  const allPointsPassed = passedPoints >= totalPoints;
+
+  // Матч завершён ТОЛЬКО если время истекло И все очки прошли
+  if(posSec >= totalMatchSec && allPointsPassed){
     if(posSec < totalMatchSec + TENNIS_AFTER_SEC){
       const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
       return {
@@ -2572,8 +2574,9 @@ function tennisGetMatchState(match){
     };
   }
 
+  // Лайв
   let pointsSoFar = 0;
-  const curPointsGlobal = Math.floor(posSec / pointSec);
+  const curPointsGlobal = passedPoints;
 
   const completedSets = [];
   let curSetIdx = 0, curGameIdx = 0;
@@ -2617,8 +2620,26 @@ function tennisGetMatchState(match){
     pointsSoFar += set.games.reduce((a, g) => a + g.seq.length, 0);
   }
 
+  // Если не нашли — берём последний гейм последнего сета
   if(!found){
-    curSetIdx = sc.sets.length - 1;
+    const lastSetIdx = sc.sets.length - 1;
+    const lastSet = sc.sets[lastSetIdx];
+    for(let s = 0; s < lastSetIdx; s++){
+      if(sc.sets[s].winner === 0) setScoresCountH++; else setScoresCountA++;
+      completedSets.push([sc.sets[s].gamesH, sc.sets[s].gamesA]);
+    }
+    let gh = 0, ga = 0;
+    for(let g = 0; g < lastSet.games.length; g++){
+      const game = lastSet.games[g];
+      if(game.winner === 0) gh++; else ga++;
+    }
+    curSetIdx = lastSetIdx;
+    curGameIdx = lastSet.games.length - 1;
+    curGamesH = gh;
+    curGamesA = ga;
+    curPointsH = 0;
+    curPointsA = 0;
+    servingPlayer = lastSet.games.length > 0 ? lastSet.games[lastSet.games.length - 1].server : 0;
   }
 
   const completedStr = completedSets.map(s => s[0] + ':' + s[1]).join(', ');
@@ -2691,13 +2712,22 @@ function tennisGetTotalOdds(match, st, line){
   const curGames = st.totalGamesPlayed || 0;
   const remaining = Math.max(0, total - curGames);
   const expected = curGames + remaining * 0.5;
+
+  // Кэф зависит от line
+  const diff = expected - line;
   let pOver;
-  if(expected > line + 2) pOver = 0.85;
-  else if(expected > line) pOver = 0.65;
-  else if(expected < line - 2) pOver = 0.15;
-  else pOver = 0.45;
-  const oOver = Math.max(1.10, Math.min(10, Math.round((1/pOver)*100)/100));
-  const oUnder = Math.max(1.10, Math.min(10, Math.round((1/(1-pOver))*100)/100));
+  if(diff > 6) pOver = 0.92;
+  else if(diff > 4) pOver = 0.82;
+  else if(diff > 2) pOver = 0.65;
+  else if(diff > 0) pOver = 0.52;
+  else if(diff > -2) pOver = 0.42;
+  else if(diff > -4) pOver = 0.28;
+  else if(diff > -6) pOver = 0.15;
+  else pOver = 0.05;
+
+  pOver = Math.max(0.05, Math.min(0.95, pOver));
+  const oOver = Math.max(1.10, Math.min(20, Math.round((1/pOver)*100)/100));
+  const oUnder = Math.max(1.10, Math.min(20, Math.round((1/(1-pOver))*100)/100));
   return [oOver, oUnder];
 }
 
@@ -2742,10 +2772,6 @@ function tennisAvatar(name, code, color, size){
     + '<img src="'+photoUrl+'" alt="'+initials+'" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;" onerror="this.style.display=\'none\';">'
     + initials
     + '</div>';
-}
-
-function tennisFindPlayer(name){
-  return TENNIS_PLAYERS.find(p => p.name === name) || {name:name, color:'#555', code:''};
 }
 
 function tennisRenderCard(match){
@@ -2918,7 +2944,7 @@ function tennisRenderSpreadBody(){
       if(games1 > line){ oOver = 1.01; oUnder = 99.00; }
       else {
         const remaining = Math.max(0, line - games1);
-        let pOver = remaining > 3 ? 0.3 : (remaining > 1 ? 0.5 : 0.75);
+        let pOver = remaining > 3 ? 0.30 : (remaining > 1 ? 0.50 : 0.75);
         pOver = Math.max(0.10, Math.min(0.90, pOver));
         oOver = Math.max(1.10, Math.min(10, Math.round((1/pOver)*100)/100));
         oUnder = Math.max(1.10, Math.min(10, Math.round((1/(1-pOver))*100)/100));
@@ -2957,7 +2983,7 @@ function tennisRenderSpreadBody(){
 }
 
 function tennisSettleBets(){
-  const epoch = Math.floor(Date.now() / 360000);
+  const epoch = Math.floor(Date.now() / 330000);
   betHistory.forEach(function(bet){
     if(bet.status !== 'pending') return;
     let hasTennis = false;
