@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
 <title>BETAPP</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ffcc00'/><text x='50' y='68' font-size='60' font-weight='900' text-anchor='middle' fill='%23000'>B</text></svg>">
 <style>
@@ -370,6 +372,7 @@ var AVG_GOALS = 2.7;
 var AVG_HOCKEY_GOALS = 5.5;
 var THEMES = ['dark','light','blue','green','red'];
 var COMBO_BONUS = { 3: 0.05, 4: 0.10, 5: 0.15 };
+var MIN_ODD = 1.05;
 
 // ==========================================
 // УТИЛИТЫ
@@ -406,7 +409,7 @@ function applyMargin(prob, margin){
   if(prob >= 0.9995) return null;
   var o = 1 / (prob * margin);
   if(o > 50) return null;
-  if(o < 1.01) return 1.01;
+  if(o < MIN_ODD) return null;
   return Math.round(o * 100) / 100;
 }
 function getMatchLambdas(match, st){
@@ -472,7 +475,7 @@ function hockeyPreMatch(rH, rA){
 }
 
 // ==========================================
-// LIVE КЭФЫ — ФУТБОЛ
+// LIVE КЭФЫ
 // ==========================================
 function footballLiveOdds(match, st){
   var base = match.baseOdds;
@@ -757,7 +760,7 @@ function getHockeyTotal(st, line){
 }
 
 // ==========================================
-// КОМАНДЫ И БОЙЦЫ
+// КОМАНДЫ
 // ==========================================
 var FOOTBALL_TEAMS = {
   '🇷🇺 РПЛ': [['Зенит',9],['Краснодар',8],['Спартак',8],['ЦСКА',8],['Динамо М',7],['Локомотив',7],['Ростов',7],['Рубин',6],['Ахмат',6],['Крылья Советов',6],['Оренбург',5],['Балтика',5]],
@@ -952,7 +955,6 @@ function genUfcFights(epoch){
   }
   return fights;
 }
-
 function refreshFootball(){
   var epoch = Math.floor(Date.now() / (SPEED.football.cycle * 1000));
   if(epoch === FOOTBALL_CACHE.epoch) return;
@@ -1055,7 +1057,6 @@ function getFootballState(match){
     var firstEnd = matchDur * FOOTBALL_PHASES.firstHalfEnd;
     var brkEnd = matchDur * FOOTBALL_PHASES.breakEnd;
     var minute, isBreak = false, breakLeft = 0;
-
     if(posSec < firstEnd){
       minute = (posSec / firstEnd) * 45;
     } else if(posSec < brkEnd){
@@ -1100,7 +1101,6 @@ function getFootballState(match){
     scenario: sc, epoch: epoch
   };
 }
-
 function getHockeyState(match){
   var cycleMs = SPEED.hockey.cycle * 1000;
   var offsetMs = getMatchOffset(match.id) * cycleMs;
@@ -1116,7 +1116,6 @@ function getHockeyState(match){
     var p2End = matchDur * HOCKEY_PHASES.p2End;
     var minute, period, isBreak = false, breakLeft = 0;
     var pBrk = 8;
-
     if(posSec < p1End){
       minute = (posSec / p1End) * 20; period = 1;
     } else if(posSec < p1End + pBrk){
@@ -1168,7 +1167,6 @@ function getHockeyState(match){
     scenario: sc, epoch: epoch
   };
 }
-
 function getUfcState(fight){
   var cycleMs = SPEED.ufc.cycle * 1000;
   var offsetMs = getMatchOffset(fight.id) * cycleMs;
@@ -1284,7 +1282,6 @@ function getUfcOdds(fight, st){
     Math.max(1.10, Math.min(15, Math.round((1/pA)*100)/100))
   ];
 }
-
 function getUfcTotalRoundOdds(fight, st){
   var sc = fight.scenario;
   if(!sc) return [];
@@ -1381,7 +1378,7 @@ function submitAuth(){
     var p2 = document.getElementById('pass2Input').value;
     if(pass !== p2) return showMsg('Пароли не совпадают', false);
     if(DB[login]) return showMsg('Логин занят', false);
-    DB[login] = { pass: pass, balance: 10000, freebet: 0, history: [], lastSpin: 0, notifAsked: false };
+    DB[login] = { pass: pass, balance: 10000, freebet: 0, history: [], lastSpin: 0 };
     saveDB();
     showMsg('✅ Успешно! Войди', true);
     setTimeout(function(){ switchAuth('login'); }, 1200);
@@ -1392,11 +1389,13 @@ function submitAuth(){
   currentUser = login;
   balance = DB[login].balance;
   freebet = DB[login].freebet || 0;
-  betHistory = DB[login].history || [];
+  betHistory = (DB[login].history || []).map(function(b){
+    if(b.totalWin === undefined) b.totalWin = b.potentialWin || (b.stake * b.totalOdds);
+    return b;
+  });
   saveCurrent();
   enterApp();
 }
-
 function logout(){
   if(!confirm('Выйти?')) return;
   DB[currentUser].balance = balance;
@@ -1407,7 +1406,6 @@ function logout(){
   saveCurrent();
   location.reload();
 }
-
 function enterApp(){
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
@@ -1422,8 +1420,12 @@ function enterApp(){
     showPage('bets');
     showToast('Привет, ' + currentUser + '! 🎉');
   }, 300);
+  setTimeout(function(){
+    if('Notification' in window && Notification.permission === 'default'){
+      if(confirm('🔔 Включить уведомления о голах в твоих ставках?')) ensureNotificationPermission();
+    }
+  }, 3000);
 }
-
 function updateBalanceUI(){ var el = document.getElementById('balance'); if(el) el.textContent = '💰 ' + formatNumber(balance) + ' ₽'; }
 function updateFreebetUI(){
   var b = document.getElementById('freebetBadge');
@@ -1445,10 +1447,6 @@ function showDeposit(){
   updateBalanceUI();
   showToast('✅ +' + formatNumber(num) + ' ₽');
 }
-
-// ==========================================
-// НАВИГАЦИЯ
-// ==========================================
 function showPage(page){
   document.getElementById('pageBets').style.display = page === 'bets' ? 'block' : 'none';
   document.getElementById('pageGames').style.display = page === 'games' ? 'block' : 'none';
@@ -1508,8 +1506,7 @@ function updateOddArrow(key, val){
   if(val < prev) return { arrow: '<span class="odd-arrow down">↓</span>', flash: 'flash-down' };
   return { arrow: '<span class="odd-arrow up">↑</span>', flash: 'flash-up' };
 }
-
-function shouldBlockObvious(st, outcome, odds){
+function shouldBlockObvious(st, odds){
   if(odds >= 1.10) return false;
   if(!st.live && !st.isPaused) return false;
   var h = st.score[0], a = st.score[1];
@@ -1518,7 +1515,7 @@ function shouldBlockObvious(st, outcome, odds){
   if(diff >= 2 && st.minute >= 88) return true;
   return false;
 }
-function shouldBlockObviousHockey(st, outcome, odds){
+function shouldBlockObviousHockey(st, odds){
   if(odds >= 1.10) return false;
   if(!st.live && !st.isPaused) return false;
   var h = st.score[0], a = st.score[1];
@@ -1555,11 +1552,11 @@ function renderMatches(){
     var progress = showScore ? Math.min(100, (st.minute / 90) * 100) : 0;
     var oddsHtml = '';
     odds.forEach(function(o, i){
-      if(o > 50 || !o){
+      if(o > 50 || !o || o < MIN_ODD){
         oddsHtml += '<div class="odd locked"><div class="odd-label">' + labels[i] + '</div><div class="odd-value">—</div></div>';
         return;
       }
-      if(shouldBlockObvious(st, i, o)){
+      if(shouldBlockObvious(st, o)){
         oddsHtml += '<div class="odd blocked"><div class="odd-label">' + labels[i] + '</div><div class="odd-value">🚫</div></div>';
         return;
       }
@@ -1599,7 +1596,6 @@ function hockeyLogo(teamName, size){
   }
   return '<div class="team-logo" style="width:' + size + 'px;height:' + size + 'px;background:var(--bg3);color:var(--text);">' + initials + '</div>';
 }
-
 function renderHockey(){
   refreshHockey();
   var list = HOCKEY_CACHE.matches;
@@ -1625,11 +1621,11 @@ function renderHockey(){
     var progress = showScore ? Math.min(100, (st.minute / 60) * 100) : 0;
     var oddsHtml = '';
     odds.forEach(function(o, i){
-      if(o > 50 || !o){
+      if(o > 50 || !o || o < MIN_ODD){
         oddsHtml += '<div class="odd locked"><div class="odd-label">' + labels[i] + '</div><div class="odd-value">—</div></div>';
         return;
       }
-      if(shouldBlockObviousHockey(st, i, o)){
+      if(shouldBlockObviousHockey(st, o)){
         oddsHtml += '<div class="odd blocked"><div class="odd-label">' + labels[i] + '</div><div class="odd-value">🚫</div></div>';
         return;
       }
@@ -1676,7 +1672,6 @@ function ufcAvatar(fighter, size, status){
     imgHtml + '<span style="position:relative;z-index:1;color:#fff;">' + initials + '</span>' +
   '</div>';
 }
-
 function renderUfc(){
   refreshUfc();
   var list = UFC_CACHE.fights;
@@ -1710,7 +1705,7 @@ function renderUfc(){
     var oddsHtml = '';
     [0, 2].forEach(function(i){
       var o = odds[i];
-      if(o > 50 || !o){
+      if(o > 50 || !o || o < MIN_ODD){
         oddsHtml += '<div class="odd locked"><div class="odd-label">П' + (i === 0 ? 1 : 2) + '</div><div class="odd-value">—</div></div>';
         return;
       }
@@ -1750,7 +1745,6 @@ function renderUfc(){
   });
   document.getElementById('matches').innerHTML = html;
 }
-
 function ufcQuickBet(fid, side){
   var f = findUfc(fid);
   if(!f) return;
@@ -1762,7 +1756,7 @@ function ufcQuickBet(fid, side){
 }
 
 // ==========================================
-// АККОРДЕОН + SPREAD МОДАЛКА
+// SPREAD МОДАЛКА
 // ==========================================
 function openSpread(id){
   currentSpreadMatch = id;
@@ -1784,7 +1778,6 @@ function toggleFavorite(id, ev){
   localStorage.setItem('fav_markets', JSON.stringify(favoriteMarkets));
   renderSpreadBody();
 }
-
 function accSection(id, title, bodyHtml, defaultOpen){
   var isOpen = openAccordions[id] !== undefined ? openAccordions[id] : !!defaultOpen;
   if(openAccordions[id] === undefined) openAccordions[id] = isOpen;
@@ -1798,9 +1791,8 @@ function accSection(id, title, bodyHtml, defaultOpen){
     '<div class="acc-body">' + bodyHtml + '</div>' +
   '</div>';
 }
-
 function cellHtml(lbl, o, out, key, locked, matchId, marketName){
-  if(o === null || o === undefined || o > 50 || !o || o < 1.01){
+  if(o === null || o === undefined || o > 50 || !o || o < MIN_ODD){
     return '<div class="market-cell locked"><span class="ml">' + esc(lbl) + '</span><span class="mv">—</span></div>';
   }
   var sel = isSelected(matchId, key, out) ? ' selected' : '';
@@ -1811,7 +1803,6 @@ function cellHtml(lbl, o, out, key, locked, matchId, marketName){
     '<span class="mv">' + o.toFixed(2) + '</span>' +
   '</div>';
 }
-
 function renderSpreadHead(){
   var el = document.getElementById('spreadHeadInfo');
   if(!currentSpreadMatch){ el.innerHTML = ''; return; }
@@ -1842,7 +1833,6 @@ function renderSpreadHead(){
       '<div class="spread-meta">' + (stf.live ? '🔴 ' + stf.timeStr : (stf.isPaused ? '⚽ Гол' : (stf.isBreak ? '⏸ Перерыв' : (stf.isFinished ? '✅ Завершён' : '⏸ Скоро')))) + '</div>';
   }
 }
-
 function renderSpreadBody(){
   var body = document.getElementById('spreadBody');
   if(!currentSpreadMatch){ body.innerHTML = ''; return; }
@@ -1913,26 +1903,23 @@ function renderFootballSpread(body, m){
   });
   html += accSection('hc', 'Исход с учетом форы', hcBody);
 
-var bothScored = h > 0 && a > 0;
-  var impossible = false;
-  // Если одна команда уже не может забить (0:0 близко к концу, или 1:0 и уже 89')
+  // Обе забьют — с закрытием когда обе забили
+  var bothScored = h > 0 && a > 0;
+  var impossibleBtts = false;
   if(!bothScored){
     var minLeft = 90 - st.minute;
-    if(h === 0 && a === 0 && minLeft <= 3) impossible = true;
+    if(h === 0 && a === 0 && minLeft <= 3) impossibleBtts = true;
     if((h === 0 && a > 0) || (h > 0 && a === 0)){
-      // Одна уже забила, вторая нет — если мало времени, шанс мал
-      if(minLeft <= 2) impossible = true;
+      if(minLeft <= 2) impossibleBtts = true;
     }
   }
   var bttsBody = '';
   if(bothScored){
-    // Обе уже забили — Да выиграл, Нет проиграл
     bttsBody = '<div class="market-table"><div class="market-row">' +
       '<div class="market-cell done"><span class="ml">Да</span><span class="mv">✅</span></div>' +
       '<div class="market-cell done-fail"><span class="ml">Нет</span><span class="mv">❌</span></div>' +
     '</div></div>';
-  } else if(impossible){
-    // Уже не сыграет Да — Нет близко к выигрышу
+  } else if(impossibleBtts){
     bttsBody = '<div class="market-table"><div class="market-row">' +
       '<div class="market-cell locked"><span class="ml">Да</span><span class="mv">—</span></div>' +
       '<div class="market-cell done"><span class="ml">Нет</span><span class="mv">✅</span></div>' +
@@ -1947,6 +1934,7 @@ var bothScored = h > 0 && a > 0;
     '</div></div>';
   }
   html += accSection('btts', 'Обе забьют', bttsBody);
+
   var itLines = [0.5, 1.5, 2.5];
   var itBody = '';
   itLines.forEach(function(l){
@@ -1974,7 +1962,7 @@ var bothScored = h > 0 && a > 0;
     exBody += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">';
     Object.keys(exR).forEach(function(key){
       var o = exR[key];
-      if(o === null || o > 50) return;
+      if(o === null || o > 50 || o < MIN_ODD) return;
       var parts = key.split('_');
       var sc = parts[0] + ':' + parts[1];
       var csKey = 'cs_' + key;
@@ -1997,7 +1985,7 @@ var bothScored = h > 0 && a > 0;
     var lbl = c[0], h1 = c[1], hf = c[2];
     var o = tmR ? tmR[h1 + '_' + hf] : null;
     var key = 'ht_' + h1 + '_' + hf;
-    if(o === null || o === undefined || o > 50){
+    if(o === null || o === undefined || o > 50 || o < MIN_ODD){
       tmBody += '<div class="market-cell locked" style="border-radius:10px;"><span class="ml">' + lbl + '</span><span class="mv">—</span></div>';
     } else {
       var sel = isSelected(m.id, key, 0) ? ' selected' : '';
@@ -2105,8 +2093,8 @@ function renderUfcSpread(body, f){
   var html = '';
   var mainBody = '<div class="market-table"><div class="market-row">' +
     (st.isDanger
-      ? '<div class="market-cell blocked"><span class="ml">П1</span><span class="mv">⏸</span></div>' +
-        '<div class="market-cell blocked"><span class="ml">П2</span><span class="mv">⏸</span></div>'
+      ? '<div class="market-cell locked"><span class="ml">П1</span><span class="mv">⏸</span></div>' +
+        '<div class="market-cell locked"><span class="ml">П2</span><span class="mv">⏸</span></div>'
       : cellHtml('П1', odds[0], 0, 'ufc_main_0', locked, f.id, 'Исход') +
         cellHtml('П2', odds[2], 1, 'ufc_main_1', locked, f.id, 'Исход')) +
   '</div></div>';
@@ -2124,8 +2112,8 @@ function renderUfcSpread(body, f){
         '<div style="min-width:44px;font-size:11px;color:var(--text-dim);font-weight:800;text-align:center;">' + lbl + '</div>' +
         '<div class="market-table" style="flex:1;"><div class="market-row">' +
           (st.isDanger
-            ? '<div class="market-cell blocked"><span class="ml">ТБ</span><span class="mv">⏸</span></div>' +
-              '<div class="market-cell blocked"><span class="ml">ТМ</span><span class="mv">⏸</span></div>'
+            ? '<div class="market-cell locked"><span class="ml">ТБ</span><span class="mv">⏸</span></div>' +
+              '<div class="market-cell locked"><span class="ml">ТМ</span><span class="mv">⏸</span></div>'
             : cellHtml('ТБ', t.over, 0, overKey, locked, f.id, 'Тотал раундов ' + lbl) +
               cellHtml('ТМ', t.under, 1, underKey, locked, f.id, 'Тотал раундов ' + lbl)) +
         '</div></div>' +
@@ -2167,39 +2155,32 @@ function getBaseMarket(mk){
   if(mk.indexOf('hockey_total_') === 0) return 'hockey_total';
   return mk;
 }
-
 function addBet(mId, market, outcome, odds, label, mK){
-  if(odds > 50 || !odds || odds < 1.01){
-    showToast('❌ Кэф недоступен', false);
+  if(odds > 50 || !odds || odds < MIN_ODD){
+    showToast('❌ Кэф недоступен (минимум ' + MIN_ODD + ')', false);
     return;
   }
   var k = mK || null;
   var home, away, locked, type = 'football', st;
-  var isUfcMatch = false, isHockeyMatch = false;
   var uf = findUfc(mId);
-  if(uf){ isUfcMatch = true; }
-  else {
-    var hm = findHockey(mId);
-    if(hm) isHockeyMatch = true;
-  }
-  if(isUfcMatch){
+  var hm = !uf ? findHockey(mId) : null;
+  var fm = (!uf && !hm) ? findFootball(mId) : null;
+  if(uf){
     st = getUfcState(uf);
     locked = !st.live;
     home = uf.home; away = uf.away; type = 'ufc';
-  } else if(isHockeyMatch){
-    var hm2 = findHockey(mId);
-    st = getHockeyState(hm2);
+  } else if(hm){
+    st = getHockeyState(hm);
     locked = !st.live && !st.isPaused;
-    home = hm2.home; away = hm2.away; type = 'hockey';
-  } else {
-    var fm = findFootball(mId);
-    if(!fm) return;
+    home = hm.home; away = hm.away; type = 'hockey';
+  } else if(fm){
     st = getFootballState(fm);
     locked = !st.live && !st.isPaused;
     home = fm.home; away = fm.away;
+  } else {
+    return;
   }
   if(locked){ showToast('⏸ Ставки закрыты', false); return; }
-
   var baseMarket = getBaseMarket(k);
   var idx = bets.findIndex(function(b){ return b.matchId === mId && getBaseMarket(b.marketKey) === baseMarket && b.outcome === outcome; });
   if(idx !== -1){
@@ -2216,20 +2197,17 @@ function addBet(mId, market, outcome, odds, label, mK){
   renderSlip();
   renderActive();
 }
-
 function renderActive(){
   if(selectedSport === '⚽ Футбол') renderMatches();
   else if(selectedSport === '🏒 Хоккей') renderHockey();
   else if(selectedSport === '🥊 UFC') renderUfc();
   if(currentSpreadMatch) renderSpreadBody();
 }
-
 function isSelected(mId, mK, outcome){
   if(mK) return bets.some(function(b){ return b.matchId === mId && b.marketKey === mK && b.outcome === outcome; });
   return bets.some(function(b){ return b.matchId === mId && !b.marketKey && b.outcome === outcome; });
 }
 function removeBet(i){ bets.splice(i, 1); renderSlip(); renderActive(); }
-
 function getCurrentOddsForBet(b){
   if(b.type === 'hockey'){
     var m = findHockey(b.matchId);
@@ -2276,7 +2254,6 @@ function getCurrentOddsForBet(b){
   }
   return b.odds;
 }
-
 function renderSlip(){
   document.getElementById('badgeCount').textContent = bets.length;
   document.getElementById('badge').classList.toggle('show', bets.length > 0);
@@ -2296,14 +2273,12 @@ function renderSlip(){
         '</div>';
       }).join('')
     : '<div style="color:var(--text-dim);text-align:center;padding:20px">Купон пуст</div>';
-
   var expressHtml = '';
   if(bets.length > 1) expressHtml += '<div class="slip-express">🔥 Экспресс: ' + bets.length + ' событий</div>';
   if(bets.length >= 3){
     var bonus = COMBO_BONUS[bets.length] || COMBO_BONUS[5];
     expressHtml += '<div class="combo-bonus">🎁 Комбо-бонус +' + Math.round(bonus * 100) + '%</div>';
   }
-
   var activeBets = betHistory.filter(function(b){ return b.status === 'pending'; });
   if(activeBets.length > 0){
     expressHtml += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">' +
@@ -2326,7 +2301,6 @@ function renderSlip(){
   updateFreebetUI();
   updatePayout();
 }
-
 function toggleFreebet(){
   if(freebet <= 0) return;
   useFreebet = !useFreebet;
@@ -2335,9 +2309,7 @@ function toggleFreebet(){
   else { btn.textContent = '🎁 Использовать фрибет (' + formatNumber(freebet) + ' ₽)'; btn.style.background = 'transparent'; btn.style.color = 'var(--accent)'; }
   updatePayout();
 }
-
 function getComboBonus(){ return bets.length < 3 ? 0 : (COMBO_BONUS[bets.length] || COMBO_BONUS[5]); }
-
 function updatePayout(){
   var stake = Number(document.getElementById('stakeInput').value) || 0;
   var tO = bets.reduce(function(a,b){ return a * b.odds; }, 1);
@@ -2348,17 +2320,11 @@ function updatePayout(){
 document.getElementById('stakeInput').addEventListener('input', updatePayout);
 function setStake(v){ document.getElementById('stakeInput').value = v; updatePayout(); }
 function toggleSlip(){ document.getElementById('slip').classList.toggle('open'); renderSlip(); }
-
 function placeBet(){
   if(!bets.length) return showToast('Купон пуст', false);
   var stake = Number(document.getElementById('stakeInput').value) || 0;
   if(stake < 10) return showToast('Мин. 10 ₽', false);
   if(stake > 1000000) return showToast('Макс. 1 000 000 ₽', false);
-  if(DB[currentUser] && !DB[currentUser].notifAsked){
-    DB[currentUser].notifAsked = true;
-    saveDB();
-    ensureNotificationPermission();
-  }
   var rms = stake, fbu = 0;
   if(useFreebet && freebet > 0){ fbu = Math.min(stake, freebet); rms = stake - fbu; }
   if(rms > balance) return showToast('Недостаточно средств', false);
@@ -2405,7 +2371,7 @@ function placeBet(){
   document.getElementById('useFreebetBtn').textContent = '🎁 Использовать фрибет';
   showToast('✅ Ставка ' + stake + ' ₽ | Потенциал: ' + formatNumber(pw) + ' ₽');
   vibrate(15);
-  sendNotification('✅ Ставка принята', 'Ставка ' + stake + ' ₽. Потенциал: ' + formatNumber(pw) + ' ₽');
+  sendNotification('✅ Ставка принята', 'Ставка ' + stake + ' ₽');
   bets = [];
   renderSlip();
   renderActive();
@@ -2413,62 +2379,20 @@ function placeBet(){
 }
 
 // ==========================================
-// РАСЧЁТ СТАВОК
+// РАСЧЁТ СТАВОК — ГЛАВНОЕ
 // ==========================================
-function checkItemResult(item){
-  var mk = item.marketKey || '';
-  if(item.type === 'ufc'){
-    var currentEpochU = UFC_CACHE.epoch;
-    if(item.epoch >= currentEpochU) return null;
-    var scu = item.scenario;
-    if(!scu) return false;
-    if(mk === 'ufc_main_0') return scu.winner === 0;
-    if(mk === 'ufc_main_1') return scu.winner === 1;
-    if(mk.indexOf('ufc_total_over_') === 0){
-      var lineUO = parseFloat(mk.replace('ufc_total_over_', ''));
-      return scu.finalRound > lineUO;
-    }
-    if(mk.indexOf('ufc_total_under_') === 0){
-      var lineUU = parseFloat(mk.replace('ufc_total_under_', ''));
-      return scu.finalRound <= lineUU;
-    }
-    return false;
-  }
-  if(item.type === 'hockey'){
-    var currentEpochH = HOCKEY_CACHE.epoch;
-    if(item.epoch >= currentEpochH) return null;
-    var sch = item.scenario;
-    if(!sch) return false;
-    var hh = 0, ah = 0;
-    sch.goals.forEach(function(g){ if(g[0] === 0) hh++; else ah++; });
-    var tGh = hh + ah;
-    if(mk === 'hockey_main_0') return hh > ah;
-    if(mk === 'hockey_main_1') return hh === ah;
-    if(mk === 'hockey_main_2') return hh < ah;
-    if(mk.indexOf('hockey_total_over_') === 0){
-      var lineHO = parseFloat(mk.replace('hockey_total_over_', ''));
-      return tGh > lineHO;
-    }
-    if(mk.indexOf('hockey_total_under_') === 0){
-      var lineHU = parseFloat(mk.replace('hockey_total_under_', ''));
-      return tGh < lineHU;
-    }
-    return false;
-  }
-  var currentEpochF = FOOTBALL_CACHE.epoch;
-  if(item.epoch >= currentEpochF) return null;
-  var sc = item.scenario;
-  if(!sc) return false;
+function calcFootballResult(sc, mk){
   var h = 0, a = 0;
   sc.goals.forEach(function(g){ if(g[0] === 0) h++; else a++; });
   var tG = h + a;
-
   if(mk === 'main_1') return h > a;
   if(mk === 'main_X') return h === a;
   if(mk === 'main_2') return h < a;
   if(mk === 'dc_1X') return h >= a;
   if(mk === 'dc_12') return h !== a;
   if(mk === 'dc_X2') return h <= a;
+  if(mk === 'btts_yes') return h > 0 && a > 0;
+  if(mk === 'btts_no') return !(h > 0 && a > 0);
   if(mk.indexOf('total_over_') === 0){
     var lineO = parseFloat(mk.replace('total_over_', ''));
     return tG > lineO;
@@ -2477,8 +2401,6 @@ function checkItemResult(item){
     var lineUn = parseFloat(mk.replace('total_under_', ''));
     return tG < lineUn;
   }
-  if(mk === 'btts_yes') return h > 0 && a > 0;
-  if(mk === 'btts_no') return !(h > 0 && a > 0);
   if(mk.indexOf('hc_1_') === 0){
     var hc1 = parseFloat(mk.replace('hc_1_', ''));
     return (h + hc1) > a;
@@ -2504,6 +2426,75 @@ function checkItemResult(item){
     return a < it2u;
   }
   return false;
+}
+
+function checkItemResult(item){
+  var mk = item.marketKey || '';
+  if(item.type === 'ufc'){
+    var f = findUfc(item.matchId);
+    var scu = item.scenario;
+    if(!scu) return false;
+    // Ставка закрыта, если матч завершился или epoch сменился
+    if(f){
+      var st = getUfcState(f);
+      if(st.phase === 'fight') return null;
+    }
+    var currentEpochU = UFC_CACHE.epoch;
+    if(item.epoch >= currentEpochU && f){
+      var st2 = getUfcState(f);
+      if(st2.phase === 'fight') return null;
+    }
+    if(mk === 'ufc_main_0') return scu.winner === 0;
+    if(mk === 'ufc_main_1') return scu.winner === 1;
+    if(mk.indexOf('ufc_total_over_') === 0){
+      var lineUO = parseFloat(mk.replace('ufc_total_over_', ''));
+      return scu.finalRound > lineUO;
+    }
+    if(mk.indexOf('ufc_total_under_') === 0){
+      var lineUU = parseFloat(mk.replace('ufc_total_under_', ''));
+      return scu.finalRound <= lineUU;
+    }
+    return false;
+  }
+  if(item.type === 'hockey'){
+    var sch = item.scenario;
+    if(!sch) return false;
+    var mh = findHockey(item.matchId);
+    if(mh){
+      var sth = getHockeyState(mh);
+      if(sth.phase !== 'after' && sth.phase !== 'wait'){
+        var currentEpochH = HOCKEY_CACHE.epoch;
+        if(item.epoch >= currentEpochH) return null;
+      }
+    }
+    var hh = 0, ah = 0;
+    sch.goals.forEach(function(g){ if(g[0] === 0) hh++; else ah++; });
+    var tGh = hh + ah;
+    if(mk === 'hockey_main_0') return hh > ah;
+    if(mk === 'hockey_main_1') return hh === ah;
+    if(mk === 'hockey_main_2') return hh < ah;
+    if(mk.indexOf('hockey_total_over_') === 0){
+      var lineHO = parseFloat(mk.replace('hockey_total_over_', ''));
+      return tGh > lineHO;
+    }
+    if(mk.indexOf('hockey_total_under_') === 0){
+      var lineHU = parseFloat(mk.replace('hockey_total_under_', ''));
+      return tGh < lineHU;
+    }
+    return false;
+  }
+  // Футбол
+  var sc = item.scenario;
+  if(!sc) return false;
+  var mf = findFootball(item.matchId);
+  if(mf){
+    var stf = getFootballState(mf);
+    if(stf.phase !== 'after' && stf.phase !== 'wait'){
+      var currentEpochF = FOOTBALL_CACHE.epoch;
+      if(item.epoch >= currentEpochF) return null;
+    }
+  }
+  return calcFootballResult(sc, mk);
 }
 
 function settleAllBets(){
@@ -2600,43 +2591,27 @@ function getCurrentOddsForItem(item){ return getCurrentOddsForBet(item); }
 
 function calculateCashout(bet){
   if(bet.status !== 'pending') return 0;
-  if(bet.items.length >= 2){
-    var finishedCount = 0, lastPending = null, allFinishedWon = true;
-    for(var i = 0; i < bet.items.length; i++){
-      var item = bet.items[i];
-      var res = checkItemResult(item);
-      if(res === null){ lastPending = item; }
-      else {
-        finishedCount++;
-        if(res === false){ allFinishedWon = false; }
-      }
-    }
-    if(allFinishedWon && lastPending && finishedCount >= bet.items.length - 1){
-      var curOdds = getCurrentOddsForBet(lastPending);
-      if(curOdds && curOdds > 0){
-        var coef = lastPending.odds / curOdds;
-        var totalWin = bet.totalWin || bet.stake * bet.totalOdds;
-        var amt = totalWin * 0.85 * Math.min(1, coef);
-        if(amt > totalWin * 0.95) amt = totalWin * 0.95;
-        if(amt < bet.stake) amt = bet.stake;
-        return Math.round(amt);
-      }
-    }
-  }
+  var totalWin = bet.totalWin || bet.stake * bet.totalOdds;
   var coefAll = 1;
-  for(var j = 0; j < bet.items.length; j++){
-    var item2 = bet.items[j];
-    var curOdds2 = getCurrentOddsForItem(item2);
-    if(curOdds2 === null || curOdds2 <= 0) return 0;
-    coefAll *= (item2.odds / curOdds2);
+  for(var i = 0; i < bet.items.length; i++){
+    var item = bet.items[i];
+    var res = checkItemResult(item);
+    if(res === false) return 0;
+    if(res === true) continue;
+    var curOdds = getCurrentOddsForItem(item);
+    if(curOdds === null || curOdds <= 0) return 0;
+    if(curOdds <= 1.10){
+      coefAll *= 0.98;
+    } else {
+      coefAll *= (item.odds / curOdds);
+    }
   }
-  var totalWin2 = bet.totalWin || bet.stake * bet.totalOdds;
-  var amount = bet.stake * coefAll * 0.92;
-  var max = totalWin2 * 0.95;
-  if(amount > max) amount = max;
-  var min = Math.round(bet.stake * 0.10);
-  if(amount < min) amount = min;
-  return Math.round(amount);
+  var amount = bet.stake * coefAll;
+  var minAmt = Math.round(bet.stake * 0.10);
+  if(amount < minAmt) amount = minAmt;
+  var maxAmt = totalWin * 0.95;
+  if(amount > maxAmt) amount = maxAmt;
+  return Math.max(minAmt, Math.round(amount));
 }
 
 function cashoutBet(id){
@@ -2710,29 +2685,19 @@ function renderProfile(){
 }
 
 // ==========================================
-// УВЕДОМЛЕНИЯ
+// УВЕДОМЛЕНИЯ + ЗВУКИ
 // ==========================================
 function ensureNotificationPermission(){
   if(!('Notification' in window)) return false;
   if(Notification.permission === 'granted') return true;
   if(Notification.permission === 'denied') return false;
-  try {
-    Notification.requestPermission();
-    return true;
-  } catch(e){ return false; }
+  try { Notification.requestPermission(); return true; } catch(e){ return false; }
 }
-
 function sendNotification(title, body){
   if(!('Notification' in window)) return;
   if(Notification.permission !== 'granted') return;
-  try {
-    new Notification(title, { body: body, tag: 'bet-' + Date.now() });
-  } catch(e){}
+  try { new Notification(title, { body: body, tag: 'bet-' + Date.now() }); } catch(e){}
 }
-
-// ==========================================
-// ЗВУКИ
-// ==========================================
 var audioCtx = null;
 function initAudio(){
   if(!audioCtx){ try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
@@ -2775,9 +2740,6 @@ function playGoalSound(){
 function vibrate(p){ if(navigator.vibrate) navigator.vibrate(p); }
 document.addEventListener('click', initAudio, { once: true });
 
-// ==========================================
-// TOAST
-// ==========================================
 var toastTimer;
 function showToast(text, ok){
   if(ok === undefined) ok = true;
@@ -2871,16 +2833,16 @@ function renderGameBody(){
   } else if(currentGame === 'roulette'){
     var lastSpin = DB[currentUser] ? (DB[currentUser].lastSpin || 0) : 0;
     var nextSpin = lastSpin + 7 * 24 * 60 * 60 * 1000;
-    var now = Date.now();
-    var canSpin = now >= nextSpin;
+    var nowR = Date.now();
+    var canSpin = nowR >= nextSpin;
     var cdText = 'Доступно!';
     var cdColor = 'var(--green)';
     if(!canSpin){
-      var left = nextSpin - now;
-      var d = Math.floor(left / (24*60*60*1000));
-      var hh = Math.floor((left % (24*60*60*1000)) / (60*60*1000));
-      var mm = Math.floor((left % (60*60*1000)) / (60*1000));
-      cdText = 'Через ' + d + 'д ' + hh + 'ч ' + mm + 'м';
+      var left = nextSpin - nowR;
+      var dd = Math.floor(left / (24*60*60*1000));
+      var hh2 = Math.floor((left % (24*60*60*1000)) / (60*60*1000));
+      var mm2 = Math.floor((left % (60*60*1000)) / (60*1000));
+      cdText = 'Через ' + dd + 'д ' + hh2 + 'ч ' + mm2 + 'м';
       cdColor = 'var(--text-dim)';
     }
     body.innerHTML = '<div style="text-align:center;font-size:24px;font-weight:900;margin-bottom:8px">🎰 Колесо</div>' +
@@ -3146,3 +3108,4 @@ document.addEventListener('keydown', function(e){
 </script>
 </body>
 </html>
+  
