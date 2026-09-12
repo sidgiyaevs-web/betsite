@@ -2373,9 +2373,8 @@ function hockeyTick(){
   if(selectedSport === '🏒 Хоккей') hockeyRender();
   if(currentUser) hockeySettleBets();
 }
-
 // ==========================================
-// ============ 🎾 ТЕННИС МОДУЛЬ ==========
+// ============ 🎾 ТЕННИС МОДУЛЬ ============
 // ==========================================
 
 const TENNIS_PLAYERS = [
@@ -2401,11 +2400,11 @@ const TENNIS_PLAYERS = [
   {name:'Алекс де Минор', rank:1, color:'#0097a7'}
 ];
 
-const TENNIS_MATCH_SEC = 300;
+const TENNIS_MATCH_SEC = 360;
 const TENNIS_AFTER_SEC = 30;
-const TENNIS_CYCLE = 360;
-const TENNIS_POINT_SEC = 2;
-const TENNIS_POINTS_PER_GAME = 4;
+const TENNIS_CYCLE = 420;
+const TENNIS_POINT_SEC = 3;
+const TENNIS_MAX_SETS = 2;
 
 let TENNIS_CACHE = [], TENNIS_EPOCH = -1;
 
@@ -2425,124 +2424,86 @@ function tennisGenerateMatch(epoch){
   const o1 = Math.max(1.10, Math.min(10, Math.round((1/(pH*1.05))*100)/100));
   const o2 = Math.max(1.10, Math.min(10, Math.round((1/((1-pH)*1.05))*100)/100));
 
-  // Генерируем полный сценарий матча: массив сетов
-  // Каждый сет: {winner:0|1, games:[g1,g2], points:[[p1,p2] for each game]}
-  const sets = [];
-  let setsH = 0, setsA = 0;
-  const totalGamesTarget = Math.random() < 0.6 ? 2 : 3; // 2:0 или 2:1
   const winnerOverall = tennisSeed(epoch * 7 + 3) < pH ? 0 : 1;
 
-  let maxSets = 2; // всего 2 сета до победы? Нет, у нас 2 сета матч (best of 2)
-  // Матч = до 2 побед в сетах. Значит может быть 2 или 3 сета — но ты сказал 2 сета. 
-  // Делаем: матч до 2 побед → 2 или 3 сета
-  // Но ты сказал 2 сета. Значит матч = 2 сета максимум.
-  // Сделаю: 2 сета, победитель = тот кто выиграл оба или 1:1 → по очкам? 
-  // Нет — матч должен иметь победителя. Значит 2 сета не всегда. 
-  // Сделаю матч до 2 побед в сетах (best of 3), но с ограничением.
+  const sets = [];
+  let setsH = 0, setsA = 0;
 
-  // По твоему: "2 сета". Значит матч — из 2 сетов, но должен быть победитель. 
-  // Если 1:1 — третий сет решает. Итого матч = 2 или 3 сета.
-
-  const setsNeeded = 2; // до 2 побед
-
-  for(let setIdx = 0; setIdx < 3; setIdx++){
-    if(setsH >= setsNeeded || setsA >= setsNeeded) break;
-    // Победитель сета
+  for(let setIdx = 0; setIdx < TENNIS_MAX_SETS; setIdx++){
+    // Определяем победителя сета
     let setWinner;
-    // Чтобы матч имел смысл — общий победитель выигрывает большинство
     if(winnerOverall === 0){
-      const setR = tennisSeed(epoch * 13 + setIdx * 17);
-      setWinner = setR < 0.65 ? 0 : 1;
+      setWinner = (setIdx === 0) ? (tennisSeed(epoch * 13 + 1) < 0.65 ? 0 : 1) : (setsH === 0 ? 0 : 1);
     } else {
-      const setR = tennisSeed(epoch * 13 + setIdx * 17);
-      setWinner = setR < 0.65 ? 1 : 0;
+      setWinner = (setIdx === 0) ? (tennisSeed(epoch * 13 + 1) < 0.65 ? 1 : 0) : (setsA === 0 ? 1 : 0);
+    }
+    // Если первый сет выиграл не фаворит — второй выигрывает фаворит (чтобы матч шёл 2 сета)
+    if(setIdx === 1){
+      setWinner = winnerOverall;
     }
 
-    // Счёт по геймам в сете — до 6, при 5:5 → до 7
-    let gH = 0, gA = 0;
+    // Счёт по геймам
     const gamesR = tennisSeed(epoch * 19 + setIdx * 23);
-    // Кто-то выигрывает 6:X или 7:X
-    const loserGames = Math.floor(gamesR * 5); // 0-4 гейма у проигравшего
+    let loserGames = Math.floor(gamesR * 5);
+    let gH, gA;
     if(setWinner === 0){ gH = 6; gA = loserGames; }
     else { gA = 6; gH = loserGames; }
-    // При 5:5 редко — упростим, не будем делать
-    // Иногда 7:5
     if(tennisSeed(epoch * 23 + setIdx * 29) > 0.85){
       if(setWinner === 0){ gH = 7; gA = 5; }
       else { gA = 7; gH = 5; }
     }
 
-    // Генерируем порядок геймов и очки
-    const games = [];
-    let curH = 0, curA = 0;
     const totalGamesInSet = gH + gA;
-    let server = (setIdx % 2 === 0) ? 0 : 1; // Подача первого гейма сета
+    const games = [];
+    // Подача первого гейма: в 1-м сете подаёт P1, во 2-м — P2
+    let server = (setIdx % 2 === 0) ? 0 : 1;
+    let curH = 0, curA = 0;
+
     for(let g = 0; g < totalGamesInSet; g++){
-      // Кто выиграет этот гейм
+      if(curH >= gH || curA >= gA) break;
+
+      // Победитель гейма
       let gameWinner;
       if(curH === gH - 1 && curA < gA){ gameWinner = 0; }
       else if(curA === gA - 1 && curH < gH){ gameWinner = 1; }
       else {
-        // Подающий выигрывает 70%
         const r2 = tennisSeed(epoch * 31 + setIdx * 37 + g * 11);
         const serverWins = r2 < 0.70;
         gameWinner = serverWins ? server : (1 - server);
-        // Ограничим — не даём проиграть сет тому, кто должен выиграть
         if(setWinner === 0 && curH >= gH - 1 && curA < gA) gameWinner = 0;
         if(setWinner === 1 && curA >= gA - 1 && curH < gH) gameWinner = 1;
       }
-      if(curH >= gH || curA >= gA) break;
-      // Генерим очки в гейме (4 очка у победителя, 0-2 у проигравшего)
-      const pts = [];
-      let pW = 0, pL = 0;
-      const ptsR = tennisSeed(epoch * 41 + setIdx * 43 + g * 13);
-      let loserPts = Math.floor(ptsR * 3); // 0-2
-      for(let i = 0; i < 4 + loserPts; i++){
-        if(pW === 4 || (pW >= 4 && pW - pL >= 2)){
-          break;
-        }
-        // Победитель гейма выигрывает очко с 65% если подаёт, 50% если не подаёт
-        const r3 = tennisSeed(epoch * 47 + setIdx * 53 + g * 17 + i * 7);
-        let winnerOfPoint;
-        const serverIsGameWinner = (server === gameWinner);
-        const pWinnerWins = serverIsGameWinner ? 0.65 : 0.55;
-        if(r3 < pWinnerWins) winnerOfPoint = gameWinner;
-        else winnerOfPoint = 1 - gameWinner;
-        if(winnerOfPoint === gameWinner) pW++; else pL++;
-        if(pW >= 4 && pW - pL >= 2) break;
-      }
-      // Принудительно доводим до победы
-      while(pW < 4 || (pW - pL < 2)){
-        pW++;
-      }
-      games.push({winner: gameWinner, server: server, pointsH: 0, pointsA: 0, seq: []});
-      // Запоминаем последовательность очков
-      let scoreH = 0, scoreA = 0;
+
+      // Очки в гейме — играем до 4+ с разницей 2
       const seq = [];
-      let tot = 0;
       let pw = 0, pl = 0;
-      while(true){
+      const pWinnerWins = (gameWinner === server) ? 0.65 : 0.55;
+      let safety = 0;
+      while(safety < 50){
+        safety++;
         if(pw >= 4 && pw - pl >= 2) break;
-        const r3 = tennisSeed(epoch * 47 + setIdx * 53 + g * 17 + tot * 7);
-        const pWinnerWins = ((gameWinner === server) ? 0.65 : 0.55);
-        let winnerOfPoint;
-        if(r3 < pWinnerWins) winnerOfPoint = gameWinner;
-        else winnerOfPoint = 1 - gameWinner;
+        if(pl >= 4 && pl - pw >= 2) break;
+        const r3 = tennisSeed(epoch * 47 + setIdx * 53 + g * 17 + safety * 7);
+        const winnerOfPoint = (r3 < pWinnerWins) ? gameWinner : (1 - gameWinner);
         if(winnerOfPoint === gameWinner) pw++; else pl++;
         seq.push(winnerOfPoint);
-        tot++;
-        if(tot > 20) break;
       }
-      games[games.length-1].seq = seq;
+      // Добиваем до победы
+      while(pw < 4 || (pw - pl) < 2){
+        pw++;
+        seq.push(gameWinner);
+      }
+
+      games.push({winner: gameWinner, server: server, seq: seq});
       if(gameWinner === 0) curH++; else curA++;
+      // ПОДАЧА ПЕРЕХОДИТ К ДРУГОМУ ИГРОКУ
+      server = 1 - server;
     }
 
     if(setWinner === 0) setsH++; else setsA++;
     sets.push({winner: setWinner, gamesH: gH, gamesA: gA, games: games});
-    if(setsH >= setsNeeded || setsA >= setsNeeded) break;
   }
 
-  // Определяем победителя матча
   const matchWinner = setsH > setsA ? 0 : 1;
 
   return {
@@ -2554,17 +2515,12 @@ function tennisGenerateMatch(epoch){
     baseOdds: [o1, 0, o2],
     isTennis: true,
     epoch: epoch,
-    scenario: {
-      sets: sets,
-      setsH: setsH,
-      setsA: setsA,
-      winner: matchWinner
-    }
+    scenario: {sets: sets, setsH: setsH, setsA: setsA, winner: matchWinner}
   };
 }
 
 function tennisGetMatch(){
-  const epoch = Math.floor(Date.now() / 300000); // 5 минут
+  const epoch = Math.floor(Date.now() / 420000);
   if(!window.TENNIS_CACHE || window.TENNIS_CACHE.epoch !== epoch){
     window.TENNIS_CACHE = { epoch: epoch, match: tennisGenerateMatch(epoch) };
   }
@@ -2577,35 +2533,44 @@ function tennisFindMatchById(id){
   return null;
 }
 
+function tennisFormatPoint(p, opp){
+  if(p >= 4 && p - opp >= 2) return 'Игра';
+  if(p >= 4 && opp >= 4){
+    if(p - opp === 1) return 'A';
+    if(p - opp === 0) return '40';
+    if(p - opp === -1) return '40';
+  }
+  if(p === 0) return '0';
+  if(p === 1) return '15';
+  if(p === 2) return '30';
+  if(p === 3) return '40';
+  return '40';
+}
+
 function tennisGetMatchState(match){
   if(!match) return {locked:true};
   const nowMs = Date.now();
-  const epoch = Math.floor(nowMs / 300000);
-  const posMs = nowMs - epoch * 300000;
+  const epoch = Math.floor(nowMs / 420000);
+  const posMs = nowMs - epoch * 420000;
   const posSec = posMs / 1000;
 
-  // Общая длительность матча
   const sc = match.scenario;
-  // Подсчитываем все очки
+
+  // Общее количество очков в матче
   let totalPoints = 0;
   sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
-
   const totalMatchSec = totalPoints * TENNIS_POINT_SEC;
 
+  // Фаза результата
   if(posSec >= totalMatchSec){
-    // Матч завершён
     if(posSec < totalMatchSec + TENNIS_AFTER_SEC){
-      // Фаза результата
-      const s1 = sc.sets[0];
-      const s2 = sc.sets.length > 1 ? sc.sets[1] : null;
-      const s3 = sc.sets.length > 2 ? sc.sets[2] : null;
       const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
       return {
         phase:'result', locked:true, live:false, isFinished:true,
         afterLeft: Math.ceil(totalMatchSec + TENNIS_AFTER_SEC - posSec),
-        scoreStr: scoreStr,
-        winner: sc.winner,
+        scoreStr: scoreStr, winner: sc.winner,
         setsH: sc.setsH, setsA: sc.setsA,
+        completedSets: sc.sets.map(s => [s.gamesH, s.gamesA]),
         timeStr: '✅ Завершён',
         scenario: sc
       };
@@ -2614,131 +2579,98 @@ function tennisGetMatchState(match){
     const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
     return {
       phase:'wait', locked:true, live:false, isFinished:false, isWaiting:true,
-      waitLeft: waitLeft,
-      scoreStr: scoreStr,
-      winner: sc.winner,
+      waitLeft: waitLeft, scoreStr: scoreStr, winner: sc.winner,
       setsH: sc.setsH, setsA: sc.setsA,
+      completedSets: sc.sets.map(s => [s.gamesH, s.gamesA]),
       timeStr: '⏸ Следующий матч через ' + formatTimeLeft(waitLeft),
       scenario: sc
     };
   }
 
-  // Идёт матч — находим текущее состояние
+  // Лайв — находим текущее состояние
   let pointsSoFar = 0;
-  let curSetIdx = 0;
-  let curGameIdx = 0;
-  let curPointIdx = 0;
-  let curSetH = 0, curSetA = 0; // счёт по сетам (кто сколько выиграл)
-  let curGamesH = 0, curGamesA = 0; // счёт по геймам в текущем сете
-  let curPointsH = 0, curPointsA = 0; // счёт очков в текущем гейме
-  let servingPlayer = 0; // кто подаёт в текущем гейме
-  let setScores = []; // массив [gamesH, gamesA] по завершённым сетам
+  const curPointsGlobal = Math.floor(posSec / TENNIS_POINT_SEC);
 
+  const completedSets = [];
+  let curSetIdx = 0, curGameIdx = 0;
+  let curGamesH = 0, curGamesA = 0;
+  let curPointsH = 0, curPointsA = 0;
+  let servingPlayer = 0;
+  let setScoresCountH = 0, setScoresCountA = 0;
   let found = false;
-  let serverInSet = 0; // первый подающий в сете (0 или 1)
 
   for(let s = 0; s < sc.sets.length; s++){
     const set = sc.sets[s];
-    const serverFirst = (s % 2 === 0) ? 0 : 1;
     let gh = 0, ga = 0;
     for(let g = 0; g < set.games.length; g++){
       const game = set.games[g];
-      const serverThisGame = game.server;
       const pointsCount = game.seq.length;
-      if(pointsSoFar + pointsCount <= Math.floor(posSec / TENNIS_POINT_SEC)){
-        // этот гейм завершён
+      if(pointsSoFar + pointsCount <= curPointsGlobal){
         pointsSoFar += pointsCount;
         if(game.winner === 0) gh++; else ga++;
         continue;
       }
-      // Текущий гейм
+      // Текущий гейм найден
       curSetIdx = s;
       curGameIdx = g;
       curGamesH = gh;
       curGamesA = ga;
-      servingPlayer = serverThisGame;
-      curSetH = 0; curSetA = 0;
+      servingPlayer = game.server;
       for(let prev = 0; prev < s; prev++){
-        if(sc.sets[prev].winner === 0) curSetH++; else curSetA++;
+        if(sc.sets[prev].winner === 0) setScoresCountH++;
+        else setScoresCountA++;
       }
-      // Внутри гейма
-      const elapsedPoints = Math.floor(posSec / TENNIS_POINT_SEC) - pointsSoFar;
+      const elapsed = curPointsGlobal - pointsSoFar;
       let ph = 0, pa = 0;
-      for(let p = 0; p < elapsedPoints && p < game.seq.length; p++){
+      for(let p = 0; p < elapsed && p < game.seq.length; p++){
         if(game.seq[p] === 0) ph++; else pa++;
       }
       curPointsH = ph;
       curPointsA = pa;
-      // Текущее очко для отображения
-      curPointIdx = elapsedPoints;
       found = true;
       break;
     }
     if(found) break;
-    // Сет завершён
-    setScores.push([set.gamesH, set.gamesA]);
-    pointsSoFar += set.games.reduce((acc, g) => acc + g.seq.length, 0);
+    completedSets.push([set.gamesH, set.gamesA]);
+    pointsSoFar += set.games.reduce((a, g) => a + g.seq.length, 0);
   }
 
   if(!found){
-    // По идее быть не должно, но fallback
+    // fallback — матч уже завершён по логике
     curSetIdx = sc.sets.length - 1;
   }
 
-  // Формат счёта в гейме: 0, 15, 30, 40, A (advantage)
-  function formatPoint(p, opp){
-    if(p >= 4 && p - opp >= 2) return 'Игра';
-    if(p === 3 && opp === 3) return '40';
-    if(p >= 4 && opp >= 4){
-      if(p - opp === 1) return 'A';
-      if(p - opp === 0) return '40';
-      return '40';
-    }
-    if(p === 0) return '0';
-    if(p === 1) return '15';
-    if(p === 2) return '30';
-    if(p === 3) return '40';
-    return '40';
-  }
-
-  // Строка счёта по сетам + текущий счёт по геймам
-  const completedSets = setScores.map(sc2 => sc2[0] + ':' + sc2[1]).join(', ');
+  const completedStr = completedSets.map(s => s[0] + ':' + s[1]).join(', ');
   const currentSetScore = curGamesH + ':' + curGamesA;
-  const fullScore = (completedSets ? completedSets + ', ' : '') + currentSetScore;
-
-  // Информация о сете
-  const totalSetsCount = sc.sets.length;
-  const curSetNumber = curSetIdx + 1;
+  const fullScore = (completedStr ? completedStr + ', ' : '') + currentSetScore;
 
   return {
     phase:'live', locked:false, live:true, isFinished:false, isWaiting:false,
     setIdx: curSetIdx, gameIdx: curGameIdx,
-    setsH: curSetH, setsA: curSetA,
+    setsH: setScoresCountH, setsA: setScoresCountA,
     gamesH: curGamesH, gamesA: curGamesA,
     pointsH: curPointsH, pointsA: curPointsA,
-    pointsHstr: formatPoint(curPointsH, curPointsA),
-    pointsAstr: formatPoint(curPointsA, curPointsH),
+    pointsHstr: tennisFormatPoint(curPointsH, curPointsA),
+    pointsAstr: tennisFormatPoint(curPointsA, curPointsH),
     serving: servingPlayer,
-    totalGamesPlayed: curGamesH + curGamesA + setScores.reduce((a, s) => a + s[0] + s[1], 0),
+    totalGamesPlayed: curGamesH + curGamesA + completedSets.reduce((a, s) => a + s[0] + s[1], 0),
     scoreStr: fullScore,
-    completedSets: setScores,
-    setNumber: curSetNumber,
-    timeStr: 'Сет ' + curSetNumber + ' • ' + (servingPlayer === 0 ? 'Подаёт: ' + match.home : 'Подаёт: ' + match.away) + ' • ' + formatPoint(curPointsH, curPointsA) + '-' + formatPoint(curPointsA, curPointsH),
+    completedSets: completedSets,
+    setNumber: curSetIdx + 1,
+    timeStr: 'Сет ' + (curSetIdx + 1) + ' • ' + (servingPlayer === 0 ? 'Подаёт: ' + match.home : 'Подаёт: ' + match.away) + ' • ' + tennisFormatPoint(curPointsH, curPointsA) + '-' + tennisFormatPoint(curPointsA, curPointsH),
     scenario: sc
   };
 }
 
 function tennisTotalGames(match){
-  const sc = match.scenario;
   let total = 0;
-  sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
+  match.scenario.sets.forEach(s => { total += s.gamesH + s.gamesA; });
   return total;
 }
 
 function tennisGamesInSet1(match){
-  const sc = match.scenario;
-  if(sc.sets.length === 0) return 0;
-  return sc.sets[0].gamesH + sc.sets[0].gamesA;
+  if(match.scenario.sets.length === 0) return 0;
+  return match.scenario.sets[0].gamesH + match.scenario.sets[0].gamesA;
 }
 
 function tennisGetOdds(match, st){
@@ -2750,34 +2682,19 @@ function tennisGetOdds(match, st){
   }
   if(!st.live) return [base[0], 0, base[2]];
 
-  const sc = match.scenario;
-  // Базовая вероятность победы в матче
   const p1Base = 1 / base[0];
   const p2Base = 1 / base[2];
-
-  // Прогресс матча
-  let totalPoints = 0;
-  sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
-  const done = Math.floor((Date.now() - Math.floor(Date.now()/300000)*300000) / 1000 / TENNIS_POINT_SEC);
-  const progress = Math.min(done / totalPoints, 1);
-
-  // Текущий счёт по сетам и геймам
   const setsLead = st.setsH - st.setsA;
   const gamesLead = st.gamesH - st.gamesA;
   const pointsLead = st.pointsH - st.pointsA;
 
-  // Определяем кто впереди
   let lead = 0;
-  if(setsLead > 0) lead += setsLead * 0.5;
-  else if(setsLead < 0) lead += setsLead * 0.5;
-  if(gamesLead > 0) lead += gamesLead * 0.08;
-  else if(gamesLead < 0) lead += gamesLead * 0.08;
-  if(pointsLead > 0) lead += pointsLead * 0.03;
-  else if(pointsLead < 0) lead += pointsLead * 0.03;
+  lead += setsLead * 0.5;
+  lead += gamesLead * 0.08;
+  lead += pointsLead * 0.03;
 
-  // Пересчёт вероятностей
-  let pH = p1Base * (1 + lead * 0.8 * (0.5 + progress));
-  let pA = p2Base * (1 - lead * 0.8 * (0.5 + progress));
+  let pH = p1Base * (1 + lead * 0.8);
+  let pA = p2Base * (1 - lead * 0.8);
   pH = Math.max(0.02, Math.min(0.98, pH));
   pA = Math.max(0.02, Math.min(0.98, pA));
   const sum = pH + pA;
@@ -2795,17 +2712,14 @@ function tennisGetTotalOdds(match, st, line){
     if(total < line) return [99.00, 1.01];
     return [1.01, 1.01];
   }
-  // Текущее количество геймов + ожидаемое оставшееся
   const curGames = st.totalGamesPlayed || 0;
   const remaining = Math.max(0, total - curGames);
   const expected = curGames + remaining * 0.5;
-  // Простая формула — если expected > line — больше
   let pOver;
   if(expected > line + 2) pOver = 0.85;
   else if(expected > line) pOver = 0.65;
   else if(expected < line - 2) pOver = 0.15;
   else pOver = 0.45;
-  // Корректируем по прогрессу
   const oOver = Math.max(1.10, Math.min(10, Math.round((1/pOver)*100)/100));
   const oUnder = Math.max(1.10, Math.min(10, Math.round((1/(1-pOver))*100)/100));
   return [oOver, oUnder];
@@ -2814,16 +2728,14 @@ function tennisGetTotalOdds(match, st, line){
 function tennisGetSet1WinnerOdds(match, st){
   const base = match.baseOdds;
   if(st.locked){
-    if(match.scenario.sets[0] && match.scenario.sets[0].winner === 0) return [1.01, 50.00];
-    return [50.00, 1.01];
-  }
-  if(!st.live) return [base[0], base[2]];
-  // Если 1-й сет уже завершён
-  if(st.setIdx > 0 || st.completedSets.length >= 1){
     const w = match.scenario.sets[0].winner;
     return w === 0 ? [1.01, 50.00] : [50.00, 1.01];
   }
-  // 1-й сет идёт — упрощённо как общий кэф
+  if(!st.live) return [base[0], base[2]];
+  if(st.completedSets.length >= 1){
+    const w = match.scenario.sets[0].winner;
+    return w === 0 ? [1.01, 50.00] : [50.00, 1.01];
+  }
   const o = tennisGetOdds(match, st);
   return [o[0], o[2]];
 }
@@ -2831,18 +2743,12 @@ function tennisGetSet1WinnerOdds(match, st){
 function tennisGetCurrentGameOdds(match, st){
   if(st.locked) return [50.00, 50.00];
   if(!st.live) return [1.90, 1.90];
-  // Подающий чуть выше
   const serving = st.serving;
-  // Кто ближе к победе в гейме
   const lead = st.pointsH - st.pointsA;
-  let pH, pA;
-  // Начальная 50/50 с бонусом подающему
   let baseH = 0.5, baseA = 0.5;
   if(serving === 0){ baseH = 0.62; baseA = 0.38; }
   else { baseH = 0.38; baseA = 0.62; }
-  // Корректировка по очкам
-  if(lead > 0){ baseH += lead * 0.10; baseA -= lead * 0.10; }
-  else if(lead < 0){ baseH += lead * 0.10; baseA -= lead * 0.10; }
+  if(lead !== 0){ baseH += lead * 0.10; baseA -= lead * 0.10; }
   baseH = Math.max(0.05, Math.min(0.95, baseH));
   baseA = Math.max(0.05, Math.min(0.95, baseA));
   const sum = baseH + baseA;
@@ -2853,9 +2759,9 @@ function tennisGetCurrentGameOdds(match, st){
 function tennisAvatar(player, size){
   size = size || 44;
   const parts = player.name.split(' ');
-  const initials = (parts[0] ? parts[0][0] : '?') + (parts[1] ? parts[1][0] : '');
+  const initials = ((parts[0] ? parts[0][0] : '?') + (parts[1] ? parts[1][0] : '')).toUpperCase();
   const color = player.color || '#ffcc00';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;flex-shrink:0;">'+initials.toUpperCase()+'</div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;flex-shrink:0;">'+initials+'</div>';
 }
 
 function tennisFindPlayer(name){
@@ -2874,7 +2780,6 @@ function tennisRenderCard(match){
 
   let score1 = '', score2 = '';
   if(st.live || st.isFinished){
-    // счёт по сетам/геймам
     const setsDone = st.completedSets || [];
     let dispH = '', dispA = '';
     if(setsDone.length > 0){
@@ -2896,17 +2801,10 @@ function tennisRenderCard(match){
       + '</div>';
   } else if(st.phase === 'result'){
     const winnerName = st.winner === 0 ? match.home : match.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:14px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div>'
-      + '<div style="font-size:11px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div>'
-      + '</div>';
+    body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:14px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div><div style="font-size:11px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div></div>';
   } else {
     const winnerName = st.winner === 0 ? match.home : match.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:13px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div>'
-      + '<div style="font-size:10px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div>'
-      + '<div style="font-size:10px;color:var(--text-dim);margin-top:6px;">⏸ Новый матч через ' + formatTimeLeft(st.waitLeft) + '</div>'
-      + '</div>';
+    body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:13px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div><div style="font-size:10px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div><div style="font-size:10px;color:var(--text-dim);margin-top:6px;">⏸ Новый матч через ' + formatTimeLeft(st.waitLeft) + '</div></div>';
   }
 
   const odd1 = updateOddArrow('t_'+match.id+'_0', odds[0]);
@@ -3013,13 +2911,11 @@ function tennisRenderSpreadBody(){
 
   let html = '';
 
-  // ИСХОД
   html += '<div class="market-section"><div class="market-title">Исход матча</div><div class="market-row">';
   html += tennisMarketBtn(match.home, odds[0], matchId, 0, 'П1', 'Исход', 'tennis_main_0', locked);
   html += tennisMarketBtn(match.away, odds[2], matchId, 1, 'П2', 'Исход', 'tennis_main_1', locked);
   html += '</div></div>';
 
-  // ТОТАЛ ГЕЙМОВ (МАТЧ)
   html += '<div class="market-section"><div class="market-title">Тотал геймов (матч)</div>';
   const totalLines = [18.5, 20.5, 22.5];
   let anyTotal = false;
@@ -3036,18 +2932,16 @@ function tennisRenderSpreadBody(){
   if(!anyTotal) html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Ставки закрыты</div>';
   html += '</div>';
 
-  // ТОТАЛ ГЕЙМОВ 1-ГО СЕТА
   html += '<div class="market-section"><div class="market-title">Тотал геймов 1-го сета</div>';
   const set1Lines = [9.5, 10.5, 11.5];
-  const set1Done = st.setIdx > 0 || (st.completedSets && st.completedSets.length >= 1) || st.isFinished;
+  const set1Done = st.completedSets && st.completedSets.length >= 1;
   if(set1Done){
     html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">1-й сет завершён</div>';
   } else if(st.locked){
     html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Ставки закрыты</div>';
   } else {
-    const games1 = tennisGamesInSet1(match);
+    const games1 = st.live ? (st.setIdx === 0 ? st.gamesH + st.gamesA : 0) : 0;
     set1Lines.forEach(function(line){
-      // Если уже больше line — «Б» выиграл, «М» проиграл, но ставим фиктивный кэф
       let oOver, oUnder;
       if(games1 > line){ oOver = 1.01; oUnder = 99.00; }
       else {
@@ -3066,7 +2960,6 @@ function tennisRenderSpreadBody(){
   }
   html += '</div>';
 
-  // ТЕКУЩИЙ ГЕЙМ
   if(st.live){
     const curGameNum = (st.completedSets||[]).reduce((a,s)=>a+s[0]+s[1],0) + st.gamesH + st.gamesA + 1;
     const gameOdds = tennisGetCurrentGameOdds(match, st);
@@ -3074,12 +2967,9 @@ function tennisRenderSpreadBody(){
     html += tennisMarketBtn('П1', gameOdds[0], matchId, 0, 'Гейм П1', 'Гейм', 'tennis_game_0_' + curGameNum, locked);
     html += tennisMarketBtn('П2', gameOdds[1], matchId, 1, 'Гейм П2', 'Гейм', 'tennis_game_1_' + curGameNum, locked);
     html += '</div></div>';
-  } else if(st.isFinished){
-    html += '<div class="market-section"><div class="market-title">Текущий гейм</div><div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Матч завершён</div></div>';
   }
 
-  // 1-Й СЕТ
-  if(!set1Done && !st.locked){
+  if(!set1Done && !st.locked && st.live){
     const s1o = tennisGetSet1WinnerOdds(match, st);
     html += '<div class="market-section"><div class="market-title">1-й сет</div><div class="market-row">';
     html += tennisMarketBtn(match.home, s1o[0], matchId, 0, 'Сет 1 ' + match.home, 'Сет 1', 'tennis_set1_0', locked);
@@ -3095,7 +2985,7 @@ function tennisRenderSpreadBody(){
 }
 
 function tennisSettleBets(){
-  const epoch = Math.floor(Date.now() / 300000);
+  const epoch = Math.floor(Date.now() / 420000);
   betHistory.forEach(function(bet){
     if(bet.status !== 'pending') return;
     let hasTennis = false;
@@ -3118,38 +3008,31 @@ function tennisSettleBets(){
         const line = parseFloat(mk.replace('tennis_total_over_',''));
         let total = 0;
         sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
-        if(total > line) won = true;
-        else if(total === line) isRet = true;
+        if(total > line) won = true; else if(total === line) isRet = true;
       }
       else if(mk.indexOf('tennis_total_under_') === 0){
         const line = parseFloat(mk.replace('tennis_total_under_',''));
         let total = 0;
         sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
-        if(total < line) won = true;
-        else if(total === line) isRet = true;
+        if(total < line) won = true; else if(total === line) isRet = true;
       }
       else if(mk.indexOf('tennis_set1_total_over_') === 0){
         const line = parseFloat(mk.replace('tennis_set1_total_over_',''));
         const g1 = sc.sets[0].gamesH + sc.sets[0].gamesA;
-        if(g1 > line) won = true;
-        else if(g1 === line) isRet = true;
+        if(g1 > line) won = true; else if(g1 === line) isRet = true;
       }
       else if(mk.indexOf('tennis_set1_total_under_') === 0){
         const line = parseFloat(mk.replace('tennis_set1_total_under_',''));
         const g1 = sc.sets[0].gamesH + sc.sets[0].gamesA;
-        if(g1 < line) won = true;
-        else if(g1 === line) isRet = true;
+        if(g1 < line) won = true; else if(g1 === line) isRet = true;
       }
       else if(mk === 'tennis_set1_0'){ won = (sc.sets[0].winner === 0); }
       else if(mk === 'tennis_set1_1'){ won = (sc.sets[0].winner === 1); }
       else if(mk.indexOf('tennis_game_') === 0){
-        // кто выиграл конкретный гейм
         const parts = mk.replace('tennis_game_','').split('_');
         const side = parseInt(parts[0]);
         const gameNum = parseInt(parts[1]);
-        // Найдём этот гейм
-        let counter = 0;
-        let gameWinner = null;
+        let counter = 0, gameWinner = null;
         for(const set of sc.sets){
           for(const g of set.games){
             counter++;
@@ -3187,7 +3070,6 @@ function tennisTick(){
     tennisRenderSpreadBody();
   }
 }
-
 // ==========================================
 // ============ 🎮 ИГРЫ МОДУЛЬ ============
 // ==========================================
