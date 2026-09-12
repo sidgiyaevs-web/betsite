@@ -2377,33 +2377,33 @@ function hockeyTick(){
 // ============ 🎾 ТЕННИС МОДУЛЬ ============
 // ==========================================
 
+// Коды игроков для ATP Tour CDN (официальные фото)
 const TENNIS_PLAYERS = [
-  {name:'Новак Джокович', rank:20, color:'#1976d2'},
-  {name:'Карлос Алькарас', rank:19, color:'#d32f2f'},
-  {name:'Янник Синнер', rank:18, color:'#388e3c'},
-  {name:'Даниил Медведев', rank:17, color:'#f57c00'},
-  {name:'Александр Зверев', rank:16, color:'#7b1fa2'},
-  {name:'Хольгер Руне', rank:15, color:'#0097a7'},
-  {name:'Стефанос Циципас', rank:14, color:'#c2185b'},
-  {name:'Каспер Рууд', rank:13, color:'#1976d2'},
-  {name:'Тейлор Фритц', rank:12, color:'#d32f2f'},
-  {name:'Томми Пол', rank:11, color:'#388e3c'},
-  {name:'Григор Димитров', rank:10, color:'#f57c00'},
-  {name:'Бен Шелтон', rank:9, color:'#7b1fa2'},
-  {name:'Джек Дрейпер', rank:8, color:'#0097a7'},
-  {name:'Хуберт Хуркач', rank:7, color:'#c2185b'},
-  {name:'Себастьян Баэс', rank:6, color:'#1976d2'},
-  {name:'Флавио Коболли', rank:5, color:'#d32f2f'},
-  {name:'Иржи Лехечка', rank:4, color:'#388e3c'},
-  {name:'Лоренцо Музетти', rank:3, color:'#f57c00'},
-  {name:'Франсис Тьен', rank:2, color:'#7b1fa2'},
-  {name:'Алекс де Минор', rank:1, color:'#0097a7'}
+  {name:'Новак Джокович', rank:20, color:'#1976d2', code:'D643'},
+  {name:'Карлос Алькарас', rank:19, color:'#d32f2f', code:'A0E2'},
+  {name:'Янник Синнер', rank:18, color:'#388e3c', code:'S0AG'},
+  {name:'Даниил Медведев', rank:17, color:'#f57c00', code:'MM58'},
+  {name:'Александр Зверев', rank:16, color:'#7b1fa2', code:'Z355'},
+  {name:'Хольгер Руне', rank:15, color:'#0097a7', code:'R0DG'},
+  {name:'Стефанос Циципас', rank:14, color:'#c2185b', code:'TC61'},
+  {name:'Каспер Рууд', rank:13, color:'#1976d2', code:'RH16'},
+  {name:'Тейлор Фритц', rank:12, color:'#d32f2f', code:'FB98'},
+  {name:'Томми Пол', rank:11, color:'#388e3c', code:'PL56'},
+  {name:'Григор Димитров', rank:10, color:'#f57c00', code:'D875'},
+  {name:'Бен Шелтон', rank:9, color:'#7b1fa2', code:'S0S1'},
+  {name:'Джек Дрейпер', rank:8, color:'#0097a7', code:'D0D0'},
+  {name:'Хуберт Хуркач', rank:7, color:'#c2185b', code:'HB71'},
+  {name:'Себастьян Баэс', rank:6, color:'#1976d2', code:'BK92'},
+  {name:'Флавио Коболли', rank:5, color:'#d32f2f', code:'C0E5'},
+  {name:'Иржи Лехечка', rank:4, color:'#388e3c', code:'L0A2'},
+  {name:'Лоренцо Музетти', rank:3, color:'#f57c00', code:'M0CQ'},
+  {name:'Франсис Тьен', rank:2, color:'#7b1fa2', code:'TD51'},
+  {name:'Алекс де Минор', rank:1, color:'#0097a7', code:'D0F1'}
 ];
 
-const TENNIS_MATCH_SEC = 360;
+const TENNIS_MATCH_SEC = 330;
 const TENNIS_AFTER_SEC = 30;
-const TENNIS_CYCLE = 420;
-const TENNIS_POINT_SEC = 3;
+const TENNIS_CYCLE = 360;
 const TENNIS_MAX_SETS = 2;
 
 let TENNIS_CACHE = [], TENNIS_EPOCH = -1;
@@ -2430,39 +2430,29 @@ function tennisGenerateMatch(epoch){
   let setsH = 0, setsA = 0;
 
   for(let setIdx = 0; setIdx < TENNIS_MAX_SETS; setIdx++){
-    // Определяем победителя сета
     let setWinner;
-    if(winnerOverall === 0){
-      setWinner = (setIdx === 0) ? (tennisSeed(epoch * 13 + 1) < 0.65 ? 0 : 1) : (setsH === 0 ? 0 : 1);
-    } else {
-      setWinner = (setIdx === 0) ? (tennisSeed(epoch * 13 + 1) < 0.65 ? 1 : 0) : (setsA === 0 ? 1 : 0);
-    }
-    // Если первый сет выиграл не фаворит — второй выигрывает фаворит (чтобы матч шёл 2 сета)
-    if(setIdx === 1){
-      setWinner = winnerOverall;
+    if(setIdx === 1){ setWinner = winnerOverall; }
+    else {
+      if(winnerOverall === 0){ setWinner = tennisSeed(epoch * 13 + 1) < 0.65 ? 0 : 1; }
+      else { setWinner = tennisSeed(epoch * 13 + 1) < 0.65 ? 1 : 0; }
     }
 
-    // Счёт по геймам
     const gamesR = tennisSeed(epoch * 19 + setIdx * 23);
     let loserGames = Math.floor(gamesR * 5);
     let gH, gA;
     if(setWinner === 0){ gH = 6; gA = loserGames; }
     else { gA = 6; gH = loserGames; }
     if(tennisSeed(epoch * 23 + setIdx * 29) > 0.85){
-      if(setWinner === 0){ gH = 7; gA = 5; }
-      else { gA = 7; gH = 5; }
+      if(setWinner === 0){ gH = 7; gA = 5; } else { gA = 7; gH = 5; }
     }
 
     const totalGamesInSet = gH + gA;
     const games = [];
-    // Подача первого гейма: в 1-м сете подаёт P1, во 2-м — P2
     let server = (setIdx % 2 === 0) ? 0 : 1;
     let curH = 0, curA = 0;
 
     for(let g = 0; g < totalGamesInSet; g++){
       if(curH >= gH || curA >= gA) break;
-
-      // Победитель гейма
       let gameWinner;
       if(curH === gH - 1 && curA < gA){ gameWinner = 0; }
       else if(curA === gA - 1 && curH < gH){ gameWinner = 1; }
@@ -2473,8 +2463,6 @@ function tennisGenerateMatch(epoch){
         if(setWinner === 0 && curH >= gH - 1 && curA < gA) gameWinner = 0;
         if(setWinner === 1 && curA >= gA - 1 && curH < gH) gameWinner = 1;
       }
-
-      // Очки в гейме — играем до 4+ с разницей 2
       const seq = [];
       let pw = 0, pl = 0;
       const pWinnerWins = (gameWinner === server) ? 0.65 : 0.55;
@@ -2488,15 +2476,12 @@ function tennisGenerateMatch(epoch){
         if(winnerOfPoint === gameWinner) pw++; else pl++;
         seq.push(winnerOfPoint);
       }
-      // Добиваем до победы
       while(pw < 4 || (pw - pl) < 2){
         pw++;
         seq.push(gameWinner);
       }
-
       games.push({winner: gameWinner, server: server, seq: seq});
       if(gameWinner === 0) curH++; else curA++;
-      // ПОДАЧА ПЕРЕХОДИТ К ДРУГОМУ ИГРОКУ
       server = 1 - server;
     }
 
@@ -2512,6 +2497,7 @@ function tennisGenerateMatch(epoch){
     home: p1.name, away: p2.name,
     homeRank: p1.rank, awayRank: p2.rank,
     homeColor: p1.color, awayColor: p2.color,
+    homeCode: p1.code, awayCode: p2.code,
     baseOdds: [o1, 0, o2],
     isTennis: true,
     epoch: epoch,
@@ -2520,7 +2506,7 @@ function tennisGenerateMatch(epoch){
 }
 
 function tennisGetMatch(){
-  const epoch = Math.floor(Date.now() / 420000);
+  const epoch = Math.floor(Date.now() / 360000);
   if(!window.TENNIS_CACHE || window.TENNIS_CACHE.epoch !== epoch){
     window.TENNIS_CACHE = { epoch: epoch, match: tennisGenerateMatch(epoch) };
   }
@@ -2550,18 +2536,17 @@ function tennisFormatPoint(p, opp){
 function tennisGetMatchState(match){
   if(!match) return {locked:true};
   const nowMs = Date.now();
-  const epoch = Math.floor(nowMs / 420000);
-  const posMs = nowMs - epoch * 420000;
+  const epoch = Math.floor(nowMs / 360000);
+  const posMs = nowMs - epoch * 360000;
   const posSec = posMs / 1000;
 
   const sc = match.scenario;
 
-  // Общее количество очков в матче
   let totalPoints = 0;
   sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
-  const totalMatchSec = totalPoints * TENNIS_POINT_SEC;
+  const pointSec = TENNIS_MATCH_SEC / Math.max(1, totalPoints);
+  const totalMatchSec = TENNIS_MATCH_SEC;
 
-  // Фаза результата
   if(posSec >= totalMatchSec){
     if(posSec < totalMatchSec + TENNIS_AFTER_SEC){
       const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
@@ -2587,9 +2572,8 @@ function tennisGetMatchState(match){
     };
   }
 
-  // Лайв — находим текущее состояние
   let pointsSoFar = 0;
-  const curPointsGlobal = Math.floor(posSec / TENNIS_POINT_SEC);
+  const curPointsGlobal = Math.floor(posSec / pointSec);
 
   const completedSets = [];
   let curSetIdx = 0, curGameIdx = 0;
@@ -2610,15 +2594,13 @@ function tennisGetMatchState(match){
         if(game.winner === 0) gh++; else ga++;
         continue;
       }
-      // Текущий гейм найден
       curSetIdx = s;
       curGameIdx = g;
       curGamesH = gh;
       curGamesA = ga;
       servingPlayer = game.server;
       for(let prev = 0; prev < s; prev++){
-        if(sc.sets[prev].winner === 0) setScoresCountH++;
-        else setScoresCountA++;
+        if(sc.sets[prev].winner === 0) setScoresCountH++; else setScoresCountA++;
       }
       const elapsed = curPointsGlobal - pointsSoFar;
       let ph = 0, pa = 0;
@@ -2636,7 +2618,6 @@ function tennisGetMatchState(match){
   }
 
   if(!found){
-    // fallback — матч уже завершён по логике
     curSetIdx = sc.sets.length - 1;
   }
 
@@ -2666,11 +2647,6 @@ function tennisTotalGames(match){
   let total = 0;
   match.scenario.sets.forEach(s => { total += s.gamesH + s.gamesA; });
   return total;
-}
-
-function tennisGamesInSet1(match){
-  if(match.scenario.sets.length === 0) return 0;
-  return match.scenario.sets[0].gamesH + match.scenario.sets[0].gamesA;
 }
 
 function tennisGetOdds(match, st){
@@ -2756,22 +2732,24 @@ function tennisGetCurrentGameOdds(match, st){
   return [Math.max(1.05, Math.round((1/baseH)*100)/100), Math.max(1.05, Math.round((1/baseA)*100)/100)];
 }
 
-function tennisAvatar(player, size){
+function tennisAvatar(name, code, color, size){
   size = size || 44;
-  const parts = player.name.split(' ');
+  const parts = name.split(' ');
   const initials = ((parts[0] ? parts[0][0] : '?') + (parts[1] ? parts[1][0] : '')).toUpperCase();
-  const color = player.color || '#ffcc00';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;flex-shrink:0;">'+initials+'</div>';
+  color = color || '#ffcc00';
+  const photoUrl = 'https://www.atptour.com/-/media/alias/player-headshot/' + code;
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';flex-shrink:0;display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;overflow:hidden;position:relative;">'
+    + '<img src="'+photoUrl+'" alt="'+initials+'" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;" onerror="this.style.display=\'none\';">'
+    + initials
+    + '</div>';
 }
 
 function tennisFindPlayer(name){
-  return TENNIS_PLAYERS.find(p => p.name === name) || {name:name, color:'#555'};
+  return TENNIS_PLAYERS.find(p => p.name === name) || {name:name, color:'#555', code:''};
 }
 
 function tennisRenderCard(match){
   const st = tennisGetMatchState(match);
-  const p1 = tennisFindPlayer(match.home);
-  const p2 = tennisFindPlayer(match.away);
   const odds = tennisGetOdds(match, st);
 
   const liveBadge = st.live ? '<span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔴 LIVE</span>' : '';
@@ -2786,19 +2764,14 @@ function tennisRenderCard(match){
       dispH = setsDone.map(s => s[0]).join(' ');
       dispA = setsDone.map(s => s[1]).join(' ');
     }
-    if(st.live){
-      dispH += ' ' + st.gamesH;
-      dispA += ' ' + st.gamesA;
-    }
+    if(st.live){ dispH += ' ' + st.gamesH; dispA += ' ' + st.gamesA; }
     score1 = '<div style="font-size:16px;font-weight:900;color:var(--accent);font-family:monospace;">'+dispH+'</div>';
     score2 = '<div style="font-size:16px;font-weight:900;color:var(--accent);font-family:monospace;">'+dispA+'</div>';
   }
 
   let body = '';
   if(st.live){
-    body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:11px;color:var(--text-dim);">'
-      + '<span style="font-weight:800;color:var(--accent);">' + st.timeStr + '</span>'
-      + '</div>';
+    body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:11px;color:var(--text-dim);"><span style="font-weight:800;color:var(--accent);">' + st.timeStr + '</span></div>';
   } else if(st.phase === 'result'){
     const winnerName = st.winner === 0 ? match.home : match.away;
     body = '<div style="text-align:center;padding:8px 0;"><div style="font-size:14px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div><div style="font-size:11px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div></div>';
@@ -2821,12 +2794,12 @@ function tennisRenderCard(match){
   return '<div class="match" onclick="tennisOpenSpread(' + match.id + ')" style="cursor:pointer;">'
     + '<div class="match-header"><span class="league">' + match.league + '</span><span class="time">' + liveBadge + doneBadge + lockBadge + '</span></div>'
     + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'
-    + tennisAvatar(p1, 40)
+    + tennisAvatar(match.home, match.homeCode, match.homeColor, 40)
     + '<div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--text);">' + servingIndicator1 + match.home + '</div></div>'
     + score1
     + '</div>'
     + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
-    + tennisAvatar(p2, 40)
+    + tennisAvatar(match.away, match.awayCode, match.awayColor, 40)
     + '<div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--text);">' + servingIndicator2 + match.away + '</div></div>'
     + score2
     + '</div>'
@@ -2910,7 +2883,6 @@ function tennisRenderSpreadBody(){
   const odds = tennisGetOdds(match, st);
 
   let html = '';
-
   html += '<div class="market-section"><div class="market-title">Исход матча</div><div class="market-row">';
   html += tennisMarketBtn(match.home, odds[0], matchId, 0, 'П1', 'Исход', 'tennis_main_0', locked);
   html += tennisMarketBtn(match.away, odds[2], matchId, 1, 'П2', 'Исход', 'tennis_main_1', locked);
@@ -2985,7 +2957,7 @@ function tennisRenderSpreadBody(){
 }
 
 function tennisSettleBets(){
-  const epoch = Math.floor(Date.now() / 420000);
+  const epoch = Math.floor(Date.now() / 360000);
   betHistory.forEach(function(bet){
     if(bet.status !== 'pending') return;
     let hasTennis = false;
