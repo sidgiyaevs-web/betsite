@@ -4952,6 +4952,579 @@ init();
    ------------------------------------------------------------ */
 console.log('%cLIVEZONE v1.0', 'color:#d4af5c;font-size:16px;font-weight:900;');
 console.log('Симулятор запущен. 5 реальных минут = 90 игровых.');
+/* ============================================================
+   LIVEZONE — ЧАСТЬ 4
+   ФИКС: рынки сразу · 2D-визуализации для ВСЕХ спортов
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1) ФОРС-РЕНДЕР РЫНКОВ при открытии вкладки «Котировки»
+   ------------------------------------------------------------ */
+const _origSetMccTab = setMccTab;
+setMccTab = function(tab){
+  _origSetMccTab(tab);
+  // Жёсткий форс рендера рынков
+  if(tab === 'markets'){
+    setTimeout(() => {
+      renderMarkets();
+      // Гарантируем что контейнер не пустой
+      const box = document.getElementById('marketsContainer');
+      const m = currentMatch();
+      if(box && m && box.children.length === 0){
+        box.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);">Загрузка рынков...</div>';
+        renderMarkets();
+      }
+    }, 50);
+  }
+};
+
+// Также вызываем renderMarkets сразу при открытии матча
+const _origOpenMatchCenter = openMatchCenter;
+openMatchCenter = function(id){
+  _origOpenMatchCenter(id);
+  setTimeout(renderMarkets, 100);
+};
+
+/* ------------------------------------------------------------
+   2) УНИВЕРСАЛЬНАЯ 2D-СЦЕНА ДЛЯ ВСЕХ СПОРТОВ
+   ------------------------------------------------------------ */
+// Расширяем структуру Match: разные позиции для каждого спорта
+const SPORT_SCENES = {
+  football:   { w:1050, h:680, bg:'#0f2a1a' },
+  basketball: { w:1050, h:600, bg:'#3a2a1a' },
+  hockey:     { w:1050, h:600, bg:'#1a2a3a' },
+  tennis:     { w:1050, h:600, bg:'#1a3a2a' },
+  volleyball: { w:1050, h:600, bg:'#2a2a3a' },
+  cyber:      { w:1050, h:600, bg:'#1a1a2a' },
+};
+
+// Строим SVG-сцену в зависимости от спорта
+function buildSceneSVG(sport){
+  const scene = SPORT_SCENES[sport] || SPORT_SCENES.football;
+  const w = scene.w, h = scene.h;
+
+  // Универсальные обёртки
+  const wrap = (inner) => `<svg class="pitch-svg" id="pitchSvg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <radialGradient id="grassGrad" cx="50%" cy="50%" r="75%">
+        <stop offset="0%" stop-color="${shadeColor(scene.bg, 20)}"/>
+        <stop offset="100%" stop-color="${scene.bg}"/>
+      </radialGradient>
+    </defs>
+    <rect x="0" y="0" width="${w}" height="${h}" fill="url(#grassGrad)"/>
+    ${inner}
+    <g id="pitchPlayers"></g>
+    <g id="pitchBall" style="display:none;">
+      <circle r="7" fill="#ffffff" stroke="#0a0f0a" stroke-width="1.2"/>
+      <circle r="3" fill="#0a0f0a" opacity="0.5"/>
+    </g>
+    <g id="pitchAttackIndicator" opacity="0" style="pointer-events:none;">
+      <circle r="40" fill="none" stroke="#d4af5c" stroke-width="2" stroke-dasharray="4 4">
+        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    <g id="pitchOffside" opacity="0">
+      <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#d4af5c" stroke-width="2" stroke-dasharray="8 6"/>
+    </g>
+    <g id="pitchShots"></g>
+  </svg>`;
+  
+  if(sport === 'football'){
+    return wrap(`
+      <g stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" fill="none">
+        <rect x="30" y="30" width="${w-60}" height="${h-60}" rx="2"/>
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}"/>
+        <circle cx="${w/2}" cy="${h/2}" r="80"/>
+        <circle cx="${w/2}" cy="${h/2}" r="3" fill="#ffffff" fill-opacity="0.35" stroke="none"/>
+        <rect x="30" y="${h/2-170}" width="140" height="340"/>
+        <rect x="${w-170}" y="${h/2-170}" width="140" height="340"/>
+        <rect x="30" y="${h/2-80}" width="55" height="160"/>
+        <rect x="${w-85}" y="${h/2-80}" width="55" height="160"/>
+        <rect x="18" y="${h/2-50}" width="14" height="100" stroke-width="2.5"/>
+        <rect x="${w-32}" y="${h/2-50}" width="14" height="100" stroke-width="2.5"/>
+        <circle cx="140" cy="${h/2}" r="3" fill="#ffffff" fill-opacity="0.35" stroke="none"/>
+        <circle cx="${w-140}" cy="${h/2}" r="3" fill="#ffffff" fill-opacity="0.35" stroke="none"/>
+      </g>
+    `);
+  }
+  
+  if(sport === 'basketball'){
+    return wrap(`
+      <g stroke="#ffffff" stroke-opacity="0.4" stroke-width="2" fill="none">
+        <rect x="30" y="30" width="${w-60}" height="${h-60}"/>
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}"/>
+        <circle cx="${w/2}" cy="${h/2}" r="70"/>
+        <!-- 3-очковые дуги -->
+        <path d="M 30 ${h/2-180} A 180 180 0 0 1 30 ${h/2+180}" />
+        <path d="M ${w-30} ${h/2-180} A 180 180 0 0 0 ${w-30} ${h/2+180}" />
+        <!-- штрафные -->
+        <rect x="30" y="${h/2-110}" width="160" height="220"/>
+        <rect x="${w-190}" y="${h/2-110}" width="160" height="220"/>
+        <circle cx="190" cy="${h/2}" r="60"/>
+        <circle cx="${w-190}" cy="${h/2}" r="60"/>
+        <circle cx="190" cy="${h/2}" r="3" fill="#ffffff" fill-opacity="0.5" stroke="none"/>
+        <circle cx="${w-190}" cy="${h/2}" r="3" fill="#ffffff" fill-opacity="0.5" stroke="none"/>
+        <!-- щиты -->
+        <rect x="22" y="${h/2-40}" width="8" height="80" stroke-width="3"/>
+        <rect x="${w-30}" y="${h/2-40}" width="8" height="80" stroke-width="3"/>
+        <!-- кольца -->
+        <circle cx="42" cy="${h/2}" r="6" stroke="#ff8c42" stroke-width="2.5"/>
+        <circle cx="${w-42}" cy="${h/2}" r="6" stroke="#ff8c42" stroke-width="2.5"/>
+      </g>
+    `);
+  }
+  
+  if(sport === 'hockey'){
+    return wrap(`
+      <g stroke="#ffffff" stroke-opacity="0.4" stroke-width="2" fill="none">
+        <rect x="30" y="30" width="${w-60}" height="${h-60}" rx="60"/>
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#e04a56" stroke-opacity="0.5"/>
+        <circle cx="${w/2}" cy="${h/2}" r="70"/>
+        <circle cx="${w/2}" cy="${h/2}" r="4" fill="#5c94dd" stroke="none"/>
+        <!-- синие линии -->
+        <line x1="${w*0.35}" y1="30" x2="${w*0.35}" y2="${h-30}" stroke="#5c94dd" stroke-width="3" stroke-opacity="0.6"/>
+        <line x1="${w*0.65}" y1="30" x2="${w*0.65}" y2="${h-30}" stroke="#5c94dd" stroke-width="3" stroke-opacity="0.6"/>
+        <!-- зоны ворот -->
+        <path d="M 30 ${h/2-80} A 80 80 0 0 1 30 ${h/2+80}"/>
+        <path d="M ${w-30} ${h/2-80} A 80 80 0 0 0 ${w-30} ${h/2+80}"/>
+        <!-- ворота -->
+        <rect x="18" y="${h/2-50}" width="14" height="100" stroke="#e04a56" stroke-width="3"/>
+        <rect x="${w-32}" y="${h/2-50}" width="14" height="100" stroke="#e04a56" stroke-width="3"/>
+      </g>
+    `);
+  }
+  
+  if(sport === 'tennis'){
+    return wrap(`
+      <g stroke="#ffffff" stroke-opacity="0.4" stroke-width="2" fill="none">
+        <rect x="80" y="30" width="${w-160}" height="${h-60}"/>
+        <!-- сетка -->
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#ffffff" stroke-opacity="0.7" stroke-width="3"/>
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#0a0f0a" stroke-width="1" stroke-dasharray="3 3"/>
+        <!-- коридоры -->
+        <line x1="80" y1="110" x2="${w-80}" y2="110" stroke-opacity="0.25"/>
+        <line x1="80" y1="${h-110}" x2="${w-80}" y2="${h-110}" stroke-opacity="0.25"/>
+        <!-- линии подачи -->
+        <line x1="210" y1="110" x2="210" y2="${h-110}" stroke-opacity="0.5"/>
+        <line x1="${w-210}" y1="110" x2="${w-210}" y2="${h-110}" stroke-opacity="0.5"/>
+        <!-- центральная -->
+        <line x1="${w/2}" y1="110" x2="${w/2}" y2="${h-110}" stroke-opacity="0.5"/>
+        <!-- метки -->
+        <circle cx="210" cy="${h/2}" r="2" fill="#fff" fill-opacity="0.5" stroke="none"/>
+        <circle cx="${w-210}" cy="${h/2}" r="2" fill="#fff" fill-opacity="0.5" stroke="none"/>
+      </g>
+    `);
+  }
+  
+  if(sport === 'volleyball'){
+    return wrap(`
+      <g stroke="#ffffff" stroke-opacity="0.4" stroke-width="2" fill="none">
+        <rect x="80" y="30" width="${w-160}" height="${h-60}"/>
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#ff8c42" stroke-width="2.5"/>
+        <!-- атаковая линия -->
+        <line x1="260" y1="30" x2="260" y2="${h-30}" stroke-opacity="0.35"/>
+        <line x1="${w-260}" y1="30" x2="${w-260}" y2="${h-30}" stroke-opacity="0.35"/>
+        <!-- сетка -->
+        <line x1="${w/2}" y1="30" x2="${w/2}" y2="${h-30}" stroke="#fff" stroke-width="3" stroke-opacity="0.7"/>
+        <!-- центр -->
+        <circle cx="${w/2}" cy="${h/2}" r="3" fill="#fff" fill-opacity="0.5" stroke="none"/>
+      </g>
+    `);
+  }
+  
+  if(sport === 'cyber'){
+    return wrap(`
+      <g stroke="#5c94dd" stroke-opacity="0.5" stroke-width="1.5" fill="none">
+        <!-- Карта: A-site, B-site, mid -->
+        <rect x="60" y="60" width="280" height="200" rx="10"/>
+        <rect x="${w-340}" y="${h-260}" width="280" height="200" rx="10"/>
+        <rect x="${w/2-140}" y="${h/2-100}" width="280" height="200" rx="10"/>
+        <!-- подписи -->
+      </g>
+      <g font-family="monospace" font-weight="800" font-size="16" fill="#5c94dd" opacity="0.8">
+        <text x="200" y="160" text-anchor="middle">A SITE</text>
+        <text x="${w-200}" y="${h-160}" text-anchor="middle">B SITE</text>
+        <text x="${w/2}" y="${h/2}" text-anchor="middle">MID</text>
+      </g>
+      <g stroke="#d4af5c" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="4 4">
+        <line x1="200" y1="260" x2="${w/2}" y2="${h/2-100}"/>
+        <line x1="${w/2}" y1="${h/2+100}" x2="${w-200}" y2="${h-260}"/>
+      </g>
+    `);
+  }
+  
+  return wrap('');
+}
+
+// Хелпер: осветлить/затемнить hex
+function shadeColor(hex, percent){
+  const num = parseInt(hex.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = clamp((num >> 16) + amt, 0, 255);
+  const G = clamp((num >> 8 & 0x00FF) + amt, 0, 255);
+  const B = clamp((num & 0x0000FF) + amt, 0, 255);
+  return '#' + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+}
+
+/* ------------------------------------------------------------
+   3) ГЕНЕРАЦИЯ ИГРОКОВ ПО СПОРТУ
+   ------------------------------------------------------------ */
+Match.prototype.buildPlayers = function(){
+  if(this.sport === 'football') return buildFootballPlayers.call(this);
+  if(this.sport === 'basketball') return buildBasketballPlayers.call(this);
+  if(this.sport === 'hockey') return buildHockeyPlayers.call(this);
+  if(this.sport === 'tennis') return buildTennisPlayers.call(this);
+  if(this.sport === 'volleyball') return buildVolleyballPlayers.call(this);
+  if(this.sport === 'cyber') return buildCyberPlayers.call(this);
+  return [];
+};
+
+function buildFootballPlayers(){
+  const scene = SPORT_SCENES.football;
+  const list = [];
+  const formation = [
+    {x:80,  y:340, role:'GK'},
+    {x:180, y:110, role:'DF'},{x:180, y:270, role:'DF'},
+    {x:180, y:410, role:'DF'},{x:180, y:570, role:'DF'},
+    {x:290, y:180, role:'MF'},{x:290, y:340, role:'MF'},{x:290, y:500, role:'MF'},
+    {x:400, y:120, role:'FW'},{x:400, y:340, role:'FW'},{x:400, y:560, role:'FW'},
+  ];
+  for(let i=0;i<11;i++){
+    const f = formation[i];
+    list.push({id:'h'+i, team:'h', num: i===0?1:rndInt(2,30),
+      name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+      baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+      rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false});
+  }
+  for(let i=0;i<11;i++){
+    const f = formation[i];
+    list.push({id:'a'+i, team:'a', num: i===0?1:rndInt(2,30),
+      name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+      baseX:1050-f.x, baseY:680-f.y, x:1050-f.x, y:680-f.y, tx:1050-f.x, ty:680-f.y,
+      rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false});
+  }
+  return list;
+}
+
+function buildBasketballPlayers(){
+  const w=1050, h=600;
+  const list = [];
+  // 5 хозяев + 5 гостей
+  const homePos = [
+    {x:w*0.15, y:h/2, role:'PG'},
+    {x:w*0.25, y:h*0.3, role:'SG'},
+    {x:w*0.30, y:h*0.7, role:'SF'},
+    {x:w*0.40, y:h*0.35, role:'PF'},
+    {x:w*0.42, y:h*0.65, role:'C'},
+  ];
+  const awayPos = homePos.map(p => ({x: w - p.x, y: h - p.y, role: p.role}));
+  homePos.forEach((f,i) => list.push({
+    id:'h'+i, team:'h', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  awayPos.forEach((f,i) => list.push({
+    id:'a'+i, team:'a', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  return list;
+}
+
+function buildHockeyPlayers(){
+  const w=1050, h=600;
+  const list = [];
+  const homePos = [
+    {x:80, y:h/2, role:'G'},
+    {x:w*0.20, y:h*0.3, role:'D'},{x:w*0.20, y:h*0.7, role:'D'},
+    {x:w*0.35, y:h*0.4, role:'LW'},{x:w*0.40, y:h*0.6, role:'C'},{x:w*0.35, y:h/2, role:'RW'},
+  ];
+  const awayPos = homePos.map(p => ({x: w - p.x, y: h - p.y, role: p.role}));
+  homePos.forEach((f,i) => list.push({
+    id:'h'+i, team:'h', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  awayPos.forEach((f,i) => list.push({
+    id:'a'+i, team:'a', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:f.role,
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  return list;
+}
+
+function buildTennisPlayers(){
+  const w=1050, h=600;
+  return [
+    {id:'h0', team:'h', num:1, name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES),
+     pos:'P1', baseX: w*0.15, baseY: h/2, x: w*0.15, y: h/2, tx: w*0.15, ty: h/2,
+     rating: 7.5, yellow:false, red:false, off:false},
+    {id:'a0', team:'a', num:2, name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES),
+     pos:'P2', baseX: w*0.85, baseY: h/2, x: w*0.85, y: h/2, tx: w*0.85, ty: h/2,
+     rating: 7.5, yellow:false, red:false, off:false},
+  ];
+}
+
+function buildVolleyballPlayers(){
+  const w=1050, h=600;
+  const list = [];
+  const homePos = [
+    {x:w*0.15, y:h*0.25},{x:w*0.15, y:h*0.5},{x:w*0.15, y:h*0.75},
+    {x:w*0.30, y:h*0.3},{x:w*0.30, y:h*0.7},{x:w*0.40, y:h*0.5},
+  ];
+  const awayPos = homePos.map(p => ({x: w - p.x, y: h - p.y}));
+  homePos.forEach((f,i) => list.push({
+    id:'h'+i, team:'h', num:rndInt(1,20),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:'P',
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  awayPos.forEach((f,i) => list.push({
+    id:'a'+i, team:'a', num:rndInt(1,20),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:'P',
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  return list;
+}
+
+function buildCyberPlayers(){
+  const w=1050, h=600;
+  const list = [];
+  // 5 на 5 — патрулируют карту
+  const homePos = [
+    {x:w*0.20, y:h*0.25},{x:w*0.20, y:h*0.75},
+    {x:w*0.35, y:h*0.5},{x:w*0.45, y:h*0.3},{x:w*0.45, y:h*0.7},
+  ];
+  const awayPos = homePos.map(p => ({x: w - p.x, y: h - p.y}));
+  homePos.forEach((f,i) => list.push({
+    id:'h'+i, team:'h', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:'P',
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  awayPos.forEach((f,i) => list.push({
+    id:'a'+i, team:'a', num:rndInt(1,30),
+    name: pick(FIRST_NAMES)+' '+pick(LAST_NAMES), pos:'P',
+    baseX:f.x, baseY:f.y, x:f.x, y:f.y, tx:f.x, ty:f.y,
+    rating: 6.5+this.rng()*0.5, yellow:false, red:false, off:false}));
+  return list;
+}
+
+/* ------------------------------------------------------------
+   4) УНИВЕРСАЛЬНЫЙ РЕНДЕР ПОЛЯ (по спорту)
+   ------------------------------------------------------------ */
+renderPitch = function(){
+  const m = currentMatch();
+  if(!m) return;
+  const svg = document.getElementById('pitchSvg');
+  if(!svg) return;
+
+  // Если у свг другой viewBox для спорта — не перерисовываем (сложно)
+  // Но если структура не та — пересоздаём
+  const expectedViewBox = `0 0 ${SPORT_SCENES[m.sport]?.w || 1050} ${SPORT_SCENES[m.sport]?.h || 680}`;
+  if(svg.getAttribute('viewBox') !== expectedViewBox){
+    const wrap = svg.parentElement;
+    const currentBall = svg.querySelector('#pitchBall');
+    wrap.innerHTML = buildSceneSVG(m.sport);
+    // Возвращаем мяч, если он был
+    return;
+  }
+
+  const playersG = svg.querySelector('#pitchPlayers');
+  const ballG = svg.querySelector('#pitchBall');
+  if(!playersG || !ballG) return;
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  // Игроки
+  if(playersG.childElementCount !== m.players.length){
+    playersG.innerHTML = '';
+    m.players.forEach(p => {
+      const g = document.createElementNS(svgNS, 'g');
+      g.dataset.pid = p.id;
+      const circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('r', m.sport === 'tennis' ? '16' : (m.sport === 'cyber' ? '14' : '13'));
+      circle.setAttribute('stroke-width', '2');
+      const txt = document.createElementNS(svgNS, 'text');
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dy', '4');
+      txt.setAttribute('font-size', '10');
+      txt.setAttribute('font-weight', '800');
+      txt.setAttribute('fill', '#0d0f13');
+      g.appendChild(circle);
+      g.appendChild(txt);
+      playersG.appendChild(g);
+    });
+  }
+
+  m.players.forEach((p, i) => {
+    const g = playersG.children[i];
+    if(!g) return;
+    g.style.display = (p.off || p.red) ? 'none' : '';
+    g.setAttribute('transform', `translate(${p.x} ${p.y})`);
+    const circle = g.children[0];
+    const txt = g.children[1];
+    const isHome = p.team === 'h';
+    let fill;
+    if(m.sport === 'tennis') fill = isHome ? '#d4af5c' : '#5c94dd';
+    else if(m.sport === 'cyber') fill = isHome ? '#5c94dd' : '#d4af5c';
+    else fill = isHome ? '#d4af5c' : '#5c94dd';
+    circle.setAttribute('fill', fill);
+    circle.setAttribute('stroke', isHome ? '#8b7340' : '#3a6099');
+    txt.textContent = m.sport === 'tennis' ? p.name.split(' ')[1].charAt(0) : p.num;
+  });
+
+  // Мяч / шайба / снаряд
+  if(m.ballPos.visible){
+    ballG.style.display = '';
+    ballG.setAttribute('transform', `translate(${m.ballPos.x} ${m.ballPos.y})`);
+    const ballCircle = ballG.querySelector('circle');
+    if(ballCircle){
+      if(m.sport === 'basketball'){
+        ballCircle.setAttribute('fill', '#ff8c42');
+        ballCircle.setAttribute('r', '8');
+      } else if(m.sport === 'hockey'){
+        ballCircle.setAttribute('fill', '#000');
+        ballCircle.setAttribute('r', '5');
+      } else if(m.sport === 'tennis'){
+        ballCircle.setAttribute('fill', '#d4e34a');
+        ballCircle.setAttribute('r', '6');
+      } else if(m.sport === 'volleyball'){
+        ballCircle.setAttribute('fill', '#f0f0f0');
+        ballCircle.setAttribute('r', '8');
+      } else {
+        ballCircle.setAttribute('fill', '#ffffff');
+        ballCircle.setAttribute('r', '7');
+      }
+    }
+  } else {
+    ballG.style.display = 'none';
+  }
+
+  // Attack indicator
+  const ind = svg.querySelector('#pitchAttackIndicator');
+  if(ind){
+    if(m.state === 'ATTACK' || m.state === 'DANGEROUS' || m.state === 'SHOT'){
+      ind.setAttribute('opacity', '0.7');
+      ind.setAttribute('transform', `translate(${m.ballPos.x} ${m.ballPos.y})`);
+    } else {
+      ind.setAttribute('opacity', '0');
+    }
+  }
+
+  // Shots
+  const shots = svg.querySelector('#pitchShots');
+  if(shots && m.sport === 'football'){
+    shots.innerHTML = renderShotMap(m);
+  }
+};
+
+/* ------------------------------------------------------------
+   5) ПОЗИЦИИ МЯЧА ДЛЯ РАЗНЫХ СПОРТОВ
+   ------------------------------------------------------------ */
+Match.prototype.setBallPosition = function(team, state){
+  const isHome = team === 'h';
+  let scene = SPORT_SCENES[this.sport];
+  const w = scene.w, h = scene.h;
+
+  if(this.sport === 'football'){
+    const positions = {
+      BUILD_UP:    {x: isHome ? 250 : 800, y: h/2},
+      ATTACK:      {x: isHome ? 420 : 630, y: rnd(150, 530)},
+      DANGEROUS:   {x: isHome ? 700 : 350, y: rnd(200, 480)},
+      SHOT:        {x: isHome ? 900 : 150, y: rnd(250, 430)},
+      SHOT_ON:     {x: isHome ? 1000 : 50, y: rnd(290, 390)},
+      CORNER:      {x: isHome ? 1010 : 40,  y: this.rng()<0.5 ? 60 : 620},
+      OFFSIDE:     {x: isHome ? 850 : 200, y: h/2},
+    };
+    const t = positions[state] || {x: w/2, y: h/2};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  } else if(this.sport === 'basketball'){
+    // мяч летает между кольцами
+    const t = isHome
+      ? {x: rnd(150, 550), y: rnd(150, 450)}
+      : {x: rnd(500, 900), y: rnd(150, 450)};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  } else if(this.sport === 'hockey'){
+    const t = isHome
+      ? {x: rnd(150, 500), y: rnd(100, 500)}
+      : {x: rnd(550, 900), y: rnd(100, 500)};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  } else if(this.sport === 'tennis'){
+    // мяч перелетает через сетку
+    const t = isHome
+      ? {x: rnd(200, 480), y: rnd(150, 450)}
+      : {x: rnd(570, 850), y: rnd(150, 450)};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  } else if(this.sport === 'volleyball'){
+    const t = isHome
+      ? {x: rnd(150, 480), y: rnd(100, 500)}
+      : {x: rnd(570, 900), y: rnd(100, 500)};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  } else if(this.sport === 'cyber'){
+    const t = isHome
+      ? {x: rnd(100, 450), y: rnd(100, 500)}
+      : {x: rnd(600, 950), y: rnd(100, 500)};
+    this.ballPos.tx = t.x; this.ballPos.ty = t.y;
+  }
+};
+
+/* ------------------------------------------------------------
+   6) ДВИЖЕНИЕ ИГРОКОВ для НЕ-футбольных спортов
+   ------------------------------------------------------------ */
+const _origPitchLoop = pitchLoop;
+pitchLoop = function(ts){
+  rafId = requestAnimationFrame(pitchLoop);
+  if(!lastFrameTime) lastFrameTime = ts;
+  const dt = Math.min(0.05, (ts - lastFrameTime) / 1000);
+  lastFrameTime = ts;
+
+  const m = currentMatch();
+  if(!m) return;
+
+  // Мяч
+  const ball = m.ballPos;
+  const k = 1 - Math.pow(0.001, dt);
+  ball.x = ball.x + (ball.tx - ball.x) * k;
+  ball.y = ball.y + (ball.ty - ball.y) * k;
+
+  // Игроки
+  m.players.forEach(p => {
+    if(p.off || p.red) return;
+    const isAttacking = m.attackingTeam === p.team && m.possession === p.team;
+    const pull = isAttacking ? 0.12 : 0.04;
+    const tx = p.baseX + (ball.x - p.baseX) * pull;
+    const ty = p.baseY + (ball.y - p.baseY) * pull;
+    const k2 = 1 - Math.pow(0.02, dt);
+    p.x = p.x + (tx - p.x) * k2;
+    p.y = p.y + (ty - p.y) * k2;
+  });
+
+  renderPitch();
+};
+
+/* ------------------------------------------------------------
+   7) СТАРТ: пересоздаём поле при открытии матча
+   ------------------------------------------------------------ */
+const _origOpenMatchCenter2 = openMatchCenter;
+openMatchCenter = function(id){
+  _origOpenMatchCenter2(id);
+  setTimeout(() => {
+    const m = currentMatch();
+    if(!m) return;
+    const svg = document.getElementById('pitchSvg');
+    if(!svg) return;
+    const wrap = svg.parentElement;
+    wrap.innerHTML = buildSceneSVG(m.sport);
+    // Принудительно стартуем
+    if(!rafId) rafId = requestAnimationFrame(pitchLoop);
+    // Обновляем инфо-панели
+    renderMarkets();
+    updateMatchCenter();
+  }, 30);
+};
+
+console.log('%cLIVEZONE FIX v4', 'color:#5c94dd;font-size:14px;font-weight:900;');
+console.log('✅ 2D-обзоры: футбол, баскет, хоккей, теннис, волейбол, кибер');
+console.log('✅ Рынки рендерятся сразу');
 </script>
 
 </body>
