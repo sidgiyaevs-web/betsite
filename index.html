@@ -2,2273 +2,1531 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIVEZONE — Sports Live Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LIVEZONE — Demo Sports Center</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
-:root {
-    --bg: #070b10;
-    --panel: #0e141c;
-    --panel2: #121a24;
-    --border: #202b38;
-    --text: #f2f5f8;
-    --muted: #8793a2;
-    --green: #19d47b;
-    --green2: #0e9f5a;
-    --red: #ff4d5a;
-    --yellow: #ffc857;
-    --blue: #4e9cff;
-}
-
-body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-button {
-    font-family: inherit;
-}
-
-.header {
-    height: 64px;
-    background: #090e14;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 28px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-}
-
-.logo {
-    font-size: 23px;
-    font-weight: 900;
-    letter-spacing: -1px;
-}
-
-.logo span {
-    color: var(--green);
-}
-
-.nav {
-    display: flex;
-    gap: 8px;
-    margin-left: 35px;
-}
-
-.nav button {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    padding: 10px 14px;
-    cursor: pointer;
-    border-radius: 8px;
-}
-
-.nav button:hover,
-.nav button.active {
-    color: white;
-    background: #151d27;
-}
-
-.header-right {
-    margin-left: auto;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.demo-label {
-    color: var(--yellow);
-    border: 1px solid rgba(255,200,87,.35);
-    background: rgba(255,200,87,.08);
-    padding: 7px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.search {
-    width: 210px;
-    background: #111821;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 12px;
-    color: white;
-    outline: none;
-}
-
-.layout {
-    max-width: 1500px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: 230px minmax(0, 1fr) 310px;
-    gap: 16px;
-    padding: 18px;
-}
-
-.sidebar,
-.rightbar {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.side-title {
-    padding: 15px;
-    border-bottom: 1px solid var(--border);
-    font-weight: 800;
-}
-
-.sport {
-    padding: 13px 15px;
-    border-bottom: 1px solid #18212c;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    color: #c4ccd5;
-}
-
-.sport:hover,
-.sport.active {
-    background: #151d27;
-    color: white;
-}
-
-.count {
-    color: var(--green);
-}
-
-.main {
-    min-width: 0;
-}
-
-.page-title {
-    font-size: 25px;
-    font-weight: 900;
-    margin: 0 0 15px;
-}
-
-.filters {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    margin-bottom: 15px;
-}
-
-.filter {
-    flex: 0 0 auto;
-    background: var(--panel);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 13px;
-    cursor: pointer;
-}
-
-.filter.active {
-    background: #16221c;
-    border-color: #245d40;
-    color: var(--green);
-}
-
-.league {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 14px;
-    overflow: hidden;
-}
-
-.league-header {
-    padding: 12px 15px;
-    background: #111821;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-}
-
-.live-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--red);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--red);
-}
-
-.match {
-    display: grid;
-    grid-template-columns: 1fr 110px 320px;
-    gap: 15px;
-    align-items: center;
-    padding: 16px;
-    border-top: 1px solid var(--border);
-    cursor: pointer;
-}
-
-.match:hover {
-    background: #111821;
-}
-
-.teams {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.team-row {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.team-logo {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: #1c2937;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.score {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 900;
-}
-
-.score small {
-    display: block;
-    color: var(--red);
-    font-size: 11px;
-    margin-top: 4px;
-}
-
-.odds {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-}
-
-.odd {
-    background: #18222d;
-    border: 1px solid #243140;
-    border-radius: 7px;
-    padding: 8px 5px;
-    text-align: center;
-    cursor: pointer;
-}
-
-.odd:hover {
-    background: #21302e;
-    border-color: #31684c;
-}
-
-.odd-name {
-    font-size: 11px;
-    color: var(--muted);
-}
-
-.odd-value {
-    color: var(--green);
-    font-weight: 900;
-    margin-top: 3px;
-}
-
-.center {
-    min-width: 0;
-}
-
-.match-center {
-    display: none;
-}
-
-.match-center.active {
-    display: block;
-}
-
-.back {
-    background: transparent;
-    color: var(--muted);
-    border: 0;
-    padding: 0 0 12px;
-    cursor: pointer;
-}
-
-.back:hover {
-    color: white;
-}
-
-.hero {
-    background: linear-gradient(135deg,#121b25,#0d131a);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-}
-
-.live-status {
-    color: var(--red);
-    font-weight: 900;
-    font-size: 12px;
-    margin-bottom: 12px;
-}
-
-.big-score {
-    font-size: 48px;
-    font-weight: 900;
-    letter-spacing: 3px;
-}
-
-.big-score span {
-    color: var(--muted);
-    margin: 0 15px;
-}
-
-.clock {
-    color: var(--green);
-    font-weight: 900;
-    margin-top: 7px;
-}
-
-.team-names {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 8px;
-    font-weight: 800;
-}
-
-.tabs {
-    display: flex;
-    gap: 5px;
-    margin: 14px 0;
-    overflow-x: auto;
-}
-
-.tab {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    color: var(--muted);
-    padding: 10px 13px;
-    border-radius: 8px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.tab.active {
-    color: white;
-    background: #18221f;
-    border-color: #2d6548;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.field {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1.7;
-    background: #117345;
-    border: 4px solid #e8fff0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: inset 0 0 50px rgba(0,0,0,.2);
-}
-
-.field-lines {
-    position: absolute;
-    inset: 0;
-}
-
-.midline {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: rgba(255,255,255,.7);
-    left: 50%;
-}
-
-.center-circle {
-    position: absolute;
-    width: 22%;
-    aspect-ratio: 1;
-    border: 2px solid rgba(255,255,255,.7);
-    border-radius: 50%;
-    left: 39%;
-    top: 28%;
-}
-
-.penalty {
-    position: absolute;
-    width: 13%;
-    height: 43%;
-    border: 2px solid rgba(255,255,255,.7);
-    top: 28%;
-}
-
-.penalty.left {
-    left: -2px;
-}
-
-.penalty.right {
-    right: -2px;
-}
-
-.goal {
-    position: absolute;
-    width: 3%;
-    height: 17%;
-    border: 2px solid white;
-    top: 41%;
-}
-
-.goal.left {
-    left: -3%;
-}
-
-.goal.right {
-    right: -3%;
-}
-
-.player {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    transform: translate(-50%,-50%);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 9px;
-    font-weight: 900;
-    color: white;
-    z-index: 3;
-    transition: left .8s linear, top .8s linear;
-}
-
-.player.home {
-    background: #1877e8;
-    border: 2px solid #a8d0ff;
-}
-
-.player.away {
-    background: #e73548;
-    border: 2px solid #ffc1c8;
-}
-
-.ball {
-    position: absolute;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid #222;
-    transform: translate(-50%,-50%);
-    z-index: 5;
-    transition: left .6s ease, top .6s ease;
-}
-
-.match-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 14px;
-}
-
-.card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.card-title {
-    padding: 13px 15px;
-    font-weight: 900;
-    border-bottom: 1px solid var(--border);
-}
-
-.stat {
-    display: grid;
-    grid-template-columns: 70px 1fr 70px;
-    align-items: center;
-    padding: 10px 14px;
-    border-bottom: 1px solid #18212a;
-}
-
-.stat:last-child {
-    border-bottom: 0;
-}
-
-.stat-num {
-    font-weight: 900;
-}
-
-.stat-label {
-    text-align: center;
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.progress {
-    height: 5px;
-    background: #27313c;
-    border-radius: 10px;
-    margin: 5px 0;
-    overflow: hidden;
-}
-
-.progress-inner {
-    height: 100%;
-    background: var(--green);
-}
-
-.market {
-    border-bottom: 1px solid var(--border);
-}
-
-.market:last-child {
-    border-bottom: 0;
-}
-
-.market-title {
-    padding: 13px 14px;
-    font-weight: 900;
-    background: #111821;
-}
-
-.market-grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 6px;
-    padding: 10px;
-}
-
-.market-odd {
-    background: #18222d;
-    border: 1px solid #273442;
-    border-radius: 7px;
-    padding: 9px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    gap: 5px;
-}
-
-.market-odd:hover {
-    border-color: var(--green);
-}
-
-.market-odd span:last-child {
-    color: var(--green);
-    font-weight: 900;
-}
-
-.feed {
-    max-height: 520px;
-    overflow-y: auto;
-}
-
-.event {
-    padding: 11px 14px;
-    border-bottom: 1px solid #18212a;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-
-.event-time {
-    color: var(--green);
-    font-weight: 900;
-    min-width: 42px;
-}
-
-.event-icon {
-    width: 25px;
-}
-
-.slip {
-    padding: 15px;
-}
-
-.slip-empty {
-    color: var(--muted);
-    text-align: center;
-    padding: 30px 10px;
-    font-size: 13px;
-}
-
-.slip-item {
-    background: #151d27;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 8px;
-}
-
-.slip-name {
-    font-size: 13px;
-}
-
-.slip-odd {
-    color: var(--green);
-    font-weight: 900;
-    margin-top: 4px;
-}
-
-.clear {
-    width: 100%;
-    padding: 10px;
-    background: #1a222c;
-    color: #bbb;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    cursor: pointer;
-}
-
-.notice {
-    margin: 0 15px 15px;
-    padding: 10px;
-    border-radius: 8px;
-    background: rgba(255,200,87,.07);
-    border: 1px solid rgba(255,200,87,.2);
-    color: #d8b96a;
-    font-size: 11px;
-    line-height: 1.4;
-}
-
-.result {
-    padding: 20px;
-    text-align: center;
-    color: var(--muted);
-}
-
-.goal-popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.75);
-    z-index: 100;
-    display: none;
-    place-items: center;
-}
-
-.goal-popup.show {
-    display: grid;
-}
-
-.goal-box {
-    background: #111922;
-    border: 1px solid #294634;
-    border-radius: 16px;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 20px 80px rgba(0,0,0,.5);
-}
-
-.goal-word {
-    color: var(--green);
-    font-size: 52px;
-    font-weight: 1000;
-}
-
-.goal-score {
-    font-size: 30px;
-    margin-top: 10px;
-}
-
-@media(max-width:1100px) {
-    .layout {
-        grid-template-columns: 190px 1fr;
-    }
-
-    .rightbar {
-        display: none;
-    }
-
-    .match {
-        grid-template-columns: 1fr 80px 260px;
-    }
-}
-
-@media(max-width:750px) {
-    .header {
-        padding: 0 12px;
-    }
-
-    .nav {
-        display: none;
-    }
-
-    .search {
-        width: 130px;
-    }
-
-    .layout {
-        display: block;
-        padding: 10px;
-    }
-
-    .sidebar {
-        margin-bottom: 10px;
-    }
-
-    .sidebar .sport {
-        display: inline-flex;
-        width: auto;
-        border: 0;
-        padding: 9px 10px;
-    }
-
-    .side-title {
-        display: none;
-    }
-
-    .match {
-        grid-template-columns: 1fr 55px;
-    }
-
-    .match .odds {
-        grid-column: 1 / -1;
-    }
-
-    .match-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .market-grid {
-        grid-template-columns: repeat(2,1fr);
-    }
-
-    .big-score {
-        font-size: 36px;
-    }
+*{box-sizing:border-box}
+:root{
+  --bg:#080a0f;
+  --panel:#10131a;
+  --panel2:#151923;
+  --panel3:#1b202b;
+  --line:#272d38;
+  --text:#f4f6f8;
+  --muted:#8992a1;
+  --green:#25d98b;
+  --green2:#13b873;
+  --red:#ff5364;
+  --yellow:#ffc857;
+  --blue:#4b8cff;
+  --purple:#9b6cff;
+}
+
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+body{overflow-x:hidden}
+button,input{font:inherit}
+button{cursor:pointer}
+
+.app{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:220px minmax(500px,1fr) 330px;
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:#0b0d12;
+  border-right:1px solid var(--line);
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:22px 14px;
+  overflow:auto;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:4px 10px 25px;
+  font-weight:900;
+  font-size:21px;
+  letter-spacing:-.7px;
+}
+.logoMark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--green),#42a5ff);
+  display:grid;place-items:center;color:#06100c;
+  font-weight:1000;
+  box-shadow:0 8px 30px #25d98b22;
+}
+.logo span{color:var(--green)}
+
+.sideTitle{
+  font-size:10px;
+  color:#606978;
+  font-weight:800;
+  letter-spacing:1.4px;
+  padding:15px 11px 8px;
+  text-transform:uppercase;
+}
+.sport{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#aeb5c1;
+  padding:11px 12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-radius:10px;
+  margin:2px 0;
+  text-align:left;
+  transition:.2s;
+}
+.sport:hover,.sport.active{
+  color:white;
+  background:#171b24;
+}
+.sport.active{
+  box-shadow:inset 3px 0 var(--green);
+}
+.sportIcon{width:20px;text-align:center;font-size:16px}
+.count{
+  margin-left:auto;
+  font-size:11px;
+  color:#68717f;
+}
+.liveDot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
+}
+
+/* MAIN */
+.main{min-width:0;background:#0b0e14}
+.topbar{
+  height:70px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:0 24px;
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:#0b0e14ee;
+  backdrop-filter:blur(16px);
+}
+.mobileMenu{display:none}
+.search{
+  flex:1;
+  max-width:470px;
+  height:40px;
+  background:#141820;
+  border:1px solid #252b35;
+  border-radius:9px;
+  color:white;
+  padding:0 14px 0 40px;
+  outline:none;
+}
+.search:focus{border-color:#3b4656}
+.searchWrap{position:relative;flex:1;max-width:470px}
+.searchWrap span{
+  position:absolute;left:14px;top:10px;color:#727b89;
+}
+.topActions{margin-left:auto;display:flex;gap:8px}
+.topBtn{
+  border:1px solid var(--line);
+  background:#141820;
+  color:#c6ccd5;
+  border-radius:9px;
+  padding:9px 13px;
+}
+.demoBadge{
+  padding:8px 11px;
+  border-radius:8px;
+  background:#17251f;
+  color:var(--green);
+  font-size:11px;
+  font-weight:800;
+  border:1px solid #214d3a;
+}
+
+/* HERO */
+.content{padding:22px 24px 50px}
+.hero{
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:24px;
+  background:
+    radial-gradient(circle at 85% 10%,#1c3b32 0,transparent 35%),
+    linear-gradient(135deg,#131820,#0f1218);
+  position:relative;
+  overflow:hidden;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  right:-70px;bottom:-90px;
+  width:260px;height:260px;
+  border-radius:50%;
+  border:1px solid #25d98b20;
+  box-shadow:0 0 0 40px #25d98b08,0 0 0 80px #25d98b04;
+}
+.hero small{color:var(--green);font-weight:800;letter-spacing:1px}
+.hero h1{font-size:30px;margin:9px 0 6px;letter-spacing:-1px}
+.hero p{margin:0;color:var(--muted);max-width:650px;font-size:13px}
+.heroStats{display:flex;gap:25px;margin-top:20px}
+.heroStat b{display:block;font-size:18px}
+.heroStat span{color:#707988;font-size:11px}
+
+.sectionHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:26px 0 12px;
+}
+.sectionHead h2{font-size:17px;margin:0}
+.sectionHead span{font-size:11px;color:var(--muted)}
+
+.filters{display:flex;gap:7px;overflow:auto;padding-bottom:3px}
+.filter{
+  border:1px solid var(--line);
+  color:#8992a1;
+  background:#10131a;
+  padding:8px 12px;
+  border-radius:8px;
+  white-space:nowrap;
+  font-size:12px;
+}
+.filter.active{color:white;border-color:#2e684e;background:#13211b}
+
+/* MATCH CARDS */
+.matches{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.match{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:15px;
+  cursor:pointer;
+  transition:.18s;
+}
+.match:hover{
+  transform:translateY(-2px);
+  border-color:#38404d;
+  background:#12161e;
+}
+.matchTop{display:flex;align-items:center;gap:7px;color:#7e8795;font-size:10px}
+.live{
+  color:var(--green);
+  font-weight:900;
+  display:flex;align-items:center;gap:5px;
+}
+.matchTop .right{margin-left:auto}
+.matchTeams{
+  display:grid;
+  grid-template-columns:1fr 45px 1fr;
+  align-items:center;
+  gap:8px;
+  margin:17px 0;
+}
+.team{text-align:center;font-size:13px;font-weight:700}
+.team .crest{
+  width:38px;height:38px;
+  margin:0 auto 8px;
+  border-radius:11px;
+  background:#1e2530;
+  display:grid;place-items:center;
+  font-size:16px;
+}
+.score{text-align:center}
+.score strong{font-size:24px;letter-spacing:-1px}
+.score small{display:block;color:var(--green);font-size:9px;margin-top:3px}
+.oddsRow{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.odd{
+  background:#171b23;
+  border:1px solid #242a34;
+  border-radius:7px;
+  padding:7px;
+  text-align:center;
+}
+.odd span{display:block;color:#6f7887;font-size:9px;margin-bottom:3px}
+.odd b{font-size:12px}
+.odd.up b{color:var(--green)}
+.odd.down b{color:var(--red)}
+
+/* MATCH CENTER */
+.center{
+  display:none;
+  margin-top:15px;
+}
+.center.show{display:block}
+.back{
+  background:none;border:0;color:#8d96a4;
+  padding:0 0 13px;font-size:12px;
+}
+.matchHero{
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:#11151c;
+}
+.matchHeroTop{
+  display:flex;
+  justify-content:space-between;
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+}
+.matchLeague{font-size:11px;color:#818b99}
+.liveClock{color:var(--green);font-weight:900;font-size:12px}
+.scoreboard{
+  display:grid;
+  grid-template-columns:1fr 170px 1fr;
+  align-items:center;
+  padding:25px 30px;
+}
+.scoreTeam{text-align:center}
+.scoreTeam .bigCrest{
+  width:64px;height:64px;border-radius:17px;
+  display:grid;place-items:center;
+  background:#1c222c;margin:0 auto 10px;font-size:25px;
+}
+.scoreTeam b{font-size:14px}
+.scoreMain{text-align:center}
+.scoreMain strong{font-size:42px;letter-spacing:-2px}
+.scoreMain small{display:block;color:var(--green);margin-top:2px;font-weight:800}
+
+.tabs{
+  display:flex;
+  overflow:auto;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.tab{
+  flex:1;
+  min-width:90px;
+  border:0;background:transparent;color:#7d8694;
+  padding:12px 9px;font-size:11px;
+}
+.tab.active{color:white;box-shadow:inset 0 -2px var(--green)}
+
+.tabContent{padding:16px}
+.tabPanel{display:none}
+.tabPanel.active{display:block}
+
+/* FIELD */
+.field{
+  height:390px;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+  background:
+    repeating-linear-gradient(90deg,#167247 0,#167247 12.5%,#196f45 12.5%,#196f45 25%);
+  border:2px solid #2d8a5d;
+  box-shadow:inset 0 0 50px #042313;
+}
+.fieldLines{position:absolute;inset:0}
+.midline{position:absolute;left:50%;top:0;bottom:0;border-left:1px solid #ffffff88}
+.centerCircle{
+  position:absolute;width:105px;height:105px;
+  border:1px solid #ffffff88;border-radius:50%;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+}
+.centerDot{
+  position:absolute;width:7px;height:7px;background:white;border-radius:50%;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+}
+.box{
+  position:absolute;width:125px;height:200px;
+  top:95px;border:1px solid #ffffff88;
+}
+.box.left{left:0;border-left:0}
+.box.right{right:0;border-right:0}
+.goal{
+  position:absolute;width:42px;height:90px;
+  top:150px;border:2px solid #ffffffaa;
+}
+.goal.left{left:-2px;border-left:0}
+.goal.right{right:-2px;border-right:0}
+.player{
+  position:absolute;
+  width:29px;height:29px;border-radius:50%;
+  border:2px solid white;
+  display:grid;place-items:center;
+  font-size:9px;font-weight:900;
+  color:white;
+  transform:translate(-50%,-50%);
+  transition:left .8s,top .8s;
+  box-shadow:0 3px 10px #0008;
+}
+.player.home{background:#2578d8}
+.player.away{background:#e34c5c}
+.ball{
+  position:absolute;
+  width:10px;height:10px;border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 0 3px #ffffff22,0 0 12px #fff;
+  left:50%;top:50%;
+  transition:left .9s,top .9s;
+}
+.pitchLabel{
+  position:absolute;left:50%;bottom:8px;
+  transform:translateX(-50%);
+  color:#ffffff88;font-size:8px;letter-spacing:1px;
+}
+
+/* STATS */
+.statLine{margin-bottom:15px}
+.statHead{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px}
+.statHead span{color:#a4acb8}
+.bar{
+  height:5px;background:#232a34;border-radius:10px;overflow:hidden;
+}
+.bar i{display:block;height:100%;background:var(--green);border-radius:10px}
+.statsGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:18px;
+}
+.statBox{
+  background:#151a22;border:1px solid #242b35;
+  border-radius:9px;padding:13px;text-align:center;
+}
+.statBox b{display:block;font-size:18px}
+.statBox span{font-size:9px;color:#707988}
+
+/* EVENTS */
+.event{
+  display:grid;
+  grid-template-columns:48px 1fr 50px;
+  gap:10px;
+  padding:11px 0;
+  border-bottom:1px solid #202630;
+  align-items:center;
+}
+.eventTime{color:#7c8695;font-size:10px}
+.eventIcon{
+  width:27px;height:27px;border-radius:8px;
+  display:grid;place-items:center;background:#191f29;
+}
+.eventText b{font-size:11px}
+.eventText span{display:block;color:#717b89;font-size:9px;margin-top:3px}
+.eventSide{text-align:right;font-size:9px;color:#7f8997}
+
+/* MARKETS */
+.marketGroup{
+  border:1px solid var(--line);
+  border-radius:11px;
+  margin-bottom:10px;
+  overflow:hidden;
+}
+.marketTitle{
+  padding:11px 12px;
+  background:#151922;
+  display:flex;justify-content:space-between;
+  font-size:11px;font-weight:800;
+}
+.marketTitle span{color:#687282;font-weight:500}
+.marketGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;padding:7px;
+}
+.marketBtn{
+  border:1px solid #292f3a;
+  background:#171b23;color:#b9c0ca;
+  border-radius:7px;padding:8px 5px;
+  font-size:10px;
+}
+.marketBtn:hover{border-color:#3e8565;background:#17241e}
+.marketBtn b{display:block;color:white;margin-top:3px}
+
+/* RIGHT SLIP */
+.slip{
+  background:#0b0e13;
+  border-left:1px solid var(--line);
+  min-width:0;
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;
+}
+.slipHeader{
+  height:70px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;
+  padding:0 17px;gap:20px;
+}
+.slipTab{color:#777f8d;font-size:12px;font-weight:800;cursor:pointer}
+.slipTab.active{color:white}
+.slipBody{padding:14px;overflow:auto;flex:1}
+.slipEmpty{
+  min-height:300px;
+  display:grid;place-items:center;
+  text-align:center;color:#697281;
+}
+.slipEmpty .basket{font-size:38px;margin-bottom:10px}
+.slipItem{
+  border:1px solid var(--line);
+  background:#13171f;
+  border-radius:10px;padding:12px;margin-bottom:8px;
+}
+.slipItemTop{display:flex;justify-content:space-between;font-size:9px;color:#727c8b}
+.slipItem b{display:block;font-size:11px;margin:7px 0}
+.slipPick{color:var(--green);font-size:10px}
+.remove{background:none;border:0;color:#697382}
+.demoInfo{
+  background:#122018;border:1px solid #234b38;
+  color:#7fcaa8;border-radius:9px;
+  padding:10px;font-size:10px;line-height:1.5;
+  margin-bottom:10px;
+}
+.slipBottom{
+  border-top:1px solid var(--line);
+  padding:14px;
+}
+.row{display:flex;justify-content:space-between;margin:8px 0;font-size:11px;color:#7f8996}
+.row strong{color:white}
+.total{font-size:15px!important;color:white!important}
+.demoButton{
+  width:100%;height:43px;border:0;border-radius:9px;
+  background:linear-gradient(135deg,var(--green),#19b977);
+  color:#04150d;font-weight:1000;
+  margin-top:7px;
+}
+.demoButton:hover{filter:brightness(1.1)}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  right:25px;bottom:25px;
+  background:#171c24;
+  border:1px solid #303846;
+  border-radius:12px;
+  padding:13px 16px;
+  box-shadow:0 15px 50px #0009;
+  transform:translateY(100px);
+  opacity:0;
+  transition:.3s;
+  z-index:100;
+}
+.toast.show{transform:none;opacity:1}
+.toast b{font-size:12px}
+.toast span{display:block;color:#7d8795;font-size:10px;margin-top:3px}
+
+/* MOBILE */
+@media(max-width:1100px){
+  .app{grid-template-columns:78px minmax(0,1fr)}
+  .sidebar{padding:18px 9px}
+  .logo{justify-content:center;padding:4px 0 22px}
+  .logoText,.sideTitle,.sport span:not(.sportIcon),.count{display:none}
+  .sport{justify-content:center;padding:12px}
+  .sportIcon{font-size:18px}
+  .slip{display:none}
+}
+@media(max-width:760px){
+  .app{display:block}
+  .sidebar{display:none}
+  .topbar{padding:0 13px;height:60px}
+  .mobileMenu{display:block;background:none;border:0;color:white;font-size:20px}
+  .topActions .topBtn{display:none}
+  .content{padding:13px}
+  .hero{padding:18px}
+  .hero h1{font-size:24px}
+  .matches{grid-template-columns:1fr}
+  .scoreboard{grid-template-columns:1fr 100px 1fr;padding:20px 10px}
+  .scoreMain strong{font-size:32px}
+  .field{height:330px}
+  .statsGrid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
 
 <body>
 
-<header class="header">
-    <div class="logo">LIVE<span>ZONE</span></div>
+<div class="app">
 
-    <nav class="nav">
-        <button class="active" onclick="showHome()">Спорт</button>
-        <button onclick="filterSport('LIVE')">LIVE</button>
-        <button onclick="filterSport('football')">Футбол</button>
-        <button onclick="filterSport('basketball')">Баскетбол</button>
-        <button onclick="filterSport('hockey')">Хоккей</button>
-        <button onclick="filterSport('tennis')">Теннис</button>
-        <button onclick="filterSport('volleyball')">Волейбол</button>
-    </nav>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logoMark">L</div>
+    <div class="logoText">LIVE<span>ZONE</span></div>
+  </div>
 
-    <div class="header-right">
-        <div class="demo-label">DEMO • ВИРТУАЛЬНЫЙ РЕЖИМ</div>
-        <input class="search" id="search" placeholder="Поиск..." oninput="searchMatches()">
+  <div class="sideTitle">Спорт</div>
+
+  <button class="sport active" data-sport="all" onclick="setSport('all',this)">
+    <span class="sportIcon">◉</span><span>Все события</span><span class="count">24</span>
+  </button>
+
+  <button class="sport" data-sport="football" onclick="setSport('football',this)">
+    <span class="sportIcon">⚽</span><span>Футбол</span><span class="count">12</span>
+  </button>
+
+  <button class="sport" data-sport="basketball" onclick="setSport('basketball',this)">
+    <span class="sportIcon">🏀</span><span>Баскетбол</span><span class="count">6</span>
+  </button>
+
+  <button class="sport" data-sport="hockey" onclick="setSport('hockey',this)">
+    <span class="sportIcon">🏒</span><span>Хоккей</span><span class="count">3</span>
+  </button>
+
+  <button class="sport" data-sport="tennis" onclick="setSport('tennis',this)">
+    <span class="sportIcon">🎾</span><span>Теннис</span><span class="count">2</span>
+  </button>
+
+  <button class="sport" data-sport="volleyball" onclick="setSport('volleyball',this)">
+    <span class="sportIcon">🏐</span><span>Волейбол</span><span class="count">1</span>
+  </button>
+
+  <div class="sideTitle">Разделы</div>
+
+  <button class="sport" onclick="showToast('Избранное','Добавляй матчи через купон')">
+    <span class="sportIcon">☆</span><span>Избранное</span>
+  </button>
+
+  <button class="sport" onclick="scrollToLive()">
+    <span class="sportIcon">◉</span><span>LIVE</span>
+  </button>
+
+  <button class="sport" onclick="showToast('Результаты','Раздел результатов демо')">
+    <span class="sportIcon">▤</span><span>Результаты</span>
+  </button>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <header class="topbar">
+    <button class="mobileMenu" onclick="showToast('LIVEZONE','Меню доступно на десктопе')">☰</button>
+
+    <div class="searchWrap">
+      <span>⌕</span>
+      <input id="search" class="search" placeholder="Поиск команды или турнира..." oninput="searchMatches()">
     </div>
-</header>
 
-<div class="layout">
+    <div class="topActions">
+      <div class="demoBadge">● DEMO MODE</div>
+      <button class="topBtn" onclick="showToast('LIVE','Все события обновляются автоматически')">LIVE</button>
+      <button class="topBtn" onclick="showToast('Профиль','Это демонстрационный интерфейс')">♙</button>
+    </div>
+  </header>
 
-    <aside class="sidebar">
-        <div class="side-title">ВИДЫ СПОРТА</div>
+  <div class="content">
 
-        <div class="sport active" data-sport="all" onclick="filterSport('all')">
-            <span>🏆 Все события</span>
-            <span class="count">12</span>
+    <section class="hero">
+      <small>● LIVE CENTER</small>
+      <h1>Спорт в реальном времени</h1>
+      <p>
+        Демонстрационный спортивный интерфейс с живыми матчами,
+        статистикой, событиями и динамической линией.
+      </p>
+
+      <div class="heroStats">
+        <div class="heroStat">
+          <b id="liveCount">12</b>
+          <span>LIVE матчей</span>
+        </div>
+        <div class="heroStat">
+          <b>5</b>
+          <span>видов спорта</span>
+        </div>
+        <div class="heroStat">
+          <b>∞</b>
+          <span>виртуальных событий</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="sectionHead">
+      <h2>Live события</h2>
+      <span id="matchLabel">Все матчи</span>
+    </div>
+
+    <div class="filters">
+      <button class="filter active" onclick="setFilter('all',this)">Все</button>
+      <button class="filter" onclick="setFilter('football',this)">⚽ Футбол</button>
+      <button class="filter" onclick="setFilter('basketball',this)">🏀 Баскетбол</button>
+      <button class="filter" onclick="setFilter('hockey',this)">🏒 Хоккей</button>
+      <button class="filter" onclick="setFilter('tennis',this)">🎾 Теннис</button>
+      <button class="filter" onclick="setFilter('volleyball',this)">🏐 Волейбол</button>
+    </div>
+
+    <div id="matches" class="matches"></div>
+
+    <!-- MATCH CENTER -->
+    <section id="center" class="center">
+
+      <button class="back" onclick="closeMatch()">← Назад к матчам</button>
+
+      <div class="matchHero">
+
+        <div class="matchHeroTop">
+          <div class="matchLeague" id="mcLeague">Premier Demo League</div>
+          <div class="liveClock">● LIVE <span id="mcClock">24:18</span></div>
         </div>
 
-        <div class="sport" data-sport="football" onclick="filterSport('football')">
-            <span>⚽ Футбол</span>
-            <span class="count">5</span>
+        <div class="scoreboard">
+          <div class="scoreTeam">
+            <div class="bigCrest" id="mcHomeIcon">🔵</div>
+            <b id="mcHome">Manchester Blue</b>
+          </div>
+
+          <div class="scoreMain">
+            <strong id="mcScore">1 : 0</strong>
+            <small id="mcStatus">LIVE</small>
+          </div>
+
+          <div class="scoreTeam">
+            <div class="bigCrest" id="mcAwayIcon">🔴</div>
+            <b id="mcAway">London Reds</b>
+          </div>
         </div>
 
-        <div class="sport" data-sport="basketball" onclick="filterSport('basketball')">
-            <span>🏀 Баскетбол</span>
-            <span class="count">3</span>
+        <div class="tabs">
+          <button class="tab active" onclick="openTab('overview',this)">Обзор</button>
+          <button class="tab" onclick="openTab('odds',this)">Линия</button>
+          <button class="tab" onclick="openTab('stats',this)">Статистика</button>
+          <button class="tab" onclick="openTab('events',this)">События</button>
+          <button class="tab" onclick="openTab('lineups',this)">Составы</button>
         </div>
 
-        <div class="sport" data-sport="hockey" onclick="filterSport('hockey')">
-            <span>🏒 Хоккей</span>
-            <span class="count">2</span>
+        <div class="tabContent">
+
+          <!-- OVERVIEW -->
+          <div class="tabPanel active" id="tab-overview">
+
+            <div id="footballField" class="field">
+              <div class="fieldLines">
+                <div class="midline"></div>
+                <div class="centerCircle"></div>
+                <div class="centerDot"></div>
+                <div class="box left"></div>
+                <div class="box right"></div>
+                <div class="goal left"></div>
+                <div class="goal right"></div>
+              </div>
+              <div id="players"></div>
+              <div id="ball" class="ball"></div>
+              <div class="pitchLabel">LIVEZONE MATCH ENGINE</div>
+            </div>
+
+            <div id="overviewStats" style="margin-top:16px"></div>
+          </div>
+
+          <!-- ODDS -->
+          <div class="tabPanel" id="tab-odds">
+            <div id="markets"></div>
+          </div>
+
+          <!-- STATS -->
+          <div class="tabPanel" id="tab-stats">
+            <div id="fullStats"></div>
+          </div>
+
+          <!-- EVENTS -->
+          <div class="tabPanel" id="tab-events">
+            <div id="events"></div>
+          </div>
+
+          <!-- LINEUPS -->
+          <div class="tabPanel" id="tab-lineups">
+            <div id="lineups"></div>
+          </div>
+
         </div>
+      </div>
+    </section>
 
-        <div class="sport" data-sport="tennis" onclick="filterSport('tennis')">
-            <span>🎾 Теннис</span>
-            <span class="count">1</span>
-        </div>
+  </div>
+</main>
 
-        <div class="sport" data-sport="volleyball" onclick="filterSport('volleyball')">
-            <span>🏐 Волейбол</span>
-            <span class="count">1</span>
-        </div>
+<!-- SLIP -->
+<aside class="slip">
 
-        <div class="side-title">РАЗДЕЛЫ</div>
+  <div class="slipHeader">
+    <div class="slipTab active">Купон</div>
+    <div class="slipTab">Мои события</div>
+  </div>
 
-        <div class="sport" onclick="showHome()">⭐ Избранное</div>
-        <div class="sport" onclick="showHome()">📋 Результаты</div>
-    </aside>
+  <div class="slipBody">
 
-    <main class="center">
+    <div class="demoInfo">
+      <b>DEMO MODE</b><br>
+      Здесь нет реальных денег. Все коэффициенты и расчёты виртуальные.
+    </div>
 
-        <section id="home">
+    <div id="slip"></div>
 
-            <h1 class="page-title">Live события</h1>
+  </div>
 
-            <div class="filters">
-                <button class="filter active">Все</button>
-                <button class="filter">LIVE</button>
-                <button class="filter">Сегодня</button>
-                <button class="filter">Популярное</button>
-            </div>
+  <div class="slipBottom">
+    <div class="row">
+      <span>Событий</span>
+      <strong id="slipCount">0</strong>
+    </div>
 
-            <div id="matches"></div>
+    <div class="row">
+      <span>Виртуальная сумма</span>
+      <strong id="stake">1000 ₽</strong>
+    </div>
 
-        </section>
+    <div class="row total">
+      <span>Возможный результат</span>
+      <strong id="possible">—</strong>
+    </div>
 
-        <section class="match-center" id="matchCenter">
+    <button class="demoButton" onclick="demoAction()">
+      ПОДТВЕРДИТЬ DEMO
+    </button>
+  </div>
 
-            <button class="back" onclick="showHome()">← Назад к событиям</button>
-
-            <div class="hero">
-
-                <div class="live-status">● LIVE • ДЕМО-СИМУЛЯЦИЯ</div>
-
-                <div class="big-score">
-                    <span id="homeScore">0</span>
-                    <span>:</span>
-                    <span id="awayScore">0</span>
-                </div>
-
-                <div class="team-names">
-                    <div id="homeName">Команда 1</div>
-                    <div id="awayName">Команда 2</div>
-                </div>
-
-                <div class="clock" id="gameClock">00:00</div>
-
-            </div>
-
-            <div class="tabs">
-                <button class="tab active" onclick="openTab('overview',this)">Обзор</button>
-                <button class="tab" onclick="openTab('odds',this)">Коэффициенты</button>
-                <button class="tab" onclick="openTab('stats',this)">Статистика</button>
-                <button class="tab" onclick="openTab('events',this)">События</button>
-                <button class="tab" onclick="openTab('lineups',this)">Составы</button>
-            </div>
-
-            <div id="overview" class="tab-content active">
-
-                <div class="field" id="field">
-
-                    <div class="field-lines">
-                        <div class="midline"></div>
-                        <div class="center-circle"></div>
-                        <div class="penalty left"></div>
-                        <div class="penalty right"></div>
-                        <div class="goal left"></div>
-                        <div class="goal right"></div>
-                    </div>
-
-                    <div id="players"></div>
-                    <div class="ball" id="ball"></div>
-
-                </div>
-
-                <div class="match-grid">
-
-                    <div class="card">
-                        <div class="card-title">Ключевая статистика</div>
-                        <div id="statsBox"></div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Последние события</div>
-                        <div class="feed" id="eventBox"></div>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div id="odds" class="tab-content">
-
-                <div class="card" id="marketsBox"></div>
-
-            </div>
-
-            <div id="stats" class="tab-content">
-
-                <div class="card">
-                    <div class="card-title">Статистика матча</div>
-                    <div id="fullStats"></div>
-                </div>
-
-            </div>
-
-            <div id="events" class="tab-content">
-
-                <div class="card">
-                    <div class="card-title">Хронология</div>
-                    <div class="feed" id="fullEvents"></div>
-                </div>
-
-            </div>
-
-            <div id="lineups" class="tab-content">
-
-                <div class="match-grid">
-
-                    <div class="card">
-                        <div class="card-title" id="lineupHomeTitle">Команда 1</div>
-                        <div id="lineupHome"></div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title" id="lineupAwayTitle">Команда 2</div>
-                        <div id="lineupAway"></div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-    <aside class="rightbar">
-
-        <div class="side-title">ДЕМО-КУПОН</div>
-
-        <div class="notice">
-            Это демонстрационный симулятор. Здесь нет реальных ставок,
-            денег, депозитов или вывода средств.
-        </div>
-
-        <div class="slip" id="slip">
-            <div class="slip-empty">
-                Нажмите на любой виртуальный коэффициент,
-                чтобы добавить его сюда.
-            </div>
-        </div>
-
-    </aside>
+</aside>
 
 </div>
 
-<div class="goal-popup" id="goalPopup">
-    <div class="goal-box">
-        <div class="goal-word">ГОООЛ!</div>
-        <div class="goal-score" id="popupScore">1 : 0</div>
-    </div>
+<div id="toast" class="toast">
+  <b id="toastTitle">LIVEZONE</b>
+  <span id="toastText">Demo notification</span>
 </div>
 
 <script>
-
 /* =========================================================
-   LIVEZONE — STATIC GITHUB DEMO
-   Всё работает прямо в браузере.
-   Сервер не нужен.
-   ========================================================= */
+   LIVEZONE — STATIC DEMO ENGINE
+   Everything runs inside the browser.
+========================================================= */
 
 const matches = [
-    {
-        id: 1,
-        sport: "football",
-        league: "International Demo League",
-        home: "Manchester Blue",
-        away: "Madrid Red",
-        scoreHome: 0,
-        scoreAway: 0,
-        minute: 18,
-        status: "LIVE"
-    },
-    {
-        id: 2,
-        sport: "football",
-        league: "European Demo Cup",
-        home: "London FC",
-        away: "Milan United",
-        scoreHome: 1,
-        scoreAway: 1,
-        minute: 64,
-        status: "LIVE"
-    },
-    {
-        id: 3,
-        sport: "football",
-        league: "Demo Championship",
-        home: "Paris Stars",
-        away: "Berlin 04",
-        scoreHome: 2,
-        scoreAway: 0,
-        minute: 72,
-        status: "LIVE"
-    },
-    {
-        id: 4,
-        sport: "basketball",
-        league: "Demo Basketball League",
-        home: "Lions",
-        away: "Wolves",
-        scoreHome: 71,
-        scoreAway: 68,
-        minute: 7,
-        status: "LIVE",
-        quarter: 3
-    },
-    {
-        id: 5,
-        sport: "basketball",
-        league: "Demo Basketball Cup",
-        home: "Kings",
-        away: "Giants",
-        scoreHome: 52,
-        scoreAway: 55,
-        minute: 4,
-        status: "LIVE",
-        quarter: 2
-    },
-    {
-        id: 6,
-        sport: "hockey",
-        league: "Demo Ice League",
-        home: "North Stars",
-        away: "Polar Bears",
-        scoreHome: 2,
-        scoreAway: 1,
-        minute: 13,
-        status: "LIVE",
-        period: 2
-    },
-    {
-        id: 7,
-        sport: "tennis",
-        league: "Demo Tennis Open",
-        home: "Alex Stone",
-        away: "Daniel Wolf",
-        scoreHome: 1,
-        scoreAway: 0,
-        minute: 0,
-        status: "LIVE",
-        set: 2
-    },
-    {
-        id: 8,
-        sport: "volleyball",
-        league: "Demo Volleyball League",
-        home: "Storm",
-        away: "Falcons",
-        scoreHome: 18,
-        scoreAway: 20,
-        minute: 0,
-        status: "LIVE",
-        set: 2
-    }
+  {
+    id:1,sport:"football",league:"Premier Demo League",
+    home:"Manchester Blue",away:"London Reds",
+    hi:"🔵",ai:"🔴",score:[1,0],clock:24,
+    stats:{pos:[57,43],shots:[7,3],target:[3,1],corners:[4,1],fouls:[4,7],attacks:[61,39]},
+    events:[
+      {time:"18'",icon:"⚽",title:"ГОЛ — Manchester Blue",desc:"Быстрая атака через центр",side:"HOME"},
+      {time:"12'",icon:"🟨",title:"Жёлтая карточка",desc:"London Reds",side:"AWAY"},
+      {time:"07'",icon:"◉",title:"Удар в створ",desc:"Manchester Blue",side:"HOME"}
+    ]
+  },
+  {
+    id:2,sport:"football",league:"Champions Demo",
+    home:"Madrid Stars",away:"Milan Black",
+    hi:"⚪",ai:"⚫",score:[2,2],clock:67,
+    stats:{pos:[48,52],shots:[9,11],target:[5,6],corners:[3,6],fouls:[8,5],attacks:[43,57]},
+    events:[
+      {time:"61'",icon:"⚽",title:"ГОЛ — Milan Black",desc:"Удар из-за штрафной",side:"AWAY"},
+      {time:"54'",icon:"🟨",title:"Жёлтая карточка",desc:"Madrid Stars",side:"HOME"},
+      {time:"48'",icon:"⚽",title:"ГОЛ — Madrid Stars",desc:"Замыкание прострела",side:"HOME"}
+    ]
+  },
+  {
+    id:3,sport:"football",league:"International Demo",
+    home:"Paris Elite",away:"Berlin FC",
+    hi:"🔵",ai:"🟡",score:[0,1],clock:39,
+    stats:{pos:[62,38],shots:[10,4],target:[2,2],corners:[7,2],fouls:[3,5],attacks:[69,31]},
+    events:[
+      {time:"31'",icon:"⚽",title:"ГОЛ — Berlin FC",desc:"Контратака",side:"AWAY"},
+      {time:"26'",icon:"🟨",title:"Жёлтая карточка",desc:"Berlin FC",side:"AWAY"},
+      {time:"15'",icon:"◉",title:"Штанга!",desc:"Paris Elite",side:"HOME"}
+    ]
+  },
+  {
+    id:4,sport:"basketball",league:"Euro Demo Basketball",
+    home:"Berlin Giants",away:"Paris Lions",
+    hi:"🟦",ai:"🟥",score:[72,68],clock:31,
+    stats:{pos:[51,49],shots:[42,39],target:[18,16],corners:[0,0],fouls:[12,15],attacks:[58,55]},
+    events:[
+      {time:"31:12",icon:"🏀",title:"3PT — Berlin Giants",desc:"Точный бросок из-за дуги",side:"HOME"},
+      {time:"30:41",icon:"🏀",title:"2PT — Paris Lions",desc:"Быстрый проход",side:"AWAY"}
+    ]
+  },
+  {
+    id:5,sport:"basketball",league:"NBA Demo",
+    home:"LA Waves",away:"Boston Green",
+    hi:"🌊",ai:"🟢",score:[91,94],clock:38,
+    stats:{pos:[47,53],shots:[51,56],target:[25,28],corners:[0,0],fouls:[18,13],attacks:[49,61]},
+    events:[
+      {time:"38:04",icon:"🏀",title:"3PT — Boston Green",desc:"Дальний бросок",side:"AWAY"}
+    ]
+  },
+  {
+    id:6,sport:"hockey",league:"Ice Demo League",
+    home:"Berlin Ice",away:"Stockholm HC",
+    hi:"🔷",ai:"🟨",score:[3,2],clock:48,
+    stats:{pos:[52,48],shots:[28,25],target:[18,17],corners:[0,0],fouls:[9,12],attacks:[55,49]},
+    events:[
+      {time:"48'",icon:"🏒",title:"ГОЛ — Berlin Ice",desc:"Большинство",side:"HOME"},
+      {time:"44'",icon:"🟨",title:"Удаление 2 мин",desc:"Stockholm HC",side:"AWAY"}
+    ]
+  },
+  {
+    id:7,sport:"tennis",league:"Grand Demo Open",
+    home:"A. Novak",away:"D. Moreno",
+    hi:"🟦",ai:"🟥",score:[1,0],clock:64,
+    stats:{pos:[52,48],shots:[24,18],target:[0,0],corners:[0,0],fouls:[0,0],attacks:[54,46]},
+    events:[
+      {time:"64'",icon:"🎾",title:"Game — A. Novak",desc:"Удержал подачу",side:"HOME"},
+      {time:"58'",icon:"🎾",title:"Break point",desc:"D. Moreno",side:"AWAY"}
+    ]
+  },
+  {
+    id:8,sport:"volleyball",league:"World Demo Cup",
+    home:"Poland Pro",away:"Italy Pro",
+    hi:"🇵🇱",ai:"🇮🇹",score:[19,17],clock:2,
+    stats:{pos:[50,50],shots:[0,0],target:[0,0],corners:[0,0],fouls:[4,5],attacks:[49,51]},
+    events:[
+      {time:"02:31",icon:"🏐",title:"Очко — Poland Pro",desc:"Атака по линии",side:"HOME"},
+      {time:"02:04",icon:"🏐",title:"Очко — Italy Pro",desc:"Блок",side:"AWAY"}
+    ]
+  }
 ];
 
-let selectedMatch = null;
-let activeSport = "all";
+let activeSport="all";
+let currentMatch=null;
+let slip=[];
+let tick=0;
 
-let slip = [];
+const footballPlayers=[
+  ["1",10,50,"home"],["2",23,22,"home"],["3",23,42,"home"],
+  ["4",23,67,"home"],["5",34,31,"home"],["6",35,55,"home"],
+  ["7",48,19,"home"],["8",48,42,"home"],["9",58,58,"home"],
+  ["10",67,35,"home"],["11",79,53,"home"],
 
-const state = {
-    possession: 54,
-    shots: [5,3],
-    shotsOnTarget: [2,1],
-    dangerous: [18,13],
-    corners: [3,2],
-    fouls: [4,6],
-    yellow: [1,0],
-    red: [0,0],
-    offsides: [1,2],
-    passes: [121,104],
-    passAccuracy: [86,81],
-    attacks: [31,25]
-};
-
-const footballPlayersHome = [
-    ["1","6","50"],
-    ["4","20","31"],
-    ["5","20","50"],
-    ["3","20","69"],
-    ["8","38","38"],
-    ["6","38","62"],
-    ["10","54","30"],
-    ["7","54","50"],
-    ["11","54","70"],
-    ["9","72","50"]
+  ["1",90,50,"away"],["2",77,22,"away"],["3",77,42,"away"],
+  ["4",77,67,"away"],["5",66,31,"away"],["6",65,55,"away"],
+  ["7",52,19,"away"],["8",52,42,"away"],["9",42,58,"away"],
+  ["10",33,35,"away"],["11",21,53,"away"]
 ];
 
-const footballPlayersAway = [
-    ["1","94","50"],
-    ["4","80","31"],
-    ["5","80","50"],
-    ["3","80","69"],
-    ["8","62","38"],
-    ["6","62","62"],
-    ["10","46","30"],
-    ["7","46","50"],
-    ["11","46","70"],
-    ["9","28","50"]
-];
+function $(id){return document.getElementById(id)}
 
-const playerNames = [
-    "M. Carter",
-    "J. Stone",
-    "R. Walker",
-    "A. King",
-    "D. Miller",
-    "T. Adams",
-    "K. Brown",
-    "L. Wilson",
-    "S. Moore",
-    "N. Davis"
-];
+function setSport(sport,button){
+  activeSport=sport;
+  document.querySelectorAll(".sport").forEach(x=>x.classList.remove("active"));
+  if(button)button.classList.add("active");
 
-/* ---------------- HOME ---------------- */
+  document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
+  const f=document.querySelector(`.filter[onclick*="'${sport}'"]`);
+  if(f)f.classList.add("active");
 
-function showHome() {
-    document.getElementById("home").style.display = "block";
-    document.getElementById("matchCenter").classList.remove("active");
-    renderMatches();
+  renderMatches();
+  closeMatch();
 }
 
-function filterSport(sport) {
-    activeSport = sport;
-
-    document.querySelectorAll(".sport").forEach(x => {
-        x.classList.remove("active");
-    });
-
-    const target = document.querySelector(`[data-sport="${sport}"]`);
-    if (target) target.classList.add("active");
-
-    renderMatches();
+function setFilter(sport,button){
+  activeSport=sport;
+  document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
+  button.classList.add("active");
+  renderMatches();
 }
 
-function searchMatches() {
-    renderMatches();
+function searchMatches(){
+  renderMatches();
 }
 
-function renderMatches() {
+function renderMatches(){
+  const q=($("search").value||"").toLowerCase();
 
-    const container = document.getElementById("matches");
+  const list=matches.filter(m=>{
+    const sportOk=activeSport==="all"||m.sport===activeSport;
+    const text=(m.home+" "+m.away+" "+m.league).toLowerCase();
+    return sportOk&&text.includes(q);
+  });
 
-    const search = document
-        .getElementById("search")
-        .value
-        .toLowerCase();
+  $("matchLabel").textContent=
+    activeSport==="all"?"Все матчи":
+    activeSport==="football"?"Футбол":
+    activeSport==="basketball"?"Баскетбол":
+    activeSport==="hockey"?"Хоккей":
+    activeSport==="tennis"?"Теннис":"Волейбол";
 
-    let filtered = matches.filter(m => {
+  $("matches").innerHTML=list.map(m=>matchCard(m)).join("");
 
-        const sportOk =
-            activeSport === "all" ||
-            activeSport === "LIVE" ||
-            m.sport === activeSport;
-
-        const text =
-            `${m.home} ${m.away} ${m.league}`
-            .toLowerCase();
-
-        return sportOk && text.includes(search);
-    });
-
-    if (!filtered.length) {
-        container.innerHTML =
-            `<div class="result">Ничего не найдено</div>`;
-        return;
-    }
-
-    const grouped = {};
-
-    filtered.forEach(m => {
-        if (!grouped[m.league]) grouped[m.league] = [];
-        grouped[m.league].push(m);
-    });
-
-    container.innerHTML = Object.keys(grouped).map(league => {
-
-        return `
-        <div class="league">
-
-            <div class="league-header">
-                <span class="live-dot"></span>
-                ${league}
-            </div>
-
-            ${grouped[league].map(m => matchHTML(m)).join("")}
-
-        </div>
-        `;
-
-    }).join("");
+  if(!list.length){
+    $("matches").innerHTML=`
+      <div style="grid-column:1/-1;padding:50px;text-align:center;color:#707988">
+        Ничего не найдено
+      </div>`;
+  }
 }
 
-function matchHTML(m) {
+function matchCard(m){
+  const sportName={
+    football:"⚽ Футбол",
+    basketball:"🏀 Баскетбол",
+    hockey:"🏒 Хоккей",
+    tennis:"🎾 Теннис",
+    volleyball:"🏐 Волейбол"
+  }[m.sport];
 
-    const isFootball = m.sport === "football";
+  const o=odds(m);
 
-    let labels;
-
-    if (m.sport === "football") {
-        labels = ["П1","X","П2"];
-    } else if (m.sport === "basketball") {
-        labels = ["П1","П2","Тотал"];
-    } else if (m.sport === "hockey") {
-        labels = ["П1","X","П2"];
-    } else if (m.sport === "tennis") {
-        labels = ["П1","П2","Тотал"];
-    } else {
-        labels = ["П1","П2","Тотал"];
-    }
-
-    const odds = generateOdds(m);
-
-    return `
-    <div class="match" onclick="openMatch(${m.id})">
-
-        <div class="teams">
-
-            <div class="team-row">
-                <div class="team-logo">${m.home[0]}</div>
-                ${m.home}
-            </div>
-
-            <div class="team-row">
-                <div class="team-logo">${m.away[0]}</div>
-                ${m.away}
-            </div>
-
-        </div>
-
-        <div class="score">
-
-            ${m.scoreHome} : ${m.scoreAway}
-
-            <small>${m.status}</small>
-
-        </div>
-
-        <div class="odds">
-
-            <div class="odd"
-                 onclick="event.stopPropagation();addSlip('${m.home}','П1',${odds[0]})">
-                <div class="odd-name">${labels[0]}</div>
-                <div class="odd-value">${odds[0]}</div>
-            </div>
-
-            <div class="odd"
-                 onclick="event.stopPropagation();addSlip('${m.home} — ${m.away}','${labels[1]}',${odds[1]})">
-                <div class="odd-name">${labels[1]}</div>
-                <div class="odd-value">${odds[1]}</div>
-            </div>
-
-            <div class="odd"
-                 onclick="event.stopPropagation();addSlip('${m.away}','${labels[2]}',${odds[2]})">
-                <div class="odd-name">${labels[2]}</div>
-                <div class="odd-value">${odds[2]}</div>
-            </div>
-
-        </div>
-
+  return `
+  <article class="match" onclick="openMatch(${m.id})">
+    <div class="matchTop">
+      <span class="live"><i class="liveDot"></i> LIVE</span>
+      <span>${sportName}</span>
+      <span class="right">${m.league}</span>
     </div>
-    `;
-}
 
-/* ---------------- MATCH CENTER ---------------- */
-
-function openMatch(id) {
-
-    selectedMatch =
-        matches.find(x => x.id === id);
-
-    if (!selectedMatch) return;
-
-    document.getElementById("home").style.display = "none";
-    document.getElementById("matchCenter").classList.add("active");
-
-    document.getElementById("homeName").textContent =
-        selectedMatch.home;
-
-    document.getElementById("awayName").textContent =
-        selectedMatch.away;
-
-    document.getElementById("homeScore").textContent =
-        selectedMatch.scoreHome;
-
-    document.getElementById("awayScore").textContent =
-        selectedMatch.scoreAway;
-
-    renderPlayers();
-    renderStats();
-    renderEvents();
-    renderMarkets();
-    renderLineups();
-
-    document.querySelectorAll(".tab").forEach(t =>
-        t.classList.remove("active")
-    );
-
-    document.querySelector(".tab").classList.add("active");
-
-    document.querySelectorAll(".tab-content").forEach(t =>
-        t.classList.remove("active")
-    );
-
-    document.getElementById("overview")
-        .classList.add("active");
-}
-
-function openTab(id, button) {
-
-    document.querySelectorAll(".tab")
-        .forEach(t => t.classList.remove("active"));
-
-    button.classList.add("active");
-
-    document.querySelectorAll(".tab-content")
-        .forEach(t => t.classList.remove("active"));
-
-    document.getElementById(id)
-        .classList.add("active");
-}
-
-/* ---------------- FOOTBALL FIELD ---------------- */
-
-function renderPlayers() {
-
-    const container =
-        document.getElementById("players");
-
-    if (selectedMatch.sport !== "football") {
-
-        container.innerHTML = `
-            <div style="
-                position:absolute;
-                inset:0;
-                display:grid;
-                place-items:center;
-                color:white;
-                font-weight:900;
-                font-size:20px;
-            ">
-                LIVE ${selectedMatch.sport.toUpperCase()} SIMULATION
-            </div>
-        `;
-
-        return;
-    }
-
-    let html = "";
-
-    footballPlayersHome.forEach(p => {
-
-        html += `
-        <div class="player home"
-             style="left:${p[1]}%;top:${p[2]}%">
-             ${p[0]}
-        </div>
-        `;
-    });
-
-    footballPlayersAway.forEach(p => {
-
-        html += `
-        <div class="player away"
-             style="left:${p[1]}%;top:${p[2]}%">
-             ${p[0]}
-        </div>
-        `;
-    });
-
-    container.innerHTML = html;
-
-    document.getElementById("ball").style.left = "50%";
-    document.getElementById("ball").style.top = "50%";
-}
-
-/* ---------------- STATS ---------------- */
-
-function renderStats() {
-
-    const labels = [
-        ["Владение", state.possession, 100-state.possession],
-        ["Удары", state.shots[0], state.shots[1]],
-        ["В створ", state.shotsOnTarget[0], state.shotsOnTarget[1]],
-        ["Опасные атаки", state.dangerous[0], state.dangerous[1]],
-        ["Угловые", state.corners[0], state.corners[1]],
-        ["Фолы", state.fouls[0], state.fouls[1]],
-        ["Жёлтые", state.yellow[0], state.yellow[1]],
-        ["Офсайды", state.offsides[0], state.offsides[1]]
-    ];
-
-    document.getElementById("statsBox").innerHTML =
-        labels.map(s => {
-
-            const total = s[1] + s[2] || 1;
-            const left = Math.round(s[1] / total * 100);
-
-            return `
-            <div class="stat">
-
-                <div class="stat-num">${s[1]}</div>
-
-                <div>
-
-                    <div class="stat-label">${s[0]}</div>
-
-                    <div class="progress">
-                        <div class="progress-inner"
-                             style="width:${left}%">
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="stat-num" style="text-align:right">
-                    ${s[2]}
-                </div>
-
-            </div>
-            `;
-
-        }).join("");
-
-    document.getElementById("fullStats").innerHTML =
-        labels.map(s => {
-
-            return `
-            <div class="stat">
-
-                <div class="stat-num">${s[1]}</div>
-
-                <div class="stat-label">${s[0]}</div>
-
-                <div class="stat-num" style="text-align:right">
-                    ${s[2]}
-                </div>
-
-            </div>
-            `;
-
-        }).join("");
-}
-
-/* ---------------- EVENTS ---------------- */
-
-let events = [
-    {
-        minute: 4,
-        icon: "⚡",
-        text: "Опасная атака хозяев"
-    },
-    {
-        minute: 9,
-        icon: "🎯",
-        text: "Удар — мимо ворот"
-    },
-    {
-        minute: 13,
-        icon: "🟨",
-        text: "Жёлтая карточка"
-    },
-    {
-        minute: 17,
-        icon: "⚽",
-        text: "Удар в створ — вратарь спасает"
-    }
-];
-
-function renderEvents() {
-
-    const html = events
-        .slice()
-        .reverse()
-        .map(e => `
-            <div class="event">
-                <div class="event-time">${e.minute}'</div>
-                <div class="event-icon">${e.icon}</div>
-                <div>${e.text}</div>
-            </div>
-        `)
-        .join("");
-
-    document.getElementById("eventBox").innerHTML =
-        html;
-
-    document.getElementById("fullEvents").innerHTML =
-        html;
-}
-
-function addEvent(minute, icon, text) {
-
-    events.push({
-        minute,
-        icon,
-        text
-    });
-
-    if (events.length > 40) {
-        events.shift();
-    }
-
-    renderEvents();
-}
-
-/* ---------------- MARKETS ---------------- */
-
-function generateOdds(m) {
-
-    const total =
-        m.scoreHome + m.scoreAway;
-
-    let home = 1.55 + Math.random() * .5;
-    let draw = 3.0 + Math.random() * .7;
-    let away = 2.0 + Math.random() * .8;
-
-    if (m.scoreHome > m.scoreAway) {
-        home -= .18;
-        away += .25;
-    }
-
-    if (m.scoreAway > m.scoreHome) {
-        away -= .18;
-        home += .25;
-    }
-
-    return [
-        home.toFixed(2),
-        draw.toFixed(2),
-        away.toFixed(2)
-    ];
-}
-
-function renderMarkets() {
-
-    if (!selectedMatch) return;
-
-    const m = selectedMatch;
-
-    const o = generateOdds(m);
-
-    let html = "";
-
-    if (m.sport === "football") {
-
-        html = `
-
-        ${market(
-            "Исход матча",
-            [
-                ["П1",o[0]],
-                ["X",o[1]],
-                ["П2",o[2]]
-            ]
-        )}
-
-        ${market(
-            "Двойной шанс",
-            [
-                ["1X","1.24"],
-                ["12","1.30"],
-                ["X2","1.42"]
-            ]
-        )}
-
-        ${market(
-            "Обе забьют",
-            [
-                ["Да","1.67"],
-                ["Нет","2.08"]
-            ]
-        )}
-
-        ${market(
-            "Тотал голов",
-            [
-                ["ТБ 0.5","1.05"],
-                ["ТБ 1.5","1.29"],
-                ["ТБ 2.5","1.82"],
-                ["ТБ 3.5","2.65"],
-                ["ТБ 4.5","4.10"],
-                ["ТМ 2.5","1.91"],
-                ["ТМ 3.5","1.42"],
-                ["ТМ 4.5","1.20"]
-            ]
-        )}
-
-        ${market(
-            "Индивидуальный тотал хозяев",
-            [
-                ["ИТБ 0.5","1.22"],
-                ["ИТБ 1.5","1.86"],
-                ["ИТБ 2.5","3.15"],
-                ["ИТМ 1.5","1.80"]
-            ]
-        )}
-
-        ${market(
-            "Фора",
-            [
-                ["Ф1(-1.5)","2.65"],
-                ["Ф1(-0.5)","1.51"],
-                ["Ф1(+0.5)","1.20"],
-                ["Ф2(-1.5)","3.50"],
-                ["Ф2(-0.5)","2.10"],
-                ["Ф2(+0.5)","1.48"]
-            ]
-        )}
-
-        ${market(
-            "Чёт / нечёт",
-            [
-                ["Чёт","1.91"],
-                ["Нечёт","1.91"]
-            ]
-        )}
-
-        ${market(
-            "Следующий гол",
-            [
-                [m.home,"1.75"],
-                ["Без гола","3.90"],
-                [m.away,"2.05"]
-            ]
-        )}
-
-        ${market(
-            "Угловые",
-            [
-                ["ТБ 7.5","1.72"],
-                ["ТБ 8.5","1.92"],
-                ["ТБ 9.5","2.20"],
-                ["ТМ 9.5","1.62"],
-                ["ТМ 10.5","1.43"]
-            ]
-        )}
-
-        ${market(
-            "Карточки",
-            [
-                ["ТБ 2.5","1.61"],
-                ["ТБ 3.5","1.94"],
-                ["ТБ 4.5","2.45"],
-                ["ТМ 3.5","1.70"]
-            ]
-        )}
-
-        ${market(
-            "Точный счёт",
-            [
-                ["1:0","5.40"],
-                ["2:0","7.20"],
-                ["2:1","8.10"],
-                ["1:1","6.20"],
-                ["0:0","8.50"],
-                ["1:2","10.0"],
-                ["2:2","15.0"]
-            ]
-        )}
-        `;
-
-    } else if (m.sport === "basketball") {
-
-        html = `
-
-        ${market("Победитель",[
-            [m.home,"1.75"],
-            [m.away,"2.05"]
-        ])}
-
-        ${market("Фора",[
-            [m.home+" -3.5","1.90"],
-            [m.home+" -5.5","2.15"],
-            [m.away+" +3.5","1.90"],
-            [m.away+" +5.5","1.75"]
-        ])}
-
-        ${market("Тотал",[
-            ["ТБ 145.5","1.90"],
-            ["ТБ 155.5","1.95"],
-            ["ТБ 165.5","2.20"],
-            ["ТМ 155.5","1.85"]
-        ])}
-
-        ${market("Следующее очко",[
-            [m.home,"1.85"],
-            [m.away,"1.85"]
-        ])}
-
-        ${market("Чёт / нечёт",[
-            ["Чёт","1.90"],
-            ["Нечёт","1.90"]
-        ])}
-        `;
-
-    } else if (m.sport === "hockey") {
-
-        html = `
-
-        ${market("Победитель",[
-            ["П1","1.75"],
-            ["X","4.20"],
-            ["П2","2.15"]
-        ])}
-
-        ${market("Двойной шанс",[
-            ["1X","1.30"],
-            ["12","1.25"],
-            ["X2","1.40"]
-        ])}
-
-        ${market("Тотал шайб",[
-            ["ТБ 4.5","1.72"],
-            ["ТБ 5.5","2.00"],
-            ["ТБ 6.5","2.45"],
-            ["ТМ 5.5","1.80"]
-        ])}
-
-        ${market("Следующая шайба",[
-            [m.home,"1.78"],
-            ["Не будет","4.20"],
-            [m.away,"2.10"]
-        ])}
-        `;
-
-    } else if (m.sport === "tennis") {
-
-        html = `
-
-        ${market("Победитель",[
-            [m.home,"1.62"],
-            [m.away,"2.25"]
-        ])}
-
-        ${market("Фора по геймам",[
-            [m.home+" -2.5","1.90"],
-            [m.home+" +2.5","1.82"],
-            [m.away+" -2.5","2.05"],
-            [m.away+" +2.5","1.75"]
-        ])}
-
-        ${market("Тотал геймов",[
-            ["ТБ 20.5","1.85"],
-            ["ТБ 22.5","2.05"],
-            ["ТМ 22.5","1.78"]
-        ])}
-
-        ${market("Количество сетов",[
-            ["2","1.45"],
-            ["3","2.65"]
-        ])}
-
-        ${market("Тай-брейк",[
-            ["Да","2.10"],
-            ["Нет","1.68"]
-        ])}
-        `;
-
-    } else {
-
-        html = `
-
-        ${market("Победитель",[
-            [m.home,"1.72"],
-            [m.away,"2.10"]
-        ])}
-
-        ${market("Фора по очкам",[
-            [m.home+" -2.5","1.90"],
-            [m.home+" +2.5","1.82"],
-            [m.away+" -2.5","2.00"],
-            [m.away+" +2.5","1.75"]
-        ])}
-
-        ${market("Тотал очков",[
-            ["ТБ 175.5","1.85"],
-            ["ТБ 185.5","2.10"],
-            ["ТМ 185.5","1.72"]
-        ])}
-
-        ${market("Количество сетов",[
-            ["3","1.55"],
-            ["4","2.25"],
-            ["5","4.20"]
-        ])}
-        `;
-    }
-
-    document.getElementById("marketsBox").innerHTML = html;
-}
-
-function market(title, selections) {
-
-    return `
-    <div class="market">
-
-        <div class="market-title">
-            ${title}
-        </div>
-
-        <div class="market-grid">
-
-            ${selections.map(x => `
-                <div class="market-odd"
-                     onclick="addSlip('${escapeText(x[0])}','${escapeText(title)}',${x[1]})">
-
-                    <span>${x[0]}</span>
-                    <span>${x[1]}</span>
-
-                </div>
-            `).join("")}
-
-        </div>
-
+    <div class="matchTeams">
+      <div class="team">
+        <div class="crest">${m.hi}</div>
+        ${m.home}
+      </div>
+
+      <div class="score">
+        <strong>${m.score[0]}:${m.score[1]}</strong>
+        <small>${clockText(m)}</small>
+      </div>
+
+      <div class="team">
+        <div class="crest">${m.ai}</div>
+        ${m.away}
+      </div>
     </div>
-    `;
+
+    <div class="oddsRow">
+      <div class="odd"><span>П1</span><b>${o[0]}</b></div>
+      <div class="odd"><span>X</span><b>${o[1]}</b></div>
+      <div class="odd"><span>П2</span><b>${o[2]}</b></div>
+    </div>
+  </article>`;
 }
 
-function escapeText(text) {
-    return text.replace(/'/g,"");
+function clockText(m){
+  if(m.sport==="tennis")return "SET "+m.score[0]+":"+m.score[1];
+  if(m.sport==="basketball")return "Q"+Math.ceil(m.clock/12);
+  if(m.sport==="volleyball")return "SET "+Math.ceil(m.clock/25);
+  return m.clock+"' LIVE";
 }
 
-/* ---------------- SLIP ---------------- */
+function odds(m){
+  const a=m.score[0],b=m.score[1];
+  const diff=a-b;
 
-function addSlip(selection, marketName, odd) {
+  if(m.sport==="football"){
+    let p1=Math.max(1.15,2.35-diff*.28-(m.stats.pos[0]-50)*.01);
+    let p2=Math.max(1.15,2.35+diff*.28+(m.stats.pos[0]-50)*.01);
+    let x=3.15+Math.abs(diff)*.3;
+    return [p1.toFixed(2),x.toFixed(2),p2.toFixed(2)];
+  }
 
-    slip.push({
-        selection,
-        market: marketName,
-        odd: Number(odd)
-    });
+  if(m.sport==="basketball"){
+    let p1=Math.max(1.12,1.9-diff*.015);
+    let p2=Math.max(1.12,1.9+diff*.015);
+    return [p1.toFixed(2),"—",p2.toFixed(2)];
+  }
 
-    renderSlip();
+  if(m.sport==="hockey"){
+    let p1=Math.max(1.18,2.25-diff*.22);
+    let p2=Math.max(1.18,2.25+diff*.22);
+    return [p1.toFixed(2),(3.5+Math.abs(diff)*.15).toFixed(2),p2.toFixed(2)];
+  }
+
+  return [
+    Math.max(1.15,1.75-diff*.12).toFixed(2),
+    "—",
+    Math.max(1.15,1.75+diff*.12).toFixed(2)
+  ];
 }
 
-function renderSlip() {
+function openMatch(id){
+  currentMatch=matches.find(x=>x.id===id);
+  if(!currentMatch)return;
 
-    const box = document.getElementById("slip");
+  $("matches").style.display="none";
+  $("center").classList.add("show");
 
-    if (!slip.length) {
+  $("mcLeague").textContent=currentMatch.league;
+  $("mcHome").textContent=currentMatch.home;
+  $("mcAway").textContent=currentMatch.away;
+  $("mcHomeIcon").textContent=currentMatch.hi;
+  $("mcAwayIcon").textContent=currentMatch.ai;
 
-        box.innerHTML = `
-            <div class="slip-empty">
-                Нажмите на любой виртуальный коэффициент,
-                чтобы добавить его сюда.
-            </div>
-        `;
+  updateCenter();
+  renderField();
+  renderOverview();
+  renderMarkets();
+  renderStats();
+  renderEvents();
+  renderLineups();
 
-        return;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function closeMatch(){
+  $("center").classList.remove("show");
+  $("matches").style.display="";
+  currentMatch=null;
+}
+
+function updateCenter(){
+  if(!currentMatch)return;
+  $("mcScore").textContent=currentMatch.score[0]+" : "+currentMatch.score[1];
+  $("mcClock").textContent=clockText(currentMatch);
+}
+
+function openTab(name,button){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  button.classList.add("active");
+
+  document.querySelectorAll(".tabPanel").forEach(x=>x.classList.remove("active"));
+  $("tab-"+name).classList.add("active");
+}
+
+/* FIELD */
+
+function renderField(){
+  if(!currentMatch||currentMatch.sport!=="football"){
+    $("footballField").style.display="none";
+    return;
+  }
+
+  $("footballField").style.display="block";
+
+  $("players").innerHTML=footballPlayers.map((p,i)=>`
+    <div class="player ${p[3]}" id="p${i}"
+      style="left:${p[1]}%;top:${p[2]}%">
+      ${p[0]}
+    </div>
+  `).join("");
+
+  moveBall();
+}
+
+function moveBall(){
+  if(!currentMatch||currentMatch.sport!=="football")return;
+
+  const x=30+Math.random()*40;
+  const y=20+Math.random()*60;
+
+  $("ball").style.left=x+"%";
+  $("ball").style.top=y+"%";
+
+  for(let i=0;i<footballPlayers.length;i++){
+    if(Math.random()<.22){
+      const el=$("p"+i);
+      if(el){
+        const base=footballPlayers[i];
+        const nx=Math.max(7,Math.min(93,base[1]+(Math.random()*12-6)));
+        const ny=Math.max(8,Math.min(92,base[2]+(Math.random()*12-6)));
+        el.style.left=nx+"%";
+        el.style.top=ny+"%";
+      }
     }
+  }
+}
 
-    let total = slip.reduce(
-        (sum,x) => sum * x.odd,
-        1
-    );
+/* OVERVIEW */
 
-    box.innerHTML = `
+function renderOverview(){
+  if(!currentMatch)return;
 
-        ${slip.map((x,i) => `
-            <div class="slip-item">
+  const s=currentMatch.stats;
 
-                <div class="slip-name">
-                    ${x.selection}
-                </div>
+  $("overviewStats").innerHTML=`
+    ${statBar("Владение",s.pos[0],s.pos[1])}
+    ${statBar("Удары",s.shots[0],s.shots[1])}
+    ${statBar("В створ",s.target[0],s.target[1])}
 
-                <div style="font-size:11px;color:#788593;margin-top:4px">
-                    ${x.market}
-                </div>
+    <div class="statsGrid">
+      ${miniStat(s.corners[0],"Угловые",s.corners[1])}
+      ${miniStat(s.fouls[0],"Фолы",s.fouls[1])}
+      ${miniStat(s.attacks[0],"Атаки",s.attacks[1])}
+    </div>
+  `;
+}
 
-                <div class="slip-odd">
-                    ${x.odd.toFixed(2)}
-                </div>
+function statBar(name,a,b){
+  const total=Math.max(1,a+b);
+  const pct=Math.round(a/total*100);
 
-            </div>
-        `).join("")}
+  return `
+  <div class="statLine">
+    <div class="statHead">
+      <b>${a}</b><span>${name}</span><b>${b}</b>
+    </div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+  </div>`;
+}
 
-        <div style="
-            padding:10px 0;
-            border-top:1px solid #26313c;
-            margin-top:10px;
-        ">
-            <div style="color:#8995a3;font-size:12px">
-                Общий виртуальный коэффициент
-            </div>
+function miniStat(a,name,b){
+  return `
+  <div class="statBox">
+    <b>${a} — ${b}</b>
+    <span>${name}</span>
+  </div>`;
+}
 
-            <div style="
-                font-size:22px;
-                font-weight:900;
-                color:#19d47b;
-                margin-top:4px;
-            ">
-                ${total.toFixed(2)}
-            </div>
-        </div>
+/* MARKETS */
 
-        <button class="clear" onclick="clearSlip()">
-            Очистить
+function renderMarkets(){
+  if(!currentMatch)return;
+
+  const m=currentMatch;
+  const o=odds(m);
+
+  let groups=[];
+
+  if(m.sport==="football"){
+    groups=[
+      market("Исход матча",[
+        ["П1",o[0]],["Ничья",o[1]],["П2",o[2]]
+      ]),
+      market("Двойной шанс",[
+        ["1X","1.28"],["12","1.24"],["X2","1.42"]
+      ]),
+      market("Тотал голов",[
+        ["ТБ 1.5","1.30"],["ТБ 2.5","1.78"],["ТМ 3.5","1.62"]
+      ]),
+      market("Обе забьют",[
+        ["Да","1.64"],["Нет","2.12"],["Гол в 1Т","1.55"]
+      ]),
+      market("Следующий гол",[
+        [m.home,"1.72"],["Без гола","3.20"],[m.away,"2.15"]
+      ]),
+      market("Точный счёт",[
+        ["1:0","5.60"],["1:1","6.20"],["2:1","7.40"]
+      ])
+    ];
+  }
+
+  if(m.sport==="basketball"){
+    groups=[
+      market("Победитель",[
+        [m.home,o[0]],[m.away,o[2]],["ОТ","18.0"]
+      ]),
+      market("Фора",[
+        [m.home+" -3.5","1.86"],[m.home+" +3.5","1.86"],[m.away+" +5.5","1.91"]
+      ]),
+      market("Тотал",[
+        ["ТБ 165.5","1.87"],["ТБ 175.5","1.91"],["ТМ 185.5","1.84"]
+      ]),
+      market("Следующее очко",[
+        [m.home,"1.84"],[m.away,"1.84"],["3PT","4.10"]
+      ])
+    ];
+  }
+
+  if(m.sport==="hockey"){
+    groups=[
+      market("Исход",[
+        ["П1",o[0]],["X",o[1]],["П2",o[2]]
+      ]),
+      market("Тотал шайб",[
+        ["ТБ 4.5","1.52"],["ТБ 5.5","1.88"],["ТМ 6.5","1.67"]
+      ]),
+      market("Следующая шайба",[
+        [m.home,"1.68"],["Без шайбы","3.60"],[m.away,"2.22"]
+      ]),
+      market("Период",[
+        ["1 период П1","2.10"],["1 период X","2.70"],["1 период П2","2.80"]
+      ])
+    ];
+  }
+
+  if(m.sport==="tennis"){
+    groups=[
+      market("Победитель",[
+        [m.home,o[0]],[m.away,o[2]],["2:0","2.70"]
+      ]),
+      market("Фора по геймам",[
+        [m.home+" -2.5","1.88"],[m.away+" +2.5","1.86"],[m.home+" +1.5","1.73"]
+      ]),
+      market("Тотал геймов",[
+        ["ТБ 20.5","1.87"],["ТБ 22.5","1.95"],["ТМ 24.5","1.80"]
+      ])
+    ];
+  }
+
+  if(m.sport==="volleyball"){
+    groups=[
+      market("Победитель",[
+        [m.home,o[0]],[m.away,o[2]],["5 сетов","3.10"]
+      ]),
+      market("Фора по очкам",[
+        [m.home+" -2.5","1.86"],[m.away+" +2.5","1.87"],[m.home+" +4.5","1.55"]
+      ]),
+      market("Тотал",[
+        ["ТБ 175.5","1.87"],["ТБ 185.5","2.00"],["ТМ 195.5","1.83"]
+      ])
+    ];
+  }
+
+  $("markets").innerHTML=groups.join("");
+}
+
+function market(title,items){
+  return `
+  <div class="marketGroup">
+    <div class="marketTitle">
+      ${title}<span>›</span>
+    </div>
+    <div class="marketGrid">
+      ${items.map(x=>`
+        <button class="marketBtn" onclick="addSlip('${safe(x[0])}','${x[1]}')">
+          ${x[0]}<b>${x[1]}</b>
         </button>
-
-    `;
+      `).join("")}
+    </div>
+  </div>`;
 }
 
-function clearSlip() {
-    slip = [];
+function safe(s){
+  return s.replaceAll("'","&#39;");
+}
+
+/* STATS */
+
+function renderStats(){
+  if(!currentMatch)return;
+  const s=currentMatch.stats;
+
+  $("fullStats").innerHTML=`
+    <h3 style="font-size:13px;margin:0 0 16px">Основная статистика</h3>
+    ${statBar("Владение мячом",s.pos[0],s.pos[1])}
+    ${statBar("Удары",s.shots[0],s.shots[1])}
+    ${statBar("Удары в створ",s.target[0],s.target[1])}
+    ${statBar("Атаки",s.attacks[0],s.attacks[1])}
+    ${statBar("Фолы",s.fouls[0],s.fouls[1])}
+    ${s.corners[0]+s.corners[1]>0?statBar("Угловые",s.corners[0],s.corners[1]):""}
+  `;
+}
+
+/* EVENTS */
+
+function renderEvents(){
+  if(!currentMatch)return;
+
+  $("events").innerHTML=currentMatch.events.map(e=>`
+    <div class="event">
+      <div class="eventTime">${e.time}</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="eventIcon">${e.icon}</div>
+        <div class="eventText">
+          <b>${e.title}</b>
+          <span>${e.desc}</span>
+        </div>
+      </div>
+      <div class="eventSide">${e.side}</div>
+    </div>
+  `).join("");
+}
+
+/* LINEUPS */
+
+function renderLineups(){
+  if(!currentMatch)return;
+
+  const names=[
+    "Alex Morgan","Daniel Stone","Marco Silva","Ryan Cole",
+    "Lucas Reed","Victor Lane","Noah King","Ethan West",
+    "Leo James","Max Carter","Adam Brown"
+  ];
+
+  function teamList(team){
+    return `
+    <div class="marketGroup">
+      <div class="marketTitle">${team}<span>STARTING XI</span></div>
+      ${names.map((n,i)=>`
+        <div style="display:flex;justify-content:space-between;padding:10px 12px;border-top:1px solid #202630;font-size:11px">
+          <span>${i+1}. ${n}</span>
+          <b style="color:#25d98b">${(7.1+Math.random()*.9).toFixed(1)}</b>
+        </div>
+      `).join("")}
+    </div>`;
+  }
+
+  $("lineups").innerHTML=teamList(currentMatch.home)+teamList(currentMatch.away);
+}
+
+/* SLIP */
+
+function addSlip(pick,odd){
+  if(!currentMatch)return;
+
+  const item={
+    id:Date.now()+Math.random(),
+    match:currentMatch.home+" — "+currentMatch.away,
+    pick,
+    odd:Number(odd)||1
+  };
+
+  slip.push(item);
+  renderSlip();
+  showToast("Добавлено в купон",pick+" × "+odd);
+}
+
+function removeSlip(id){
+  slip=slip.filter(x=>x.id!==id);
+  renderSlip();
+}
+
+function renderSlip(){
+  $("slipCount").textContent=slip.length;
+
+  if(!slip.length){
+    $("slip").innerHTML=`
+      <div class="slipEmpty">
+        <div>
+          <div class="basket">▱</div>
+          <b>Купон пуст</b>
+          <div style="font-size:10px;margin-top:6px">
+            Нажми на коэффициент, чтобы добавить событие
+          </div>
+        </div>
+      </div>`;
+    $("possible").textContent="—";
+    return;
+  }
+
+  $("slip").innerHTML=slip.map(x=>`
+    <div class="slipItem">
+      <div class="slipItemTop">
+        <span>${x.match}</span>
+        <button class="remove" onclick="removeSlip(${x.id})">×</button>
+      </div>
+      <b>${x.pick}</b>
+      <div class="slipPick">Коэффициент ${x.odd.toFixed(2)}</div>
+    </div>
+  `).join("");
+
+  const total=slip.reduce((a,x)=>a*x.odd,1);
+  $("possible").textContent=Math.round(1000*total).toLocaleString("ru-RU")+" ₽";
+}
+
+function demoAction(){
+  if(!slip.length){
+    showToast("Купон пуст","Добавь хотя бы одно виртуальное событие");
+    return;
+  }
+
+  showToast(
+    "DEMO выполнено ✓",
+    "Результат смоделирован. Реальных денег нет."
+  );
+
+  setTimeout(()=>{
+    slip=[];
     renderSlip();
+  },1200);
 }
 
-/* ---------------- SIMULATION ---------------- */
-
-let lastSecond = Date.now();
-
-setInterval(() => {
-
-    const now = Date.now();
-
-    if (now - lastSecond < 900) return;
-
-    lastSecond = now;
-
-    simulate();
-
-}, 1000);
-
-function simulate() {
-
-    matches.forEach(m => {
-
-        if (m.status !== "LIVE") return;
-
-        if (m.sport === "football") {
-
-            m.minute++;
-
-            if (Math.random() < .17) {
-                state.attacks[0]++;
-            }
-
-            if (Math.random() < .15) {
-                state.attacks[1]++;
-            }
-
-            if (Math.random() < .08) {
-
-                state.dangerous[
-                    Math.random() > .5 ? 0 : 1
-                ]++;
-
-            }
-
-            if (Math.random() < .035) {
-
-                const team =
-                    Math.random() > .5 ? 0 : 1;
-
-                state.shots[team]++;
-
-                if (Math.random() < .42) {
-
-                    state.shotsOnTarget[team]++;
-
-                    moveBallRandom();
-
-                    if (Math.random() < .25) {
-
-                        if (team === 0)
-                            m.scoreHome++;
-                        else
-                            m.scoreAway++;
-
-                        addEvent(
-                            m.minute,
-                            "⚽",
-                            team === 0
-                                ? `${m.home} забивает гол!`
-                                : `${m.away} забивает гол!`
-                        );
-
-                        showGoal();
-
-                    } else {
-
-                        addEvent(
-                            m.minute,
-                            "🎯",
-                            "Удар в створ — вратарь спасает"
-                        );
-                    }
-
-                } else {
-
-                    addEvent(
-                        m.minute,
-                        "⚡",
-                        "Опасная атака и удар мимо ворот"
-                    );
-                }
-            }
-
-            if (Math.random() < .025) {
-
-                state.corners[
-                    Math.random() > .5 ? 0 : 1
-                ]++;
-
-                addEvent(
-                    m.minute,
-                    "🚩",
-                    "Угловой"
-                );
-            }
-
-            if (Math.random() < .018) {
-
-                const team =
-                    Math.random() > .5 ? 0 : 1;
-
-                state.yellow[team]++;
-
-                addEvent(
-                    m.minute,
-                    "🟨",
-                    team === 0
-                        ? `Жёлтая карточка — ${m.home}`
-                        : `Жёлтая карточка — ${m.away}`
-                );
-            }
-
-            if (m.minute >= 90) {
-
-                m.minute = 90;
-                m.status = "FT";
-
-                addEvent(
-                    90,
-                    "🏁",
-                    "Матч завершён"
-                );
-            }
-
-        } else if (m.sport === "basketball") {
-
-            m.minute++;
-
-            if (Math.random() < .55) {
-                if (Math.random() > .5)
-                    m.scoreHome += Math.random() > .7 ? 3 : 2;
-                else
-                    m.scoreAway += Math.random() > .7 ? 3 : 2;
-            }
-
-            if (m.minute >= 10) {
-                m.minute = 0;
-                m.quarter++;
-
-                if (m.quarter > 4) {
-                    m.quarter = 4;
-                    m.status = "FT";
-                }
-            }
-
-        } else if (m.sport === "hockey") {
-
-            m.minute++;
-
-            if (Math.random() < .025) {
-
-                if (Math.random() > .5)
-                    m.scoreHome++;
-                else
-                    m.scoreAway++;
-
-            }
-
-            if (m.minute >= 20) {
-
-                m.minute = 0;
-                m.period++;
-
-                if (m.period > 3) {
-                    m.period = 3;
-                    m.status = "FT";
-                }
-            }
-
-        } else if (m.sport === "tennis") {
-
-            if (Math.random() < .25) {
-
-                if (Math.random() > .5)
-                    m.scoreHome++;
-                else
-                    m.scoreAway++;
-            }
-
-        } else if (m.sport === "volleyball") {
-
-            if (Math.random() < .5) {
-
-                if (Math.random() > .5)
-                    m.scoreHome++;
-                else
-                    m.scoreAway++;
-            }
-
-        }
-
-    });
-
-    if (selectedMatch) {
-
-        updateMatchCenter();
-
+/* SIMULATION */
+
+function simulation(){
+  tick++;
+
+  matches.forEach(m=>{
+    if(m.sport==="football"){
+      m.clock++;
+      if(m.clock>90)m.clock=1;
+
+      if(Math.random()<.018){
+        const team=Math.random()<.5?0:1;
+        m.score[team]++;
+
+        m.events.unshift({
+          time:m.clock+"'",
+          icon:"⚽",
+          title:"ГОЛ — "+(team===0?m.home:m.away),
+          desc:"Новое событие LIVE",
+          side:team===0?"HOME":"AWAY"
+        });
+
+        if(m.events.length>7)m.events.pop();
+
+        showToast(
+          "⚽ ГОЛ!",
+          m.home+" "+m.score[0]+" : "+m.score[1]+" "+m.away
+        );
+      }
+
+      if(Math.random()<.08){
+        m.stats.pos[0]=Math.max(35,Math.min(65,m.stats.pos[0]+(Math.random()*6-3)));
+        m.stats.pos[1]=100-m.stats.pos[0];
+
+        m.stats.shots[Math.random()<.5?0:1]++;
+      }
     }
 
-    renderMatches();
+    if(m.sport==="basketball"){
+      m.clock++;
+      if(m.clock>48)m.clock=1;
 
-}
-
-function updateMatchCenter() {
-
-    const m = selectedMatch;
-
-    document.getElementById("homeScore")
-        .textContent = m.scoreHome;
-
-    document.getElementById("awayScore")
-        .textContent = m.scoreAway;
-
-    let clock = "";
-
-    if (m.sport === "football") {
-
-        clock =
-            String(m.minute).padStart(2,"0") +
-            ":00";
-
-    } else if (m.sport === "basketball") {
-
-        clock =
-            `Q${m.quarter} • ${String(m.minute).padStart(2,"0")}:00`;
-
-    } else if (m.sport === "hockey") {
-
-        clock =
-            `P${m.period} • ${String(m.minute).padStart(2,"0")}:00`;
-
-    } else if (m.sport === "tennis") {
-
-        clock =
-            `SET ${m.set}`;
-
-    } else {
-
-        clock =
-            `SET ${m.set}`;
-
+      if(Math.random()<.12){
+        const team=Math.random()<.5?0:1;
+        m.score[team]+=Math.random()<.25?3:2;
+      }
     }
 
-    document.getElementById("gameClock")
-        .textContent = clock;
+    if(m.sport==="hockey"){
+      m.clock++;
+      if(m.clock>60)m.clock=1;
 
-    renderStats();
-    renderEvents();
-    renderMarkets();
+      if(Math.random()<.025){
+        const team=Math.random()<.5?0:1;
+        m.score[team]++;
+      }
+    }
+
+    if(m.sport==="tennis"){
+      m.clock++;
+      if(m.clock>100)m.clock=1;
+    }
+
+    if(m.sport==="volleyball"){
+      m.clock++;
+      if(m.clock>5)m.clock=1;
+
+      if(Math.random()<.18){
+        const team=Math.random()<.5?0:1;
+        m.score[team]++;
+      }
+    }
+  });
+
+  renderMatches();
+
+  if(currentMatch){
+    const same=matches.find(x=>x.id===currentMatch.id);
+    if(same){
+      currentMatch=same;
+      updateCenter();
+      renderOverview();
+      renderStats();
+      renderMarkets();
+      moveBall();
+    }
+  }
 }
 
-/* ---------------- BALL ---------------- */
+function showToast(title,text){
+  $("toastTitle").textContent=title;
+  $("toastText").textContent=text;
+  $("toast").classList.add("show");
 
-function moveBallRandom() {
-
-    const ball =
-        document.getElementById("ball");
-
-    const x =
-        15 + Math.random() * 70;
-
-    const y =
-        15 + Math.random() * 70;
-
-    ball.style.left = x + "%";
-    ball.style.top = y + "%";
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>{
+    $("toast").classList.remove("show");
+  },2800);
 }
 
-/* ---------------- GOAL ---------------- */
-
-function showGoal() {
-
-    if (!selectedMatch) return;
-
-    document.getElementById("popupScore")
-        .textContent =
-        `${selectedMatch.scoreHome} : ${selectedMatch.scoreAway}`;
-
-    const popup =
-        document.getElementById("goalPopup");
-
-    popup.classList.add("show");
-
-    setTimeout(() => {
-        popup.classList.remove("show");
-    }, 1800);
+function scrollToLive(){
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
-/* ---------------- LINEUPS ---------------- */
-
-function renderLineups() {
-
-    if (!selectedMatch) return;
-
-    document.getElementById("lineupHomeTitle")
-        .textContent = selectedMatch.home;
-
-    document.getElementById("lineupAwayTitle")
-        .textContent = selectedMatch.away;
-
-    document.getElementById("lineupHome").innerHTML =
-        playerNames.map((name,i) => `
-            <div class="event">
-                <div class="event-time">${i+1}</div>
-                <div>${name}</div>
-                <div style="margin-left:auto;color:#19d47b">
-                    ${(6.5 + Math.random()*2.5).toFixed(1)}
-                </div>
-            </div>
-        `).join("");
-
-    document.getElementById("lineupAway").innerHTML =
-        playerNames.map((name,i) => `
-            <div class="event">
-                <div class="event-time">${i+1}</div>
-                <div>${name}</div>
-                <div style="margin-left:auto;color:#19d47b">
-                    ${(6.5 + Math.random()*2.5).toFixed(1)}
-                </div>
-            </div>
-        `).join("");
-}
-
-/* ---------------- INIT ---------------- */
-
+/* START */
 renderMatches();
 renderSlip();
 
-</script>
+setInterval(simulation,3000);
+setInterval(moveBall,1500);
 
+</script>
 </body>
 </html>
