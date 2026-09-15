@@ -2037,8 +2037,219 @@ input:focus-visible{
 </head>
 <body>
 
-<!-- === HTML КАРКАС (продолжение в Части 2) === -->
-<div id="app"></div>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="brand"><span class="brand-dot"></span>LIVE<i>ZONE</i></div>
+    <nav class="hdr-nav" id="hdrNav">
+      <button data-nav="home" class="on">Спорт</button>
+      <button data-nav="live">LIVE</button>
+      <button data-nav="football">Футбол</button>
+      <button data-nav="hockey">Хоккей</button>
+      <button data-nav="tennis">Теннис</button>
+      <button data-nav="mma">UFC</button>
+      <button data-nav="cyber">Киберспорт</button>
+      <button data-nav="results">Результаты</button>
+    </nav>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="btnSearch">🔍</button>
+      <button class="icon-btn" id="btnFav">♡</button>
+      <div class="balance" id="balanceBtn"><b id="balanceVal">10 000</b></div>
+      <button class="icon-btn" id="btnProfile">👤</button>
+    </div>
+  </div>
+  <div class="fbar" id="filterBar"></div>
+</header>
+
+<div class="search-bar hidden" id="searchBar">
+  <input class="search-input" id="searchInput" placeholder="Поиск команды, матча, турнира...">
+</div>
+
+<main class="page" id="pageMain">
+  <div class="section-head">
+    <div class="section-title"><span class="dot"></span>LIVE сейчас <span class="count" id="liveCount">0</span></div>
+    <div class="section-more" id="seeAllLive">Все LIVE →</div>
+  </div>
+  <div class="live-strip" id="liveStrip"></div>
+
+  <div class="section-head">
+    <div class="section-title"><span class="dot"></span><span id="listTitle">Все матчи</span><span class="count" id="listCount">0</span></div>
+    <select class="stake-q" id="sortSelect" style="font-size:11.5px;padding:6px 10px;">
+      <option value="default">По умолчанию</option>
+      <option value="live">Сначала LIVE</option>
+      <option value="time">По времени</option>
+    </select>
+  </div>
+  <div id="matchesList"></div>
+</main>
+
+<main class="page hidden" id="pageResults">
+  <div class="section-head">
+    <div class="section-title"><span class="dot"></span>Результаты <span class="count" id="resultsCount">0</span></div>
+  </div>
+  <div id="resultsList"></div>
+</main>
+
+<div class="mcenter" id="mcCenter">
+  <div class="mch">
+    <button class="mch-back" id="mccBack">←</button>
+    <div class="mch-info">
+      <div class="mch-title" id="mccHeadTitle">—</div>
+      <div class="mch-sub"><span class="live-dot"></span><span id="mccHeadLeague">—</span></div>
+    </div>
+    <div class="mch-actions"><button class="mch-fav" id="mccFav">♡</button></div>
+  </div>
+
+  <div class="mcc-score">
+    <div class="mcc-lg"><span class="lt" id="mccLiveTag">LIVE</span><span id="mccLeagueText">—</span></div>
+    <div class="mcc-main">
+      <div class="mcc-side">
+        <div class="mcc-logo" id="mccHomeLogo"></div>
+        <div class="mcc-nm" id="mccHomeName">TEAM A</div>
+      </div>
+      <div class="mcc-num">
+        <span id="mccHomeScore">0</span>
+        <span class="sep">:</span>
+        <span id="mccAwayScore">0</span>
+      </div>
+      <div class="mcc-side">
+        <div class="mcc-logo" id="mccAwayLogo"></div>
+        <div class="mcc-nm" id="mccAwayName">TEAM B</div>
+      </div>
+    </div>
+    <div class="mcc-clock">
+      <div class="mcc-clock-main"><span class="live-dot"></span><span id="mccClock">00:00</span></div>
+      <div class="mcc-clock-sub" id="mccClockSub">Симуляция 00:00 / 05:00</div>
+    </div>
+    <div class="mcc-prog"><div class="mcc-prog-bar" id="mccProgBar"></div></div>
+  </div>
+
+  <div class="mcc-tabs">
+    <button class="mcc-tab on" data-tab="overview">Обзор</button>
+    <button class="mcc-tab" data-tab="markets">Котировки</button>
+    <button class="mcc-tab" data-tab="stats">Статистика</button>
+    <button class="mcc-tab" data-tab="events">События</button>
+    <button class="mcc-tab" data-tab="lineups">Составы</button>
+  </div>
+
+  <div class="mcc-body">
+    <div class="mcc-pane on" data-pane="overview">
+      <div class="mcc-overview">
+        <div>
+          <div class="pitch-wrap">
+            <svg class="pitch-svg" id="pitchSvg" viewBox="0 0 1050 680">
+              <rect width="1050" height="680" fill="#0f2a1a"/>
+              <g stroke="#fff" stroke-opacity="0.3" stroke-width="2" fill="none">
+                <rect x="30" y="30" width="990" height="620"/>
+                <line x1="525" y1="30" x2="525" y2="650"/>
+                <circle cx="525" cy="340" r="80"/>
+                <rect x="30" y="170" width="140" height="340"/>
+                <rect x="880" y="170" width="140" height="340"/>
+                <rect x="18" y="290" width="14" height="100"/>
+                <rect x="1018" y="290" width="14" height="100"/>
+              </g>
+              <g id="pitchPlayers"></g>
+              <g id="pitchBall" style="display:none;"><circle r="7" fill="#fff"/></g>
+            </svg>
+          </div>
+          <div class="live-moment" id="liveMoment">
+            <div class="lm-tag">Live Moment</div>
+            <div class="lm-main" id="lmMain">—</div>
+            <div class="lm-sub" id="lmSub">—</div>
+          </div>
+          <div class="momentum">
+            <div class="mom-title">Attack Momentum</div>
+            <div class="mom-row">
+              <div class="name" id="momHomeName">Team A</div>
+              <div class="mom-bar"><div class="mom-fill home" id="momHomeFill" style="width:50%"></div></div>
+              <div class="val" id="momHomeVal">50</div>
+            </div>
+            <div class="mom-row">
+              <div class="name" id="momAwayName">Team B</div>
+              <div class="mom-bar"><div class="mom-fill away" id="momAwayFill" style="width:50%"></div></div>
+              <div class="val" id="momAwayVal">50</div>
+            </div>
+          </div>
+        </div>
+        <div class="feed">
+          <div class="feed-head"><div class="feed-title">Live Events</div><div class="feed-count" id="feedCount">0</div></div>
+          <div class="feed-body" id="feedBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mcc-pane" data-pane="markets"><div class="mkts" id="marketsContainer"></div></div>
+    <div class="mcc-pane" data-pane="stats"><div class="stats-grid" id="statsGrid"></div></div>
+    <div class="mcc-pane" data-pane="events">
+      <div class="feed" style="max-height:none;">
+        <div class="feed-head"><div class="feed-title">Все события</div><div class="feed-count" id="eventsCount">0</div></div>
+        <div class="feed-body" id="eventsBody" style="max-height:600px;"></div>
+      </div>
+    </div>
+    <div class="mcc-pane" data-pane="lineups">
+      <div class="lineup">
+        <div class="lineup-team">
+          <div class="lineup-head"><div class="lineup-team-name" id="lineupHome">Team A</div><div class="lineup-schema">4-3-3</div></div>
+          <div class="lineup-list" id="lineupHomeList"></div>
+        </div>
+        <div class="lineup-team">
+          <div class="lineup-head"><div class="lineup-team-name" id="lineupAway">Team B</div><div class="lineup-schema">4-3-3</div></div>
+          <div class="lineup-list" id="lineupAwayList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cp" id="coupon">
+  <div class="cp-bar" id="couponBar">
+    <div class="cp-bar-l">
+      <span class="ic">🎟️</span><span>Купон</span>
+      <span class="cp-count" id="couponCount">0</span>
+      <span>· Коэф <span class="cp-odds" id="couponOdds">0.00</span></span>
+    </div>
+    <div class="cp-actions">
+      <button class="cp-btn" id="couponBtn" disabled>Ставка</button>
+      <button class="cp-close" id="couponClose">✕</button>
+    </div>
+  </div>
+  <div class="cp-body">
+    <div class="ctype">
+      <button class="ctype-b on" data-type="single">Одиночная</button>
+      <button class="ctype-b" data-type="express">Экспресс</button>
+    </div>
+    <div class="citems" id="couponItems"></div>
+    <div class="stake-row">
+      <input class="stake-in" id="stakeInput" type="number" value="100" min="10">
+      <button class="stake-q" data-stake="100">100</button>
+      <button class="stake-q" data-stake="500">500</button>
+      <button class="stake-q" data-stake="1000">1K</button>
+      <button class="stake-q" data-stake="5000">5K</button>
+    </div>
+    <div class="cp-sum">
+      <div class="row"><span>Сумма</span><span id="sumStake">100 ₽</span></div>
+      <div class="row"><span>Коэф</span><span id="sumOdds">0.00</span></div>
+      <div class="row total"><span>Возможный выигрыш</span><b id="sumPotential">0 ₽</b></div>
+    </div>
+    <div class="cp-note">Демонстрационный режим.</div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <div class="bnav-item on" data-nav="home"><span class="ic">🏠</span><span>Главная</span></div>
+  <div class="bnav-item" data-nav="live"><span class="ic">🔴</span><span>LIVE</span><span class="bnav-bdg" id="bnavLive" style="display:none;">0</span></div>
+  <div class="bnav-item" data-nav="sports"><span class="ic">🏆</span><span>Спорт</span></div>
+  <div class="bnav-item" data-nav="results"><span class="ic">📋</span><span>Результаты</span></div>
+  <div class="bnav-item" data-nav="profile"><span class="ic">👤</span><span>Профиль</span></div>
+</nav>
+
+<div class="mbg" id="modalBg"><div class="mdl" id="modalContent"></div></div>
+<div class="goal-overlay" id="goalOverlay"><div class="goal-text">GOAL!<small id="goalSub">—</small></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* === ЧАСТЬ 6: JS УТИЛИТЫ + ЭМБЛЕМЫ === */
+...
 
 <script>
 /* === ЧАСТЬ 6: JS УТИЛИТЫ + ЭМБЛЕМЫ === */
