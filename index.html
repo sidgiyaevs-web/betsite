@@ -431,10 +431,26 @@ function recalc(m, silent){
       var expF = tot + expLeft;
       m.markets['1X2'] = {lbl:['П1','X','П2'], val:[price(pH),price(pX),price(pA)], closed:[false,false,false]};
       m.markets['Двойной шанс'] = {lbl:['1X','12','X2'], val:[price(pH+pX),price(pH+pA),price(pX+pA)], closed:[false,false,false]};
-      var phcap = clamp(w*(0.4+played*0.5), 0.03, 0.93);
-      m.markets['Фора1 (-1.5)'] = {lbl:['Да','Нет'], val:[price(phcap),price(1-phcap)], closed:[false,false]};
-      var pf2 = clamp(1 - winP(expDiff*2+14), 0.03, 0.95);
-      m.markets['Фора2 (+1.5)'] = {lbl:['Да','Нет'], val:[price(1-pf2),price(pf2)], closed:[false,false]};
+      // форы через Пуассон: P(домашние выиграют с запасом 2+)
+      var _ss = Math.max(0.001, pH + pA);
+      var _sH = pH / _ss, _sA = pA / _ss;
+      var remHt = Math.max(0.05, expLeft * _sH), remAt = Math.max(0.05, expLeft * _sA);
+      var pH15 = 0;
+      for(var qh = 0; qh <= 9; qh++) for(var qa = 0; qa <= 9; qa++){
+        if(diff + qh - qa >= 2) pH15 += pois(qh, remHt) * pois(qa, remAt);
+      }
+      pH15 = clamp(pH15, 0.02, 0.97);
+      m.markets['Фора1 (-1.5)'] = {lbl:['Да','Нет'], val:[price(pH15),price(1-pH15)], closed:[false,false]};
+      m.markets['Фора2 (+1.5)'] = {lbl:['Да','Нет'], val:[price(1-pH15),price(pH15)], closed:[false,false]};
+      // чет/нечет тотала
+      var pEv = 0.5 * (1 + Math.exp(-2 * (remHt + remAt)));
+      if(tot % 2 === 1) pEv = 1 - pEv;
+      m.markets['Чет/нечет'] = {lbl:['Чет','Нечет'], val:[price(pEv),price(1-pEv)], closed:[false,false]};
+      // сухие победы
+      var pDry1 = m.as === 0 ? pois(0, remAt) * (1 - pois(0, m.hs + remHt)) * 0.8 : 0.015;
+      var pDry2 = m.hs === 0 ? pois(0, remHt) * (1 - pois(0, m.as + remAt)) * 0.8 : 0.015;
+      m.markets['Сухая победа 1'] = {lbl:['Да','Нет'], val:[price(pDry1),price(1-pDry1)], closed:[false,false]};
+      m.markets['Сухая победа 2'] = {lbl:['Да','Нет'], val:[price(pDry2),price(1-pDry2)], closed:[false,false]};
       var lines = m.sport === 'hockey' ? [4.5,5.5] : [1.5,2.5,3.5];
       lines.forEach(function(L){
         // если тотал уже пробит — кэф схлопывается как в Фонбете
@@ -488,6 +504,8 @@ function recalc(m, silent){
       m.markets['Досрочная победа'] = {lbl:['Да','Нет'], val:[price(pfin),price(1-pfin)], closed:[false,false]};
       var pDec = clamp(Math.pow(1 - koR, Math.max(0, 5 - tot)), 0.05, 0.95);
       m.markets['Вся дистанция'] = {lbl:['Да','Нет'], val:[price(pDec),price(1-pDec)], closed:[false,false]};
+      m.markets['Тотал 4.5'] = {lbl:['Б','М'], val:[price(pDec),price(1-pDec)], closed:[false,false]};
+      m.markets['Победа решением'] = {lbl:['1','2'], val:[price(ph * pDec),price((1 - ph) * pDec)], closed:[false,false]};
       m.ufcRound = round;
     } else {
       // КИБЕР: раунды, счет толкает сильно, к концу фаворит 1.05
@@ -500,8 +518,16 @@ function recalc(m, silent){
         var po2 = overP(expT, L);
         m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po2),price(1-po2)], closed:[false,false]};
       });
-      var pf = clamp(winP(eff2 - 12), 0.04, 0.9);
-      m.markets['Фора1 (-2.5)'] = {lbl:['Да','Нет'], val:[price(pf),price(1-pf)], closed:[false,false]};
+      var remCt = Math.max(0.1, expT - tot);
+      var qHs = ph2 / Math.max(0.001, ph2 + (1 - ph2)), qAs = 1 - qHs;
+      var remCh = Math.max(0.05, remCt * qHs), remCa = Math.max(0.05, remCt * qAs);
+      var pH25 = 0;
+      for(var ch = 0; ch <= 12; ch++) for(var ca = 0; ca <= 12; ca++){
+        if(diff + ch - ca >= 3) pH25 += pois(ch, remCh) * pois(ca, remCa);
+      }
+      pH25 = clamp(pH25, 0.02, 0.97);
+      m.markets['Фора1 (-2.5)'] = {lbl:['Да','Нет'], val:[price(pH25),price(1-pH25)], closed:[false,false]};
+      m.markets['Фора2 (+2.5)'] = {lbl:['Да','Нет'], val:[price(1-pH25),price(pH25)], closed:[false,false]};
       // следующий раунд + тотал карт + счет по картам
       var remR = Math.max(0.4, (BASETOT.cyber - tot) * left + 0.6);
       var qH = ph2 / Math.max(0.001, ph2 + (1 - ph2)), qA = 1 - qH;
@@ -758,6 +784,11 @@ function resultOf(mk, pick, m){
   if(key === 'Обе забьют'){ var both = h>0 && a>0; return ((both && pick===0) || (!both && pick===1)) ? 'win':'lose'; }
   if(key === 'Вся дистанция'){ var dec = (m.method !== 'KO'); return ((dec && pick===0) || (!dec && pick===1)) ? 'win' : 'lose'; }
   if(key === 'Следующий гол'){ return pick === 2 ? 'win' : 'lose'; }
+  if(key === 'Чет/нечет'){ var ev = (t % 2 === 0); return ((ev && pick === 0) || (!ev && pick === 1)) ? 'win' : 'lose'; }
+  if(key === 'Сухая победа 1'){ var d1 = (h > a && a === 0); return ((d1 && pick === 0) || (!d1 && pick === 1)) ? 'win' : 'lose'; }
+  if(key === 'Сухая победа 2'){ var d2 = (a > h && h === 0); return ((d2 && pick === 0) || (!d2 && pick === 1)) ? 'win' : 'lose'; }
+  if(key === 'Победа решением'){ var dec = (m.method !== 'KO'); if(pick === 0) return (h > a && dec) ? 'win' : 'lose'; return (a > h && dec) ? 'win' : 'lose'; }
+  if(key === 'Фора2 (+2.5)'){ var ok4 = (a + 2.5) > h; return ((ok4 && pick === 0) || (!ok4 && pick === 1)) ? 'win' : 'lose'; }
   if(key === 'Точный счет'){ return (mk.lbl[pick] === h + ':' + a || (mk.lbl[pick] === 'Другой' && ['1:0','2:0','2:1','0:0','1:1','0:1','0:2','1:2'].indexOf(h + ':' + a) < 0)) ? 'win' : 'lose'; }
   if(key.indexOf('ИТ')===0){ var li = parseFloat(key.replace(/[^0-9.]/g, '')); var tm = key.charAt(2) === '1' ? h : a; return ((tm > li && pick===0) || (tm < li && pick===1)) ? 'win' : 'lose'; }
   return 'lose';
