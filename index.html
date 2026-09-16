@@ -210,7 +210,32 @@ var LEAGUES = {
   cyber:['CS2 Major','Dota 2 · TI','CS2 · BLAST']
 };
 var MAXMIN = {football:90, hockey:60, ufc:15, cyber:30};
-var BASETOT = {football:2.6, hockey:5.4, ufc:2.0, cyber:26};
+var BASETOT = {football:2.6, hockey:5.4, ufc:3.2, cyber:26};
+var EPOCH = Date.UTC(2025, 0, 1);
+var CYCLE_MS = 5 * 60 * 1000;
+function curCycle(){ return Math.floor((Date.now() - EPOCH) / CYCLE_MS); }
+function cycleStartMs(c){ return EPOCH + c * CYCLE_MS; }
+function makeRng(seed){
+  var a = seed >>> 0;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// Перерывы как в Фонбете: [с_минуты, по_минуту, подпись]
+var BREAKS = {
+  football: [[44, 47, 'Перерыв · 2-й тайм']],
+  hockey: [[19, 22, 'Перерыв · 2-й период'], [39, 42, 'Перерыв · 3-й период']],
+  ufc: [[3, 4, 'Перерыв · Раунд 2'], [6, 7, 'Перерыв · Раунд 3'], [9, 10, 'Перерыв · Раунд 4'], [12, 13, 'Перерыв · Раунд 5']],
+  cyber: [[10, 11, 'Перерыв · смена сторон'], [20, 21, 'Перерыв · 3-я карта']]
+};
+function breakInfo(m){
+  var bs = BREAKS[m.sport] || [];
+  for(var i=0;i<bs.length;i++) if(m.minute >= bs[i][0] && m.minute < bs[i][1]) return bs[i][2];
+  return null;
+}
 /* ================= МАТЧ ================= */
 var _mid = 1;
 function price(p){ p = clamp(p, 0.03, 0.97); return Math.round((1.07 / p) * 100) / 100; }
@@ -229,25 +254,34 @@ function mkMatch(sport, home, away){
 }
 function goalCh(m){
   var t = m.minute / m.maxMin;
-  if(m.sport === 'cyber') return 0.55;
-  if(m.sport === 'hockey') return 0.16 * (0.6 + t);
-  if(m.sport === 'ufc') return 0.13 * (0.5 + t);
-  return 0.09 * (0.5 + t);
+  if(m.sport === 'cyber') return 0.8;
+  if(m.sport === 'hockey') return 0.2 * (0.6 + t);
+  if(m.sport === 'ufc') return 0.34;
+  return 0.1 * (0.5 + t);
+}
+function scoreOnce(m, rng){
+  var r = rng ? rng() : Math.random();
+  var home = r * (m.strH + m.strA) < m.strH;
+  if(home) m.hs++; else m.as++;
+  var label = m.sport==='hockey' ? '🥅 Шайба' : m.sport==='ufc' ? '🥊 Раунд' : m.sport==='cyber' ? '⚔️ Раунд' : '⚽ Гол';
+  m.events.push({min:Math.floor(m.minute), txt:label+' — '+(home?m.home:m.away)});
+  if(m.events.length > 30) m.events.shift();
+  return home;
 }
 function tickMatch(m){
   if(m.finished) return;
   m.minute += 1;
-  var every = (m.sport === 'cyber');
-  if((every || m.minute % 2 === 0) && Math.random() < goalCh(m)){
-    var home = Math.random() * (m.strH + m.strA) < m.strH;
-    if(home) m.hs++; else m.as++;
-    var label = m.sport==='hockey' ? '🥅 Шайба' : m.sport==='ufc' ? '🥊 Раунд' : m.sport==='cyber' ? '⚔️ Раунд' : '⚽ Гол';
-    m.events.push({min:Math.floor(m.minute), txt:label+' — '+(home?m.home:m.away)});
-    if(m.events.length > 30) m.events.shift();
-    toast(label+'! ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
+  var br = breakInfo(m);
+  m.onBreak = !!br;
+  if(!br){
+    var every = (m.sport === 'cyber' || m.sport === 'ufc');
+    if((every || m.minute % 2 === 0) && Math.random() < goalCh(m)){
+      scoreOnce(m, null);
+      toast('⚽ ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
+    }
   }
   recalc(m, false);
-  if(m.minute >= m.maxMin){ m.finished = true; m.finishedAt = Date.now(); checkBets(m); saveResults(m); }
+  if(m.minute >= m.maxMin){ m.finished = true; m.onBreak = false; m.finishedAt = Date.now(); checkBets(m); saveResults(m); }
 }
 function overP(expF, L){ return clamp(1/(1+Math.exp(-(expF-L-0.5)*2.0)), 0.02, 0.98); }
 function noise(v, amt){
@@ -267,9 +301,12 @@ function recalc(m, silent){
       var expDiff = sd * 0.55 + diff * (2 + played * 7);
       var w = winP(expDiff * 3);
       // НИЧЬЯ: при ровно к концу — падает к 1.2x, при разнице — умирает
+      // хоккей результативнее — ничья дешевле, фаворит короче
+      var drawCap = m.sport === 'hockey' ? 0.62 : 0.88;
+      var drawBase = m.sport === 'hockey' ? 0.18 : 0.24;
       var pD;
-      if(diff === 0) pD = clamp(0.24 + played * 0.64, 0.24, 0.88);
-      else pD = clamp(0.22 * left - adiff * 0.075 + 0.02, 0.015, 0.32);
+      if(diff === 0) pD = clamp(drawBase + played * (drawCap - drawBase), drawBase, drawCap);
+      else pD = clamp(0.2 * left - adiff * 0.075 + 0.02, 0.015, 0.3);
       pH = w * (1 - pD); pA = (1 - w) * (1 - pD); pX = pD;
       var expF = tot + expLeft;
       m.markets['1X2'] = {lbl:['П1','X','П2'], val:[price(pH),price(pX),price(pA)], closed:[false,false,false]};
@@ -326,28 +363,63 @@ function recalc(m, silent){
 }
 /* ================= МЕНЕДЖЕР ================= */
 var Manager = {
-  matches: [],
-  spawn: function(sport){
-    var pool = TEAMS[sport]; var p = pool[Math.floor(Math.random()*pool.length)];
+  matches: [], cycle: 0, seq: 0,
+  spawn: function(sport, rng, fixedId, startMin){
+    var pool = TEAMS[sport];
+    var r = rng ? rng() : Math.random();
+    var p = pool[Math.floor(r * pool.length) % pool.length];
     var m = mkMatch(sport, p[0], p[1]);
+    if(rng){ m.strH = 0.9 + rng() * 0.5; m.strA = 0.9 + rng() * 0.5; }
+    if(fixedId) m.id = fixedId;
+    // одинаковый старт для всех: досимулируем seeded-голы до стартовой минуты
+    if(startMin && startMin > 0 && rng){
+      m.minute = 0; m.hs = 0; m.as = 0; m.events = [];
+      for(var mm = 0; mm < startMin; mm++){
+        m.minute++;
+        if(breakInfo(m)) continue;
+        var every = (m.sport === 'cyber' || m.sport === 'ufc');
+        if((every || m.minute % 2 === 0) && rng() < goalCh(m)) scoreOnce(m, rng);
+      }
+      recalc(m, true);
+    }
     this.matches.push(m); return m;
   },
   init: function(){
-    this.matches = [];
+    this.matches = []; this.seq = 0;
+    var cycle = curCycle(); this.cycle = cycle;
+    var now = Date.now();
+    var elapsed = Math.floor((now - cycleStartMs(cycle)) / 1000);
     var want = {football:6, hockey:4, ufc:3, cyber:4};
+    var self = this;
     Object.keys(want).forEach(function(s){
       for(var i=0;i<want[s];i++){
-        try{ Manager.spawn(s); }catch(e){}
+        try{
+          var rng = makeRng((cycle * 2654435761 + self.seq * 40503 + s.charCodeAt(0) * 97) >>> 0);
+          self.seq++;
+          // стартовые минуты детерминированы + прошедшее время цикла — у всех одинаково
+          var base = {football:8, hockey:5, ufc:1, cyber:4}[s] || 5;
+          var startMin = Math.min(MAXMIN[s] - 5, base + (elapsed % 40) + i * 3);
+          self.spawn(s, rng, self.seq, startMin);
+        }catch(e){}
       }
     });
   },
   tick: function(){
     var self = this;
+    // новый цикл — новый одинаковый для всех набор
+    if(curCycle() !== this.cycle){ this.init(); renderList(); return; }
     this.matches.forEach(function(m){ try{ tickMatch(m); }catch(e){} });
     var now = Date.now();
     this.matches = this.matches.map(function(m){
       if(m.finished && now - m.finishedAt > 30000){
-        try{ var nm = mkMatch(m.sport, TEAMS[m.sport][Math.floor(Math.random()*TEAMS[m.sport].length)][0], TEAMS[m.sport][Math.floor(Math.random()*TEAMS[m.sport].length)][1]); return nm; }
+        try{
+          var rng = makeRng((self.cycle * 2654435761 + self.seq * 40503 + 777) >>> 0);
+          self.seq++;
+          var idx = self.matches.indexOf(m);
+          var nm = mkMatch(m.sport, TEAMS[m.sport][Math.floor(rng()*TEAMS[m.sport].length)][0], TEAMS[m.sport][Math.floor(rng()*TEAMS[m.sport].length)][1]);
+          nm.id = 10000 + self.seq; nm.minute = 0; nm.hs = 0; nm.as = 0; nm.events = []; recalc(nm, true);
+          return nm;
+        }
         catch(e){ return m; }
       }
       return m;
@@ -496,6 +568,8 @@ function doCashout(id){
 function updBal(){ $('balanceVal').textContent = Math.round(State.balance).toLocaleString('ru-RU'); }
 function clockOf(m){
   if(m.finished) return 'FT';
+  var br = m.onBreak ? (breakInfo(m) || 'Перерыв') : breakInfo(m);
+  if(br) return '⏸ ' + br;
   if(m.sport==='football') return Math.floor(m.minute)+"'";
   if(m.sport==='hockey'){ var p=Math.min(3,Math.floor(m.minute/20)+1); return 'П'+p+' · '+Math.floor(m.minute-(p-1)*20)+"'"; }
   if(m.sport==='ufc') return 'R'+Math.min(5,Math.floor(m.minute)+1);
@@ -516,8 +590,9 @@ function cardHTML(m){
   var ic = (SPORTS.find(function(s){return s.id===m.sport;})||{}).ic || '🏆';
   var fav = State.favs.indexOf(m.id) > -1 ? '★' : '☆';
   var pct = Math.min(100, Math.round(m.minute/m.maxMin*100));
+  var brk = !m.finished && breakInfo(m);
   return '<div class="mc'+(m.finished?'':' live')+'" data-card="'+m.id+'">'
-  +'<div class="mc-head"><div>'+ic+' '+esc(m.league)+'</div><div style="display:flex;gap:8px;align-items:center;"><span class="fav" data-fav="'+m.id+'" style="cursor:pointer;font-size:15px;color:'+(fav==='★'?'var(--yellow)':'var(--t3)')+'">'+fav+'</span><div class="mc-status'+(m.finished?'':' live')+'" data-clock="'+m.id+'">'+clockOf(m)+'</div></div></div>'
+  +'<div class="mc-head"><div>'+ic+' '+esc(m.league)+'</div><div style="display:flex;gap:8px;align-items:center;"><span class="fav" data-fav="'+m.id+'" style="cursor:pointer;font-size:15px;color:'+(fav==='★'?'var(--yellow)':'var(--t3)')+'">'+fav+'</span><div class="mc-status'+(m.finished?'':(brk?'':' live'))+'" data-clock="'+m.id+'"'+(brk?' style="color:var(--yellow);font-weight:800;"':'')+'>'+clockOf(m)+'</div></div></div>'
   +'<div class="mc-teams"><div class="mc-team"><span>'+esc(m.home)+'</span><span class="mc-score'+(m.finished&&m.hs>m.as?' w':'')+'" data-score="'+m.id+'" data-side="h">'+m.hs+'</span></div><div class="mc-team"><span>'+esc(m.away)+'</span><span class="mc-score'+(m.finished&&m.as>m.hs?' w':'')+'" data-score="'+m.id+'" data-side="a">'+m.as+'</span></div></div>'
   +'<div class="prog"><div class="prog-fill" data-bar="'+m.id+'" style="width:'+pct+'%"></div></div>'
   +'<div class="mc-odds'+(two?' two':'')+'">'+odds+'</div>'
