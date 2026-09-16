@@ -615,7 +615,11 @@ var Manager = {
   soonCount: function(){ return this.matches.filter(function(m){return m.status === 'upcoming';}).length; }
 };
 /* ================= СОСТОЯНИЕ ================= */
-var State = { balance:10000, coupon:[], betType:'single', history:[], results:[], sport:'all', histFilter:'all', dailyDate:'', dailyAmount:0, lastBonus:'', favs:[], search:'', sort:'def', centerId:null, centerTab:'markets' };
+var State = { balance:10000, coupon:[], betType:'single', history:[], results:[], sport:'all', histFilter:'all', dailyDate:'', dailyAmount:0, lastBonus:'', favs:[], search:'', sort:'def', centerId:null, centerTab:'markets', tx:[], promos:[] };
+function addTx(label, amount){
+  State.tx.unshift({t:Date.now(), label:label, amount:amount});
+  if(State.tx.length > 60) State.tx.length = 60;
+}
 function todayS(){ return new Date().toDateString(); }
 function loadState(){
   try{
@@ -624,12 +628,14 @@ function loadState(){
     if(Array.isArray(d.history)) State.history = d.history.slice(0,100);
     if(Array.isArray(d.results)) State.results = d.results.slice(0,50);
     if(Array.isArray(d.favs)) State.favs = d.favs.slice(0,50);
+    if(Array.isArray(d.tx)) State.tx = d.tx.slice(0,60);
+    if(Array.isArray(d.promos)) State.promos = d.promos.slice(0,20);
     if(d.dailyDate === todayS()){ State.dailyDate = d.dailyDate; State.dailyAmount = d.dailyAmount||0; }
     State.lastBonus = d.lastBonus || '';
   }catch(e){}
 }
 function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({balance:State.balance, history:State.history.slice(0,100), results:State.results.slice(0,50), favs:State.favs, dailyDate:State.dailyDate, dailyAmount:State.dailyAmount, lastBonus:State.lastBonus})); }catch(e){}
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({balance:State.balance, history:State.history.slice(0,100), results:State.results.slice(0,50), favs:State.favs, tx:State.tx.slice(0,60), promos:State.promos, dailyDate:State.dailyDate, dailyAmount:State.dailyAmount, lastBonus:State.lastBonus})); }catch(e){}
 }
 function saveResults(m){
   State.results.unshift({home:m.home, away:m.away, hs:m.hs, as:m.as, league:m.league, sport:m.sport, at:Date.now(), method:m.method||null, endRound:m.endRound||null});
@@ -692,7 +698,7 @@ function placeBet(){
   if(stake < MIN_STAKE){ toast('Минимум '+MIN_STAKE+' ₽','err'); return; }
   if(stake > State.balance){ toast('Недостаточно средств','err'); return; }
   var odds = couponOdds(), pot = Math.round(stake * odds);
-  State.balance -= stake; updBal();
+  State.balance -= stake; addTx('Ставка', -stake); updBal();
   State.history.unshift({id:Date.now(), type:State.betType, stake:stake, odds:odds, potential:pot, status:'pending', createdAt:new Date().toISOString(), bets:State.coupon.map(function(c){return {matchId:c.matchId, market:c.market, pick:c.pick, pickLbl:c.pickLbl, home:c.home, away:c.away, sh:c.sh, sa:c.sa, result:null};}), cashout:null});
   if(State.history.length > 100) State.history.length = 100;
   State.coupon = []; updateCoupon(); paintSel(); $('coupon').classList.remove('show'); saveState();
@@ -725,7 +731,7 @@ function finalizeBet(hh){
   if(!hh.bets.every(function(b){ return b.result; })) return;
   var win = hh.bets.every(function(b){ return b.result === 'win'; });
   hh.status = win ? 'win' : 'lose';
-  if(win){ State.balance += hh.potential; updBal(); toast('🎉 Выигрыш +' + fmtMoney(hh.potential), 'ok'); }
+  if(win){ State.balance += hh.potential; addTx('Выигрыш', hh.potential); updBal(); toast('🎉 Выигрыш +' + fmtMoney(hh.potential), 'ok'); }
   else toast('Проигрыш ' + fmtMoney(hh.stake), 'err');
   saveState();
 }
@@ -771,7 +777,7 @@ function doCashout(id){
   var hh = State.history.find(function(x){return x.id===id;}); if(!hh || hh.status!=='pending') return;
   var amt = cashoutOf(hh); if(amt <= 0){ toast('Кэшаут недоступен','err'); return; }
   if(!confirm('Кэшаут '+fmtMoney(amt)+'?')) return;
-  hh.status = 'cashout'; hh.cashout = amt; State.balance += amt; updBal(); saveState(); toast('💰 +'+fmtMoney(amt),'ok'); openHistory();
+  hh.status = 'cashout'; hh.cashout = amt; State.balance += amt; addTx('Кэшаут', amt); updBal(); saveState(); toast('💰 +'+fmtMoney(amt),'ok'); openHistory();
 }
 /* ================= РЕНДЕР ================= */
 function updBal(){ $('balanceVal').textContent = Math.round(State.balance).toLocaleString('ru-RU'); }
@@ -842,6 +848,29 @@ function renderFilters(){
   var chips = [{id:'all',n:'🔥 Все'},{id:'soon',n:'🕒 Скоро'},{id:'fav',n:'★ Избранное'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
   $('filterBar').innerHTML = chips.map(function(c){ return '<button class="fchip'+(State.sport===c.id?' on':'')+'" data-sport="'+c.id+'">'+esc(c.n)+'</button>'; }).join('');
 }
+function hashStr(s){ var h = 0; for(var i = 0; i < s.length; i++){ h = ((h << 5) - h + s.charCodeAt(i)) | 0; } return Math.abs(h); }
+function formBadges(name){
+  var h = hashStr(name), out = '';
+  for(var i = 0; i < 5; i++){
+    var r = (h >> (i * 3)) % 3;
+    var ch = r === 0 ? 'В' : (r === 1 ? 'Н' : 'П');
+    var col = r === 0 ? 'var(--green2)' : (r === 1 ? 'var(--t3)' : 'var(--red2)');
+    out += '<span style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:6px;background:var(--card2);color:' + col + ';font-weight:900;font-size:11px;margin-left:3px;">' + ch + '</span>';
+  }
+  return out;
+}
+function h2hHTML(a, b){
+  var h = hashStr(a + '|' + b), rows = '';
+  for(var i = 0; i < 3; i++){
+    var x = (h >> (i * 5)) % 4, y = (h >> (i * 5 + 2)) % 4;
+    rows += '<div class="stat-row"><span>' + esc(i === 0 ? a : (i === 2 ? b : 'ничья')) + '</span><span class="v">' + x + ' : ' + y + '</span><span class="c">тов.</span></div>';
+  }
+  return rows;
+}
+function trackerHTML(m){
+  var atk = clamp(50 + (m.strH - m.strA) * 40 + (m.hs - m.as) * 4, 8, 92);
+  return '<div style="display:flex;align-items:center;gap:8px;font-size:11.5px;margin:4px 0 8px;"><span style="flex:1;text-align:right;font-weight:800;">' + m.hs + '</span><div style="flex:6;height:8px;background:var(--card2);border-radius:5px;overflow:hidden;display:flex;"><div style="width:' + Math.round(atk) + '%;background:linear-gradient(90deg,var(--yellow),#ff9d2e);"></div></div><span style="flex:1;font-weight:800;">' + m.as + '</span></div>';
+}
 function openCenter(id){
   State.centerId = id; State.centerTab = 'markets'; renderCenter();
 }
@@ -854,15 +883,18 @@ function renderCenter(){
   if(State.centerTab === 'stats'){
     var unit = m.sport==='ufc' ? 'раунд' : (m.sport==='cyber' ? 'раунд' : 'гол');
     var timeRow = m.sport==='ufc'
-      ? '<div class="stat-row"><span>Раунд</span><span class="v">'+clamp(Math.floor(m.minute/3)+1,1,5)+' / 5</span><span class="c">LIVE</span></div>'
+      ? '<div class="stat-row"><span>Раунд</span><span class="v">'+clamp(Math.ceil(m.minute/25),1,5)+' / 5</span><span class="c">LIVE</span></div>'
       : (m.sport==='cyber'
-        ? '<div class="stat-row"><span>Карта</span><span class="v">'+Math.min(3,Math.floor((m.hs+m.as)/13)+1)+' / 3</span><span class="c">BO3</span></div>'
+        ? '<div class="stat-row"><span>Карта</span><span class="v">'+Math.min(3,m.mapH+m.mapA+1)+' / 3 · '+m.mapH+':'+m.mapA+'</span><span class="c">BO3</span></div>'
         : '<div class="stat-row"><span>Минута</span><span class="v">'+Math.floor(m.minute)+"' / "+m.maxMin+'</span><span class="c">LIVE</span></div>');
     body = timeRow
     + '<div class="stat-row"><span>Счёт</span><span class="v">'+m.hs+' : '+m.as+'</span><span class="c">'+unit+'</span></div>'
     + '<div class="stat-row"><span>Прогресс</span><span class="v">'+pct+'%</span><span class="c">время</span></div>'
     + '<div class="stat-row"><span>Форма</span><span class="v">'+m.strH.toFixed(2)+' / '+m.strA.toFixed(2)+'</span><span class="c">сила</span></div>'
-    + (m.sport==='ufc' && m.method ? '<div class="stat-row"><span>Финиш</span><span class="v">'+(m.method==='KO'?'KO/TKO Р'+(m.endRound||''):'Решением')+'</span><span class="c">метод</span></div>' : '');
+    + (m.sport==='ufc' && m.method ? '<div class="stat-row"><span>Финиш</span><span class="v">'+(m.method==='KO'?'KO/TKO Р'+(m.endRound||''):'Решением')+'</span><span class="c">метод</span></div>' : '')
+    + '<div class="mkt-t">Трекер · давление</div>' + trackerHTML(m)
+    + '<div class="mkt-t">Форма · последние 5</div><div style="display:flex;justify-content:space-between;font-size:12.5px;padding:6px 2px;"><span>'+esc(m.home)+'<br>'+formBadges(m.home)+'</span><span style="text-align:right;">'+esc(m.away)+'<br>'+formBadges(m.away)+'</span></div>'
+    + '<div class="mkt-t">Личные встречи</div><div style="font-size:12.5px;">'+h2hHTML(m.home, m.away)+'</div>';
   } else if(State.centerTab === 'events'){
     body = '<div class="tl">' + (m.events.length ? m.events.slice().reverse().map(function(ev){ return '<div class="tl-item"><span class="mn">'+ev.min+"'</span><span>"+esc(ev.txt)+'</span></div>'; }).join('') : 'Пока тихо...') + '</div>';
   } else {
@@ -934,18 +966,37 @@ function openProfile(){
   openModal('<div class="mdl-h"><div><div class="t">Профиль</div><div class="s">Игрок</div></div><div class="mdl-x" onclick="closeModal()">✕</div></div>'
     + (canB ? '<div style="border:1px solid var(--yellow);border-radius:10px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-weight:800;color:var(--yellow);margin-bottom:8px;">🎁 Бонус доступен!</div><button style="padding:10px 24px;background:var(--yellow);color:#0b172a;font-weight:900;border-radius:8px;" onclick="claimBonus()">Забрать 500 ₽</button></div>' : '')
     + '<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;"><span>Баланс</span><b style="color:var(--yellow);">'+fmtMoney(State.balance)+'</b></div><div style="display:flex;justify-content:space-between;font-size:12px;"><span>Прибыль</span><b>'+fmtMoney(profit)+'</b></div><div style="font-size:12px;">Ставок: '+total+' · Побед: '+win+'</div></div>'
-    + '<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:11px;margin-bottom:8px;">Пополнение · осталось: <b style="color:var(--yellow);">'+fmtMoney(remain)+'</b></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">'+[500,1000,5000,10000].map(function(v){return '<button class="fchip" onclick="deposit('+v+')">'+v.toLocaleString('ru-RU')+'</button>';}).join('')+'</div></div>'
+    + '<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:11px;margin-bottom:8px;">Касса · осталось: <b style="color:var(--yellow);">'+fmtMoney(remain)+'</b></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;">'+[500,1000,5000,10000].map(function(v){return '<button class="fchip" onclick="deposit('+v+')">+'+v.toLocaleString('ru-RU')+'</button>';}).join('')+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">'+[500,1000,5000,10000].map(function(v){return '<button class="fchip" onclick="withdraw('+v+')">−'+v.toLocaleString('ru-RU')+'</button>';}).join('')+'</div></div>'
+    + '<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:11px;margin-bottom:8px;">Промокод <span style="color:var(--t3)">(попробуй FONBET500)</span></div><div style="display:flex;gap:6px;"><input id="promoInput" placeholder="Код" style="flex:1;padding:9px;border-radius:8px;background:var(--card);border:1px solid var(--bd);color:var(--t);outline:none;"><button class="fchip" onclick="claimPromo()">OK</button></div></div>'
+    + '<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:11px;margin-bottom:8px;">Операции</div>'+(State.tx.length ? State.tx.slice(0,8).map(function(t){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:var(--t2)">'+esc(t.label)+'</span><b style="color:'+(t.amount>=0?'var(--green2)':'var(--red2)')+'">'+(t.amount>=0?'+':'')+fmtMoney(t.amount)+'</b></div>';}).join('') : '<div style="font-size:12px;color:var(--t3)">Пока пусто</div>')+'</div>'
     + '<button style="width:100%;padding:12px;border-radius:8px;background:var(--card2);border:1px solid var(--bd);font-weight:700;" onclick="closeModal();openHistory()">История ставок</button>');
 }
 function deposit(v){
   var rem = MAX_DAILY - State.dailyAmount;
   if(v > rem){ toast('Лимит. Осталось '+fmtMoney(rem),'err'); return; }
   State.balance += v; State.dailyAmount += v; if(!State.dailyDate) State.dailyDate = todayS();
+  addTx('Пополнение', v);
   updBal(); saveState(); toast('+'+fmtMoney(v),'ok'); openProfile();
+}
+function withdraw(v){
+  if(v > State.balance){ toast('Недостаточно средств','err'); return; }
+  State.balance -= v; addTx('Вывод', -v);
+  updBal(); saveState(); toast('Выведено '+fmtMoney(v),'ok'); openProfile();
 }
 function claimBonus(){
   if(State.lastBonus === todayS()){ toast('Уже получен','err'); return; }
-  State.balance += 500; State.lastBonus = todayS(); updBal(); saveState(); toast('🎁 +500 ₽','ok'); openProfile();
+  State.balance += 500; State.lastBonus = todayS(); addTx('Бонус ежедневный', 500);
+  updBal(); saveState(); toast('🎁 +500 ₽','ok'); openProfile();
+}
+function claimPromo(){
+  var inp = $('promoInput'); if(!inp) return;
+  var code = inp.value.trim().toUpperCase();
+  if(!code) return;
+  if(State.promos.indexOf(code) > -1){ toast('Уже использован','err'); return; }
+  var bonus = (code === 'FONBET500') ? 1000 : (code === 'LIVEZONE' ? 500 : 0);
+  if(!bonus){ toast('Неверный промокод','err'); return; }
+  State.promos.push(code); State.balance += bonus; addTx('Промокод ' + code, bonus);
+  updBal(); saveState(); toast('🎟 +' + fmtMoney(bonus),'ok'); openProfile();
 }
 function openHistory(){
   openModal('<div class="mdl-h"><div><div class="t">История ставок</div><div class="s">Всего: '+State.history.length+'</div></div><div class="mdl-x" onclick="closeModal()">✕</div></div><div id="histList"></div>');
@@ -1032,7 +1083,7 @@ document.addEventListener('change', function(e){
   if(e.target.id==='sortSel'){ State.sort = e.target.value; renderList(); }
 });
 window.closeModal = closeModal; window.openHistory = openHistory; window.openProfile = openProfile;
-window.deposit = deposit; window.doCashout = doCashout; window.claimBonus = claimBonus;
+window.deposit = deposit; window.withdraw = withdraw; window.doCashout = doCashout; window.claimBonus = claimBonus; window.claimPromo = claimPromo;
 /* ================= INIT ================= */
 (function init(){
   loadState();
