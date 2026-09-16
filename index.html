@@ -255,9 +255,32 @@ function mkMatch(sport, home, away){
 function goalCh(m){
   var t = m.minute / m.maxMin;
   if(m.sport === 'cyber') return 0.8;
-  if(m.sport === 'hockey') return 0.2 * (0.6 + t);
-  if(m.sport === 'ufc') return 0.34;
-  return 0.1 * (0.5 + t);
+  if(m.sport === 'hockey') return 0.18 * (0.6 + t);
+  if(m.sport === 'ufc') return 0;
+  return 0.06 * (0.5 + t);
+}
+// UFC: бой идет по раундам (минута 0-15 = 5 раундов по 3 мин).
+// Каждый раунд решается один раз: сначала проверка KO, иначе раунд уходит сильнейшему.
+function ufcRound(m, rng, silent){
+  var rnd = rng ? rng() : Math.random();
+  var round = clamp(Math.ceil(m.minute / 3), 1, 5);
+  var sd = m.strH - m.strA;
+  var koP = clamp(0.07 + sd * 0.03 + round * 0.012, 0.02, 0.28);
+  if(rnd < koP){
+    var hw = (rng ? rng() : Math.random()) * (m.strH + m.strA) < m.strH;
+    if(hw) m.hs++; else m.as++;
+    m.finished = true; m.onBreak = false; m.finishedAt = Date.now();
+    m.method = 'KO'; m.endRound = round;
+    m.events.push({min:Math.floor(m.minute), txt:'💥 KO/TKO — ' + (hw ? m.home : m.away) + ' (Р' + round + ')'});
+    if(!silent){ toast('💥 KO! ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, ''); checkBets(m); saveResults(m); }
+    return;
+  }
+  var r2 = rng ? rng() : Math.random();
+  var home = r2 * (m.strH + m.strA) < m.strH + (m.hs - m.as) * 0.03;
+  if(home) m.hs++; else m.as++;
+  m.events.push({min:Math.floor(m.minute), txt:'🥊 Раунд ' + round + ' — ' + (home ? m.home : m.away)});
+  if(m.events.length > 30) m.events.shift();
+  if(!silent) toast('🥊 Раунд ' + round + ': ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
 }
 function scoreOnce(m, rng){
   var r = rng ? rng() : Math.random();
@@ -273,15 +296,32 @@ function tickMatch(m){
   m.minute += 1;
   var br = breakInfo(m);
   m.onBreak = !!br;
-  if(!br){
-    var every = (m.sport === 'cyber' || m.sport === 'ufc');
+  if(m.sport === 'ufc'){
+    // раунд решается на его последней минуте (3,6,9,12,15) — потом перерыв
+    if(m.minute % 3 === 0 && m.minute > 0) ufcRound(m, null);
+  } else if(!br){
+    var every = (m.sport === 'cyber');
     if((every || m.minute % 2 === 0) && Math.random() < goalCh(m)){
-      scoreOnce(m, null);
-      toast('⚽ ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
+      var home = scoreOnce(m, null);
+      if(m.sport === 'cyber'){
+        var tot = m.hs + m.as;
+        if(tot === 13 || tot === 26){
+          var mapN = tot === 13 ? 1 : 2;
+          var lead = m.hs > m.as ? m.home : m.away;
+          m.events.push({min:Math.floor(m.minute), txt:'🗺 Карта ' + mapN + ' выиграна — ' + lead});
+        }
+      } else {
+        toast('⚽ ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
+      }
     }
   }
+  if(m.finished) return;
   recalc(m, false);
-  if(m.minute >= m.maxMin){ m.finished = true; m.onBreak = false; m.finishedAt = Date.now(); checkBets(m); saveResults(m); }
+  if(m.minute >= m.maxMin){
+    m.finished = true; m.onBreak = false; m.finishedAt = Date.now();
+    if(m.sport === 'ufc' && !m.method){ m.method = 'DEC'; m.endRound = 5; m.events.push({min:15, txt:'📋 Решение судей — ' + (m.hs >= m.as ? m.home : m.away)}); }
+    checkBets(m); saveResults(m);
+  }
 }
 function overP(expF, L){ return clamp(1/(1+Math.exp(-(expF-L-0.5)*2.0)), 0.02, 0.98); }
 function noise(v, amt){
@@ -300,9 +340,8 @@ function recalc(m, silent){
       var expLeft = BASETOT[m.sport] * left * (0.9 + Math.abs(m.strH - m.strA) * 0.3);
       var expDiff = sd * 0.55 + diff * (2 + played * 7);
       var w = winP(expDiff * 3);
-      // НИЧЬЯ: при ровно к концу — падает к 1.2x, при разнице — умирает
-      // хоккей результативнее — ничья дешевле, фаворит короче
-      var drawCap = m.sport === 'hockey' ? 0.62 : 0.88;
+      // НИЧЬЯ: при ровно к концу — падает к ~1.25 (как в Фонбете), при разнице — умирает
+      var drawCap = m.sport === 'hockey' ? 0.85 : 0.88;
       var drawBase = m.sport === 'hockey' ? 0.18 : 0.24;
       var pD;
       if(diff === 0) pD = clamp(drawBase + played * (drawCap - drawBase), drawBase, drawCap);
@@ -325,20 +364,26 @@ function recalc(m, silent){
       var pbtts = tot > 0 ? 0.62 : clamp(0.55 * (0.3 + expLeft/2.5), 0.15, 0.6);
       m.markets['Обе забьют'] = {lbl:['Да','Нет'], val:[price(pbtts),price(1-pbtts)], closed:[false,false]};
     } else if(m.sport === 'ufc'){
-      // UFC: 5 раундов, победа лидера к концу почти гарантирована
-      var eff = sd * 2 + diff * (5 + played * 11);
+      // UFC: 5 раундов. Лидер забирает бой к концу, KO вероятнее у нокаутера впереди.
+      var round = clamp(Math.ceil(m.minute / 3), 1, 5);
+      var eff = sd * 2.2 + diff * (4 + played * 12);
       var ph = clamp(winP(eff), 0.03, 0.97);
       m.markets['Победитель'] = {lbl:['1','2'], val:[price(ph),price(1-ph)], closed:[false,false]};
-      // тотал раундов: чем позже и ровно — тем вернее OVER
-      var expR = tot + (5 - tot) * left * 0.55;
-      [1.5, 2.5].forEach(function(L){
+      // осталось раундов: всего 5, сыграно tot
+      var remRounds = Math.max(0, 5 - tot);
+      var koBase = clamp(0.1 + Math.max(sd, -sd) * 0.012 + (5 - remRounds) * 0.02, 0.04, 0.5);
+      [1.5, 2.5, 3.5].forEach(function(L){
         if(tot > L){ m.markets['Тотал '+L] = {lbl:['Б','М'], val:[1.05, 12.0], closed:[false,false]}; return; }
-        var base = expR + (diff===0 ? (1-left)*0.9 : -adiff*0.5);
-        var po = overP(base, L);
-        m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po),price(1-po)], closed:[false,false]};
+        // OVER = бой дотянет: чем больше осталось и ровнее — тем вернее верх
+        var pOver = clamp(1 - koBase * (L + 1) * (0.5 + left * 0.5) - (L >= remRounds + tot ? 0.35 : 0), 0.03, 0.97);
+        if(L >= 5) pOver = clamp(pOver - 0.2, 0.03, 0.97);
+        m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(pOver),price(1-pOver)], closed:[false,false]};
       });
-      var pfin = clamp(0.3 + adiff*0.18 + played*0.15 - (diff===0?0.12:0), 0.08, 0.85);
+      var pko = clamp(koBase + adiff * 0.1, 0.05, 0.8);
+      m.markets['Способ победы'] = {lbl:['KO/TKO','Решением'], val:[price(pko),price(1-pko)], closed:[false,false]};
+      var pfin = clamp(0.25 + adiff * 0.15 + played * 0.12, 0.08, 0.85);
       m.markets['Досрочная победа'] = {lbl:['Да','Нет'], val:[price(pfin),price(1-pfin)], closed:[false,false]};
+      m.ufcRound = round;
     } else {
       // КИБЕР: раунды, счет толкает сильно, к концу фаворит 1.05
       var eff2 = sd * 1.6 + diff * (4 + played * 9);
@@ -371,15 +416,25 @@ var Manager = {
     var m = mkMatch(sport, p[0], p[1]);
     if(rng){ m.strH = 0.9 + rng() * 0.5; m.strA = 0.9 + rng() * 0.5; }
     if(fixedId) m.id = fixedId;
-    // одинаковый старт для всех: досимулируем seeded-голы до стартовой минуты
+    // одинаковый старт для всех: досимулируем seeded-события до стартовой минуты
     if(startMin && startMin > 0 && rng){
-      m.minute = 0; m.hs = 0; m.as = 0; m.events = [];
-      for(var mm = 0; mm < startMin; mm++){
-        m.minute++;
-        if(breakInfo(m)) continue;
-        var every = (m.sport === 'cyber' || m.sport === 'ufc');
-        if((every || m.minute % 2 === 0) && rng() < goalCh(m)) scoreOnce(m, rng);
+      for(var attempt = 0; attempt < 3; attempt++){
+        m.minute = 0; m.hs = 0; m.as = 0; m.events = []; m.finished = false; m.method = null;
+        for(var mm = 0; mm < startMin; mm++){
+          if(m.finished) break;
+          m.minute++;
+          if(m.sport === 'ufc'){
+            if(m.minute % 3 === 0 && m.minute > 0) ufcRound(m, rng, true);
+            continue;
+          }
+          if(breakInfo(m)) continue;
+          var every = (m.sport === 'cyber');
+          if((every || m.minute % 2 === 0) && rng() < goalCh(m)) scoreOnce(m, rng);
+        }
+        if(!m.finished) break;
       }
+      if(m.finished){ m.finished = false; m.method = null; }
+      m.onBreak = !!breakInfo(m);
       recalc(m, true);
     }
     this.matches.push(m); return m;
@@ -451,7 +506,7 @@ function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({balance:State.balance, history:State.history.slice(0,100), results:State.results.slice(0,50), favs:State.favs, dailyDate:State.dailyDate, dailyAmount:State.dailyAmount, lastBonus:State.lastBonus})); }catch(e){}
 }
 function saveResults(m){
-  State.results.unshift({home:m.home, away:m.away, hs:m.hs, as:m.as, league:m.league, sport:m.sport, at:Date.now()});
+  State.results.unshift({home:m.home, away:m.away, hs:m.hs, as:m.as, league:m.league, sport:m.sport, at:Date.now(), method:m.method||null, endRound:m.endRound||null});
   if(State.results.length > 50) State.results.length = 50;
   saveState(); renderResults();
 }
@@ -528,6 +583,7 @@ function resultOf(mk, pick, m){
   if(key === 'Фора2 (+1.5)'){ var ok2 = (a+1.5) > h; return ((ok2 && pick===0)||(!ok2 && pick===1))?'win':'lose'; }
   if(key === 'Фора1 (-2.5)'){ var ok3 = (h-2.5) > a; return ((ok3 && pick===0)||(!ok3 && pick===1))?'win':'lose'; }
   if(key === 'Досрочная победа'){ var early = (h + a) < 5 && (h !== a); return ((early && pick===0)||(!early && pick===1))?'win':'lose'; }
+  if(key === 'Способ победы'){ var ko = (m.method === 'KO'); return ((ko && pick===0)||(!ko && pick===1))?'win':'lose'; }
   if(key.indexOf('Тотал')===0){ var line = parseFloat(key.replace('Тотал','')); var over = t > line; return ((over && pick===0) || (!over && pick===1)) ? 'win':'lose'; }
   if(key === 'Обе забьют'){ var both = h>0 && a>0; return ((both && pick===0) || (!both && pick===1)) ? 'win':'lose'; }
   return 'lose';
@@ -567,13 +623,19 @@ function doCashout(id){
 /* ================= РЕНДЕР ================= */
 function updBal(){ $('balanceVal').textContent = Math.round(State.balance).toLocaleString('ru-RU'); }
 function clockOf(m){
-  if(m.finished) return 'FT';
+  if(m.finished){
+    if(m.sport === 'ufc' && m.method === 'KO') return 'FT · KO Р' + (m.endRound || '');
+    if(m.sport === 'ufc') return 'FT · Решение';
+    return 'FT';
+  }
   var br = m.onBreak ? (breakInfo(m) || 'Перерыв') : breakInfo(m);
   if(br) return '⏸ ' + br;
   if(m.sport==='football') return Math.floor(m.minute)+"'";
   if(m.sport==='hockey'){ var p=Math.min(3,Math.floor(m.minute/20)+1); return 'П'+p+' · '+Math.floor(m.minute-(p-1)*20)+"'"; }
-  if(m.sport==='ufc') return 'R'+Math.min(5,Math.floor(m.minute)+1);
-  return 'К'+Math.min(3,Math.floor(m.minute/10)+1);
+  if(m.sport==='ufc'){ var r=clamp(Math.floor(m.minute/3)+1,1,5); return 'Раунд '+r+'/5'; }
+  var tot = m.hs + m.as;
+  var map = Math.min(3, Math.floor(tot/13)+1), rin = tot%13+1;
+  return 'Карта '+map+' · Раунд '+rin;
 }
 function mainOdds(m){
   var name = m.markets['1X2'] ? '1X2' : 'Победитель';
@@ -625,10 +687,17 @@ function renderCenter(){
   var tabs = '<div class="ctabs"><button data-ct="markets" class="'+(State.centerTab==='markets'?'on':'')+'">Рынки</button><button data-ct="stats" class="'+(State.centerTab==='stats'?'on':'')+'">Статистика</button><button data-ct="events" class="'+(State.centerTab==='events'?'on':'')+'">События ('+m.events.length+')</button></div>';
   var body = '';
   if(State.centerTab === 'stats'){
-    body = '<div class="stat-row"><span>Минута</span><span class="v">'+Math.floor(m.minute)+"' / "+m.maxMin+'</span><span class="c">LIVE</span></div>'
-    + '<div class="stat-row"><span>Счёт</span><span class="v">'+m.hs+' : '+m.as+'</span><span class="c">гол</span></div>'
+    var unit = m.sport==='ufc' ? 'раунд' : (m.sport==='cyber' ? 'раунд' : 'гол');
+    var timeRow = m.sport==='ufc'
+      ? '<div class="stat-row"><span>Раунд</span><span class="v">'+clamp(Math.floor(m.minute/3)+1,1,5)+' / 5</span><span class="c">LIVE</span></div>'
+      : (m.sport==='cyber'
+        ? '<div class="stat-row"><span>Карта</span><span class="v">'+Math.min(3,Math.floor((m.hs+m.as)/13)+1)+' / 3</span><span class="c">BO3</span></div>'
+        : '<div class="stat-row"><span>Минута</span><span class="v">'+Math.floor(m.minute)+"' / "+m.maxMin+'</span><span class="c">LIVE</span></div>');
+    body = timeRow
+    + '<div class="stat-row"><span>Счёт</span><span class="v">'+m.hs+' : '+m.as+'</span><span class="c">'+unit+'</span></div>'
     + '<div class="stat-row"><span>Прогресс</span><span class="v">'+pct+'%</span><span class="c">время</span></div>'
-    + '<div class="stat-row"><span>Сила</span><span class="v">'+m.strH.toFixed(2)+' / '+m.strA.toFixed(2)+'</span><span class="c">xG</span></div>';
+    + '<div class="stat-row"><span>Форма</span><span class="v">'+m.strH.toFixed(2)+' / '+m.strA.toFixed(2)+'</span><span class="c">сила</span></div>'
+    + (m.sport==='ufc' && m.method ? '<div class="stat-row"><span>Финиш</span><span class="v">'+(m.method==='KO'?'KO/TKO Р'+(m.endRound||''):'Решением')+'</span><span class="c">метод</span></div>' : '');
   } else if(State.centerTab === 'events'){
     body = '<div class="tl">' + (m.events.length ? m.events.slice().reverse().map(function(ev){ return '<div class="tl-item"><span class="mn">'+ev.min+"'</span><span>"+esc(ev.txt)+'</span></div>'; }).join('') : 'Пока тихо...') + '</div>';
   } else {
@@ -640,8 +709,10 @@ function renderCenter(){
       }).join('')+'</div>';
     }).join('');
   }
+  var methodLine = (m.sport === 'ufc' && m.finished) ? '<div style="text-align:center;font-size:12.5px;font-weight:800;color:var(--yellow);margin:-4px 0 10px;">' + (m.method === 'KO' ? '💥 KO/TKO · Раунд ' + (m.endRound || '') : '📋 Победа решением') + '</div>' : '';
   openModal('<div class="mdl-h"><div><div class="t">'+esc(m.home)+' — '+esc(m.away)+'</div><div class="s">'+esc(m.league)+' · '+clockOf(m)+'</div></div><div class="mdl-x" onclick="closeModal()">✕</div></div>'
     + '<div class="center-score"><div class="tm">'+esc(m.home)+'</div><div class="sc">'+m.hs+' : '+m.as+'</div><div class="tm">'+esc(m.away)+'</div></div>'
+    + methodLine
     + '<div class="prog" style="margin:0 0 10px;"><div class="prog-fill" style="width:'+pct+'%"></div></div>'
     + tabs + '<div id="centerBody">'+body+'</div>');
 }
@@ -671,7 +742,10 @@ function renderStrip(){
 }
 function renderResults(){
   $('resCount').textContent = State.results.length;
-  $('resList').innerHTML = State.results.slice(0,20).map(function(r){ return '<div class="res-row"><span>'+esc(r.home)+' — '+esc(r.away)+'<br><small style="color:var(--t3)">'+esc(r.league)+'</small></span><b>'+r.hs+':'+r.as+'</b></div>'; }).join('');
+  $('resList').innerHTML = State.results.slice(0,20).map(function(r){
+    var extra = (r.sport === 'ufc' && r.method) ? '<br><small style="color:var(--yellow)">'+(r.method === 'KO' ? '💥 KO · Р' + (r.endRound || '') : '📋 Решением')+'</small>' : '';
+    return '<div class="res-row"><span>'+esc(r.home)+' — '+esc(r.away)+'<br><small style="color:var(--t3)">'+esc(r.league)+'</small>'+extra+'</span><b>'+r.hs+':'+r.as+'</b></div>';
+  }).join('');
 }
 function tickOdds(){
   $all('.oval[data-key]').forEach(function(el){
