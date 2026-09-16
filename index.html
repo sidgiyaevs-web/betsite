@@ -248,7 +248,8 @@ function mkMatch(sport, home, away){
     strH: 0.9 + Math.random()*0.5, strA: 0.9 + Math.random()*0.5,
     minute: sport === 'football' ? 5+Math.floor(Math.random()*50) : sport === 'hockey' ? 3+Math.floor(Math.random()*35) : sport === 'ufc' ? Math.floor(Math.random()*8) : 3+Math.floor(Math.random()*15),
     maxMin: MAXMIN[sport], finished:false, finishedAt:0, markets:{}, open:true, events:[],
-    curH:0, curA:0, mapH:0, mapA:0, method:null, endRound:null, onBreak:false
+    curH:0, curA:0, mapH:0, mapA:0, method:null, endRound:null, onBreak:false,
+    status:'live', startAt:0
   };
   if(sport === 'football' && Math.random() < 0.5){ m.hs = 1; m.events.push({min:Math.floor(Math.random()*m.minute)+1, txt:'⚽ Гол — '+m.home}); }
   recalc(m, true);
@@ -312,8 +313,21 @@ function cyberMap(m, home, silent){
     }
   }
 }
+function countdownOf(m){
+  var s = Math.max(0, Math.floor((m.startAt - Date.now()) / 1000));
+  return 'через ' + Math.floor(s / 60) + ':' + pad2(s % 60);
+}
 function tickMatch(m){
   if(m.finished) return;
+  if(m.status === 'upcoming'){
+    if(Date.now() >= m.startAt){
+      m.status = 'live'; m.minute = 0; m.hs = 0; m.as = 0; m.events = [];
+      m.curH = 0; m.curA = 0; m.mapH = 0; m.mapA = 0;
+      recalc(m, true);
+      toast('▶️ Начался: ' + m.home + ' — ' + m.away, '');
+    }
+    return;
+  }
   m.minute += 1;
   var br = breakInfo(m);
   m.onBreak = !!br;
@@ -469,6 +483,45 @@ var Manager = {
     }
     this.matches.push(m); return m;
   },
+  spawnSoon: function(sport, rng, id, startAt){
+    var pool = TEAMS[sport];
+    var p = pool[Math.floor(rng() * pool.length) % pool.length];
+    var m = mkMatch(sport, p[0], p[1]);
+    m.strH = 0.9 + rng() * 0.5; m.strA = 0.9 + rng() * 0.5;
+    m.id = id; m.status = 'upcoming'; m.startAt = startAt;
+    m.minute = 0; m.hs = 0; m.as = 0; m.events = [];
+    recalc(m, true);
+    this.matches.push(m); return m;
+  },
+  topUpSoon: function(){
+    // держим ~7 прематчей со слотами от сетки цикла — одинаково у всех
+    var self = this;
+    var soon = this.matches.filter(function(m){ return m.status === 'upcoming'; });
+    if(soon.length >= 7) return;
+    var cyc = this.cycle, base = cycleStartMs(cyc);
+    var lastStart = 0;
+    soon.forEach(function(m){ if(m.startAt > lastStart) lastStart = m.startAt; });
+    if(!lastStart) lastStart = Math.max(Date.now(), base);
+    var sports = ['football', 'football', 'hockey', 'cyber', 'ufc', 'football', 'hockey', 'cyber'];
+    var need = 7 - soon.length;
+    for(var i = 0; i < need; i++){
+      try{
+        var rng = makeRng((cyc * 2654435761 + self.seq * 40503 + 99991 + i * 13) >>> 0);
+        self.seq++;
+        var s = sports[(soon.length + i) % sports.length];
+        lastStart += 45000 + Math.floor(rng() * 60000);
+        self.spawnSoon(s, rng, 20000 + self.seq, lastStart);
+      }catch(e){}
+    }
+  },
+  rollover: function(newCycle){
+    // смена цикла БЕЗ потери живых ставок: уносим незаконченное, добиваем линию
+    var keep = this.matches.filter(function(m){
+      return !m.finished || (Date.now() - (m.finishedAt || 0) < 30000);
+    });
+    this.matches = keep; this.cycle = newCycle;
+    this.topUpSoon();
+  },
   init: function(){
     this.matches = []; this.seq = 0;
     var cycle = curCycle(); this.cycle = cycle;
@@ -489,12 +542,14 @@ var Manager = {
         }catch(e){}
       }
     });
+    this.topUpSoon();
   },
   tick: function(){
     var self = this;
-    // новый цикл — новый одинаковый для всех набор
-    if(curCycle() !== this.cycle){ this.init(); renderList(); return; }
+    // новый цикл — мягкий ролловер, ставки не горят
+    if(curCycle() !== this.cycle){ this.rollover(curCycle()); renderList(); return; }
     this.matches.forEach(function(m){ try{ tickMatch(m); }catch(e){} });
+    this.topUpSoon();
     var now = Date.now();
     this.matches = this.matches.map(function(m){
       if(m.finished && now - m.finishedAt > 30000){
@@ -517,7 +572,8 @@ var Manager = {
     }
   },
   find: function(id){ return this.matches.find(function(m){return m.id===id;}); },
-  liveCount: function(){ return this.matches.filter(function(m){return !m.finished;}).length; }
+  liveCount: function(){ return this.matches.filter(function(m){return m.status === 'live' && !m.finished;}).length; },
+  soonCount: function(){ return this.matches.filter(function(m){return m.status === 'upcoming';}).length; }
 };
 /* ================= СОСТОЯНИЕ ================= */
 var State = { balance:10000, coupon:[], betType:'single', history:[], results:[], sport:'all', histFilter:'all', dailyDate:'', dailyAmount:0, lastBonus:'', favs:[], search:'', sort:'def', centerId:null, centerTab:'markets' };
@@ -659,6 +715,7 @@ function clockOf(m){
     if(m.sport === 'ufc') return 'FT · Решение';
     return 'FT';
   }
+  if(m.status === 'upcoming') return '🕒 ' + countdownOf(m);
   var br = m.onBreak ? (breakInfo(m) || 'Перерыв') : breakInfo(m);
   if(br) return '⏸ ' + br;
   if(m.sport==='football') return Math.floor(m.minute)+"'";
@@ -688,12 +745,16 @@ function cardHTML(m){
   }
   var ic = (SPORTS.find(function(s){return s.id===m.sport;})||{}).ic || '🏆';
   var fav = State.favs.indexOf(m.id) > -1 ? '★' : '☆';
-  var brk = !fin && breakInfo(m);
+  var isLive = !fin && m.status === 'live';
+  var isSoon = !fin && m.status === 'upcoming';
+  var brk = isLive && breakInfo(m);
   var foot = fin
     ? '<div class="mc-hint">✅ Финал · Новый матч через <b data-next="'+m.id+'">30</b> сек</div>'
-    : '<div class="mc-hint">Тапни по карточке — все рынки, статистика и события ⚙</div>';
-  return '<div class="mc'+(fin?'':' live')+'" data-card="'+m.id+'">'
-  +'<div class="mc-head"><div>'+ic+' '+esc(m.league)+'</div><div style="display:flex;gap:8px;align-items:center;"><span class="fav" data-fav="'+m.id+'" style="cursor:pointer;font-size:15px;color:'+(fav==='★'?'var(--yellow)':'var(--t3)')+'">'+fav+'</span><div class="mc-status'+(fin?'':(brk?'':' live'))+'" data-clock="'+m.id+'"'+(brk?' style="color:var(--yellow);font-weight:800;"':'')+'>'+clockOf(m)+'</div></div></div>'
+    : (isSoon
+      ? '<div class="mc-hint">🕒 Начнётся ' + countdownOf(m) + ' — кэфы прематч · Тапни для росписи ⚙</div>'
+      : '<div class="mc-hint">Тапни по карточке — все рынки, статистика и события ⚙</div>');
+  return '<div class="mc'+(isLive?' live':'')+'" data-card="'+m.id+'">'
+  +'<div class="mc-head"><div>'+ic+' '+esc(m.league)+'</div><div style="display:flex;gap:8px;align-items:center;"><span class="fav" data-fav="'+m.id+'" style="cursor:pointer;font-size:15px;color:'+(fav==='★'?'var(--yellow)':'var(--t3)')+'">'+fav+'</span><div class="mc-status'+(isLive&&!brk?' live':'')+'" data-clock="'+m.id+'"'+(brk||isSoon?' style="color:var(--yellow);font-weight:800;"':'')+'>'+clockOf(m)+'</div></div></div>'
   +'<div class="mc-teams"><div class="mc-team"><span>'+esc(m.home)+'</span><span class="mc-score'+(fin&&m.hs>m.as?' w':'')+'" data-score="'+m.id+'" data-side="h">'+m.hs+'</span></div><div class="mc-team"><span>'+esc(m.away)+'</span><span class="mc-score'+(fin&&m.as>m.hs?' w':'')+'" data-score="'+m.id+'" data-side="a">'+m.as+'</span></div></div>'
   +'<div class="mc-odds'+(two?' two':'')+'">'+odds+'</div>'
   + foot + '</div>';
@@ -708,11 +769,11 @@ function moreHTML(m){
   }).join('');
 }
 function renderTabs(){
-  var tabs = [{id:'all',n:'Линия'},{id:'live',n:'LIVE'},{id:'fav',n:'★'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
+  var tabs = [{id:'all',n:'Линия'},{id:'live',n:'LIVE'},{id:'soon',n:'Скоро'},{id:'fav',n:'★'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
   $('hdrTabs').innerHTML = tabs.map(function(t){ return '<button class="htab'+(State.sport===t.id?' on':'')+'" data-nav="'+t.id+'">'+esc(t.n)+'</button>'; }).join('');
 }
 function renderFilters(){
-  var chips = [{id:'all',n:'🔥 Все'},{id:'fav',n:'★ Избранное'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
+  var chips = [{id:'all',n:'🔥 Все'},{id:'soon',n:'🕒 Скоро'},{id:'fav',n:'★ Избранное'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
   $('filterBar').innerHTML = chips.map(function(c){ return '<button class="fchip'+(State.sport===c.id?' on':'')+'" data-sport="'+c.id+'">'+esc(c.n)+'</button>'; }).join('');
 }
 function openCenter(id){
@@ -759,7 +820,8 @@ function renderCenter(){
 function updateCenter(){ if(State.centerId) renderCenter(); }
 function filteredList(){
   var list = Manager.matches.slice();
-  if(State.sport==='live') list = list.filter(function(m){return !m.finished;});
+  if(State.sport==='live') list = list.filter(function(m){return m.status==='live' && !m.finished;});
+  else if(State.sport==='soon') list = list.filter(function(m){return m.status==='upcoming';}).sort(function(a,b){return a.startAt-b.startAt;});
   else if(State.sport==='fav') list = list.filter(function(m){return State.favs.indexOf(m.id)>-1;});
   else if(State.sport!=='all') list = list.filter(function(m){return m.sport===State.sport;});
   if(State.search) list = list.filter(function(m){return (m.home+' '+m.away+' '+m.league).toLowerCase().indexOf(State.search)>-1;});
@@ -769,14 +831,14 @@ function filteredList(){
 }
 function renderList(){
   var list = filteredList();
-  $('listTitle').textContent = State.sport==='all'?'Все матчи':State.sport==='live'?'LIVE матчи':State.sport==='fav'?'★ Избранное':(SPORTS.find(function(s){return s.id===State.sport;})||{}).name||'Матчи';
+  $('listTitle').textContent = State.sport==='all'?'Все матчи':State.sport==='live'?'LIVE матчи':State.sport==='soon'?'Скоро начнутся':State.sport==='fav'?'★ Избранное':(SPORTS.find(function(s){return s.id===State.sport;})||{}).name||'Матчи';
   $('listCount').textContent = list.length;
   $('matchesList').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="cp-empty"><div class="em">🔍</div>Ничего не найдено</div>';
   _listSig = listSig();
   paintSel();
 }
 function renderStrip(){
-  var live = Manager.matches.filter(function(m){return !m.finished;}).slice(0,10);
+  var live = Manager.matches.filter(function(m){return m.status==='live' && !m.finished;}).slice(0,10);
   $('liveCount').textContent = Manager.liveCount();
   $('liveStrip').innerHTML = live.length ? live.map(function(m){ return '<div class="lcard" data-mid="'+m.id+'"><div class="lt">'+esc(m.league)+' · '+clockOf(m)+'</div><div class="lm">'+esc(m.home)+' — '+esc(m.away)+'</div><div class="ls">'+m.hs+' : '+m.as+'</div></div>'; }).join('') : '<div style="padding:14px;color:var(--t3);">Нет активных матчей</div>';
 }
@@ -831,7 +893,7 @@ function openHistory(){
 /* ================= ТИК (без перерендера — кэфы не пропадают) ================= */
 var _listSig = '';
 function listSig(){
-  return State.sport + '|' + Manager.matches.map(function(m){return m.id+':'+(m.finished?1:0)+':'+m.hs+'-'+m.as;}).join(',');
+  return State.sport + '|' + State.search + '|' + State.sort + '|' + Manager.matches.map(function(m){return m.id+':'+m.status+':'+(m.finished?1:0)+':'+m.hs+'-'+m.as;}).join(',');
 }
 function lightUpdate(){
   var now = Date.now();
