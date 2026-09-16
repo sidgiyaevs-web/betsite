@@ -1821,21 +1821,25 @@ const Manager = {
     this.nextId = 1;
     const cycle = currentCycle();
 
+    const trySpawn = (sport, off) => {
+      try { this.spawn(sport, off, cycle); }
+      catch(e){ console.error('[INIT-SPAWN-FAIL]', sport, off, e); }
+    };
     // Футбол — 5 матчей с разносом 30 сек
     for(let i=0;i<5;i++){
-      this.spawn('football', i*30, cycle);
+      trySpawn('football', i*30);
     }
     // Хоккей — 3 матча
     for(let i=0;i<3;i++){
-      this.spawn('hockey', i*30, cycle);
+      trySpawn('hockey', i*30);
     }
     // UFC — 2 матча
     for(let i=0;i<2;i++){
-      this.spawn('ufc', i*30, cycle);
+      trySpawn('ufc', i*30);
     }
     // Кибер — 3 матча
     for(let i=0;i<3;i++){
-      this.spawn('cyber', i*30, cycle);
+      trySpawn('cyber', i*30);
     }
 
     console.log(`[SPORTLIVE] Цикл #${cycle} — ${this.matches.length} матчей`);
@@ -3724,12 +3728,39 @@ window.doCashout = doCashout;
 window.claimBonus = claimBonus;
 
 /* ---------- INIT ---------- */
+window.addEventListener('error', e => {
+  try {
+    const t = document.getElementById('toast');
+    if(t){ t.textContent = 'Ошибка: ' + (e.message || 'JS'); t.className = 'toast on err'; }
+    console.error('[SPORTLIVE-ERR]', e.message, e.filename, e.lineno);
+  } catch(_){}
+});
+function safeSpawn(sport, offsetSec, cycle){
+  try { return Manager.spawn(sport, offsetSec, cycle); }
+  catch(err){ console.error('[SPAWN-FAIL]', sport, err); return null; }
+}
 function init(){
   console.log('%c⚡ SPORTLIVE v4', 'color:#ffd94a;font-size:16px;font-weight:900;');
 
   loadState();
   updateBalance();
-  Manager.init();
+  try {
+    Manager.init();
+  } catch(err){
+    console.error('[INIT-FAIL]', err);
+    // запасной вариант: хоть по 1 матчу каждого вида
+    try {
+      Manager.matches = []; Manager.nextId = 1;
+      const cycle = currentCycle();
+      ['football','hockey','ufc','cyber'].forEach(s => { safeSpawn(s, 0, cycle); });
+    } catch(_){}
+  }
+  if(!Manager.matches.length){
+    try {
+      const cycle = currentCycle();
+      ['football','hockey','ufc','cyber'].forEach(s => { safeSpawn(s, 0, cycle); });
+    } catch(_){}
+  }
 
   renderFiltersBar();
   renderMatchesList();
