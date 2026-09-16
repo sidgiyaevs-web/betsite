@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1944,7 +1945,7 @@ const Manager = {
 };
 
 /* === КОНЕЦ ЧАСТИ 2 === */
-  /* === ЧАСТЬ 3: UFC — ПОЛНЫЙ ДВИЖОК === */
+  /* === ЧАСТЬ 3: UFC — ПОЛНЫЙ ДВИЖОК + СТАТИСТИКА === */
 
 /* ============================================================
    РЫНКИ UFC
@@ -1956,22 +1957,21 @@ Match.prototype.buildUfcMarkets = function(){
   const pA = 1 - pH;
 
   return {
-    'Победитель':          {type:'win',   lbl:['Победа 1','Победа 2'], val:[clamp(1/pH/1.05,1.05,20), clamp(1/pA/1.05,1.05,20)], closed:[false,false]},
-    'Тотал 1.5 раунда':    {type:'overR', line:1.5, lbl:['Больше','Меньше'], val:[1.80, 2.00], closed:[false,false]},
-    'Тотал 2.5 раунда':    {type:'overR', line:2.5, lbl:['Больше','Меньше'], val:[2.10, 1.72], closed:[false,false]},
-    'Тотал 3.5 раунда':    {type:'overR', line:3.5, lbl:['Больше','Меньше'], val:[2.80, 1.42], closed:[false,false]},
-    'Тотал 4.5 раунда':    {type:'overR', line:4.5, lbl:['Больше','Меньше'], val:[4.50, 1.20], closed:[false,false]},
-    'Фора1 -1.5 раунда':   {type:'hand1', line:-1.5, lbl:['Да','Нет'], val:[2.20, 1.65], closed:[false,false]},
-    'Метод победы':        {type:'method', lbl:['KO/TKO','Сабмишен','Решение'], val:[2.50, 4.00, 2.20], closed:[false,false,false]},
-    'Раунд победы':        {type:'round', lbl:['1','2','3','4','5'], val:[4.20, 5.50, 7.00, 9.00, 12.0], closed:[false,false,false,false,false]},
-    'Досрочно':            {type:'btts', lbl:['Да','Нет'], val:[1.75, 2.05], closed:[false,false]},
-    'Бой дойдёт до решения':{type:'btts', lbl:['Да','Нет'], val:[2.10, 1.72], closed:[false,false]},
-    'Оба нокдауна':        {type:'btts', lbl:['Да','Нет'], val:[3.20, 1.32], closed:[false,false]},
-    'Тотал ударов 150.5':  {type:'hits', line:150.5, lbl:['Больше','Меньше'], val:[1.90, 1.90], closed:[false,false]},
+    'Победитель':           {type:'win',  lbl:['Победа 1','Победа 2'], val:[clamp(1/pH/1.05,1.05,20), clamp(1/pA/1.05,1.05,20)], closed:[false,false]},
+    'Тотал 1.5 раунда':     {type:'overR',line:1.5, lbl:['Больше','Меньше'], val:[1.80, 2.00], closed:[false,false]},
+    'Тотал 2.5 раунда':     {type:'overR',line:2.5, lbl:['Больше','Меньше'], val:[2.10, 1.72], closed:[false,false]},
+    'Тотал 3.5 раунда':     {type:'overR',line:3.5, lbl:['Больше','Меньше'], val:[2.80, 1.42], closed:[false,false]},
+    'Тотал 4.5 раунда':     {type:'overR',line:4.5, lbl:['Больше','Меньше'], val:[4.50, 1.20], closed:[false,false]},
+    'Фора1 -1.5 раунда':    {type:'hand1',line:-1.5,lbl:['Да','Нет'],val:[2.20, 1.65],closed:[false,false]},
+    'Метод победы':         {type:'method',lbl:['KO/TKO','Сабмишен','Решение'],val:[2.50, 4.00, 2.20],closed:[false,false,false]},
+    'Раунд победы':         {type:'round',lbl:['1','2','3','4','5'],val:[4.20, 5.50, 7.00, 9.00, 12.0],closed:[false,false,false,false,false]},
+    'Досрочно':             {type:'btts',lbl:['Да','Нет'],val:[1.75, 2.05],closed:[false,false]},
+    'Бой дойдёт до решения':{type:'btts',lbl:['Да','Нет'],val:[2.10, 1.72],closed:[false,false]},
+    'Тотал значимых ударов 120.5':{type:'hits',line:120.5,lbl:['Больше','Меньше'],val:[1.90, 1.90],closed:[false,false]},
+    'Тотал тейкдаунов 2.5':  {type:'takedowns',line:2.5,lbl:['Больше','Меньше'],val:[1.90, 1.90],closed:[false,false]},
   };
 };
 
-/* ---------- Расширяем buildMarkets ---------- */
 const _origBuildMarkets = Match.prototype.buildMarkets;
 Match.prototype.buildMarkets = function(){
   if(this.sport === 'ufc') return this.buildUfcMarkets();
@@ -1984,13 +1984,14 @@ Match.prototype.buildMarkets = function(){
 const _origGetWeights = Match.prototype.getWeights;
 Match.prototype.getWeights = function(){
   if(this.sport === 'ufc') return [
-    {t:'HIT',        w:38},
-    {t:'ATTACK',     w:22},
-    {t:'DANGEROUS',  w:16},
-    {t:'SHOT_ON',    w:12},
-    {t:'TAKEDOWN',   w:6},
-    {t:'KO',         w:1.2},
-    {t:'SUBMISSION', w:0.8},
+    {t:'HIT',         w:38},
+    {t:'ATTACK',      w:20},
+    {t:'DANGEROUS',   w:15},
+    {t:'SHOT_ON',     w:12},
+    {t:'TAKEDOWN',    w:7},
+    {t:'TAKEDOWN_OK', w:3},
+    {t:'KO',          w:1.2},
+    {t:'SUBMISSION',  w:0.8},
   ];
   return _origGetWeights.call(this);
 };
@@ -2005,35 +2006,49 @@ Match.prototype.executeUfc = function(type, team){
 
   switch(type){
     case 'HIT': {
+      // Значимый удар
       this.stats.hits[team]++;
+      this.stats.sigStrikes[team]++;
+      this.stats.headStrikes[team]++;
+      // Точность
+      const totalShots = this.stats.sigStrikes[team] + rndInt(1,3);
+      this.stats.strikeAcc[team] = Math.round(this.stats.sigStrikes[team] / totalShots * 100);
       this.pushEvent({type, min:round, team, text:`Удар <b>${tN}</b>`});
-      this.setCommentary(`<b>${tN}</b> попадает в цель.`);
       break;
     }
     case 'ATTACK': {
       this.attackingTeam = team;
       this.pushEvent({type, min:round, team, text:`<b>${tN}</b> наступает`});
-      this.setCommentary(`<b>${tN}</b> идёт вперёд.`);
       break;
     }
     case 'DANGEROUS': {
       this.pushEvent({type, min:round, team, text:`⚡ Опасно! <b>${tN}</b> потрясает соперника`, highlight:true});
-      this.setCommentary(`🔥 <b>${tN}</b> наносит мощную серию!`);
       this.setLiveMoment('🔥 Опасно', tN);
       this.momentumShift(team, 8);
       break;
     }
     case 'SHOT_ON': {
       this.suspend(1500);
+      this.stats.sigStrikes[team]++;
+      this.stats.knockdowns[team] = (this.stats.knockdowns[team] || 0) + (this.rng() < 0.3 ? 1 : 0);
       this.pushEvent({type, min:round, team, text:`Мощный удар <b>${tN}</b>`, highlight:true});
-      this.setCommentary(`💥 <b>${tN}</b> попадает сильно!`);
       this.momentumShift(team, 6);
       break;
     }
     case 'TAKEDOWN': {
-      this.stats.hits[team]++;
-      this.pushEvent({type, min:round, team, text:`Борьба <b>${tN}</b> в партере`});
-      this.setCommentary(`<b>${tN}</b> переводит в партер.`);
+      this.stats.takedowns[team]++;
+      this.pushEvent({type, min:round, team, text:`Попытка тейкдауна <b>${tN}</b>`});
+      if(this.rng() < 0.5){
+        this.stats.takedownsAcc[team]++;
+        this.stats.control[team] += rndInt(15,45);
+      }
+      break;
+    }
+    case 'TAKEDOWN_OK': {
+      this.stats.takedowns[team]++;
+      this.stats.takedownsAcc[team]++;
+      this.stats.control[team] += rndInt(30,90);
+      this.pushEvent({type, min:round, team, text:`Тейкдаун! <b>${tN}</b> контролирует`});
       break;
     }
     case 'KO': {
@@ -2044,6 +2059,7 @@ Match.prototype.executeUfc = function(type, team){
       break;
     }
     case 'SUBMISSION': {
+      this.stats.subAttempts[team]++;
       const attackerS = team === 'h' ? this.homeStrength : this.awayStrength;
       const subChance = 0.25 + attackerS * 0.1;
       if(this.rng() > subChance) return;
@@ -2067,12 +2083,10 @@ Match.prototype.finishByKO = function(winner, method){
   }
   this.pushEvent({
     type: method === 'Сабмишен' ? 'SUBMISSION' : 'KO',
-    min: round,
-    team: winner,
+    min: round, team: winner,
     text: `💥 <b>ПОБЕДА!</b> ${wN} в раунде ${round} — ${method}`,
     highlight: true,
   });
-  this.setCommentary(`💥 <b>ПОБЕДА!</b> ${wN} выигрывает в раунде ${round} методом ${method}!`);
   this.setLiveMoment(`💥 ${method}`, `${wN} — раунд ${round}`);
   this.suspend(2500);
 
@@ -2081,20 +2095,19 @@ Match.prototype.finishByKO = function(winner, method){
 };
 
 /* ============================================================
-   UFC — finish по решению судей
+   UFC — finish (по решению судей)
    ============================================================ */
 const _origFinish = Match.prototype.finish;
 Match.prototype.finish = function(){
   if(this.sport === 'ufc'){
-    const hScore = this.stats.hits.h || 0;
-    const aScore = this.stats.hits.a || 0;
-    const total = hScore + aScore;
+    const hSig = this.stats.sigStrikes.h;
+    const aSig = this.stats.sigStrikes.a;
+    const total = hSig + aSig;
     let winner;
     if(total === 0){
       winner = this.rng() < 0.5 ? 'h' : 'a';
     } else {
-      const pH = hScore / total;
-      winner = this.rng() < pH ? 'h' : 'a';
+      winner = this.rng() < hSig / total ? 'h' : 'a';
     }
     const wN = winner === 'h' ? this.home : this.away;
     const rH = 3 + Math.floor(this.rng() * 3);
@@ -2119,7 +2132,6 @@ Match.prototype.finish = function(){
   return _origFinish.call(this);
 };
 
-/* ---------- Расширяем execute ---------- */
 const _origExecute = Match.prototype.execute;
 Match.prototype.execute = function(type, team){
   if(this.sport === 'ufc') return this.executeUfc(type, team);
@@ -2134,40 +2146,51 @@ Match.prototype.calcMarket = function(name, mk, ctx){
   if(this.sport !== 'ufc') return _origCalcMarket.call(this, name, mk, ctx);
   const t = this.gameTime();
   const inRound = t - Math.floor(t);
+  const round = Math.min(5, Math.floor(t) + 1);
 
   switch(mk.type){
     case 'win':{
-      // От реальной статистики ударов
-      const hitsH = this.stats.hits.h;
-      const hitsA = this.stats.hits.a;
-      const totalHits = hitsH + hitsA;
+      const hS = this.stats.sigStrikes.h;
+      const aS = this.stats.sigStrikes.a;
+      const totalS = hS + aS;
       let pH;
-      if(totalHits > 5){
-        pH = 0.5 + (hitsH - hitsA) / (totalHits * 2)
-           + (this.homeStrength - this.awayStrength) * 0.1;
+      if(totalS > 5){
+        pH = 0.5 + (hS - aS) / (totalS * 2) + (this.homeStrength - this.awayStrength) * 0.1;
       } else {
         pH = this.homeStrength / (this.homeStrength + this.awayStrength);
       }
       pH = clamp(pH, 0.05, 0.95);
-      const pA = 1 - pH;
       const mg = 1.05;
-      return [clamp(1/pH/mg,1.02,99), clamp(1/pA/mg,1.02,99)];
+      return [clamp(1/pH/mg,1.02,99), clamp(1/(1-pH)/mg,1.02,99)];
     }
     case 'overR':{
       if(t > mk.line) return [1.00, 1.00];
-      // Чем ближе к концу раунда — тем точнее
       let pOver;
       if(mk.line === 1.5){
-        pOver = t < 1 ? 0.72 : t < 2 ? 0.90 : 0.97;
+        if(t >= 1.5) pOver = 0.99;
+        else if(t >= 1) pOver = 0.85 + inRound * 0.14;
+        else pOver = 0.65 + t * 0.20;
       } else if(mk.line === 2.5){
-        pOver = t < 1 ? 0.48 : t < 2 ? 0.72 : t < 3 ? 0.92 : 0.97;
+        if(t >= 2.5) pOver = 0.99;
+        else if(t >= 2) pOver = 0.75 + inRound * 0.20;
+        else if(t >= 1) pOver = 0.55 + (t - 1) * 0.20;
+        else pOver = 0.40 + t * 0.15;
       } else if(mk.line === 3.5){
-        pOver = t < 1 ? 0.30 : t < 2 ? 0.45 : t < 3 ? 0.68 : t < 4 ? 0.90 : 0.97;
+        if(t >= 3.5) pOver = 0.99;
+        else if(t >= 3) pOver = 0.65 + inRound * 0.30;
+        else if(t >= 2) pOver = 0.45 + (t - 2) * 0.20;
+        else if(t >= 1) pOver = 0.30 + (t - 1) * 0.15;
+        else pOver = 0.20 + t * 0.10;
       } else {
-        pOver = t < 2 ? 0.18 : t < 3 ? 0.28 : t < 4 ? 0.42 : t < 5 ? 0.68 : 0.97;
+        if(t >= 4.5) pOver = 0.99;
+        else if(t >= 4) pOver = 0.55 + inRound * 0.40;
+        else if(t >= 3) pOver = 0.35 + (t - 3) * 0.20;
+        else if(t >= 2) pOver = 0.20 + (t - 2) * 0.15;
+        else if(t >= 1) pOver = 0.10 + (t - 1) * 0.10;
+        else pOver = 0.05 + t * 0.05;
       }
       pOver = clamp(pOver, 0.02, 0.98);
-      const mg = 1.06;
+      const mg = 1.05;
       return [clamp(1/pOver/mg,1.02,99), clamp(1/(1-pOver)/mg,1.02,99)];
     }
     case 'method':{
@@ -2197,22 +2220,26 @@ Match.prototype.calcMarket = function(name, mk, ctx){
     }
     case 'hand1':
     case 'hand2':{
-      // Фора на победу
       const pH = this.homeStrength / (this.homeStrength + this.awayStrength);
       let p = (mk.type === 'hand1') ? pH : 1 - pH;
-      if(mk.line < 0){
-        // Должен победить досрочно
-        p *= 0.65;
-      }
+      if(mk.line < 0) p *= 0.65;
       p = clamp(p, 0.05, 0.95);
       const mg = 1.06;
       return [clamp(1/p/mg,1.02,99), clamp(1/(1-p)/mg,1.02,99)];
     }
     case 'hits':{
-      const h = this.stats.hits.h + this.stats.hits.a;
+      const h = this.stats.sigStrikes.h + this.stats.sigStrikes.a;
       if(h > mk.line) return [1.00, 1.00];
-      const proj = h + (5 - t) * 35;
+      const proj = h + (5 - t) * 25;
       const pO = clamp(1/(1+Math.exp(-(proj-mk.line)*0.05)), 0.05, 0.95);
+      const mg = 1.06;
+      return [clamp(1/pO/mg,1.02,99), clamp(1/(1-pO)/mg,1.02,99)];
+    }
+    case 'takedowns':{
+      const td = this.stats.takedowns.h + this.stats.takedowns.a;
+      if(td > mk.line) return [1.00, 1.00];
+      const proj = td + (5 - t) * 0.6;
+      const pO = clamp(1/(1+Math.exp(-(proj-mk.line)*1.5)), 0.05, 0.95);
       const mg = 1.06;
       return [clamp(1/pO/mg,1.02,99), clamp(1/(1-pO)/mg,1.02,99)];
     }
@@ -2227,26 +2254,9 @@ Match.prototype.calcMarket = function(name, mk, ctx){
         const mg = 1.06;
         return [clamp(1/pYes/mg,1.02,99), clamp(1/(1-pYes)/mg,1.02,99)];
       }
-      if(name.includes('нокдауна')){
-        const pYes = 0.30;
-        const mg = 1.06;
-        return [clamp(1/pYes/mg,1.02,99), clamp(1/(1-pYes)/mg,1.02,99)];
-      }
     }
   }
   return mk.val;
-};
-
-/* ============================================================
-   UFC — displayClock уже в родителе, но доп. метка
-   ============================================================ */
-const _origStageLabel = Match.prototype.stageLabel;
-Match.prototype.stageLabel = function(){
-  if(this.sport === 'ufc'){
-    const r = Math.min(5, Math.floor(this.gameTime()) + 1);
-    return `Раунд ${r}/5`;
-  }
-  return _origStageLabel.call(this);
 };
 
 /* ============================================================
@@ -2257,8 +2267,24 @@ Manager.catchUp = function(m){
   if(m.sport === 'ufc'){
     const p = m.progress();
     if(p > 0){
-      m.stats.hits.h = Math.round(p * 60);
-      m.stats.hits.a = Math.round(p * 55);
+      m.stats.sigStrikes.h = Math.round(p * 55);
+      m.stats.sigStrikes.a = Math.round(p * 50);
+      m.stats.hits.h = m.stats.sigStrikes.h;
+      m.stats.hits.a = m.stats.sigStrikes.a;
+      m.stats.headStrikes.h = Math.round(p * 35);
+      m.stats.headStrikes.a = Math.round(p * 32);
+      m.stats.bodyStrikes.h = Math.round(p * 12);
+      m.stats.bodyStrikes.a = Math.round(p * 11);
+      m.stats.legStrikes.h = Math.round(p * 8);
+      m.stats.legStrikes.a = Math.round(p * 7);
+      m.stats.takedowns.h = Math.round(p * 2);
+      m.stats.takedowns.a = Math.round(p * 1);
+      m.stats.takedownsAcc.h = Math.round(p * 1);
+      m.stats.takedownsAcc.a = Math.round(p * 1);
+      m.stats.control.h = Math.round(p * 60);
+      m.stats.control.a = Math.round(p * 45);
+      m.stats.strikeAcc.h = 45 + Math.round(m.rng() * 15);
+      m.stats.strikeAcc.a = 42 + Math.round(m.rng() * 15);
     }
     return;
   }
@@ -2266,7 +2292,7 @@ Manager.catchUp = function(m){
 };
 
 /* === КОНЕЦ ЧАСТИ 3 === */
-  /* === ЧАСТЬ 4: UI + РЕНДЕР + MATCH CENTER === */
+  /* === ЧАСТЬ 4: UI + РАСКРЫТИЕ КОТИРОВОК + STATS === */
 
 /* ---------- STATE ---------- */
 const State = {
@@ -2286,8 +2312,12 @@ const State = {
   dailyDate: '',
   dailyAmount: 0,
   lastBonusDate: '',
+  bonusDay: 1,
   level: 1,
   xp: 0,
+  expandedCards: new Set(),
+  openTotal: {}, // {matchId: '2.5'} — какой тотал раскрыт
+  probMode: false,
 };
 
 function loadState(){
@@ -2308,6 +2338,7 @@ function loadState(){
       State.dailyAmount = 0;
     }
     State.lastBonusDate = d.lastBonusDate || '';
+    State.bonusDay = d.bonusDay || 1;
     State.level = d.level || 1;
     State.xp = d.xp || 0;
   } catch(e){}
@@ -2322,6 +2353,7 @@ function saveState(){
       dailyDate: State.dailyDate,
       dailyAmount: State.dailyAmount,
       lastBonusDate: State.lastBonusDate,
+      bonusDay: State.bonusDay,
       level: State.level,
       xp: State.xp,
     }));
@@ -2352,7 +2384,7 @@ function closeModal(){
 
 /* ---------- RIPPLE ---------- */
 document.addEventListener('click', e => {
-  const btn = e.target.closest('.odd, .mkt-odd, .sport-btn, .time-btn, .hbtn, .cp-place, .mdl-x, .mc-hint');
+  const btn = e.target.closest('.odd, .mkt-odd, .sport-btn, .time-btn, .hbtn, .cp-place, .mdl-x, .total-line, .total-value, .btts-btn');
   if(!btn) return;
   const rect = btn.getBoundingClientRect();
   const size = Math.max(rect.width, rect.height);
@@ -2396,23 +2428,16 @@ function startTimeLabel(m){
 
 function isSoon(m){
   const diff = m.startedAt - Date.now();
-  return diff > 0 && diff < 3600000; // в течение часа
+  return diff > 0 && diff < 3600000;
 }
-
 function isToday(m){
   const d = new Date(m.startedAt);
   return d.toDateString() === new Date().toDateString() && m.startedAt > Date.now() + 3600000;
 }
-
 function isTomorrow(m){
   const d = new Date(m.startedAt);
   const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
   return d.toDateString() === tmr.toDateString();
-}
-
-function isLater(m){
-  const diff = m.startedAt - Date.now();
-  return diff > 24 * 3600000;
 }
 
 /* ---------- SPORTS BAR ---------- */
@@ -2423,14 +2448,14 @@ function renderSportsRow(){
     const liveN = s.id === 'all'
       ? Manager.matches.filter(m => m.progress() > 0 && m.progress() < 1).length
       : Manager.matches.filter(m => m.sport === s.id && m.progress() > 0 && m.progress() < 1).length;
-    const badge = liveN > 0 ? `<span style="background:var(--live);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:8px;margin-left:4px;">${liveN}</span>` : '';
+    const badge = liveN > 0 ? `<span style="background:var(--live);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:8px;margin-left:4px">${liveN}</span>` : '';
     return `<button class="sport-btn ${State.currentSport===s.id?'on':''}" data-sport="${s.id}">
       ${s.ic} ${s.name}${badge}
     </button>`;
   }).join('');
 }
 
-/* ---------- TIME FILTER BAR ---------- */
+/* ---------- TIME FILTER ---------- */
 function renderTimeRow(){
   const box = $('timeRow');
   if(!box) return;
@@ -2439,22 +2464,41 @@ function renderTimeRow(){
   ).join('');
 }
 
-/* ---------- TICKER ---------- */
-function renderTicker(){
-  const box = $('ticker');
-  if(!box) return;
-  const live = Manager.matches.filter(m => m.progress() > 0 && m.progress() < 1).slice(0, 10);
-  if(!live.length){
-    box.innerHTML = '<div class="ticker-item"><span class="s">Ожидание событий...</span></div>';
-    return;
-  }
-  box.innerHTML = live.map(m => {
-    const ic = SPORTS.find(s => s.id === m.sport)?.ic || '🏆';
-    return `<div class="ticker-item">
-      <span class="t">${ic} ${m.displayClock()}</span>
-      <span class="s">${esc(m.home)} ${m.hs}:${m.as} ${esc(m.away)}</span>
+/* ---------- РАСКРЫТИЕ ТОТАЛА: 4 кнопки 0.5 / 1.5 / 2.5 / 3.5 ---------- */
+function renderTotalSection(m, marketName, market, lineOptions){
+  const openLine = State.openTotal[m.id] || null;
+  let html = `<div class="market-section">
+    <div class="market-title">${esc(marketName)}</div>
+    <div class="total-grid">`;
+
+  // 4 кнопки с линиями
+  lineOptions.forEach(line => {
+    const isOpen = openLine === line;
+    // Берём текущие значения для этой линии
+    const val = market.val || [1.90, 1.90];
+    html += `<div class="total-line ${isOpen?'on':''}" data-total="${line}" data-mid="${m.id}">
+      <div class="total-lbl">${line}</div>
+      <div class="total-val">${val[0].toFixed(2)}</div>
     </div>`;
-  }).join('');
+  });
+  html += `</div>`;
+
+  // Если линия открыта — показать Больше/Меньше
+  if(openLine){
+    const val = market.val || [1.90, 1.90];
+    html += `<div class="total-values show">
+      <div class="total-value" data-mid="${m.id}" data-mkt="${esc(marketName)}" data-pick="0" data-line="${openLine}">
+        <div class="val-lbl">Больше ${openLine}</div>
+        <div class="val-num val-over" data-key="${m.id}_${esc(marketName)}_0">${val[0].toFixed(2)}</div>
+      </div>
+      <div class="total-value" data-mid="${m.id}" data-mkt="${esc(marketName)}" data-pick="1" data-line="${openLine}">
+        <div class="val-lbl">Меньше ${openLine}</div>
+        <div class="val-num val-under" data-key="${m.id}_${esc(marketName)}_1">${val[1].toFixed(2)}</div>
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+  return html;
 }
 
 /* ---------- MATCH CARD ---------- */
@@ -2464,9 +2508,9 @@ function renderMatchCard(m){
   const soon = isSoon(m);
   const finished = m.finished;
   const pre = !live && !finished;
-  const isFav = State.favorites.has('match:' + m.id);
+  const isExpanded = State.expandedCards.has(m.id);
 
-  // Кэфы
+  // Главные кэфы
   const mainMktName = m.markets['1X2'] ? '1X2' : 'Победитель';
   const mkt = m.markets[mainMktName];
   let oddsHTML = '';
@@ -2474,7 +2518,8 @@ function renderMatchCard(m){
     oddsHTML = mkt.lbl.map((l, i) => {
       const sel = State.coupon.find(c => c.matchId === m.id && c.market === mainMktName && c.pickIdx === i);
       const closed = mkt.closed[i];
-      return `<div class="odd ${sel?'sel':''} ${closed?'cl':''}" data-mid="${m.id}" data-mkt="${mainMktName}" data-pick="${i}">
+      const susp = m.isSuspended();
+      return `<div class="odd ${sel?'sel':''} ${closed||susp?'cl':''}" data-mid="${m.id}" data-mkt="${mainMktName}" data-pick="${i}" ${susp?`data-susp="⏸ ${Math.ceil((m.suspendedUntil-Date.now())/1000)}с"`:''}>
         <span class="olbl">${esc(l)}</span>
         <span class="oval" data-key="${m.id}_${mainMktName}_${i}">${mkt.val[i].toFixed(2)}</span>
       </div>`;
@@ -2484,31 +2529,45 @@ function renderMatchCard(m){
   // Статус
   let statusHTML = '';
   let statusClass = '';
-  if(finished){
-    statusHTML = 'FT';
-    statusClass = '';
-  } else if(live){
-    statusHTML = m.displayClock();
-    statusClass = 'live';
-  } else if(soon){
-    statusHTML = timeUntilStart(m);
-    statusClass = 'soon';
-  } else {
-    statusHTML = startTimeLabel(m);
-    statusClass = 'pre';
-  }
+  if(finished){ statusHTML = 'FT'; }
+  else if(live){ statusHTML = m.displayClock(); statusClass = 'live'; }
+  else if(soon){ statusHTML = timeUntilStart(m); statusClass = 'soon'; }
+  else { statusHTML = startTimeLabel(m); statusClass = 'pre'; }
 
-  // Счёт
   const scoreH = live || finished ? m.hs : '—';
   const scoreA = live || finished ? m.as : '—';
 
+  // Раскрытая часть
+  let expandedHTML = '';
+  if(isExpanded){
+    expandedHTML = `<div class="mc-expanded">`;
+
+    // Тотал
+    if(m.sport === 'football'){
+      expandedHTML += renderTotalSection(m, 'Тотал голов', m.markets['Тотал 2.5'], [0.5,1.5,2.5,3.5]);
+      expandedHTML += renderBttsSection(m, 'Обе забьют', m.markets['Обе забьют']);
+      expandedHTML += renderBttsSection(m, 'Двойной шанс', m.markets['Двойной шанс'], true);
+    }
+    if(m.sport === 'hockey'){
+      expandedHTML += renderTotalSection(m, 'Тотал шайб', m.markets['Тотал 4.5'], [3.5,4.5,5.5,6.5]);
+      expandedHTML += renderBttsSection(m, 'Обе забьют', m.markets['Обе забьют']);
+      expandedHTML += renderBttsSection(m, 'Двойной шанс', m.markets['Двойной шанс'], true);
+    }
+    if(m.sport === 'ufc'){
+      expandedHTML += renderTotalSection(m, 'Тотал раундов', m.markets['Тотал 2.5 раунда'], [1.5,2.5,3.5,4.5]);
+      expandedHTML += renderBttsSection(m, 'Метод победы', m.markets['Метод победы'], true);
+    }
+
+    expandedHTML += `</div>`;
+  }
+
   return `
-    <div class="mc ${live?'live':''} ${soon?'soon':''}">
-      <div class="mc-head">
+    <div class="mc ${live?'live':''} ${soon?'soon':''} ${isExpanded?'expanded':''}" data-card="${m.id}">
+      <div class="mc-head" data-mid="${m.id}" data-toggle="1">
         <div class="mc-league">${ic} <span>${esc(m.league)}</span></div>
         <div class="mc-status ${statusClass}">${statusHTML}</div>
       </div>
-      <div class="mc-teams">
+      <div class="mc-teams" data-mid="${m.id}" data-toggle="1">
         <div class="mc-team">
           <div class="mc-tn">
             <div class="lg-wrap">${renderLogo(m.home)}</div>
@@ -2525,28 +2584,39 @@ function renderMatchCard(m){
         </div>
       </div>
       <div class="mc-odds">${oddsHTML}</div>
-      <div class="mc-hint" data-mid="${m.id}">Открыть все рынки</div>
+      ${isExpanded ? '' : `<div class="mc-hint" data-mid="${m.id}" data-toggle="1">Открыть все рынки</div>`}
+      ${expandedHTML}
     </div>
   `;
+}
+
+function renderBttsSection(m, name, market, isThree){
+  if(!market) return '';
+  const labels = market.lbl || ['Да','Нет'];
+  return `<div class="market-section">
+    <div class="market-title">${esc(name)}</div>
+    <div class="btts-grid" ${isThree ? 'style="grid-template-columns:repeat('+labels.length+',1fr)"' : ''}>
+      ${labels.map((l, i) => {
+        const sel = State.coupon.find(c => c.matchId === m.id && c.market === name && c.pickIdx === i);
+        const closed = market.closed[i];
+        const susp = m.isSuspended();
+        return `<div class="btts-btn ${sel?'sel':''} ${closed||susp?'cl':''}" data-mid="${m.id}" data-mkt="${esc(name)}" data-pick="${i}" style="${closed||susp?'opacity:.35;cursor:not-allowed':''}">
+          <span class="btts-lbl">${esc(l)}</span>
+          <span class="btts-val" data-key="${m.id}_${esc(name)}_${i}">${market.val[i].toFixed(2)}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
 }
 
 /* ---------- СПИСКИ ---------- */
 function getFilteredMatches(){
   let list = Manager.matches.slice();
-
-  // Спорт
-  if(State.currentSport !== 'all'){
-    list = list.filter(m => m.sport === State.currentSport);
-  }
-
-  // Время
+  if(State.currentSport !== 'all') list = list.filter(m => m.sport === State.currentSport);
   if(State.currentTime === 'live') list = list.filter(m => m.progress() > 0 && m.progress() < 1);
   else if(State.currentTime === 'soon') list = list.filter(m => isSoon(m));
   else if(State.currentTime === 'today') list = list.filter(m => isToday(m));
   else if(State.currentTime === 'tomorrow') list = list.filter(m => isTomorrow(m));
-  else if(State.currentTime === 'later') list = list.filter(m => isLater(m));
-
-  // Поиск
   if(State.search){
     const q = State.search.toLowerCase();
     list = list.filter(m =>
@@ -2555,12 +2625,9 @@ function getFilteredMatches(){
       m.league.toLowerCase().includes(q)
     );
   }
-
-  // Сортировка
   if(State.sort === 'time'){
     list.sort((a,b) => a.startedAt - b.startedAt);
   } else {
-    // По умолчанию: live, потом soon, потом pre
     list.sort((a,b) => {
       const aS = a.progress() > 0 && a.progress() < 1 ? 0 : (isSoon(a) ? 1 : 2);
       const bS = b.progress() > 0 && b.progress() < 1 ? 0 : (isSoon(b) ? 1 : 2);
@@ -2606,7 +2673,6 @@ function renderMatchesList(){
   const list = getFilteredMatches();
   const cnt = $('listCount');
   if(cnt) cnt.textContent = list.length;
-
   if(!list.length){
     box.innerHTML = '<div class="cp-empty"><div class="em">🔍</div>Ничего не найдено</div>';
     return;
@@ -2614,9 +2680,9 @@ function renderMatchesList(){
   box.innerHTML = list.map(m => renderMatchCard(m)).join('');
 }
 
-/* ---------- ОБНОВЛЕНИЕ КЭФОВ БЕЗ ПЕРЕРИСОВКИ ---------- */
+/* ---------- ОБНОВЛЕНИЕ КЭФОВ ---------- */
 function updateOddsInCards(){
-  $$('.mc .oval').forEach(el => {
+  $$('.oval, .val-num, .btts-val').forEach(el => {
     const key = el.dataset.key;
     if(!key) return;
     const parts = key.split('_');
@@ -2634,14 +2700,19 @@ function updateOddsInCards(){
       el.textContent = newVal.toFixed(2);
     }
   });
+  // Обновляем suspension таймеры
+  $$('.odd.cl[data-susp]').forEach(el => {
+    const mid = parseInt(el.dataset.mid);
+    const m = Manager.find(mid);
+    if(m){
+      el.dataset.susp = `⏸ ${Math.ceil((m.suspendedUntil-Date.now())/1000)}с`;
+    }
+  });
 }
 
-/* ---------- ОБНОВЛЕНИЕ СТАТУСА БЕЗ ПЕРЕРИСОВКИ ---------- */
 function updateStatusesInCards(){
   $$('.mc').forEach(card => {
-    const hint = card.querySelector('.mc-hint');
-    if(!hint) return;
-    const mid = parseInt(hint.dataset.mid);
+    const mid = parseInt(card.dataset.card);
     const m = Manager.find(mid);
     if(!m) return;
     const status = card.querySelector('.mc-status');
@@ -2723,6 +2794,7 @@ function setMccTab(tab){
   if(tab === 'stats') renderStats();
   if(tab === 'events') renderAllEvents();
   if(tab === 'overview') renderFeed();
+  if(tab === 'lineups') renderLineups();
 }
 
 function updateMatchCenter(){
@@ -2740,13 +2812,22 @@ function updateMatchCenter(){
     cEl.textContent = m.commentary;
   }
 
+  if($('momHomeName')){
+    $('momHomeName').textContent = m.home;
+    $('momAwayName').textContent = m.away;
+    $('momHomeFill').style.width = m.momentum.h + '%';
+    $('momAwayFill').style.width = m.momentum.a + '%';
+    $('momHomeVal').textContent = Math.round(m.momentum.h);
+    $('momAwayVal').textContent = Math.round(m.momentum.a);
+  }
+
   if(State.currentTab === 'overview') renderFeed();
   if(State.currentTab === 'stats') renderStats();
   if(State.currentTab === 'markets') updateOddsInMarkets();
   if(State.currentTab === 'events') renderAllEvents();
+  if(State.currentTab === 'lineups') renderLineups();
 }
 
-/* ---------- FEED ---------- */
 function renderFeed(){
   const m = currentMatch();
   if(!m) return;
@@ -2788,36 +2869,70 @@ function renderAllEvents(){
   `).join('');
 }
 
-/* ---------- STATS ---------- */
+/* ---------- STATS (все 3 спорта) ---------- */
 function renderStats(){
   const m = currentMatch();
   if(!m) return;
   const grid = $('statsGrid');
   if(!grid) return;
   const s = m.stats;
-  const rows = [
-    ['Владение', s.pos.h, s.pos.a, '%'],
-    ['Удары', s.shots.h, s.shots.a, ''],
-    ['В створ', s.onT.h, s.onT.a, ''],
-    ['Мимо', s.offT.h, s.offT.a, ''],
-    ['Углы', s.corners.h, s.corners.a, ''],
-    ['Фолы', s.fouls.h, s.fouls.a, ''],
-    ['Жёлтые', s.yellow.h, s.yellow.a, ''],
-    ['Красные', s.red.h, s.red.a, ''],
-    ['Удары (UFC)', s.hits.h, s.hits.a, ''],
-  ];
+
+  let rows = [];
+  if(m.sport === 'football'){
+    rows = [
+      ['Владение', s.pos.h, s.pos.a, '%'],
+      ['Удары', s.shots.h, s.shots.a, ''],
+      ['В створ', s.onT.h, s.onT.a, ''],
+      ['Мимо', s.offT.h, s.offT.a, ''],
+      ['Блок', s.blocked.h, s.blocked.a, ''],
+      ['xG', s.xg.h.toFixed(2), s.xg.a.toFixed(2), ''],
+      ['Углы', s.corners.h, s.corners.a, ''],
+      ['Фолы', s.fouls.h, s.fouls.a, ''],
+      ['Жёлтые', s.yellow.h, s.yellow.a, ''],
+      ['Красные', s.red.h, s.red.a, ''],
+      ['Сейвы', s.saves.h, s.saves.a, ''],
+    ];
+  }
+  if(m.sport === 'hockey'){
+    rows = [
+      ['Владение', s.pos.h, s.pos.a, '%'],
+      ['Броски', s.shots.h, s.shots.a, ''],
+      ['В створ', s.onT.h, s.onT.a, ''],
+      ['Мимо', s.offT.h, s.offT.a, ''],
+      ['Силовые', s.hits_hockey.h, s.hits_hockey.a, ''],
+      ['Отборы', s.takeaways.h, s.takeaways.a, ''],
+      ['Удаления', s.fouls.h, s.fouls.a, ''],
+      ['Сейвы', s.saves.h, s.saves.a, ''],
+    ];
+  }
+  if(m.sport === 'ufc'){
+    rows = [
+      ['Значимые удары', s.sigStrikes.h, s.sigStrikes.a, ''],
+      ['Точность', s.strikeAcc.h + '%', s.strikeAcc.a + '%', ''],
+      ['В голову', s.headStrikes.h, s.headStrikes.a, ''],
+      ['В корпус', s.bodyStrikes.h, s.bodyStrikes.a, ''],
+      ['По ногам', s.legStrikes.h, s.legStrikes.a, ''],
+      ['Тейкдауны', s.takedownsAcc.h + '/' + s.takedowns.h, s.takedownsAcc.a + '/' + s.takedowns.a, ''],
+      ['Контроль (сек)', s.control.h, s.control.a, ''],
+      ['Нокдауны', s.knockdowns.h, s.knockdowns.a, ''],
+      ['Сабмишены', s.subAttempts.h, s.subAttempts.a, ''],
+    ];
+  }
+
   grid.innerHTML = rows.map(([name,h,a,unit])=>{
-    const t = (h+a)||1;
+    const hNum = typeof h === 'number' ? h : parseFloat(h) || 0;
+    const aNum = typeof a === 'number' ? a : parseFloat(a) || 0;
+    const t = (hNum + aNum) || 1;
     return `<div class="st">
       <div class="v">${h}${unit}</div>
       <div class="n">${name}</div>
       <div class="v d">${a}${unit}</div>
-      <div class="b"><i class="h" style="width:${(h/t*100).toFixed(0)}%"></i><i class="a" style="width:${(a/t*100).toFixed(0)}%"></i></div>
+      <div class="b"><i class="h" style="width:${(hNum/t*100).toFixed(0)}%"></i><i class="a" style="width:${(aNum/t*100).toFixed(0)}%"></i></div>
     </div>`;
   }).join('');
 }
 
-/* ---------- MARKETS ---------- */
+/* ---------- MARKETS (Match Center) ---------- */
 function renderMarkets(){
   const m = currentMatch();
   if(!m) return;
@@ -2831,7 +2946,8 @@ function renderMarkets(){
 
   let html = '';
   if(m.isSuspended()){
-    html += '<div style="background:rgba(232,69,60,.15);border:1px solid var(--red);color:var(--red2);padding:12px;border-radius:8px;font-size:12.5px;font-weight:700;margin-bottom:12px">⚠️ Котировки приостановлены</div>';
+    const left = Math.ceil((m.suspendedUntil - Date.now()) / 1000);
+    html += `<div style="background:rgba(232,69,60,.15);border:1px solid var(--red);color:var(--red2);padding:12px;border-radius:8px;font-size:12.5px;font-weight:700;margin-bottom:12px">⚠️ Котировки недоступны · ${left}с</div>`;
   }
 
   const sportName = SPORTS.find(s => s.id === m.sport)?.name || 'Спорт';
@@ -2839,19 +2955,12 @@ function renderMarkets(){
   html += '<div class="mkts">';
 
   for(const [name, mk] of Object.entries(markets)){
-    if(name.startsWith('Тотал') && (mk.type === 'over' || mk.type === 'overR' || mk.type === 'hits')){
+    if(name.startsWith('Тотал') && (mk.type === 'over' || mk.type === 'overR' || mk.type === 'hits' || mk.type === 'takedowns')){
       const lineVal = mk.line != null ? mk.line.toFixed(1) : '';
       html += `<div class="mkt">
         <div class="mkt-h">${esc(name.replace(/[\d.]+/, '').trim())}</div>
         <div class="mkt-row">
           <div class="mkt-line">${lineVal}</div>
-          ${mk.lbl.map((l, i) => renderMktOdd(m.id, name, i, l, mk.val[i], mk.closed[i], m)).join('')}
-        </div>
-      </div>`;
-    } else if(name === 'Метод победы'){
-      html += `<div class="mkt">
-        <div class="mkt-h">${esc(name)}</div>
-        <div class="mkt-grid g3">
           ${mk.lbl.map((l, i) => renderMktOdd(m.id, name, i, l, mk.val[i], mk.closed[i], m)).join('')}
         </div>
       </div>`;
@@ -2877,7 +2986,8 @@ function renderMktOdd(matchId, market, pickIdx, lbl, val, closed, m){
   if(flash && Date.now() - flash.ts < 1400){
     flashCls = flash.dir === 'up' ? 'up' : 'dn';
   }
-  return `<div class="mkt-odd ${sel?'sel':''} ${closed?'cl':''}" data-mid="${matchId}" data-mkt="${esc(market)}" data-pick="${pickIdx}">
+  const susp = m.isSuspended();
+  return `<div class="mkt-odd ${sel?'sel':''} ${closed||susp?'cl':''}" data-mid="${matchId}" data-mkt="${esc(market)}" data-pick="${pickIdx}">
     <span class="mkt-olbl">${esc(lbl)}</span>
     <span class="mkt-oval ${flashCls}" data-key="${key}">${val.toFixed(2)}</span>
   </div>`;
@@ -2904,6 +3014,81 @@ function updateOddsInMarkets(){
       el.textContent = newVal.toFixed(2);
     }
   });
+}
+
+/* ---------- LINEUPS ---------- */
+function renderLineups(){
+  const m = currentMatch();
+  if(!m) return;
+  const box = $('lineupsContainer');
+  if(!box) return;
+
+  if(m.sport === 'football'){
+    const positions = ['GK','DF','DF','DF','DF','MF','MF','MF','FW','FW','FW'];
+    box.innerHTML = `
+      <div class="mkt">
+        <div class="mkt-h">${esc(m.home)} · 4-3-3</div>
+        ${positions.map((pos, i) => `
+          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <span style="width:28px;text-align:center;font-weight:800;color:var(--yellow)">${i+1}</span>
+            <span style="flex:1;font-weight:600">${m.home} #${i+1}</span>
+            <span style="font-size:10.5px;background:var(--card3);padding:2px 6px;border-radius:5px;font-weight:800;color:var(--t3)">${pos}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="mkt" style="margin-top:12px">
+        <div class="mkt-h">${esc(m.away)} · 4-3-3</div>
+        ${positions.map((pos, i) => `
+          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <span style="width:28px;text-align:center;font-weight:800;color:var(--yellow)">${i+1}</span>
+            <span style="flex:1;font-weight:600">${m.away} #${i+1}</span>
+            <span style="font-size:10.5px;background:var(--card3);padding:2px 6px;border-radius:5px;font-weight:800;color:var(--t3)">${pos}</span>
+          </div>
+        `).join('')}
+      </div>`;
+  } else if(m.sport === 'hockey'){
+    const pos = ['G','D','D','LW','C','RW'];
+    box.innerHTML = `
+      <div class="mkt">
+        <div class="mkt-h">${esc(m.home)}</div>
+        ${pos.map((p,i)=>`
+          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <span style="width:28px;text-align:center;font-weight:800;color:var(--yellow)">${i+1}</span>
+            <span style="flex:1;font-weight:600">${m.home} #${i+1}</span>
+            <span style="font-size:10.5px;background:var(--card3);padding:2px 6px;border-radius:5px;font-weight:800;color:var(--t3)">${p}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="mkt" style="margin-top:12px">
+        <div class="mkt-h">${esc(m.away)}</div>
+        ${pos.map((p,i)=>`
+          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <span style="width:28px;text-align:center;font-weight:800;color:var(--yellow)">${i+1}</span>
+            <span style="flex:1;font-weight:600">${m.away} #${i+1}</span>
+            <span style="font-size:10.5px;background:var(--card3);padding:2px 6px;border-radius:5px;font-weight:800;color:var(--t3)">${p}</span>
+          </div>
+        `).join('')}
+      </div>`;
+  } else if(m.sport === 'ufc'){
+    box.innerHTML = `
+      <div class="mkt">
+        <div class="mkt-h">Бойцы</div>
+        <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)">
+          <div class="lg-wrap" style="width:36px;height:36px">${renderLogo(m.home)}</div>
+          <div style="flex:1">
+            <div style="font-weight:700">${esc(m.home)}</div>
+            <div style="font-size:11px;color:var(--t3)">Красный угол</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;padding:10px 0">
+          <div class="lg-wrap" style="width:36px;height:36px">${renderLogo(m.away)}</div>
+          <div style="flex:1">
+            <div style="font-weight:700">${esc(m.away)}</div>
+            <div style="font-size:11px;color:var(--t3)">Синий угол</div>
+          </div>
+        </div>
+      </div>`;
+  }
 }
 
 /* ---------- PITCH ---------- */
@@ -2973,14 +3158,12 @@ function renderPitch(){
   b.style.display = m.players.length ? '' : 'none';
 }
 
-/* ---------- МАЙН-ТИК ---------- */
+/* ---------- MAIN TICK ---------- */
 function mainTick(){
   Manager.tick();
-  renderTicker();
   updateOddsInCards();
   updateStatusesInCards();
 
-  // Каждые 5 сек — полный перерендер списков
   if(!window._lastFullRender || Date.now() - window._lastFullRender > 5000){
     window._lastFullRender = Date.now();
     renderSportsRow();
@@ -2991,7 +3174,6 @@ function mainTick(){
     }
   }
 
-  // Бейджи в навигации
   const navLive = $('bnavLive');
   if(navLive){
     const n = Manager.matches.filter(m => m.progress() > 0 && m.progress() < 1).length;
@@ -3005,7 +3187,6 @@ function mainTick(){
     navCoupon.style.display = n ? 'flex' : 'none';
   }
 
-  // Match Center
   if(State.currentMatchId){
     updateMatchCenter();
   }
@@ -3013,6 +3194,21 @@ function mainTick(){
 
 /* ---------- КЛИКИ ---------- */
 document.addEventListener('click', e => {
+  // Раскрыть тотал
+  const totalLine = e.target.closest('.total-line');
+  if(totalLine){
+    e.preventDefault(); e.stopPropagation();
+    const mid = parseInt(totalLine.dataset.mid);
+    const line = totalLine.dataset.total;
+    if(State.openTotal[mid] === line){
+      delete State.openTotal[mid];
+    } else {
+      State.openTotal[mid] = line;
+    }
+    renderLiveSection(); renderSoonSection(); renderMatchesList();
+    return;
+  }
+
   // Спорты
   const sp = e.target.closest('.sport-btn');
   if(sp){
@@ -3036,7 +3232,7 @@ document.addEventListener('click', e => {
   }
 
   // Кэфы
-  const odd = e.target.closest('.odd, .mkt-odd');
+  const odd = e.target.closest('.odd, .mkt-odd, .total-value, .btts-btn');
   if(odd && !odd.classList.contains('cl')){
     const mid = parseInt(odd.dataset.mid);
     const mkt = odd.dataset.mkt;
@@ -3048,12 +3244,17 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Открыть Match Center
-  const hint = e.target.closest('.mc-hint');
-  if(hint){
+  // Раскрыть карточку
+  const toggle = e.target.closest('[data-toggle]');
+  if(toggle){
     e.preventDefault(); e.stopPropagation();
-    const mid = parseInt(hint.dataset.mid);
-    if(mid) openMatchCenter(mid);
+    const mid = parseInt(toggle.dataset.mid);
+    if(State.expandedCards.has(mid)){
+      State.expandedCards.delete(mid);
+    } else {
+      State.expandedCards.add(mid);
+    }
+    renderLiveSection(); renderSoonSection(); renderMatchesList();
     return;
   }
 
@@ -3075,7 +3276,7 @@ document.addEventListener('click', e => {
   const ct = e.target.closest('.cp-type button');
   if(ct){ setBetType(ct.dataset.type); return; }
 
-  // Быстрая ставка
+  // Быстрая сумма
   const q = e.target.closest('.cp-stake .q');
   if(q){ $('cpStake').value = q.dataset.s; updateCoupon(); return; }
 
@@ -3100,14 +3301,11 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Back
   if(e.target.closest('#mccBack')){ closeMatchCenter(); return; }
 
-  // Match Center tabs
   const mt = e.target.closest('.mcc-tab');
   if(mt){ setMccTab(mt.dataset.tab); return; }
 
-  // Поиск
   if(e.target.closest('#btnSearch')){
     $('searchRow').classList.toggle('on');
     const inp = $('searchInput');
@@ -3115,13 +3313,11 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Профиль/Баланс
   if(e.target.closest('#btnProfile') || e.target.closest('#balanceBtn')){
     openProfile();
     return;
   }
 
-  // "Все LIVE"
   if(e.target.closest('#seeAllLive')){
     State.currentTime = 'live';
     renderTimeRow();
@@ -3131,7 +3327,6 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Модал закрыть
   if(e.target.id === 'modalBg') closeModal();
 });
 
@@ -3151,7 +3346,7 @@ document.addEventListener('change', e => {
 });
 
 /* === КОНЕЦ ЧАСТИ 4 === */
-  /* === ЧАСТЬ 5: КУПОН + КЭШАУТ + ПРОФИЛЬ + INIT === */
+  /* === ЧАСТЬ 5: КУПОН + КЭШАУТ + ТРАНЗАКЦИИ + ИСТОРИЯ === */
 
 /* ---------- КУПОН ---------- */
 function showCoupon(){ $('coupon').classList.add('show'); }
@@ -3219,7 +3414,6 @@ function updateCoupon(){
   const sw = $('cpSumWin'); if(sw) sw.textContent = fmtMoney(stake * odds);
   const p = $('cpPlace'); if(p) p.disabled = !n || stake < 10 || stake > State.balance;
 
-  // Бейдж
   const navCoupon = $('bnavCoupon');
   if(navCoupon){
     navCoupon.textContent = n;
@@ -3228,10 +3422,11 @@ function updateCoupon(){
 }
 
 function updateMarketSel(){
-  $$('.odd, .mkt-odd').forEach(el => {
+  $$('.odd, .mkt-odd, .total-value, .btts-btn').forEach(el => {
     const mid = parseInt(el.dataset.mid);
     const mkt = el.dataset.mkt;
     const pick = parseInt(el.dataset.pick);
+    if(!mkt) return;
     const sel = State.coupon.find(c => c.matchId === mid && c.market === mkt && c.pickIdx === pick);
     el.classList.toggle('sel', !!sel);
   });
@@ -3269,12 +3464,10 @@ function placeBet(){
   });
   if(State.history.length > 200) State.history.length = 200;
 
-  // Транзакция
   addTransaction('bet', -stake, `Ставка #${id}`);
 
-  // XP
   State.xp += Math.round(stake / 10);
-  checkLevelUp();
+  if(window.checkLevelUp) checkLevelUp();
 
   toast(`Ставка ${fmtMoney(stake)} принята`,'ok');
   State.coupon = [];
@@ -3303,7 +3496,7 @@ function checkCoupon(match){
         updateBalance();
         addTransaction('win', h.potential, `Выигрыш #${h.id}`);
         State.xp += Math.round(h.potential / 5);
-        checkLevelUp();
+        if(window.checkLevelUp) checkLevelUp();
         toast(`🎉 Купон! +${fmtMoney(h.potential)}`,'ok');
       } else {
         addTransaction('lose', 0, `Проигрыш #${h.id}`);
@@ -3356,8 +3549,12 @@ function determineResult(mk, idx, m){
       return ((s>mk.line)===(idx===0))?'win':'lose';
     }
     case 'hits':{
-      const hits = m.stats.hits.h+m.stats.hits.a;
+      const hits = m.stats.sigStrikes.h+m.stats.sigStrikes.a;
       return ((hits>mk.line)===(idx===0))?'win':'lose';
+    }
+    case 'takedowns':{
+      const td = m.stats.takedowns.h+m.stats.takedowns.a;
+      return ((td>mk.line)===(idx===0))?'win':'lose';
     }
     case 'method':{
       const note = m.finalNote || '';
@@ -3371,8 +3568,6 @@ function determineResult(mk, idx, m){
       const r = match ? match[1] : '';
       return mk.lbl[idx] === r ? 'win' : 'lose';
     }
-    case 'exact':
-      return mk.lbl[idx] === `${h}:${a}` ? 'win' : 'lose';
   }
   return 'lose';
 }
@@ -3528,18 +3723,141 @@ function renderHistoryList(){
   }).join('');
 }
 
-/* ---------- ПРОФИЛЬ ---------- */
+/* ---------- ТРАНЗАКЦИИ UI ---------- */
+function openTransactions(){
+  const list = getTransactions();
+  const labels = {
+    deposit:'Пополнение', win:'Выигрыш', bet:'Ставка',
+    lose:'Проигрыш', cashout:'Кэшаут', bonus:'Бонус'
+  };
+  openModal(`
+    <div class="mdl-grip"></div>
+    <div class="mdl-h">
+      <div><div class="t">Транзакции</div><div class="s">Всего: ${list.length}</div></div>
+      <div class="mdl-x" onclick="closeModal()">✕</div>
+    </div>
+    ${!list.length ? '<div class="cp-empty"><div class="em">💳</div>Транзакций нет</div>' :
+      list.map(t => {
+        const d = new Date(t.date);
+        const dt = d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+        const pos = ['deposit','win','cashout','bonus'].includes(t.type);
+        const clr = pos ? 'var(--green2)' : 'var(--red2)';
+        const sign = pos ? '+' : '';
+        return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;font-weight:700">${labels[t.type] || t.type}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${dt}</div>
+          </div>
+          <div style="font-size:14px;font-weight:900;color:${clr}">${sign}${fmtMoney(Math.abs(t.amount))}</div>
+        </div>`;
+      }).join('')
+    }
+  `);
+}
+
+/* ---------- СОХРАНЕНИЕ МАТЧА ---------- */
+function saveToHistory(m){
+  State.matchHistory.unshift({
+    id: m.id, sport: m.sport, league: m.league,
+    home: m.home, away: m.away, hs: m.hs, as: m.as,
+    finalNote: m.finalNote || '',
+    finishedAt: Date.now(),
+  });
+  if(State.matchHistory.length > 50) State.matchHistory.length = 50;
+  saveState();
+}
+window.saveToHistory = saveToHistory;
+
+/* ---------- ЭКСПОРТ ---------- */
+window.openHistory = openHistory;
+window.openTransactions = openTransactions;
+window.closeModal = closeModal;
+window.doCashout = doCashout;
+
+/* ---------- КЛИКИ ПО ИСТОРИИ ---------- */
+document.addEventListener('click', e => {
+  const h = e.target.closest('[data-hist]');
+  if(h){ State.histFilter = h.dataset.hist; openHistory(); return; }
+});
+
+/* === КОНЕЦ ЧАСТИ 5 === */
+  /* === ЧАСТЬ 6: УРОВНИ + БОНУС + SUSPENSION + PWA + INIT === */
+
+/* ---------- УРОВНИ ---------- */
 function xpForLevel(l){ return l * 1000; }
+
+const LEVEL_NAMES = {
+  1:'Новичок',
+  2:'Бронза',
+  3:'Серебро',
+  4:'Золото',
+  5:'Платина',
+};
+
 function checkLevelUp(){
   const needed = xpForLevel(State.level);
   if(State.xp >= needed){
     State.xp -= needed;
     State.level++;
-    toast(`🏅 Новый уровень: ${State.level}!`, 'ok');
+    if(State.level > 5) State.level = 5;
+    // Бонус за уровень
+    const bonuses = {2:500, 3:1000, 4:2500, 5:5000};
+    const bonus = bonuses[State.level];
+    if(bonus){
+      State.balance += bonus;
+      updateBalance();
+      addTransaction('bonus', bonus, `Бонус уровня ${State.level}`);
+      toast(`🏅 Уровень ${State.level} — ${LEVEL_NAMES[State.level]}! +${fmtMoney(bonus)}`, 'ok');
+    } else {
+      toast(`🏅 Новый уровень: ${State.level}`, 'ok');
+    }
     saveState();
   }
 }
+window.checkLevelUp = checkLevelUp;
 
+/* ---------- ЕЖЕДНЕВНЫЙ БОНУС 7 ДНЕЙ ---------- */
+const BONUS_DAYS = [500, 700, 1000, 1500, 2000, 3000, 5000];
+
+function canClaimBonus(){
+  const today = new Date().toDateString();
+  return State.lastBonusDate !== today;
+}
+
+function claimBonus(){
+  const today = new Date().toDateString();
+  if(State.lastBonusDate === today){ toast('Бонус уже получен','err'); return; }
+  
+  // Проверяем был ли вчера — если пропустил, начинаем с 1
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const wasYesterday = State.lastBonusDate === yesterday.toDateString();
+  
+  if(!wasYesterday && State.lastBonusDate){
+    // Пропустил день — начинаем с 1
+    State.bonusDay = 1;
+  }
+  
+  if(State.bonusDay > 7) State.bonusDay = 1;
+  
+  const amount = BONUS_DAYS[State.bonusDay - 1];
+  State.balance += amount;
+  State.lastBonusDate = today;
+  State.xp += 100;
+  checkLevelUp();
+  
+  // Переходим на следующий день
+  State.bonusDay = State.bonusDay >= 7 ? 1 : State.bonusDay + 1;
+  
+  updateBalance();
+  addTransaction('bonus', amount, `Бонус дня ${State.bonusDay - 1 || 7}`);
+  saveState();
+  toast(`🎁 Бонус +${fmtMoney(amount)}`, 'ok');
+  openProfile();
+}
+window.claimBonus = claimBonus;
+
+/* ---------- ПРОФИЛЬ ---------- */
 function openProfile(){
   const total = State.history.length;
   const win = State.history.filter(h=>h.status==='win').length;
@@ -3550,15 +3868,30 @@ function openProfile(){
   const profit = (totalWin + totalCO) - totalStake;
   const roi = totalStake > 0 ? ((profit/totalStake)*100).toFixed(1) : '0.0';
   const remain = MAX_DAILY_DEPOSIT - State.dailyAmount;
-  const today = new Date().toDateString();
-  const canBonus = State.lastBonusDate !== today;
+  const canBonus = canClaimBonus();
   const xpNeeded = xpForLevel(State.level);
   const xpPct = Math.min(100, (State.xp / xpNeeded) * 100);
+  const levelName = LEVEL_NAMES[State.level] || 'Новичок';
+
+  // Календарь бонусов
+  let bonusCalendar = '';
+  for(let i=1; i<=7; i++){
+    const isActive = i === State.bonusDay;
+    const isPast = i < State.bonusDay;
+    const isClaimed = i < State.bonusDay;
+    bonusCalendar += `<div style="flex:1;min-width:0;padding:8px 2px;text-align:center;border-radius:6px;background:${isActive?'var(--yellow)':'var(--card3)'};border:1px solid ${isActive?'var(--yellow)':'var(--bd)'}">
+      <div style="font-size:9px;font-weight:800;color:${isActive?'var(--bg)':'var(--t3)'};margin-bottom:2px">День ${i}</div>
+      <div style="font-size:10px;font-weight:900;color:${isActive?'var(--bg)':'var(--t2)'}">${BONUS_DAYS[i-1]}</div>
+    </div>`;
+  }
 
   openModal(`
     <div class="mdl-grip"></div>
     <div class="mdl-h">
-      <div><div class="t">Профиль</div><div class="s">Уровень ${State.level} · ${State.xp}/${xpNeeded} XP</div></div>
+      <div>
+        <div class="t">Профиль</div>
+        <div class="s">${levelName} · Уровень ${State.level} · ${State.xp}/${xpNeeded} XP</div>
+      </div>
       <div class="mdl-x" onclick="closeModal()">✕</div>
     </div>
 
@@ -3567,11 +3900,17 @@ function openProfile(){
     </div>
 
     ${canBonus ? `
-      <div style="background:linear-gradient(135deg,rgba(255,217,74,.2),rgba(255,217,74,.05));border:1px solid var(--yellow);border-radius:10px;padding:14px;margin-bottom:12px;text-align:center">
-        <div style="font-size:13px;font-weight:800;margin-bottom:8px;color:var(--yellow)">🎁 Ежедневный бонус!</div>
-        <button style="padding:10px 24px;background:var(--yellow);color:var(--bg);font-weight:900;border-radius:8px;font-size:13px;cursor:pointer" onclick="claimBonus()">Забрать 500 ₽</button>
+      <div style="background:linear-gradient(135deg,rgba(255,217,74,.2),rgba(255,217,74,.05));border:1px solid var(--yellow);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;color:var(--yellow);text-align:center">🎁 Бонус дня ${State.bonusDay}!</div>
+        <div style="display:flex;gap:4px;margin-bottom:10px">${bonusCalendar}</div>
+        <button style="width:100%;padding:11px;background:var(--yellow);color:var(--bg);font-weight:900;border-radius:8px;font-size:13px;cursor:pointer" onclick="claimBonus()">Забрать ${BONUS_DAYS[State.bonusDay-1]} ₽</button>
       </div>
-    ` : ''}
+    ` : `
+      <div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--t3);text-transform:uppercase;font-weight:700;margin-bottom:8px">Календарь бонусов</div>
+        <div style="display:flex;gap:4px">${bonusCalendar}</div>
+      </div>
+    `}
 
     <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
@@ -3609,38 +3948,9 @@ function openProfile(){
     <button style="width:100%;padding:12px;border-radius:8px;background:var(--card2);border:1px solid var(--bd);color:var(--t);font-weight:700;font-size:13px;cursor:pointer" onclick="closeModal();openTransactions()">💳 Транзакции</button>
   `);
 }
+window.openProfile = openProfile;
 
-function openTransactions(){
-  const list = getTransactions();
-  const labels = {
-    deposit:'Пополнение', win:'Выигрыш', bet:'Ставка',
-    lose:'Проигрыш', cashout:'Кэшаут', bonus:'Бонус'
-  };
-  openModal(`
-    <div class="mdl-grip"></div>
-    <div class="mdl-h">
-      <div><div class="t">Транзакции</div><div class="s">Всего: ${list.length}</div></div>
-      <div class="mdl-x" onclick="closeModal()">✕</div>
-    </div>
-    ${!list.length ? '<div class="cp-empty"><div class="em">💳</div>Транзакций нет</div>' :
-      list.map(t => {
-        const d = new Date(t.date);
-        const dt = d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-        const isPositive = t.type === 'deposit' || t.type === 'win' || t.type === 'cashout' || t.type === 'bonus';
-        const clr = isPositive ? 'var(--green2)' : 'var(--red2)';
-        const sign = isPositive ? '+' : '';
-        return `<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:13px;font-weight:700">${labels[t.type] || t.type}</div>
-            <div style="font-size:11px;color:var(--t3);margin-top:2px">${dt}</div>
-          </div>
-          <div style="font-size:14px;font-weight:900;color:${clr}">${sign}${fmtMoney(Math.abs(t.amount))}</div>
-        </div>`;
-      }).join('')
-    }
-  `);
-}
-
+/* ---------- ДЕПОЗИТ ---------- */
 function deposit(amount){
   const remain = MAX_DAILY_DEPOSIT - State.dailyAmount;
   if(amount > remain){ toast(`Лимит. Осталось ${fmtMoney(remain)}`,'err'); return; }
@@ -3652,52 +3962,75 @@ function deposit(amount){
   toast(`+${fmtMoney(amount)}`,'ok');
   openProfile();
 }
-
-function claimBonus(){
-  const today = new Date().toDateString();
-  if(State.lastBonusDate === today){ toast('Бонус уже получен','err'); return; }
-  State.balance += 500;
-  State.lastBonusDate = today;
-  updateBalance();
-  addTransaction('bonus', 500, 'Ежедневный бонус');
-  State.xp += 100;
-  checkLevelUp();
-  saveState();
-  toast('🎁 Бонус +500 ₽','ok');
-  openProfile();
-}
-
-/* ---------- СОХРАНЕНИЕ МАТЧА ---------- */
-function saveToHistory(m){
-  State.matchHistory.unshift({
-    id: m.id, sport: m.sport, league: m.league,
-    home: m.home, away: m.away, hs: m.hs, as: m.as,
-    finalNote: m.finalNote || '',
-    finishedAt: Date.now(),
-  });
-  if(State.matchHistory.length > 50) State.matchHistory.length = 50;
-  saveState();
-}
-window.saveToHistory = saveToHistory;
-
-/* ---------- КЛИКИ ПО ИСТОРИИ/ТРАНЗАКЦИЯМ ---------- */
-document.addEventListener('click', e => {
-  const h = e.target.closest('[data-hist]');
-  if(h){ State.histFilter = h.dataset.hist; openHistory(); return; }
-});
-
-/* ---------- ЭКСПОРТ ---------- */
-window.openHistory = openHistory;
-window.openProfile = openProfile;
-window.openTransactions = openTransactions;
-window.closeModal = closeModal;
 window.deposit = deposit;
-window.doCashout = doCashout;
-window.claimBonus = claimBonus;
+
+/* ---------- SUSPENSION ТАЙМЕР (обновление каждые 100мс) ---------- */
+setInterval(() => {
+  // Обновляем data-susp у заблокированных кэфов
+  $$('.odd.cl[data-susp]').forEach(el => {
+    const mid = parseInt(el.dataset.mid);
+    const m = Manager.find(mid);
+    if(m && m.isSuspended()){
+      const left = Math.ceil((m.suspendedUntil - Date.now()) / 1000);
+      const newText = `⏸ ${left}с`;
+      if(el.dataset.susp !== newText){
+        el.dataset.susp = newText;
+        // Обновляем отображение через ::after — не можем изменить напрямую, поэтому перезаписываем через style
+        el.style.setProperty('--susp', `"${newText}"`);
+      }
+    }
+  });
+  // Перерисовать рынки если таб открыт и что-то suspended
+  if(State.currentMatchId && State.currentTab === 'markets'){
+    const m = currentMatch();
+    if(m && m.isSuspended()){
+      const box = $('marketsContainer');
+      const notice = box.querySelector('div[style*="rgba(232,69,60"]');
+      if(notice){
+        const left = Math.ceil((m.suspendedUntil - Date.now()) / 1000);
+        notice.textContent = `⚠️ Котировки недоступны · ${left}с`;
+      }
+    }
+  }
+}, 100);
+
+/* ---------- PWA МАНИФЕСТ ---------- */
+(function(){
+  try {
+    const manifest = {
+      name: 'SportLive — Линия',
+      short_name: 'SportLive',
+      start_url: '.',
+      display: 'standalone',
+      background_color: '#0f1e35',
+      theme_color: '#0f1e35',
+      icons: [{
+        src: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%230f1e35%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22%23ffd94a%22%3E%E2%9A%A1%3C/text%3E%3C/svg%3E',
+        sizes: '192x192',
+        type: 'image/svg+xml'
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = url;
+    document.head.appendChild(link);
+  } catch(e){}
+})();
+
+/* ---------- КЛИКИ ПО ПРОФИЛЮ ---------- */
+document.addEventListener('click', e => {
+  if(e.target.closest('#btnProfile') || e.target.closest('#balanceBtn')){
+    e.preventDefault();
+    openProfile();
+    return;
+  }
+}, true);
 
 /* ---------- INIT ---------- */
 function init(){
-  console.log('%c⚡ SPORTLIVE v5', 'color:#ffd94a;font-size:16px;font-weight:900');
+  console.log('%c⚡ SPORTLIVE v6', 'color:#ffd94a;font-size:16px;font-weight:900');
 
   loadState();
   updateBalance();
@@ -3705,21 +4038,15 @@ function init(){
 
   renderSportsRow();
   renderTimeRow();
-  renderTicker();
   renderLiveSection();
   renderSoonSection();
   renderMatchesList();
   updateCoupon();
 
-  // Main tick каждые 500мс
+  // Main tick 500мс
   setInterval(mainTick, 500);
 
-  // Форсированный пересчёт кэфов каждую секунду
-  setInterval(() => {
-    Manager.matches.forEach(m => { if(m.tick) m.tick(); });
-  }, 500);
-
-  // Кэшауты + история
+  // Кэшауты + обновление истории
   setInterval(() => {
     updateCashouts();
     if($('modalBg').classList.contains('on')){
@@ -3734,20 +4061,19 @@ function init(){
   // Приветствие
   setTimeout(() => toast('👋 Добро пожаловать в SportLive!','ok'), 700);
 
-  // Бонус
+  // Напоминание о бонусе
   setTimeout(() => {
-    const today = new Date().toDateString();
-    if(State.lastBonusDate !== today){
-      toast('🎁 Ежедневный бонус ждёт в профиле','ok');
+    if(canClaimBonus()){
+      toast('🎁 Бонус дня ждёт в профиле','ok');
     }
-  }, 3200);
+  }, 3500);
 
   console.log(`%c✅ Готово. Матчей: ${Manager.matches.length}`, 'color:#66d96a;font-size:12px');
 }
 
 init();
 
-/* === КОНЕЦ ЧАСТИ 5 === */
+/* === КОНЕЦ ЧАСТИ 6 === */
 </script>
 
 </body>
