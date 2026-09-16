@@ -249,45 +249,77 @@ function tickMatch(m){
   recalc(m, false);
   if(m.minute >= m.maxMin){ m.finished = true; m.finishedAt = Date.now(); checkBets(m); saveResults(m); }
 }
+function overP(expF, L){ return clamp(1/(1+Math.exp(-(expF-L-0.5)*2.0)), 0.02, 0.98); }
+function noise(v, amt){
+  var n = 1 + (Math.random()-0.5) * amt;
+  return Math.max(1.02, Math.round(v * n * 100) / 100);
+}
 function recalc(m, silent){
   try{
-    var left = clamp(1 - m.minute / m.maxMin, 0.02, 1);
-    var diff = m.hs - m.as, tot = m.hs + m.as;
+    var played = clamp(m.minute / m.maxMin, 0, 0.995);
+    var left = 1 - played;
+    var diff = m.hs - m.as, tot = m.hs + m.as, adiff = Math.abs(diff);
     var sd = (m.strH - m.strA) * 8;
     var hasX = (m.sport === 'football' || m.sport === 'hockey');
     var pH, pX, pA;
     if(hasX){
-      var expLeft = BASETOT[m.sport] * left;
-      var expDiff = sd * 0.4 + diff * (m.sport === 'cyber' ? 6 : 3);
-      var w = winP(expDiff * 2.4);
-      var pD = clamp(0.28 * left + (diff === 0 ? 0.08 : 0) - Math.abs(diff) * 0.08, 0.03, 0.45);
+      var expLeft = BASETOT[m.sport] * left * (0.9 + Math.abs(m.strH - m.strA) * 0.3);
+      var expDiff = sd * 0.55 + diff * (2 + played * 7);
+      var w = winP(expDiff * 3);
+      // НИЧЬЯ: при ровно к концу — падает к 1.2x, при разнице — умирает
+      var pD;
+      if(diff === 0) pD = clamp(0.24 + played * 0.64, 0.24, 0.88);
+      else pD = clamp(0.22 * left - adiff * 0.075 + 0.02, 0.015, 0.32);
       pH = w * (1 - pD); pA = (1 - w) * (1 - pD); pX = pD;
       var expF = tot + expLeft;
       m.markets['1X2'] = {lbl:['П1','X','П2'], val:[price(pH),price(pX),price(pA)], closed:[false,false,false]};
       m.markets['Двойной шанс'] = {lbl:['1X','12','X2'], val:[price(pH+pX),price(pH+pA),price(pX+pA)], closed:[false,false,false]};
-      m.markets['Фора1 (-1.5)'] = {lbl:['Да','Нет'], val:[price(clamp(w*0.55,0.05,0.9)),price(clamp(1-w*0.55,0.05,0.9))], closed:[false,false]};
-      m.markets['Фора2 (+1.5)'] = {lbl:['Да','Нет'], val:[price(clamp(0.72-(sd*0.01),0.08,0.93)),price(clamp(0.28+(sd*0.01),0.07,0.92))], closed:[false,false]};
+      var phcap = clamp(w*(0.4+played*0.5), 0.03, 0.93);
+      m.markets['Фора1 (-1.5)'] = {lbl:['Да','Нет'], val:[price(phcap),price(1-phcap)], closed:[false,false]};
+      var pf2 = clamp(1 - winP(expDiff*2+14), 0.03, 0.95);
+      m.markets['Фора2 (+1.5)'] = {lbl:['Да','Нет'], val:[price(1-pf2),price(pf2)], closed:[false,false]};
       var lines = m.sport === 'hockey' ? [4.5,5.5] : [1.5,2.5,3.5];
       lines.forEach(function(L){
-        var po = clamp(1/(1+Math.exp(-(expF-L-0.5)*1.8)),0.04,0.96);
+        // если тотал уже пробит — кэф схлопывается как в Фонбете
+        if(tot > L){ m.markets['Тотал '+L] = {lbl:['Б','М'], val:[1.04, 14.0], closed:[false,false]}; return; }
+        var po = overP(expF, L);
         m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po),price(1-po)], closed:[false,false]};
       });
-      m.markets['Обе забьют'] = {lbl:['Да','Нет'], val:[tot>0?1.65:1.9, tot>0?2.1:1.9], closed:[false,false]};
-    } else {
-      var eff = sd + diff * (m.sport === 'ufc' ? 14 : 7) * (0.7 + (1-left) * 0.6);
-      var ph = clamp(winP(eff), 0.04, 0.96);
+      var pbtts = tot > 0 ? 0.62 : clamp(0.55 * (0.3 + expLeft/2.5), 0.15, 0.6);
+      m.markets['Обе забьют'] = {lbl:['Да','Нет'], val:[price(pbtts),price(1-pbtts)], closed:[false,false]};
+    } else if(m.sport === 'ufc'){
+      // UFC: 5 раундов, победа лидера к концу почти гарантирована
+      var eff = sd * 2 + diff * (5 + played * 11);
+      var ph = clamp(winP(eff), 0.03, 0.97);
       m.markets['Победитель'] = {lbl:['1','2'], val:[price(ph),price(1-ph)], closed:[false,false]};
-      var lns = m.sport === 'cyber' ? [24.5,26.5] : [1.5,2.5];
-      lns.forEach(function(L){
-        var base = m.sport === 'cyber' ? (tot + (BASETOT.cyber-tot)*left) : (tot + (BASETOT.ufc-tot)*left*0.7);
-        var po = clamp(1/(1+Math.exp(-(base-L)*1.6)),0.05,0.95);
+      // тотал раундов: чем позже и ровно — тем вернее OVER
+      var expR = tot + (5 - tot) * left * 0.55;
+      [1.5, 2.5].forEach(function(L){
+        if(tot > L){ m.markets['Тотал '+L] = {lbl:['Б','М'], val:[1.05, 12.0], closed:[false,false]}; return; }
+        var base = expR + (diff===0 ? (1-left)*0.9 : -adiff*0.5);
+        var po = overP(base, L);
         m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po),price(1-po)], closed:[false,false]};
       });
+      var pfin = clamp(0.3 + adiff*0.18 + played*0.15 - (diff===0?0.12:0), 0.08, 0.85);
+      m.markets['Досрочная победа'] = {lbl:['Да','Нет'], val:[price(pfin),price(1-pfin)], closed:[false,false]};
+    } else {
+      // КИБЕР: раунды, счет толкает сильно, к концу фаворит 1.05
+      var eff2 = sd * 1.6 + diff * (4 + played * 9);
+      var ph2 = clamp(winP(eff2), 0.03, 0.97);
+      m.markets['Победитель'] = {lbl:['1','2'], val:[price(ph2),price(1-ph2)], closed:[false,false]};
+      var expT = tot + Math.max(0, BASETOT.cyber - tot) * left;
+      [24.5, 26.5].forEach(function(L){
+        if(tot > L){ m.markets['Тотал '+L] = {lbl:['Б','М'], val:[1.04, 14.0], closed:[false,false]}; return; }
+        var po2 = overP(expT, L);
+        m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po2),price(1-po2)], closed:[false,false]};
+      });
+      var pf = clamp(winP(eff2 - 12), 0.04, 0.9);
+      m.markets['Фора1 (-2.5)'] = {lbl:['Да','Нет'], val:[price(pf),price(1-pf)], closed:[false,false]};
     }
-    if(!silent && Math.random() < 0.3){
+    if(!silent){
       Object.keys(m.markets).forEach(function(k){
         var mk = m.markets[k];
-        mk.val = mk.val.map(function(v){ return Math.max(1.03, Math.round(v*(1+(Math.random()-0.5)*0.02))*100/100); });
+        mk.val = mk.val.map(function(v){ if(v >= 10) return v; return noise(v, 0.03); });
       });
     }
   }catch(e){}
@@ -422,6 +454,8 @@ function resultOf(mk, pick, m){
   if(key === 'Двойной шанс'){ if(pick===0) return h>=a?'win':'lose'; if(pick===1) return h!==a?'win':'lose'; return a>=h?'win':'lose'; }
   if(key === 'Фора1 (-1.5)'){ var ok1 = (h-1.5) > a; return ((ok1 && pick===0)||(!ok1 && pick===1))?'win':'lose'; }
   if(key === 'Фора2 (+1.5)'){ var ok2 = (a+1.5) > h; return ((ok2 && pick===0)||(!ok2 && pick===1))?'win':'lose'; }
+  if(key === 'Фора1 (-2.5)'){ var ok3 = (h-2.5) > a; return ((ok3 && pick===0)||(!ok3 && pick===1))?'win':'lose'; }
+  if(key === 'Досрочная победа'){ var early = (h + a) < 5 && (h !== a); return ((early && pick===0)||(!early && pick===1))?'win':'lose'; }
   if(key.indexOf('Тотал')===0){ var line = parseFloat(key.replace('Тотал','')); var over = t > line; return ((over && pick===0) || (!over && pick===1)) ? 'win':'lose'; }
   if(key === 'Обе забьют'){ var both = h>0 && a>0; return ((both && pick===0) || (!both && pick===1)) ? 'win':'lose'; }
   return 'lose';
