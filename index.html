@@ -184,6 +184,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div id="matchesList"></div>
   <div class="sec-h"><div class="sec-t">Результаты <span class="cnt" id="resCount">0</span></div></div>
   <div id="resList"></div>
+  <div style="text-align:center;color:var(--t3);font-size:11.5px;padding:18px 10px 4px;">⚡ SPORT LIVE · демо-симулятор · не принимает реальные ставки · 18+<br>Кэфы живые · маржа 7.5% · матчи одинаковые для всех</div>
   </div>
   <div id="viewBonus" style="display:none;"></div>
   <div id="viewHelp" style="display:none;"></div>
@@ -909,6 +910,34 @@ function avatarHTML(name){
   var ch = (name || '?').trim().charAt(0).toUpperCase();
   return '<span class="avatar" style="background:' + c + ';">' + esc(ch) + '</span>';
 }
+function statNum(id, minute, base, spread, tag){
+  var h = hashStr(id + ':' + Math.floor(minute / 3) + ':' + tag);
+  return Math.max(0, Math.round(base + (h % 100) / 100 * spread));
+}
+function statBars(m){
+  var p = clamp(m.minute / m.maxMin, 0.05, 1), rows = [];
+  if(m.sport === 'football' || m.sport === 'hockey'){
+    var k = m.sport === 'hockey' ? 2.6 : 1;
+    var shH = statNum(m.id, m.minute, 7 * p * k * m.strH, 3, 'sh'), shA = statNum(m.id + 1, m.minute, 7 * p * k * m.strA, 3, 'sh');
+    var onH = Math.round(shH * 0.38), onA = Math.round(shA * 0.38);
+    var coH = statNum(m.id, m.minute, 5 * p * k, 3, 'co'), coA = statNum(m.id + 1, m.minute, 5 * p * k, 3, 'co');
+    var foH = statNum(m.id, m.minute, 8 * p, 4, 'fo'), foA = statNum(m.id + 1, m.minute, 8 * p, 4, 'fo');
+    var posH = clamp(Math.round(50 + (m.strH - m.strA) * 32 + (m.hs - m.as) * 2), 15, 85);
+    rows = [['Владение %', posH, 100 - posH], ['Удары', shH, shA], ['В створ', onH, onA], ['Угловые', coH, coA], ['Фолы', foH, foA]];
+  } else if(m.sport === 'ufc'){
+    var stH = statNum(m.id, m.minute, 55 * p * m.strH, 14, 'st'), stA = statNum(m.id + 1, m.minute, 55 * p * m.strA, 14, 'st');
+    var tdH = statNum(m.id, m.minute, 2.4 * p * m.strH, 2, 'td'), tdA = statNum(m.id + 1, m.minute, 2.4 * p * m.strA, 2, 'td');
+    var ctH = Math.round(50 * p), ctA = Math.round(48 * p);
+    rows = [['Удары', stH, stA], ['Тейкдауны', tdH, tdA], ['Контроль, сек', ctH, ctA]];
+  } else {
+    var frH = m.hs + statNum(m.id, m.minute, 2, 3, 'fr'), frA = m.as + statNum(m.id + 1, m.minute, 2, 3, 'fr');
+    rows = [['Фраги', frH, frA], ['Раунды', m.hs, m.as], ['Карты', m.mapH, m.mapA]];
+  }
+  return rows.map(function(r){
+    var tot = Math.max(1, r[1] + r[2]), pw = Math.round(r[1] / tot * 100);
+    return '<div class="sbar"><span>' + r[1] + '</span><div class="mid" style="position:relative;"><i style="width:' + pw + '%;background:linear-gradient(90deg,#e8322a,#ff6b3d);"></i></div><span style="text-align:right;">' + r[2] + '</span></div><div style="text-align:center;font-size:10.5px;color:var(--t3);margin:-3px 0 3px;">' + esc(r[0]) + '</div>';
+  }).join('');
+}
 function trackerHTML(m){
   var atk = clamp(50 + (m.strH - m.strA) * 40 + (m.hs - m.as) * 4, 8, 92);
   return '<div style="display:flex;align-items:center;gap:8px;font-size:11.5px;margin:4px 0 8px;"><span style="flex:1;text-align:right;font-weight:800;">' + m.hs + '</span><div style="flex:6;height:8px;background:var(--card2);border-radius:5px;overflow:hidden;display:flex;"><div style="width:' + Math.round(atk) + '%;background:linear-gradient(90deg,var(--yellow),#ff9d2e);"></div></div><span style="flex:1;font-weight:800;">' + m.as + '</span></div>';
@@ -934,6 +963,7 @@ function renderCenter(){
     + '<div class="stat-row"><span>Прогресс</span><span class="v">'+pct+'%</span><span class="c">время</span></div>'
     + '<div class="stat-row"><span>Форма</span><span class="v">'+m.strH.toFixed(2)+' / '+m.strA.toFixed(2)+'</span><span class="c">сила</span></div>'
     + (m.sport==='ufc' && m.method ? '<div class="stat-row"><span>Финиш</span><span class="v">'+(m.method==='KO'?'KO/TKO Р'+(m.endRound||''):'Решением')+'</span><span class="c">метод</span></div>' : '')
+    + '<div class="mkt-t">Статистика матча</div><div class="stat-bars">' + statBars(m) + '</div>'
     + '<div class="mkt-t">Трекер · давление</div>' + trackerHTML(m)
     + '<div class="mkt-t">Форма · последние 5</div><div style="display:flex;justify-content:space-between;font-size:12.5px;padding:6px 2px;"><span>'+esc(m.home)+'<br>'+formBadges(m.home)+'</span><span style="text-align:right;">'+esc(m.away)+'<br>'+formBadges(m.away)+'</span></div>'
     + '<div class="mkt-t">Личные встречи</div><div style="font-size:12.5px;">'+h2hHTML(m.home, m.away)+'</div>';
