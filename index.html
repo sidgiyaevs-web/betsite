@@ -338,6 +338,7 @@ function tickMatch(m){
     var every = (m.sport === 'cyber');
     if((every || m.minute % 2 === 0) && Math.random() < goalCh(m)){
       var home = scoreOnce(m, null);
+      settleLiveGoal(m, home);
       if(m.sport === 'cyber'){
         cyberMap(m, home, false);
         if(!m.finished) toast('⚔️ Раунд — ' + (home ? m.home : m.away) + ' (' + m.hs + ':' + m.as + ')', '');
@@ -355,6 +356,9 @@ function tickMatch(m){
   }
 }
 function overP(expF, L){ return clamp(1/(1+Math.exp(-(expF-L-0.5)*2.0)), 0.02, 0.98); }
+function fact(n){ var r = 1; for(var i = 2; i <= n; i++) r *= i; return r; }
+function pois(k, lam){ if(lam <= 0) return k === 0 ? 1 : 0; if(k < 0) return 0; return Math.exp(-lam) * Math.pow(lam, k) / fact(k); }
+function poisTail(need, lam){ if(need <= 0) return 0.985; var s = 0; for(var k = 0; k < need; k++) s += pois(k, Math.max(0.03, lam)); return clamp(1 - s, 0.02, 0.985); }
 function noise(v, amt){
   var n = 1 + (Math.random()-0.5) * amt;
   return Math.max(1.02, Math.round(v * n * 100) / 100);
@@ -404,6 +408,29 @@ function recalc(m, silent){
       });
       var pbtts = tot > 0 ? 0.62 : clamp(0.55 * (0.3 + expLeft/2.5), 0.15, 0.6);
       m.markets['Обе забьют'] = {lbl:['Да','Нет'], val:[price(pbtts),price(1-pbtts)], closed:[false,false]};
+      // --- глубина: следующий гол / ИТ / точный счет (Пуассон от оставшихся) ---
+      var sSum = Math.max(0.001, pH + pA);
+      var sH = pH / sSum, sA = pA / sSum;
+      var remH = Math.max(0.05, expLeft * sH), remA = Math.max(0.05, expLeft * sA);
+      var pNo = Math.exp(-(remH + remA) * 1.15);
+      m.markets['Следующий гол'] = {lbl:['1','Никто','2'], val:[price((1-pNo)*sH),price(pNo),price((1-pNo)*sA)], closed:[false,false,false]};
+      var itL = m.sport === 'hockey' ? 2.5 : 1.5;
+      [['1', m.hs, remH], ['2', m.as, remA]].forEach(function(cfg){
+        var need = Math.floor(itL) + 1 - cfg[1];
+        var pO = poisTail(need, cfg[2]);
+        m.markets['ИТ' + cfg[0] + ' (' + itL + ')'] = {lbl:['Б','М'], val:[price(pO),price(1-pO)], closed:[false,false]};
+      });
+      var exOpts = [[1,0],[2,0],[2,1],[0,0],[1,1],[0,1],[0,2],[1,2]];
+      var exSum = 0;
+      var exP = exOpts.map(function(sc){
+        if(sc[0] < m.hs || sc[1] < m.as) return 0;
+        var p = pois(sc[0]-m.hs, remH) * pois(sc[1]-m.as, remA);
+        exSum += p; return p;
+      });
+      var exLbl = exOpts.map(function(sc){ return sc[0] + ':' + sc[1]; });
+      var exVal = exP.map(function(p){ return price(Math.max(0.015, p)); });
+      exLbl.push('Другой'); exVal.push(price(Math.max(0.02, 1 - exSum)));
+      m.markets['Точный счет'] = {lbl:exLbl, val:exVal, closed:exLbl.map(function(){ return false; })};
     } else if(m.sport === 'ufc'){
       // UFC: 5 раундов. Лидер забирает бой к концу, KO вероятнее у нокаутера впереди.
       var round = clamp(Math.ceil(m.minute / 3), 1, 5);
@@ -423,6 +450,8 @@ function recalc(m, silent){
       m.markets['Способ победы'] = {lbl:['KO/TKO','Решением'], val:[price(pko),price(1-pko)], closed:[false,false]};
       var pfin = clamp(0.25 + adiff * 0.15 + played * 0.12, 0.08, 0.85);
       m.markets['Досрочная победа'] = {lbl:['Да','Нет'], val:[price(pfin),price(1-pfin)], closed:[false,false]};
+      var pDec = clamp(Math.pow(1 - koR, Math.max(0, 5 - tot)), 0.05, 0.95);
+      m.markets['Вся дистанция'] = {lbl:['Да','Нет'], val:[price(pDec),price(1-pDec)], closed:[false,false]};
       m.ufcRound = round;
     } else {
       // КИБЕР: раунды, счет толкает сильно, к концу фаворит 1.05
@@ -437,6 +466,16 @@ function recalc(m, silent){
       });
       var pf = clamp(winP(eff2 - 12), 0.04, 0.9);
       m.markets['Фора1 (-2.5)'] = {lbl:['Да','Нет'], val:[price(pf),price(1-pf)], closed:[false,false]};
+      // следующий раунд + тотал карт + счет по картам
+      var remR = Math.max(0.4, (BASETOT.cyber - tot) * left + 0.6);
+      var qH = ph2 / Math.max(0.001, ph2 + (1 - ph2)), qA = 1 - qH;
+      var pNoR = Math.exp(-remR * 0.95);
+      m.markets['Следующий гол'] = {lbl:['1','Никто','2'], val:[price((1-pNoR)*qH),price(pNoR),price((1-pNoR)*qA)], closed:[false,false,false]};
+      var mp = m.mapH + m.mapA;
+      var pDec = mp >= 2 ? 0.97 : 0.45;
+      m.markets['Тотал карт 2.5'] = {lbl:['Б','М'], val:[price(pDec),price(1-pDec)], closed:[false,false]};
+      var qm = clamp(ph2 * 0.92 + 0.04, 0.08, 0.92);
+      m.markets['Счет по картам'] = {lbl:['2:0','2:1','1:2','0:2'], val:[price(qm*qm),price(2*qm*qm*(1-qm)),price(2*(1-qm)*(1-qm)*qm),price((1-qm)*(1-qm))], closed:[false,false,false,false]};
     }
     if(!silent){
       Object.keys(m.markets).forEach(function(k){
@@ -621,7 +660,7 @@ function addToCoupon(mid, market, pick){
       if(State.coupon.some(function(c){return c.matchId===mid;})){ toast('В экспрессе одна ставка на матч','err'); return; }
       if(State.coupon.length >= 12){ toast('Максимум 12','err'); return; }
     }
-    State.coupon.push({matchId:mid, market:market, pick:pick, pickLbl:lbl, odds:odds, home:m.home, away:m.away, sport:m.sport});
+    State.coupon.push({matchId:mid, market:market, pick:pick, pickLbl:lbl, odds:odds, home:m.home, away:m.away, sport:m.sport, sh:m.hs, sa:m.as, at:Math.floor(m.minute)});
   }
   saveState(); updateCoupon(); paintSel();
   if(State.coupon.length) $('coupon').classList.add('show'); else $('coupon').classList.remove('show');
@@ -654,7 +693,7 @@ function placeBet(){
   if(stake > State.balance){ toast('Недостаточно средств','err'); return; }
   var odds = couponOdds(), pot = Math.round(stake * odds);
   State.balance -= stake; updBal();
-  State.history.unshift({id:Date.now(), type:State.betType, stake:stake, odds:odds, potential:pot, status:'pending', createdAt:new Date().toISOString(), bets:State.coupon.map(function(c){return {matchId:c.matchId, market:c.market, pick:c.pick, pickLbl:c.pickLbl, home:c.home, away:c.away, result:null};}), cashout:null});
+  State.history.unshift({id:Date.now(), type:State.betType, stake:stake, odds:odds, potential:pot, status:'pending', createdAt:new Date().toISOString(), bets:State.coupon.map(function(c){return {matchId:c.matchId, market:c.market, pick:c.pick, pickLbl:c.pickLbl, home:c.home, away:c.away, sh:c.sh, sa:c.sa, result:null};}), cashout:null});
   if(State.history.length > 100) State.history.length = 100;
   State.coupon = []; updateCoupon(); paintSel(); $('coupon').classList.remove('show'); saveState();
   toast('Ставка принята 🍀','ok');
@@ -672,8 +711,23 @@ function resultOf(mk, pick, m){
   if(key === 'Досрочная победа'){ var early = (h + a) < 5 && (h !== a); return ((early && pick===0)||(!early && pick===1))?'win':'lose'; }
   if(key === 'Способ победы'){ var ko = (m.method === 'KO'); return ((ko && pick===0)||(!ko && pick===1))?'win':'lose'; }
   if(key.indexOf('Тотал')===0){ var line = parseFloat(key.replace('Тотал','')); var over = t > line; return ((over && pick===0) || (!over && pick===1)) ? 'win':'lose'; }
+  if(key === 'Тотал карт 2.5'){ var mp = (m.mapH || 0) + (m.mapA || 0); return ((mp > 2.5 && pick===0) || (mp < 2.5 && pick===1)) ? 'win':'lose'; }
+  if(key === 'Счет по картам'){ var sc = (m.mapH || 0) + ':' + (m.mapA || 0); return (mk.lbl[pick] === sc) ? 'win' : 'lose'; }
   if(key === 'Обе забьют'){ var both = h>0 && a>0; return ((both && pick===0) || (!both && pick===1)) ? 'win':'lose'; }
+  if(key === 'Вся дистанция'){ var dec = (m.method !== 'KO'); return ((dec && pick===0) || (!dec && pick===1)) ? 'win' : 'lose'; }
+  if(key === 'Следующий гол'){ return pick === 2 ? 'win' : 'lose'; }
+  if(key === 'Точный счет'){ return (mk.lbl[pick] === h + ':' + a || (mk.lbl[pick] === 'Другой' && ['1:0','2:0','2:1','0:0','1:1','0:1','0:2','1:2'].indexOf(h + ':' + a) < 0)) ? 'win' : 'lose'; }
+  if(key.indexOf('ИТ')===0){ var li = parseFloat(key.replace(/[^0-9.]/g, '')); var tm = key.charAt(2) === '1' ? h : a; return ((tm > li && pick===0) || (tm < li && pick===1)) ? 'win' : 'lose'; }
   return 'lose';
+}
+function finalizeBet(hh){
+  if(hh.status !== 'pending') return;
+  if(!hh.bets.every(function(b){ return b.result; })) return;
+  var win = hh.bets.every(function(b){ return b.result === 'win'; });
+  hh.status = win ? 'win' : 'lose';
+  if(win){ State.balance += hh.potential; updBal(); toast('🎉 Выигрыш +' + fmtMoney(hh.potential), 'ok'); }
+  else toast('Проигрыш ' + fmtMoney(hh.stake), 'err');
+  saveState();
 }
 function checkBets(m){
   State.history.forEach(function(hh){
@@ -681,13 +735,25 @@ function checkBets(m){
     hh.bets.forEach(function(b){
       if(b.matchId === m.id && !b.result){ var mk = m.markets[b.market]; b.result = mk ? resultOf(mk, b.pick, m) : 'lose'; }
     });
-    if(hh.bets.every(function(b){return b.result;})){
-      var win = hh.bets.every(function(b){return b.result==='win';});
-      hh.status = win ? 'win' : 'lose';
-      if(win){ State.balance += hh.potential; updBal(); toast('🎉 Выигрыш +'+fmtMoney(hh.potential),'ok'); }
-      saveState();
-    }
+    finalizeBet(hh);
   });
+}
+// live-расчет "следующего гола" в момент гола
+function settleLiveGoal(m, home){
+  var changed = false;
+  State.history.forEach(function(hh){
+    if(hh.status !== 'pending') return;
+    var touched = false;
+    hh.bets.forEach(function(b){
+      if(b.matchId === m.id && !b.result && b.market === 'Следующий гол'){
+        if(b.pick === 2) b.result = 'lose';
+        else b.result = (((b.pick === 0) === home) ? 'win' : 'lose');
+        touched = true;
+      }
+    });
+    if(touched){ changed = true; finalizeBet(hh); }
+  });
+  if(changed){ saveState(); renderResults(); }
 }
 function cashoutOf(hh){
   if(hh.status !== 'pending') return 0;
@@ -887,7 +953,7 @@ function openHistory(){
   box.innerHTML = State.history.length ? State.history.slice(0,30).map(function(h){
     var st = {win:'Выигрыш',lose:'Проигрыш',pending:'В игре',cashout:'Кэшаут'}[h.status];
     var co = h.status==='pending' ? cashoutOf(h) : 0;
-    return '<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;"><span>'+h.type+' · '+fmtMoney(h.stake)+' · '+h.odds.toFixed(2)+'</span><b>'+st+'</b></div><div style="font-size:12px;">'+h.bets.map(function(b){return esc(b.home)+' — '+esc(b.away)+' · '+esc(b.pickLbl);}).join('<br>')+'</div>'+(co>0?'<button style="width:100%;margin-top:8px;padding:9px;background:var(--yellow);color:#0b172a;font-weight:800;border-radius:8px;" onclick="doCashout('+h.id+')">💰 Кэшаут '+fmtMoney(co)+'</button>':'')+'</div>';
+    return '<div style="background:var(--card2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;"><span>'+h.type+' · '+fmtMoney(h.stake)+' · '+h.odds.toFixed(2)+'</span><b>'+st+'</b></div><div style="font-size:12px;">'+h.bets.map(function(b){return esc(b.home)+' — '+esc(b.away)+' · '+esc(b.pickLbl)+' <span style="color:var(--t3)">'+esc(b.market)+'</span>'+(b.result?' <b style="color:'+(b.result==='win'?'var(--green2)':'var(--red2)')+'">'+(b.result==='win'?'✓':'✗')+'</b>':'');}).join('<br>')+'</div>'+(co>0?'<button style="width:100%;margin-top:8px;padding:9px;background:var(--yellow);color:#0b172a;font-weight:800;border-radius:8px;" onclick="doCashout('+h.id+')">💰 Кэшаут '+fmtMoney(co)+'</button>':'')+'</div>';
   }).join('') : 'Ставок нет';
 }
 /* ================= ТИК (без перерендера — кэфы не пропадают) ================= */
