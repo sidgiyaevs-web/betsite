@@ -192,7 +192,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div class="strip" id="liveStrip"></div>
   <div class="sec-h"><div class="sec-t"><span id="listTitle">Все матчи</span> <span class="cnt" id="listCount">0</span></div></div>
   <div class="fbar" id="filterBar"></div>
-  <div class="search-row"><input id="searchInput" placeholder="🔍 Поиск: Спартак, NAVI, Махачев..."><select id="sortSel"><option value="def">По умолчанию</option><option value="live">Сначала LIVE</option><option value="coef">Мин. кэф П1</option></select></div>
+  <div class="search-row"><input id="searchInput" placeholder="🔍 Поиск: Спартак, NAVI, Махачев..."><select id="sortSel"><option value="def">По умолчанию</option><option value="live">Сначала LIVE</option><option value="coef">Мин. кэф П1</option><option value="noft">Без завершенных</option></select></div>
   <div id="matchesList"></div>
   <div class="sec-h"><div class="sec-t">Результаты <span class="cnt" id="resCount">0</span></div></div>
   <div id="resList"></div>
@@ -305,7 +305,7 @@ function mkMatch(sport, home, away){
 }
 function goalCh(m){
   var t = m.minute / m.maxMin;
-  if(m.sport === 'cyber') return 0.8;
+  if(m.sport === 'cyber') return 0.7;
   if(m.sport === 'hockey') return 0.18 * (0.6 + t);
   if(m.sport === 'ufc') return 0;
   return 0.06 * (0.5 + t);
@@ -333,33 +333,72 @@ function ufcRound(m, rng, silent){
   if(m.events.length > 30) m.events.shift();
   if(!silent) toast('🥊 Раунд ' + round + ': ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
 }
-function scoreOnce(m, rng){
+function scoreOnce(m, rng, biasH){
   var r = rng ? rng() : Math.random();
-  var home = r * (m.strH + m.strA) < m.strH;
+  var b = biasH || 0;
+  var home = r < (m.strH + b) / (m.strH + m.strA);
   if(home) m.hs++; else m.as++;
   var label = m.sport==='hockey' ? '🥅 Шайба' : m.sport==='ufc' ? '🥊 Раунд' : m.sport==='cyber' ? '⚔️ Раунд' : '⚽ Гол';
   m.events.push({min:Math.floor(m.minute), txt:label+' — '+(home?m.home:m.away)});
   if(m.events.length > 30) m.events.shift();
   return home;
 }
-// Кибер (CS2, BO3): карта до 13 (при 12-12 до 16), матч до 2 карт
+// Кибер (CS2, BO3): пистолетки, половины, овертайм, карта до 13, матч до 2 карт
+function cyberBias(m){
+  var b = 0;
+  var curTot = m.curH + m.curA;
+  // пистолетные раунды (1-й и 13-й карты): разрыв сил тает — апсеты
+  if(curTot === 0 || curTot === 12) b += (m.strA - m.strH) * 0.45;
+  // проигрывающий по картам жмется (камбэк)
+  if(m.mapH < m.mapA) b += 0.07;
+  else if(m.mapA < m.mapH) b -= 0.07;
+  return b;
+}
+function cyberFlavor(m, rng){
+  var r = rng ? rng() : Math.random();
+  if(r < 0.07) return ' · клатч 1х2';
+  if(r < 0.16) return ' · форс-раунд';
+  if(r < 0.26) return ' · эко соперника';
+  return '';
+}
 function cyberMap(m, home, silent){
   if(m.sport !== 'cyber' || m.finished) return;
   if(home) m.curH++; else m.curA++;
   var target = (m.curH >= 12 && m.curA >= 12) ? 16 : 13;
   if(m.curH >= target || m.curA >= target){
     var mapN = m.mapH + m.mapA + 1;
-    var winner = m.curH > m.curA ? m.home : m.away;
-    if(m.curH > m.curA) m.mapH++; else m.mapA++;
+    var homeWon = m.curH > m.curA;
+    var winner = homeWon ? m.home : m.away;
+    if(homeWon) m.mapH++; else m.mapA++;
     m.events.push({min:Math.floor(m.minute), txt:'🗺 Карта ' + mapN + ' выиграна — ' + winner + ' (' + m.curH + ':' + m.curA + ')'});
-    if(!silent) toast('🗺 Карта ' + mapN + ' — ' + winner, '');
+    if(!silent){
+      toast('🗺 Карта ' + mapN + ' — ' + winner, '');
+      settleMapLive(m, mapN, homeWon);
+    }
     m.curH = 0; m.curA = 0;
     if(m.mapH >= 2 || m.mapA >= 2){
       m.finished = true; m.onBreak = false; m.finishedAt = Date.now();
-      m.events.push({min:Math.floor(m.minute), txt:'🏁 Матч окончен — ' + (m.mapH > m.mapA ? m.home : m.away)});
+      m.events.push({min:Math.floor(m.minute), txt:'🏁 Матч окончен — ' + (m.mapH > m.mapA ? m.home : m.away) + ' (' + m.mapH + ':' + m.mapA + ')'});
       if(!silent){ checkBets(m); saveResults(m); }
     }
   }
+}
+// live-расчет рынка "1-я карта" в момент конца карты
+function settleMapLive(m, mapN, homeWon){
+  if(mapN !== 1) return;
+  var changed = false;
+  State.history.forEach(function(hh){
+    if(hh.status !== 'pending') return;
+    var touched = false;
+    hh.bets.forEach(function(b){
+      if(b.matchId === m.id && !b.result && b.market === '1-я карта'){
+        b.result = ((b.pick === 0) === homeWon) ? 'win' : 'lose';
+        touched = true;
+      }
+    });
+    if(touched){ changed = true; finalizeBet(hh); }
+  });
+  if(changed){ saveState(); renderResults(); }
 }
 function countdownOf(m){
   var s = Math.max(0, Math.floor((m.startAt - Date.now()) / 1000));
@@ -385,11 +424,17 @@ function tickMatch(m){
   } else if(!br){
     var every = (m.sport === 'cyber');
     if((every || m.minute % 2 === 0) && Math.random() < goalCh(m)){
-      var home = scoreOnce(m, null);
+      var bias = m.sport === 'cyber' ? cyberBias(m) : 0;
+      var home = scoreOnce(m, null, bias);
       settleLiveGoal(m, home);
       if(m.sport === 'cyber'){
+        var mapsBefore = m.mapH + m.mapA;
+        var flavor = cyberFlavor(m, null);
+        if(flavor) m.events[m.events.length - 1].txt += flavor;
         cyberMap(m, home, false);
-        if(!m.finished) toast('⚔️ Раунд — ' + (home ? m.home : m.away) + ' (' + m.hs + ':' + m.as + ')', '');
+        var mapWon = (m.mapH + m.mapA) > mapsBefore;
+        var isPistol = !mapWon && (m.curH + m.curA === 1);
+        if(!m.finished && !mapWon && (isPistol || flavor)) toast('⚔️ ' + m.events[m.events.length - 1].txt, '');
       } else {
         toast('⚽ ' + m.home + ' ' + m.hs + ':' + m.as + ' ' + m.away, '');
       }
@@ -472,6 +517,24 @@ function recalc(m, silent){
       });
       var pbtts = tot > 0 ? 0.62 : clamp(0.55 * (0.3 + expLeft/2.5), 0.15, 0.6);
       m.markets['Обе забьют'] = {lbl:['Да','Нет'], val:[price(pbtts),price(1-pbtts)], closed:[false,false]};
+      // комбо победа+тотал (точный Пуассон по сетке счетов)
+      var comboL = m.sport === 'hockey' ? 4.5 : 2.5;
+      function comboP(side){
+        var p = 0;
+        for(var ch = 0; ch <= 9; ch++) for(var ca = 0; ca <= 9; ca++){
+          var fh = m.hs + ch, fa = m.as + ca;
+          var okW = side === 1 ? fh > fa : fa > fh;
+          if(okW && fh + fa > comboL) p += pois(ch, remHt) * pois(ca, remAt);
+        }
+        return clamp(p, 0.015, 0.96);
+      }
+      m.markets['П1 + ТБ ' + comboL] = {lbl:['Да','Нет'], val:[price(comboP(1)),price(1-comboP(1))], closed:[false,false]};
+      m.markets['П2 + ТБ ' + comboL] = {lbl:['Да','Нет'], val:[price(comboP(2)),price(1-comboP(2))], closed:[false,false]};
+      // голы команд (уже забили = 1.03)
+      var pGH = m.hs > 0 ? 0.97 : clamp(1 - pois(0, remHt), 0.03, 0.97);
+      var pGA = m.as > 0 ? 0.97 : clamp(1 - pois(0, remAt), 0.03, 0.97);
+      m.markets['Гол хозяев'] = {lbl:['Да','Нет'], val:[price(pGH),price(1-pGH)], closed:[false,false]};
+      m.markets['Гол гостей'] = {lbl:['Да','Нет'], val:[price(pGA),price(1-pGA)], closed:[false,false]};
       // --- глубина: следующий гол / ИТ / точный счет (Пуассон от оставшихся) ---
       var sSum = Math.max(0.001, pH + pA);
       var sH = pH / sSum, sA = pA / sSum;
@@ -525,7 +588,7 @@ function recalc(m, silent){
       var ph2 = clamp(winP(eff2), 0.03, 0.97);
       m.markets['Победитель'] = {lbl:['1','2'], val:[price(ph2),price(1-ph2)], closed:[false,false]};
       var expT = tot + Math.max(0, BASETOT.cyber - tot) * left;
-      [24.5, 26.5].forEach(function(L){
+      [22.5, 24.5, 26.5].forEach(function(L){
         if(tot > L){ m.markets['Тотал '+L] = {lbl:['Б','М'], val:[1.04, 14.0], closed:[false,false]}; return; }
         var po2 = overP(expT, L);
         m.markets['Тотал '+L] = {lbl:['Б','М'], val:[price(po2),price(1-po2)], closed:[false,false]};
@@ -550,6 +613,17 @@ function recalc(m, silent){
       m.markets['Тотал карт 2.5'] = {lbl:['Б','М'], val:[price(pDec),price(1-pDec)], closed:[false,false]};
       var qm = clamp(ph2 * 0.92 + 0.04, 0.08, 0.92);
       m.markets['Счет по картам'] = {lbl:['2:0','2:1','1:2','0:2'], val:[price(qm*qm),price(2*qm*qm*(1-qm)),price(2*(1-qm)*(1-qm)*qm),price((1-qm)*(1-qm))], closed:[false,false,false,false]};
+      // 1-я карта: решается live в конце карты, прематч — по силе
+      if(mp === 0){
+        m.markets['1-я карта'] = {lbl:['1','2'], val:[price(qm),price(1-qm)], closed:[false,false]};
+      } else {
+        var firstHome = null;
+        for(var ei = 0; ei < m.events.length; ei++){
+          if(m.events[ei].txt.indexOf('Карта 1 выиграна') > -1){ firstHome = m.events[ei].txt.indexOf(m.home) > -1; break; }
+        }
+        if(firstHome === null){ m.markets['1-я карта'] = {lbl:['1','2'], val:[price(qm),price(1-qm)], closed:[false,false]}; }
+        else m.markets['1-я карта'] = {lbl:['1','2'], val:[firstHome ? 1.03 : 25.0, firstHome ? 25.0 : 1.03], closed:[true,true]};
+      }
     }
     if(!silent){
       Object.keys(m.markets).forEach(function(k){
@@ -584,8 +658,13 @@ var Manager = {
           if(breakInfo(m)) continue;
           var every = (m.sport === 'cyber');
           if((every || m.minute % 2 === 0) && rng() < goalCh(m)){
-            var sc = scoreOnce(m, rng);
-            if(m.sport === 'cyber') cyberMap(m, sc, true);
+            var b2 = m.sport === 'cyber' ? cyberBias(m) : 0;
+            var sc = scoreOnce(m, rng, b2);
+            if(m.sport === 'cyber'){
+              var fl = cyberFlavor(m, rng);
+              if(fl) m.events[m.events.length - 1].txt += fl;
+              cyberMap(m, sc, true);
+            }
           }
         }
         if(!m.finished) break;
@@ -722,7 +801,7 @@ function refreshCoupon(){
     var m = Manager.find(c.matchId); if(!m || m.finished) return false;
     var mk = m.markets[c.market]; if(!mk || !(mk.val[c.pick] > 1)) return false;
     if(mk.closed && mk.closed[c.pick]) return false;
-    c.odds = mk.val[c.pick]; return true;
+    if(!c.boost) c.odds = mk.val[c.pick]; return true;
   });
 }
 function couponOdds(){ if(!State.coupon.length) return 0; var o = State.betType==='single' ? State.coupon[0].odds : State.coupon.reduce(function(a,c){return a*c.odds;},1); return Math.round(o*100)/100; }
@@ -801,8 +880,21 @@ function resultOf(mk, pick, m){
   if(key === 'Сухая победа 2'){ var d2 = (a > h && h === 0); return ((d2 && pick === 0) || (!d2 && pick === 1)) ? 'win' : 'lose'; }
   if(key === 'Победа решением'){ var dec = (m.method !== 'KO'); if(pick === 0) return (h > a && dec) ? 'win' : 'lose'; return (a > h && dec) ? 'win' : 'lose'; }
   if(key === 'Фора2 (+2.5)'){ var ok4 = (a + 2.5) > h; return ((ok4 && pick === 0) || (!ok4 && pick === 1)) ? 'win' : 'lose'; }
+  if(key === '1-я карта'){
+    for(var fi = 0; fi < m.events.length; fi++){
+      if(m.events[fi].txt.indexOf('Карта 1 выиграна') > -1){
+        var fh = m.events[fi].txt.indexOf(m.home) > -1;
+        return ((pick === 0) === fh) ? 'win' : 'lose';
+      }
+    }
+    return 'lose';
+  }
+  if(key.indexOf('П1 + ТБ') === 0){ var l1 = parseFloat(key.split('ТБ ')[1]); var c1 = (h > a && t > l1); return ((c1 && pick === 0) || (!c1 && pick === 1)) ? 'win' : 'lose'; }
+  if(key.indexOf('П2 + ТБ') === 0){ var l2 = parseFloat(key.split('ТБ ')[1]); var c2 = (a > h && t > l2); return ((c2 && pick === 0) || (!c2 && pick === 1)) ? 'win' : 'lose'; }
+  if(key === 'Гол хозяев'){ return ((h > 0 && pick === 0) || (h === 0 && pick === 1)) ? 'win' : 'lose'; }
+  if(key === 'Гол гостей'){ return ((a > 0 && pick === 0) || (a === 0 && pick === 1)) ? 'win' : 'lose'; }
   if(key === 'Точный счет'){ return (mk.lbl[pick] === h + ':' + a || (mk.lbl[pick] === 'Другой' && ['1:0','2:0','2:1','0:0','1:1','0:1','0:2','1:2'].indexOf(h + ':' + a) < 0)) ? 'win' : 'lose'; }
-  if(key.indexOf('ИТ')===0){ var li = parseFloat(key.replace(/[^0-9.]/g, '')); var tm = key.charAt(2) === '1' ? h : a; return ((tm > li && pick===0) || (tm < li && pick===1)) ? 'win' : 'lose'; }
+  if(key.indexOf('ИТ')===0){ var li = parseFloat(key.split('(')[1]); var tm = key.charAt(2) === '1' ? h : a; return ((tm > li && pick===0) || (tm < li && pick===1)) ? 'win' : 'lose'; }
   return 'lose';
 }
 function finalizeBet(hh){
@@ -878,7 +970,9 @@ function clockOf(m){
     return 'Раунд '+r+'/5';
   }
   var map = Math.min(3, m.mapH + m.mapA + 1), rin = m.curH + m.curA + 1;
-  return 'Карта '+map+' · Раунд '+rin+' ('+m.mapH+':'+m.mapA+')';
+  if(m.curH >= 12 && m.curA >= 12) return 'Овертайм · ' + m.curH + ':' + m.curA + ' (карта ' + map + ')';
+  var half = (m.curH + m.curA) < 12 ? '1-я пол.' : '2-я пол.';
+  return 'Карта ' + map + ' · ' + half + ' Р' + rin + ' (' + m.mapH + ':' + m.mapA + ')';
 }
 function mainOdds(m){
   var name = m.markets['1X2'] ? '1X2' : 'Победитель';
@@ -909,15 +1003,6 @@ function cardHTML(m){
   +'<div class="mc-teams"><div class="mc-team"><span>'+avatarHTML(m.home)+esc(m.home)+'</span><span class="mc-score'+(fin&&m.hs>m.as?' w':'')+'" data-score="'+m.id+'" data-side="h">'+m.hs+'</span></div><div class="mc-team"><span>'+avatarHTML(m.away)+esc(m.away)+'</span><span class="mc-score'+(fin&&m.as>m.hs?' w':'')+'" data-score="'+m.id+'" data-side="a">'+m.as+'</span></div></div>'
   +'<div class="mc-odds'+(two?' two':'')+'">'+odds+'</div>'
   + foot + '</div>';
-}
-function moreHTML(m){
-  return Object.keys(m.markets).map(function(k){
-    if(k==='1X2'||k==='Победитель') return '';
-    var mk = m.markets[k];
-    return '<div class="mkt-t">'+esc(k)+'</div><div class="mkt-row">'+mk.lbl.map(function(l,i){
-      return '<div class="mkt-odd'+(mk.closed[i]?' cl':'')+'" data-mid="'+m.id+'" data-mkt="'+esc(k)+'" data-pick="'+i+'"><span class="olbl">'+esc(l)+'</span><span class="oval">'+mk.val[i].toFixed(2)+'</span></div>';
-    }).join('')+'</div>';
-  }).join('');
 }
 function renderTabs(){
   var tabs = [{id:'all',n:'Линия'},{id:'live',n:'LIVE'},{id:'soon',n:'Скоро'},{id:'fav',n:'★'}].concat(SPORTS.map(function(s){return {id:s.id,n:s.ic+' '+s.name};}));
@@ -1033,6 +1118,7 @@ function renderCenter(){
 function updateCenter(){ if(State.centerId) renderCenter(); }
 function filteredList(){
   var list = Manager.matches.slice();
+  if(State.sort === 'noft') list = list.filter(function(m){ return !m.finished; });
   if(State.sport==='live') list = list.filter(function(m){return m.status==='live' && !m.finished;});
   else if(State.sport==='soon') list = list.filter(function(m){return m.status==='upcoming';}).sort(function(a,b){return a.startAt-b.startAt;});
   else if(State.sport==='fav') list = list.filter(function(m){return State.favs.indexOf(m.id)>-1;});
@@ -1087,8 +1173,9 @@ function renderList(){
     });
     $('matchesList').innerHTML = order.map(function(g){
       var liveN = groups[g].filter(function(m){ return m.status === 'live' && !m.finished; }).length;
-      return '<div class="lg-head"><span>' + esc(g) + '</span>' + (liveN ? '<span class="lg-live">● ' + liveN + ' LIVE</span>' : '<span class="lg-n">' + groups[g].length + '</span>') + '</div>'
-        + groups[g].map(cardHTML).join('');
+      var shut = State.collapsed && State.collapsed[g];
+      return '<div class="lg-head" data-lg="' + esc(g) + '" style="cursor:pointer;"><span>' + (shut ? '▶ ' : '▼ ') + esc(g) + '</span>' + (liveN ? '<span class="lg-live">● ' + liveN + ' LIVE</span>' : '<span class="lg-n">' + groups[g].length + '</span>') + '</div>'
+        + (shut ? '' : groups[g].map(cardHTML).join(''));
     }).join('');
   } else {
     $('matchesList').innerHTML = list.map(cardHTML).join('');
@@ -1203,7 +1290,7 @@ function takeExpress(){
   State.betType = 'express';
   $all('.cp-type button').forEach(function(b){ b.classList.toggle('on', b.dataset.type === 'express'); });
   State.coupon = ex.picks.map(function(p){
-    return {matchId:p.m.id, market:p.market, pick:p.pick, pickLbl:p.lbl + ' (ДНЯ +10%)', odds:p.odds, home:p.m.home, away:p.m.away, sport:p.m.sport, sh:p.m.hs, sa:p.m.as, at:Math.floor(p.m.minute)};
+    return {matchId:p.m.id, market:p.market, pick:p.pick, pickLbl:p.lbl + ' (ДНЯ +10%)', odds:p.odds, home:p.m.home, away:p.m.away, sport:p.m.sport, sh:p.m.hs, sa:p.m.as, at:Math.floor(p.m.minute), boost:true};
   });
   saveState(); updateCoupon(); paintSel();
   $('coupon').classList.add('show');
@@ -1311,6 +1398,13 @@ function mainTick(){
 document.addEventListener('click', function(e){
   var pg = e.target.closest('[data-page]');
   if(pg){ switchPage(pg.dataset.page); return; }
+  var lg = e.target.closest('[data-lg]');
+  if(lg){
+    State.collapsed = State.collapsed || {};
+    var g = lg.dataset.lg;
+    if(State.collapsed[g]) delete State.collapsed[g]; else State.collapsed[g] = 1;
+    renderList(); return;
+  }
   var nav = e.target.closest('[data-nav]');
   if(nav){ State.sport = nav.dataset.nav; renderTabs(); renderFilters(); renderList(); return; }
   var fc = e.target.closest('[data-sport]');
