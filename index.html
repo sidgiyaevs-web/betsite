@@ -201,15 +201,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .bet-input-row input{flex:1;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;outline:none;text-align:center}
 .play-btn{width:100%;padding:18px;background:var(--accent);color:#000;border:none;border-radius:12px;font-size:17px;font-weight:900;cursor:pointer;margin-top:8px}
 .play-btn:disabled{opacity:.4;cursor:not-allowed}
-.tennis-scores{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.tennis-player-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.tennis-player-row:last-child{border-bottom:none}
-.tennis-name{font-weight:800;font-size:15px;color:var(--text)}
-.tennis-score{font-weight:900;font-size:16px;color:var(--accent);letter-spacing:2px}
-.tennis-serving{display:inline-block;width:14px;height:14px;background:var(--accent);border-radius:50%;margin-right:6px;vertical-align:middle}
-.tennis-meta{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--text-dim);text-align:center;margin-bottom:10px}
-.tennis-games-line{display:flex;gap:6px;font-size:16px;font-weight:700;color:var(--text);margin:8px 0}
-.tennis-game-badge{background:var(--bg3);padding:2px 8px;border-radius:6px;font-size:13px}
 </style>
 </head>
 <body>
@@ -248,7 +239,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
     <div id="matches"></div>
     <div id="ufcContainer" style="display:none"></div>
     <div id="hockeyContainer" style="display:none"></div>
-    <div id="tennisContainer" style="display:none"></div>
   </div>
   <div id="pageRoulette" style="display:none">
     <div style="padding:20px 16px;text-align:center">
@@ -370,7 +360,7 @@ let oddHistoryCache={};
 const DAILY_LIMIT=1500000,WEEK_MS=7*24*60*60*1000;
 const PRIZES=[500,1000,2500,5000,10000,15000];
 const EPOCH_OFFSET=1735689600;
-const SPORTS=['⚽ Футбол','🥊 UFC','🏒 Хоккей','🎾 Теннис'];
+const SPORTS=['⚽ Футбол','🥊 UFC','🏒 Хоккей'];
 const AVG_GOALS_PER_MATCH=2.7;
 const THEMES=['dark','light','blue','green','red'];
 
@@ -478,6 +468,7 @@ function getMatchOdds(match,state){
   let o1=p1>0.01?1/(p1*margin):50;
   let oX=pX>0.01?1/(pX*margin):25;
   let o2=p2>0.01?1/(p2*margin):50;
+  // Ничья падает в конце при равном счёте (до 1.05)
   if(diff===0&&progress>0.75){oX=Math.max(1.05,oX*(1-(progress-0.75)*3.5));}
   if(progress>0.75){
     if(diff>0)o1=Math.max(1.10,o1*(1-(progress-0.75)*2));
@@ -522,6 +513,8 @@ const FIRST_HALF_SEC=145,SECOND_HALF_SEC=145;
 function generateScenario(match,cI){
   const seed=match.id*7777777+cI*13;
   const r=(o)=>seededRandom(seed+o);
+  // Распределение голов (среднее ~2.7):
+  // 0 — 8%, 1 — 20%, 2 — 27%, 3 — 23%, 4 — 13%, 5 — 6%, 6 — 3%
   const rG=r(1);
   let tg;
   if(rG<0.08)tg=0;
@@ -863,16 +856,6 @@ function getCurrentOddForItem(it){
       if(it.marketKey==='main_2')return odds[2];
       return null;
     }
-    if(it.isTennis){
-      const match=tennisFindMatchById(it.tennisMatchId);
-      if(!match)return null;
-      const st=tennisGetMatchState(match);
-      if(st.locked)return null;
-      const odds=tennisGetOdds(match,st);
-      if(it.marketKey==='tennis_main_0')return odds[0];
-      if(it.marketKey==='tennis_main_1')return odds[2];
-      return null;
-    }
     const m=findMatchById(it.matchId);
     if(!m)return null;
     const s=getMatchState(m);
@@ -978,7 +961,6 @@ function selectSport(s){
   renderTabs();
   const uc=document.getElementById('ufcContainer');
   const hc=document.getElementById('hockeyContainer');
-  const tc=document.getElementById('tennisContainer');
   const ml=document.getElementById('matches');
   const fl=document.getElementById('filters');
   if(s==='🥊 UFC'){
@@ -986,26 +968,16 @@ function selectSport(s){
     if(fl)fl.style.display='none';
     if(uc)uc.style.display='block';
     if(hc)hc.style.display='none';
-    if(tc)tc.style.display='none';
     if(typeof ufcRender==='function')ufcRender();
   } else if(s==='🏒 Хоккей'){
     if(ml)ml.style.display='none';
     if(fl)fl.style.display='none';
     if(uc)uc.style.display='none';
     if(hc)hc.style.display='block';
-    if(tc)tc.style.display='none';
     if(typeof hockeyRender==='function')hockeyRender();
-  } else if(s==='🎾 Теннис'){
-    if(ml)ml.style.display='none';
-    if(fl)fl.style.display='none';
-    if(uc)uc.style.display='none';
-    if(hc)hc.style.display='none';
-    if(tc)tc.style.display='block';
-    if(typeof tennisRender==='function')tennisRender();
   } else {
     if(uc)uc.style.display='none';
     if(hc)hc.style.display='none';
-    if(tc)tc.style.display='none';
     if(fl)fl.style.display='flex';
     if(ml)ml.style.display='block';
     renderMatches();
@@ -1019,8 +991,6 @@ function renderMatches(){
     if(ml)ml.style.display='none';
     const hc=document.getElementById('hockeyContainer');
     if(hc)hc.style.display='none';
-    const tc=document.getElementById('tennisContainer');
-    if(tc)tc.style.display='none';
     if(typeof ufcRender==='function')ufcRender();
     return;
   }
@@ -1031,29 +1001,13 @@ function renderMatches(){
     if(ml)ml.style.display='none';
     const uc=document.getElementById('ufcContainer');
     if(uc)uc.style.display='none';
-    const tc=document.getElementById('tennisContainer');
-    if(tc)tc.style.display='none';
     if(typeof hockeyRender==='function')hockeyRender();
-    return;
-  }
-  if(selectedSport==='🎾 Теннис'){
-    const tc=document.getElementById('tennisContainer');
-    if(tc)tc.style.display='block';
-    const ml=document.getElementById('matches');
-    if(ml)ml.style.display='none';
-    const uc=document.getElementById('ufcContainer');
-    if(uc)uc.style.display='none';
-    const hc=document.getElementById('hockeyContainer');
-    if(hc)hc.style.display='none';
-    if(typeof tennisRender==='function')tennisRender();
     return;
   }
   const uc=document.getElementById('ufcContainer');
   if(uc)uc.style.display='none';
   const hc=document.getElementById('hockeyContainer');
   if(hc)hc.style.display='none';
-  const tc=document.getElementById('tennisContainer');
-  if(tc)tc.style.display='none';
   const mlEl=document.getElementById('matches');
   if(mlEl)mlEl.style.display='block';
   refreshMatches();
@@ -1111,11 +1065,6 @@ function getMarketBase(key){
   if(key.indexOf('ufc_total_under_') === 0) return 'ufc_total';
   if(key.indexOf('ufc_method_') === 0) return 'ufc_method';
   if(key.indexOf('ufc_roundwin_') === 0) return 'ufc_roundwin';
-  if(key === 'tennis_main_0' || key === 'tennis_main_1') return 'tennis_main';
-  if(key.indexOf('tennis_total_over_') === 0) return 'tennis_total';
-  if(key.indexOf('tennis_total_under_') === 0) return 'tennis_total';
-  if(key === 'tennis_set1_0' || key === 'tennis_set1_1') return 'tennis_set1';
-  if(key.indexOf('tennis_game_') === 0) return 'tennis_game';
   return key;
 }
 
@@ -1160,25 +1109,6 @@ function addBet(mId,market,outcome,odds,label,mK){
     if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0) hockeyRenderSpreadBody();
     return;
   }
-  if(String(mId).indexOf('t_') === 0){
-    const tId = parseInt(String(mId).replace('t_',''));
-    const match = tennisFindMatchById(tId);
-    if(!match) return;
-    const st = tennisGetMatchState(match);
-    if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
-    const base = getMarketBase(k);
-    const idx = bets.findIndex(function(b){ return b.matchId === mId && b.marketKey === k && b.outcome === outcome; });
-    if(idx !== -1){ bets.splice(idx, 1); }
-    else {
-      for(let i = bets.length - 1; i >= 0; i--){
-        if(bets[i].matchId === mId && getMarketBase(bets[i].marketKey) === base) bets.splice(i, 1);
-      }
-      bets.push({matchId: mId, outcome: outcome, odds: odds, label: label, home: match.home, away: match.away, market: market, marketKey: k, isTennis: true, tennisMatchId: tId});
-    }
-    renderSlip();
-    if(currentSpreadMatch && String(currentSpreadMatch).indexOf('t_') === 0) tennisRenderSpreadBody();
-    return;
-  }
   const m=findMatchById(mId);
   if(!m)return;
   const s=getMatchState(m);
@@ -1205,7 +1135,7 @@ function cleanLockedBets(){
   let ch=false;
   for(let i=bets.length-1;i>=0;i--){
     const b=bets[i];
-    if(b.isUfc||b.isHockey||b.isTennis) continue;
+    if(b.isUfc||b.isHockey) continue;
     const m=findMatchById(b.matchId);
     if(!m)continue;
     const s=getMatchState(m);
@@ -1259,7 +1189,6 @@ function placeBet(){
   const items=bets.map(b=>{
     if(b.isUfc){ return {...b, epoch: Math.floor(Date.now() / 180000)}; }
     if(b.isHockey){ return {...b, epoch: Math.floor(Date.now() / 120000)}; }
-    if(b.isTennis){ return {...b, epoch: Math.floor(Date.now() / 300000)}; }
     const m=findMatchById(b.matchId);
     const s=getMatchState(m);
     return{...b,cycleIndex:s.cycleIndex};
@@ -1294,10 +1223,6 @@ function openSpread(mId){
   }
   if(String(mId).indexOf('h_') === 0){
     hockeyOpenSpread(parseInt(String(mId).replace('h_','')));
-    return;
-  }
-  if(String(mId).indexOf('t_') === 0){
-    tennisOpenSpread(parseInt(String(mId).replace('t_','')));
     return;
   }
   const m=findMatchById(mId);
@@ -1458,7 +1383,7 @@ function checkBetResults(){
     if(bet.status!=='pending')return;
     let allFin=true,allWon=true,anyRet=false;
     for(const item of bet.items){
-      if(item.isUfc||item.isHockey||item.isTennis){ allFin=false; continue; }
+      if(item.isUfc||item.isHockey){ allFin=false; continue; }
       const m=findMatchById(item.matchId);
       if(!m){allFin=false;break;}
       const s=getMatchState(m);
@@ -1636,7 +1561,8 @@ function ufcGenerateFights(epoch){
       totalRounds: totalRounds, baseTotal: totalRounds + 0.5,
       scenario: {
         totalRounds: totalRounds, finalRound: finalRound,
-        roundWinners: roundWinners, roundsH: hR, roundsA: aR,
+        roundWinners: roundWinners,
+        roundsH: hR, roundsA: aR,
         winner: winner, method: method, methodLabel: methodLabel
       }
     });
@@ -1706,13 +1632,21 @@ function ufcGetOdds(fight, state){
   } else {
     const winner = sc.winner;
     const boost = 1 + fightProgress * 0.5;
-    if(winner === 0){ pH = Math.min(0.92, pH * boost); pA = Math.max(0.08, pA / boost); }
-    else { pA = Math.min(0.92, pA * boost); pH = Math.max(0.08, pH / boost); }
+    if(winner === 0){
+      pH = Math.min(0.92, pH * boost);
+      pA = Math.max(0.08, pA / boost);
+    } else {
+      pA = Math.min(0.92, pA * boost);
+      pH = Math.max(0.08, pH / boost);
+    }
   }
-  const sum = pH + pA; pH /= sum; pA /= sum;
+  const sum = pH + pA;
+  pH /= sum; pA /= sum;
   let o1 = Math.max(1.10, Math.round((1/pH) * 100) / 100);
   let o2 = Math.max(1.10, Math.round((1/pA) * 100) / 100);
-  return [Math.min(15,o1), 0, Math.min(15,o2)];
+  o1 = Math.min(15, o1);
+  o2 = Math.min(15, o2);
+  return [o1, 0, o2];
 }
 
 function ufcTotalRoundOdds(fight, state, line){
@@ -1736,8 +1670,10 @@ function ufcTotalRoundOdds(fight, state, line){
   else if(roundsToLine <= 2){ pOver += roundProgress * 0.18; }
   else { pOver += roundProgress * 0.06; }
   pOver = Math.max(0.10, Math.min(0.95, pOver));
-  let oOver = Math.max(1.05, Math.min(10, Math.round((1/pOver) * 100) / 100));
-  let oUnder = Math.max(1.05, Math.min(10, Math.round((1/(1-pOver)) * 100) / 100));
+  let oOver = Math.round((1/pOver) * 100) / 100;
+  let oUnder = Math.round((1/(1-pOver)) * 100) / 100;
+  oOver = Math.max(1.05, Math.min(10, oOver));
+  oUnder = Math.max(1.05, Math.min(10, oUnder));
   return [oOver, oUnder];
 }
 
@@ -1758,7 +1694,9 @@ function ufcMethodOdds(fight, state){
     pKO -= progress * 0.15;
     pSUB -= progress * 0.15;
   }
-  pKO = Math.max(0.05, pKO); pSUB = Math.max(0.05, pSUB); pDEC = Math.max(0.05, pDEC);
+  pKO = Math.max(0.05, pKO);
+  pSUB = Math.max(0.05, pSUB);
+  pDEC = Math.max(0.05, pDEC);
   const s = pKO + pSUB + pDEC;
   pKO /= s; pSUB /= s; pDEC /= s;
   return {KO: Math.max(1.30, Math.round((1/pKO) * 100) / 100),SUB: Math.max(1.50, Math.round((1/pSUB) * 100) / 100),DEC: Math.max(1.50, Math.round((1/pDEC) * 100) / 100)};
@@ -1832,7 +1770,9 @@ function ufcRenderCard(fight){
   const odd2 = updateOddArrow('ufc_'+fight.id+'_2', odds[2]);
   const locked = st.locked;
   function oddBtn(label, odd, action, disabled, arrow, flash){
-    return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" class="'+(flash||'')+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:var(--bg3);color:'+(disabled?'var(--text-dim)':'var(--text)')+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+arrow+'</span></button>';
+    const bg = 'var(--bg3)';
+    const col = disabled ? 'var(--text-dim)' : 'var(--text)';
+    return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" class="'+(flash||'')+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:'+bg+';color:'+col+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+arrow+'</span></button>';
   }
   return '<div class="match" onclick="ufcOpenSpread('+fight.id+')" style="cursor:pointer;"><div class="match-header"><span class="league">'+fight.league+'</span><span class="time">'+liveBadge+doneBadge+lockBadge+'</span></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+ufcAvatar(f1, 44, status1)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.home+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.homeNick+'</div></div>'+score1+'</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+ufcAvatar(f2, 44, status2)+'<div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--text);">'+fight.away+'</div><div style="font-size:11px;color:var(--text-dim);">'+fight.awayNick+'</div></div>'+score2+'</div>'+body+'<div class="odds-row" style="margin-top:8px;">'+oddBtn('П1', odds[0], "ufcQuickBet("+fight.id+",0)", locked, odd1.arrow, odd1.flash)+oddBtn('П2', odds[2], "ufcQuickBet("+fight.id+",1)", locked, odd2.arrow, odd2.flash)+'</div><div class="match-hint">👆 Тапни — открыть все рынки</div></div>';
 }
@@ -2001,7 +1941,8 @@ const HOCKEY_TEAMS = {
 };
 
 const HOCKEY_PERIOD_SEC = 30;
-const HOCKEY_MATCH_SEC = HOCKEY_PERIOD_SEC * 3;
+const HOCKEY_PERIODS = 3;
+const HOCKEY_MATCH_SEC = HOCKEY_PERIOD_SEC * HOCKEY_PERIODS;
 const HOCKEY_AFTER_SEC = 30;
 const HOCKEY_CYCLE = 120;
 const HOCKEY_AVG_GOALS = 5.5;
@@ -2178,8 +2119,12 @@ function hockeyGetTotalOdds(state, line){
   for(let k = 1; k < needed; k++){ p = p * eG / k; cumul += p; }
   let pO = 1 - cumul;
   pO = Math.max(0.10, Math.min(0.90, pO));
-  let o = Math.max(1.10, Math.min(10, Math.round((1/pO) * 100) / 100));
-  let u = Math.max(1.10, Math.min(10, Math.round((1/(1-pO)) * 100) / 100));
+  let o = Math.round((1/pO) * 100) / 100;
+  let u = Math.round((1/(1-pO)) * 100) / 100;
+  if(o < 1.10) o = 1.10;
+  if(u < 1.10) u = 1.10;
+  if(o > 10) o = 10;
+  if(u > 10) u = 10;
   return [o, u];
 }
 
@@ -2372,820 +2317,6 @@ function hockeySettleBets(){
 function hockeyTick(){
   if(selectedSport === '🏒 Хоккей') hockeyRender();
   if(currentUser) hockeySettleBets();
-}
-
-// ==========================================
-// ============ 🎾 ТЕННИС МОДУЛЬ ==========
-// ==========================================
-
-const TENNIS_PLAYERS = [
-  {name:'Новак Джокович', rank:20, color:'#1976d2'},
-  {name:'Карлос Алькарас', rank:19, color:'#d32f2f'},
-  {name:'Янник Синнер', rank:18, color:'#388e3c'},
-  {name:'Даниил Медведев', rank:17, color:'#f57c00'},
-  {name:'Александр Зверев', rank:16, color:'#7b1fa2'},
-  {name:'Хольгер Руне', rank:15, color:'#0097a7'},
-  {name:'Стефанос Циципас', rank:14, color:'#c2185b'},
-  {name:'Каспер Рууд', rank:13, color:'#1976d2'},
-  {name:'Тейлор Фритц', rank:12, color:'#d32f2f'},
-  {name:'Томми Пол', rank:11, color:'#388e3c'},
-  {name:'Григор Димитров', rank:10, color:'#f57c00'},
-  {name:'Бен Шелтон', rank:9, color:'#7b1fa2'},
-  {name:'Джек Дрейпер', rank:8, color:'#0097a7'},
-  {name:'Хуберт Хуркач', rank:7, color:'#c2185b'},
-  {name:'Себастьян Баэс', rank:6, color:'#1976d2'},
-  {name:'Флавио Коболли', rank:5, color:'#d32f2f'},
-  {name:'Иржи Лехечка', rank:4, color:'#388e3c'},
-  {name:'Лоренцо Музетти', rank:3, color:'#f57c00'},
-  {name:'Франсис Тьен', rank:2, color:'#7b1fa2'},
-  {name:'Алекс де Минор', rank:1, color:'#0097a7'}
-];
-
-const TENNIS_MATCH_SEC = 300;
-const TENNIS_AFTER_SEC = 30;
-const TENNIS_CYCLE = 360;
-const TENNIS_POINT_SEC = 2;
-const TENNIS_POINTS_PER_GAME = 4;
-
-let TENNIS_CACHE = [], TENNIS_EPOCH = -1;
-
-function tennisSeed(n){const x = Math.sin(n * 12.9898) * 43758.5453;return x - Math.floor(x);}
-
-function tennisGenerateMatch(epoch){
-  const r = (o) => seededRandom(epoch * 211 + o);
-  let p1Idx = Math.floor(r(1) * TENNIS_PLAYERS.length);
-  let p2Idx = Math.floor(r(2) * TENNIS_PLAYERS.length);
-  if(p2Idx === p1Idx) p2Idx = (p1Idx + 1) % TENNIS_PLAYERS.length;
-  const p1 = TENNIS_PLAYERS[p1Idx];
-  const p2 = TENNIS_PLAYERS[p2Idx];
-
-  const diff = p1.rank - p2.rank;
-  let pH = 1 / (1 + Math.exp(-diff * 0.15));
-  pH = Math.max(0.20, Math.min(0.80, pH));
-  const o1 = Math.max(1.10, Math.min(10, Math.round((1/(pH*1.05))*100)/100));
-  const o2 = Math.max(1.10, Math.min(10, Math.round((1/((1-pH)*1.05))*100)/100));
-
-  // Генерируем полный сценарий матча: массив сетов
-  // Каждый сет: {winner:0|1, games:[g1,g2], points:[[p1,p2] for each game]}
-  const sets = [];
-  let setsH = 0, setsA = 0;
-  const totalGamesTarget = Math.random() < 0.6 ? 2 : 3; // 2:0 или 2:1
-  const winnerOverall = tennisSeed(epoch * 7 + 3) < pH ? 0 : 1;
-
-  let maxSets = 2; // всего 2 сета до победы? Нет, у нас 2 сета матч (best of 2)
-  // Матч = до 2 побед в сетах. Значит может быть 2 или 3 сета — но ты сказал 2 сета. 
-  // Делаем: матч до 2 побед → 2 или 3 сета
-  // Но ты сказал 2 сета. Значит матч = 2 сета максимум.
-  // Сделаю: 2 сета, победитель = тот кто выиграл оба или 1:1 → по очкам? 
-  // Нет — матч должен иметь победителя. Значит 2 сета не всегда. 
-  // Сделаю матч до 2 побед в сетах (best of 3), но с ограничением.
-
-  // По твоему: "2 сета". Значит матч — из 2 сетов, но должен быть победитель. 
-  // Если 1:1 — третий сет решает. Итого матч = 2 или 3 сета.
-
-  const setsNeeded = 2; // до 2 побед
-
-  for(let setIdx = 0; setIdx < 3; setIdx++){
-    if(setsH >= setsNeeded || setsA >= setsNeeded) break;
-    // Победитель сета
-    let setWinner;
-    // Чтобы матч имел смысл — общий победитель выигрывает большинство
-    if(winnerOverall === 0){
-      const setR = tennisSeed(epoch * 13 + setIdx * 17);
-      setWinner = setR < 0.65 ? 0 : 1;
-    } else {
-      const setR = tennisSeed(epoch * 13 + setIdx * 17);
-      setWinner = setR < 0.65 ? 1 : 0;
-    }
-
-    // Счёт по геймам в сете — до 6, при 5:5 → до 7
-    let gH = 0, gA = 0;
-    const gamesR = tennisSeed(epoch * 19 + setIdx * 23);
-    // Кто-то выигрывает 6:X или 7:X
-    const loserGames = Math.floor(gamesR * 5); // 0-4 гейма у проигравшего
-    if(setWinner === 0){ gH = 6; gA = loserGames; }
-    else { gA = 6; gH = loserGames; }
-    // При 5:5 редко — упростим, не будем делать
-    // Иногда 7:5
-    if(tennisSeed(epoch * 23 + setIdx * 29) > 0.85){
-      if(setWinner === 0){ gH = 7; gA = 5; }
-      else { gA = 7; gH = 5; }
-    }
-
-    // Генерируем порядок геймов и очки
-    const games = [];
-    let curH = 0, curA = 0;
-    const totalGamesInSet = gH + gA;
-    let server = (setIdx % 2 === 0) ? 0 : 1; // Подача первого гейма сета
-    for(let g = 0; g < totalGamesInSet; g++){
-      // Кто выиграет этот гейм
-      let gameWinner;
-      if(curH === gH - 1 && curA < gA){ gameWinner = 0; }
-      else if(curA === gA - 1 && curH < gH){ gameWinner = 1; }
-      else {
-        // Подающий выигрывает 70%
-        const r2 = tennisSeed(epoch * 31 + setIdx * 37 + g * 11);
-        const serverWins = r2 < 0.70;
-        gameWinner = serverWins ? server : (1 - server);
-        // Ограничим — не даём проиграть сет тому, кто должен выиграть
-        if(setWinner === 0 && curH >= gH - 1 && curA < gA) gameWinner = 0;
-        if(setWinner === 1 && curA >= gA - 1 && curH < gH) gameWinner = 1;
-      }
-      if(curH >= gH || curA >= gA) break;
-      // Генерим очки в гейме (4 очка у победителя, 0-2 у проигравшего)
-      const pts = [];
-      let pW = 0, pL = 0;
-      const ptsR = tennisSeed(epoch * 41 + setIdx * 43 + g * 13);
-      let loserPts = Math.floor(ptsR * 3); // 0-2
-      for(let i = 0; i < 4 + loserPts; i++){
-        if(pW === 4 || (pW >= 4 && pW - pL >= 2)){
-          break;
-        }
-        // Победитель гейма выигрывает очко с 65% если подаёт, 50% если не подаёт
-        const r3 = tennisSeed(epoch * 47 + setIdx * 53 + g * 17 + i * 7);
-        let winnerOfPoint;
-        const serverIsGameWinner = (server === gameWinner);
-        const pWinnerWins = serverIsGameWinner ? 0.65 : 0.55;
-        if(r3 < pWinnerWins) winnerOfPoint = gameWinner;
-        else winnerOfPoint = 1 - gameWinner;
-        if(winnerOfPoint === gameWinner) pW++; else pL++;
-        if(pW >= 4 && pW - pL >= 2) break;
-      }
-      // Принудительно доводим до победы
-      while(pW < 4 || (pW - pL < 2)){
-        pW++;
-      }
-      games.push({winner: gameWinner, server: server, pointsH: 0, pointsA: 0, seq: []});
-      // Запоминаем последовательность очков
-      let scoreH = 0, scoreA = 0;
-      const seq = [];
-      let tot = 0;
-      let pw = 0, pl = 0;
-      while(true){
-        if(pw >= 4 && pw - pl >= 2) break;
-        const r3 = tennisSeed(epoch * 47 + setIdx * 53 + g * 17 + tot * 7);
-        const pWinnerWins = ((gameWinner === server) ? 0.65 : 0.55);
-        let winnerOfPoint;
-        if(r3 < pWinnerWins) winnerOfPoint = gameWinner;
-        else winnerOfPoint = 1 - gameWinner;
-        if(winnerOfPoint === gameWinner) pw++; else pl++;
-        seq.push(winnerOfPoint);
-        tot++;
-        if(tot > 20) break;
-      }
-      games[games.length-1].seq = seq;
-      if(gameWinner === 0) curH++; else curA++;
-    }
-
-    if(setWinner === 0) setsH++; else setsA++;
-    sets.push({winner: setWinner, gamesH: gH, gamesA: gA, games: games});
-    if(setsH >= setsNeeded || setsA >= setsNeeded) break;
-  }
-
-  // Определяем победителя матча
-  const matchWinner = setsH > setsA ? 0 : 1;
-
-  return {
-    id: 7000 + (epoch % 10000),
-    league: '🎾 ATP',
-    home: p1.name, away: p2.name,
-    homeRank: p1.rank, awayRank: p2.rank,
-    homeColor: p1.color, awayColor: p2.color,
-    baseOdds: [o1, 0, o2],
-    isTennis: true,
-    epoch: epoch,
-    scenario: {
-      sets: sets,
-      setsH: setsH,
-      setsA: setsA,
-      winner: matchWinner
-    }
-  };
-}
-
-function tennisGetMatch(){
-  const epoch = Math.floor(Date.now() / 300000); // 5 минут
-  if(!window.TENNIS_CACHE || window.TENNIS_CACHE.epoch !== epoch){
-    window.TENNIS_CACHE = { epoch: epoch, match: tennisGenerateMatch(epoch) };
-  }
-  return window.TENNIS_CACHE.match;
-}
-
-function tennisFindMatchById(id){
-  const m = tennisGetMatch();
-  if(m && m.id === id) return m;
-  return null;
-}
-
-function tennisGetMatchState(match){
-  if(!match) return {locked:true};
-  const nowMs = Date.now();
-  const epoch = Math.floor(nowMs / 300000);
-  const posMs = nowMs - epoch * 300000;
-  const posSec = posMs / 1000;
-
-  // Общая длительность матча
-  const sc = match.scenario;
-  // Подсчитываем все очки
-  let totalPoints = 0;
-  sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
-
-  const totalMatchSec = totalPoints * TENNIS_POINT_SEC;
-
-  if(posSec >= totalMatchSec){
-    // Матч завершён
-    if(posSec < totalMatchSec + TENNIS_AFTER_SEC){
-      // Фаза результата
-      const s1 = sc.sets[0];
-      const s2 = sc.sets.length > 1 ? sc.sets[1] : null;
-      const s3 = sc.sets.length > 2 ? sc.sets[2] : null;
-      const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
-      return {
-        phase:'result', locked:true, live:false, isFinished:true,
-        afterLeft: Math.ceil(totalMatchSec + TENNIS_AFTER_SEC - posSec),
-        scoreStr: scoreStr,
-        winner: sc.winner,
-        setsH: sc.setsH, setsA: sc.setsA,
-        timeStr: '✅ Завершён',
-        scenario: sc
-      };
-    }
-    const waitLeft = Math.ceil(TENNIS_CYCLE - posSec);
-    const scoreStr = sc.sets.map(s => s.gamesH + ':' + s.gamesA).join(', ');
-    return {
-      phase:'wait', locked:true, live:false, isFinished:false, isWaiting:true,
-      waitLeft: waitLeft,
-      scoreStr: scoreStr,
-      winner: sc.winner,
-      setsH: sc.setsH, setsA: sc.setsA,
-      timeStr: '⏸ Следующий матч через ' + formatTimeLeft(waitLeft),
-      scenario: sc
-    };
-  }
-
-  // Идёт матч — находим текущее состояние
-  let pointsSoFar = 0;
-  let curSetIdx = 0;
-  let curGameIdx = 0;
-  let curPointIdx = 0;
-  let curSetH = 0, curSetA = 0; // счёт по сетам (кто сколько выиграл)
-  let curGamesH = 0, curGamesA = 0; // счёт по геймам в текущем сете
-  let curPointsH = 0, curPointsA = 0; // счёт очков в текущем гейме
-  let servingPlayer = 0; // кто подаёт в текущем гейме
-  let setScores = []; // массив [gamesH, gamesA] по завершённым сетам
-
-  let found = false;
-  let serverInSet = 0; // первый подающий в сете (0 или 1)
-
-  for(let s = 0; s < sc.sets.length; s++){
-    const set = sc.sets[s];
-    const serverFirst = (s % 2 === 0) ? 0 : 1;
-    let gh = 0, ga = 0;
-    for(let g = 0; g < set.games.length; g++){
-      const game = set.games[g];
-      const serverThisGame = game.server;
-      const pointsCount = game.seq.length;
-      if(pointsSoFar + pointsCount <= Math.floor(posSec / TENNIS_POINT_SEC)){
-        // этот гейм завершён
-        pointsSoFar += pointsCount;
-        if(game.winner === 0) gh++; else ga++;
-        continue;
-      }
-      // Текущий гейм
-      curSetIdx = s;
-      curGameIdx = g;
-      curGamesH = gh;
-      curGamesA = ga;
-      servingPlayer = serverThisGame;
-      curSetH = 0; curSetA = 0;
-      for(let prev = 0; prev < s; prev++){
-        if(sc.sets[prev].winner === 0) curSetH++; else curSetA++;
-      }
-      // Внутри гейма
-      const elapsedPoints = Math.floor(posSec / TENNIS_POINT_SEC) - pointsSoFar;
-      let ph = 0, pa = 0;
-      for(let p = 0; p < elapsedPoints && p < game.seq.length; p++){
-        if(game.seq[p] === 0) ph++; else pa++;
-      }
-      curPointsH = ph;
-      curPointsA = pa;
-      // Текущее очко для отображения
-      curPointIdx = elapsedPoints;
-      found = true;
-      break;
-    }
-    if(found) break;
-    // Сет завершён
-    setScores.push([set.gamesH, set.gamesA]);
-    pointsSoFar += set.games.reduce((acc, g) => acc + g.seq.length, 0);
-  }
-
-  if(!found){
-    // По идее быть не должно, но fallback
-    curSetIdx = sc.sets.length - 1;
-  }
-
-  // Формат счёта в гейме: 0, 15, 30, 40, A (advantage)
-  function formatPoint(p, opp){
-    if(p >= 4 && p - opp >= 2) return 'Игра';
-    if(p === 3 && opp === 3) return '40';
-    if(p >= 4 && opp >= 4){
-      if(p - opp === 1) return 'A';
-      if(p - opp === 0) return '40';
-      return '40';
-    }
-    if(p === 0) return '0';
-    if(p === 1) return '15';
-    if(p === 2) return '30';
-    if(p === 3) return '40';
-    return '40';
-  }
-
-  // Строка счёта по сетам + текущий счёт по геймам
-  const completedSets = setScores.map(sc2 => sc2[0] + ':' + sc2[1]).join(', ');
-  const currentSetScore = curGamesH + ':' + curGamesA;
-  const fullScore = (completedSets ? completedSets + ', ' : '') + currentSetScore;
-
-  // Информация о сете
-  const totalSetsCount = sc.sets.length;
-  const curSetNumber = curSetIdx + 1;
-
-  return {
-    phase:'live', locked:false, live:true, isFinished:false, isWaiting:false,
-    setIdx: curSetIdx, gameIdx: curGameIdx,
-    setsH: curSetH, setsA: curSetA,
-    gamesH: curGamesH, gamesA: curGamesA,
-    pointsH: curPointsH, pointsA: curPointsA,
-    pointsHstr: formatPoint(curPointsH, curPointsA),
-    pointsAstr: formatPoint(curPointsA, curPointsH),
-    serving: servingPlayer,
-    totalGamesPlayed: curGamesH + curGamesA + setScores.reduce((a, s) => a + s[0] + s[1], 0),
-    scoreStr: fullScore,
-    completedSets: setScores,
-    setNumber: curSetNumber,
-    timeStr: 'Сет ' + curSetNumber + ' • ' + (servingPlayer === 0 ? 'Подаёт: ' + match.home : 'Подаёт: ' + match.away) + ' • ' + formatPoint(curPointsH, curPointsA) + '-' + formatPoint(curPointsA, curPointsH),
-    scenario: sc
-  };
-}
-
-function tennisTotalGames(match){
-  const sc = match.scenario;
-  let total = 0;
-  sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
-  return total;
-}
-
-function tennisGamesInSet1(match){
-  const sc = match.scenario;
-  if(sc.sets.length === 0) return 0;
-  return sc.sets[0].gamesH + sc.sets[0].gamesA;
-}
-
-function tennisGetOdds(match, st){
-  const base = match.baseOdds;
-  if(st.locked){
-    if(st.winner === 0) return [1.01, 0, 50.00];
-    if(st.winner === 1) return [50.00, 0, 1.01];
-    return [1.01, 0, 1.01];
-  }
-  if(!st.live) return [base[0], 0, base[2]];
-
-  const sc = match.scenario;
-  // Базовая вероятность победы в матче
-  const p1Base = 1 / base[0];
-  const p2Base = 1 / base[2];
-
-  // Прогресс матча
-  let totalPoints = 0;
-  sc.sets.forEach(s => { s.games.forEach(g => { totalPoints += g.seq.length; }); });
-  const done = Math.floor((Date.now() - Math.floor(Date.now()/300000)*300000) / 1000 / TENNIS_POINT_SEC);
-  const progress = Math.min(done / totalPoints, 1);
-
-  // Текущий счёт по сетам и геймам
-  const setsLead = st.setsH - st.setsA;
-  const gamesLead = st.gamesH - st.gamesA;
-  const pointsLead = st.pointsH - st.pointsA;
-
-  // Определяем кто впереди
-  let lead = 0;
-  if(setsLead > 0) lead += setsLead * 0.5;
-  else if(setsLead < 0) lead += setsLead * 0.5;
-  if(gamesLead > 0) lead += gamesLead * 0.08;
-  else if(gamesLead < 0) lead += gamesLead * 0.08;
-  if(pointsLead > 0) lead += pointsLead * 0.03;
-  else if(pointsLead < 0) lead += pointsLead * 0.03;
-
-  // Пересчёт вероятностей
-  let pH = p1Base * (1 + lead * 0.8 * (0.5 + progress));
-  let pA = p2Base * (1 - lead * 0.8 * (0.5 + progress));
-  pH = Math.max(0.02, Math.min(0.98, pH));
-  pA = Math.max(0.02, Math.min(0.98, pA));
-  const sum = pH + pA;
-  pH /= sum; pA /= sum;
-
-  const o1 = Math.max(1.10, Math.min(15, Math.round((1/pH)*100)/100));
-  const o2 = Math.max(1.10, Math.min(15, Math.round((1/pA)*100)/100));
-  return [o1, 0, o2];
-}
-
-function tennisGetTotalOdds(match, st, line){
-  const total = tennisTotalGames(match);
-  if(st.isFinished){
-    if(total > line) return [1.01, 99.00];
-    if(total < line) return [99.00, 1.01];
-    return [1.01, 1.01];
-  }
-  // Текущее количество геймов + ожидаемое оставшееся
-  const curGames = st.totalGamesPlayed || 0;
-  const remaining = Math.max(0, total - curGames);
-  const expected = curGames + remaining * 0.5;
-  // Простая формула — если expected > line — больше
-  let pOver;
-  if(expected > line + 2) pOver = 0.85;
-  else if(expected > line) pOver = 0.65;
-  else if(expected < line - 2) pOver = 0.15;
-  else pOver = 0.45;
-  // Корректируем по прогрессу
-  const oOver = Math.max(1.10, Math.min(10, Math.round((1/pOver)*100)/100));
-  const oUnder = Math.max(1.10, Math.min(10, Math.round((1/(1-pOver))*100)/100));
-  return [oOver, oUnder];
-}
-
-function tennisGetSet1WinnerOdds(match, st){
-  const base = match.baseOdds;
-  if(st.locked){
-    if(match.scenario.sets[0] && match.scenario.sets[0].winner === 0) return [1.01, 50.00];
-    return [50.00, 1.01];
-  }
-  if(!st.live) return [base[0], base[2]];
-  // Если 1-й сет уже завершён
-  if(st.setIdx > 0 || st.completedSets.length >= 1){
-    const w = match.scenario.sets[0].winner;
-    return w === 0 ? [1.01, 50.00] : [50.00, 1.01];
-  }
-  // 1-й сет идёт — упрощённо как общий кэф
-  const o = tennisGetOdds(match, st);
-  return [o[0], o[2]];
-}
-
-function tennisGetCurrentGameOdds(match, st){
-  if(st.locked) return [50.00, 50.00];
-  if(!st.live) return [1.90, 1.90];
-  // Подающий чуть выше
-  const serving = st.serving;
-  // Кто ближе к победе в гейме
-  const lead = st.pointsH - st.pointsA;
-  let pH, pA;
-  // Начальная 50/50 с бонусом подающему
-  let baseH = 0.5, baseA = 0.5;
-  if(serving === 0){ baseH = 0.62; baseA = 0.38; }
-  else { baseH = 0.38; baseA = 0.62; }
-  // Корректировка по очкам
-  if(lead > 0){ baseH += lead * 0.10; baseA -= lead * 0.10; }
-  else if(lead < 0){ baseH += lead * 0.10; baseA -= lead * 0.10; }
-  baseH = Math.max(0.05, Math.min(0.95, baseH));
-  baseA = Math.max(0.05, Math.min(0.95, baseA));
-  const sum = baseH + baseA;
-  baseH /= sum; baseA /= sum;
-  return [Math.max(1.05, Math.round((1/baseH)*100)/100), Math.max(1.05, Math.round((1/baseA)*100)/100)];
-}
-
-function tennisAvatar(player, size){
-  size = size || 44;
-  const parts = player.name.split(' ');
-  const initials = (parts[0] ? parts[0][0] : '?') + (parts[1] ? parts[1][0] : '');
-  const color = player.color || '#ffcc00';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';display:flex;justify-content:center;align-items:center;font-weight:900;color:#fff;font-size:'+Math.floor(size*0.38)+'px;flex-shrink:0;">'+initials.toUpperCase()+'</div>';
-}
-
-function tennisFindPlayer(name){
-  return TENNIS_PLAYERS.find(p => p.name === name) || {name:name, color:'#555'};
-}
-
-function tennisRenderCard(match){
-  const st = tennisGetMatchState(match);
-  const p1 = tennisFindPlayer(match.home);
-  const p2 = tennisFindPlayer(match.away);
-  const odds = tennisGetOdds(match, st);
-
-  const liveBadge = st.live ? '<span style="background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔴 LIVE</span>' : '';
-  const doneBadge = (st.phase === 'result') ? '<span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">✅ ЗАВЕРШЁН</span>' : '';
-  const lockBadge = (st.phase === 'wait') ? '<span style="background:#555;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:800;">🔒 СТАВКИ ЗАКРЫТЫ</span>' : '';
-
-  let score1 = '', score2 = '';
-  if(st.live || st.isFinished){
-    // счёт по сетам/геймам
-    const setsDone = st.completedSets || [];
-    let dispH = '', dispA = '';
-    if(setsDone.length > 0){
-      dispH = setsDone.map(s => s[0]).join(' ');
-      dispA = setsDone.map(s => s[1]).join(' ');
-    }
-    if(st.live){
-      dispH += ' ' + st.gamesH;
-      dispA += ' ' + st.gamesA;
-    }
-    score1 = '<div style="font-size:16px;font-weight:900;color:var(--accent);font-family:monospace;">'+dispH+'</div>';
-    score2 = '<div style="font-size:16px;font-weight:900;color:var(--accent);font-family:monospace;">'+dispA+'</div>';
-  }
-
-  let body = '';
-  if(st.live){
-    body = '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:11px;color:var(--text-dim);">'
-      + '<span style="font-weight:800;color:var(--accent);">' + st.timeStr + '</span>'
-      + '</div>';
-  } else if(st.phase === 'result'){
-    const winnerName = st.winner === 0 ? match.home : match.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:14px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div>'
-      + '<div style="font-size:11px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div>'
-      + '</div>';
-  } else {
-    const winnerName = st.winner === 0 ? match.home : match.away;
-    body = '<div style="text-align:center;padding:8px 0;">'
-      + '<div style="font-size:13px;font-weight:900;color:var(--text);">Победил ' + winnerName + '</div>'
-      + '<div style="font-size:10px;color:var(--accent);margin-top:2px;">' + st.scoreStr + '</div>'
-      + '<div style="font-size:10px;color:var(--text-dim);margin-top:6px;">⏸ Новый матч через ' + formatTimeLeft(st.waitLeft) + '</div>'
-      + '</div>';
-  }
-
-  const odd1 = updateOddArrow('t_'+match.id+'_0', odds[0]);
-  const odd2 = updateOddArrow('t_'+match.id+'_2', odds[2]);
-  const locked = st.locked;
-
-  function oddBtn(label, odd, action, disabled, arrow, flash){
-    return '<button '+(disabled?'disabled':'')+' onclick="event.stopPropagation();'+action+'" class="'+(flash||'')+'" style="flex:1;padding:10px 4px;border-radius:8px;border:none;background:var(--bg3);color:'+(disabled?'var(--text-dim)':'var(--text)')+';font-weight:800;font-size:13px;cursor:'+(disabled?'not-allowed':'pointer')+';">'+label+'<br><span style="font-size:14px;">'+odd.toFixed(2)+arrow+'</span></button>';
-  }
-
-  const servingIndicator1 = (st.live && st.serving === 0) ? '<span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:6px;"></span>' : '<span style="display:inline-block;width:8px;height:8px;margin-right:6px;"></span>';
-  const servingIndicator2 = (st.live && st.serving === 1) ? '<span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:6px;"></span>' : '<span style="display:inline-block;width:8px;height:8px;margin-right:6px;"></span>';
-
-  return '<div class="match" onclick="tennisOpenSpread(' + match.id + ')" style="cursor:pointer;">'
-    + '<div class="match-header"><span class="league">' + match.league + '</span><span class="time">' + liveBadge + doneBadge + lockBadge + '</span></div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'
-    + tennisAvatar(p1, 40)
-    + '<div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--text);">' + servingIndicator1 + match.home + '</div></div>'
-    + score1
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
-    + tennisAvatar(p2, 40)
-    + '<div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--text);">' + servingIndicator2 + match.away + '</div></div>'
-    + score2
-    + '</div>'
-    + body
-    + '<div class="odds-row" style="margin-top:8px;">'
-    + oddBtn('П1', odds[0], 'tennisQuickBet(' + match.id + ',0)', locked, odd1.arrow, odd1.flash)
-    + oddBtn('П2', odds[2], 'tennisQuickBet(' + match.id + ',1)', locked, odd2.arrow, odd2.flash)
-    + '</div>'
-    + '<div class="match-hint">👆 Тапни — открыть все рынки</div>'
-    + '</div>';
-}
-
-function tennisRender(){
-  const cont = document.getElementById('tennisContainer');
-  if(!cont) return;
-  const match = tennisGetMatch();
-  let html = '<div style="padding:10px 0;">';
-  html += tennisRenderCard(match);
-  html += '</div>';
-  cont.innerHTML = html;
-}
-
-function tennisOpenSpread(matchId){
-  currentSpreadMatch = 't_' + matchId;
-  currentSpreadTab = 'tennis';
-  currentSpreadStat = false;
-  document.getElementById('spreadModal').classList.add('show');
-  renderSpreadHead();
-  renderSpreadTabs();
-  renderSpreadBody();
-}
-
-function tennisRenderSpreadHead(){
-  const matchId = parseInt(currentSpreadMatch.replace('t_',''));
-  const match = tennisFindMatchById(matchId);
-  if(!match) return '';
-  const st = tennisGetMatchState(match);
-  const t = st.live ? '🔴 ' + st.timeStr : (st.isFinished ? '✅ Завершён' : '⏸ Скоро');
-  const scLine = (st.live || st.isFinished) ? '<span class="sc">' + (st.scoreStr || '') + '</span>' : '';
-  return '<div class="spread-league">' + match.league + '</div>'
-    + '<div class="spread-teams-line"><span>' + match.home + ' — ' + match.away + '</span>' + scLine + '</div>'
-    + '<div class="spread-meta">' + t + '</div>';
-}
-
-function tennisMarketBtn(label, value, matchId, outcome, lblShort, market, marketKey, locked){
-  const sel = isSelected('t_' + matchId, marketKey, outcome);
-  const oddsStr = (value > 0) ? value.toFixed(2) : '—';
-  const disabled = locked ? ' locked' : '';
-  const arrow = value > 0 ? updateMbvArrow('tmk_'+matchId+'_'+marketKey+'_'+outcome, value) : '';
-  const click = locked ? '' : ' onclick="event.stopPropagation();tennisMarketClick(' + matchId + ',' + outcome + ',' + value + ',\'' + lblShort + '\',\'' + market + '\',\'' + marketKey + '\')"';
-  return '<div class="market-btn' + (sel ? ' selected' : '') + disabled + '"' + click + '><span class="mbl">' + label + '</span><span class="mbv">' + oddsStr + arrow + '</span></div>';
-}
-
-function tennisMarketClick(matchId, outcome, odds, label, market, marketKey){
-  const match = tennisFindMatchById(matchId);
-  if(!match) return;
-  const st = tennisGetMatchState(match);
-  if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
-  addBet('t_' + matchId, market, outcome, odds, label, marketKey);
-}
-
-function tennisQuickBet(matchId, side){
-  const match = tennisFindMatchById(matchId);
-  if(!match) return;
-  const st = tennisGetMatchState(match);
-  if(st.locked){ showToast('⏸ Ставки закрыты', false); return; }
-  const odds = tennisGetOdds(match, st);
-  const marketKey = 'tennis_main_' + side;
-  const label = side === 0 ? 'П1' : 'П2';
-  const oddsVal = side === 0 ? odds[0] : odds[2];
-  addBet('t_' + matchId, 'Исход', side, oddsVal, label, marketKey);
-}
-
-function tennisRenderSpreadBody(){
-  const body = document.getElementById('spreadBody');
-  const matchId = parseInt(currentSpreadMatch.replace('t_',''));
-  const match = tennisFindMatchById(matchId);
-  if(!match){ body.innerHTML = '<div class="no-data">Матч не найден</div>'; return; }
-  const st = tennisGetMatchState(match);
-  const locked = st.locked;
-  const odds = tennisGetOdds(match, st);
-
-  let html = '';
-
-  // ИСХОД
-  html += '<div class="market-section"><div class="market-title">Исход матча</div><div class="market-row">';
-  html += tennisMarketBtn(match.home, odds[0], matchId, 0, 'П1', 'Исход', 'tennis_main_0', locked);
-  html += tennisMarketBtn(match.away, odds[2], matchId, 1, 'П2', 'Исход', 'tennis_main_1', locked);
-  html += '</div></div>';
-
-  // ТОТАЛ ГЕЙМОВ (МАТЧ)
-  html += '<div class="market-section"><div class="market-title">Тотал геймов (матч)</div>';
-  const totalLines = [18.5, 20.5, 22.5];
-  let anyTotal = false;
-  totalLines.forEach(function(line){
-    if(st.locked) return;
-    const tO = tennisGetTotalOdds(match, st, line);
-    anyTotal = true;
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-      + '<div style="width:50px;color:var(--text-dim);font-weight:700;font-size:13px;">' + line + '</div>'
-      + tennisMarketBtn('Б', tO[0], matchId, 0, 'Б ' + line, 'Тотал ' + line, 'tennis_total_over_' + line, locked)
-      + tennisMarketBtn('М', tO[1], matchId, 1, 'М ' + line, 'Тотал ' + line, 'tennis_total_under_' + line, locked)
-      + '</div>';
-  });
-  if(!anyTotal) html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Ставки закрыты</div>';
-  html += '</div>';
-
-  // ТОТАЛ ГЕЙМОВ 1-ГО СЕТА
-  html += '<div class="market-section"><div class="market-title">Тотал геймов 1-го сета</div>';
-  const set1Lines = [9.5, 10.5, 11.5];
-  const set1Done = st.setIdx > 0 || (st.completedSets && st.completedSets.length >= 1) || st.isFinished;
-  if(set1Done){
-    html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">1-й сет завершён</div>';
-  } else if(st.locked){
-    html += '<div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Ставки закрыты</div>';
-  } else {
-    const games1 = tennisGamesInSet1(match);
-    set1Lines.forEach(function(line){
-      // Если уже больше line — «Б» выиграл, «М» проиграл, но ставим фиктивный кэф
-      let oOver, oUnder;
-      if(games1 > line){ oOver = 1.01; oUnder = 99.00; }
-      else {
-        const remaining = Math.max(0, line - games1);
-        let pOver = remaining > 3 ? 0.3 : (remaining > 1 ? 0.5 : 0.75);
-        pOver = Math.max(0.10, Math.min(0.90, pOver));
-        oOver = Math.max(1.10, Math.min(10, Math.round((1/pOver)*100)/100));
-        oUnder = Math.max(1.10, Math.min(10, Math.round((1/(1-pOver))*100)/100));
-      }
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-        + '<div style="width:50px;color:var(--text-dim);font-weight:700;font-size:13px;">' + line + '</div>'
-        + tennisMarketBtn('Б', oOver, matchId, 0, 'Б 1С ' + line, 'Тотал 1С ' + line, 'tennis_set1_total_over_' + line, locked)
-        + tennisMarketBtn('М', oUnder, matchId, 1, 'М 1С ' + line, 'Тотал 1С ' + line, 'tennis_set1_total_under_' + line, locked)
-        + '</div>';
-    });
-  }
-  html += '</div>';
-
-  // ТЕКУЩИЙ ГЕЙМ
-  if(st.live){
-    const curGameNum = (st.completedSets||[]).reduce((a,s)=>a+s[0]+s[1],0) + st.gamesH + st.gamesA + 1;
-    const gameOdds = tennisGetCurrentGameOdds(match, st);
-    html += '<div class="market-section"><div class="market-title">Текущий гейм (гейм ' + curGameNum + ')</div><div class="market-row">';
-    html += tennisMarketBtn('П1', gameOdds[0], matchId, 0, 'Гейм П1', 'Гейм', 'tennis_game_0_' + curGameNum, locked);
-    html += tennisMarketBtn('П2', gameOdds[1], matchId, 1, 'Гейм П2', 'Гейм', 'tennis_game_1_' + curGameNum, locked);
-    html += '</div></div>';
-  } else if(st.isFinished){
-    html += '<div class="market-section"><div class="market-title">Текущий гейм</div><div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Матч завершён</div></div>';
-  }
-
-  // 1-Й СЕТ
-  if(!set1Done && !st.locked){
-    const s1o = tennisGetSet1WinnerOdds(match, st);
-    html += '<div class="market-section"><div class="market-title">1-й сет</div><div class="market-row">';
-    html += tennisMarketBtn(match.home, s1o[0], matchId, 0, 'Сет 1 ' + match.home, 'Сет 1', 'tennis_set1_0', locked);
-    html += tennisMarketBtn(match.away, s1o[1], matchId, 1, 'Сет 1 ' + match.away, 'Сет 1', 'tennis_set1_1', locked);
-    html += '</div></div>';
-  } else if(set1Done){
-    const w = match.scenario.sets[0].winner;
-    const winnerName = w === 0 ? match.home : match.away;
-    html += '<div class="market-section"><div class="market-title">1-й сет</div><div style="color:var(--text-dim);text-align:center;padding:14px;font-size:13px">Выиграл ' + winnerName + '</div></div>';
-  }
-
-  body.innerHTML = html;
-}
-
-function tennisSettleBets(){
-  const epoch = Math.floor(Date.now() / 300000);
-  betHistory.forEach(function(bet){
-    if(bet.status !== 'pending') return;
-    let hasTennis = false;
-    bet.items.forEach(function(it){ if(it.isTennis) hasTennis = true; });
-    if(!hasTennis) return;
-
-    let allFin = true, allWon = true, anyRet = false;
-    for(const item of bet.items){
-      if(!item.isTennis) continue;
-      if(item.epoch === undefined) item.epoch = epoch;
-      if(item.epoch >= epoch){ allFin = false; break; }
-      const match = tennisGenerateMatch(item.epoch);
-      const sc = match.scenario;
-      const mk = item.marketKey || '';
-      let won = false, isRet = false;
-
-      if(mk === 'tennis_main_0'){ won = (sc.winner === 0); }
-      else if(mk === 'tennis_main_1'){ won = (sc.winner === 1); }
-      else if(mk.indexOf('tennis_total_over_') === 0){
-        const line = parseFloat(mk.replace('tennis_total_over_',''));
-        let total = 0;
-        sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
-        if(total > line) won = true;
-        else if(total === line) isRet = true;
-      }
-      else if(mk.indexOf('tennis_total_under_') === 0){
-        const line = parseFloat(mk.replace('tennis_total_under_',''));
-        let total = 0;
-        sc.sets.forEach(s => { total += s.gamesH + s.gamesA; });
-        if(total < line) won = true;
-        else if(total === line) isRet = true;
-      }
-      else if(mk.indexOf('tennis_set1_total_over_') === 0){
-        const line = parseFloat(mk.replace('tennis_set1_total_over_',''));
-        const g1 = sc.sets[0].gamesH + sc.sets[0].gamesA;
-        if(g1 > line) won = true;
-        else if(g1 === line) isRet = true;
-      }
-      else if(mk.indexOf('tennis_set1_total_under_') === 0){
-        const line = parseFloat(mk.replace('tennis_set1_total_under_',''));
-        const g1 = sc.sets[0].gamesH + sc.sets[0].gamesA;
-        if(g1 < line) won = true;
-        else if(g1 === line) isRet = true;
-      }
-      else if(mk === 'tennis_set1_0'){ won = (sc.sets[0].winner === 0); }
-      else if(mk === 'tennis_set1_1'){ won = (sc.sets[0].winner === 1); }
-      else if(mk.indexOf('tennis_game_') === 0){
-        // кто выиграл конкретный гейм
-        const parts = mk.replace('tennis_game_','').split('_');
-        const side = parseInt(parts[0]);
-        const gameNum = parseInt(parts[1]);
-        // Найдём этот гейм
-        let counter = 0;
-        let gameWinner = null;
-        for(const set of sc.sets){
-          for(const g of set.games){
-            counter++;
-            if(counter === gameNum){ gameWinner = g.winner; break; }
-          }
-          if(gameWinner !== null) break;
-        }
-        if(gameWinner !== null) won = (gameWinner === side);
-      }
-
-      if(isRet) anyRet = true;
-      if(!won && !isRet) allWon = false;
-    }
-
-    if(allFin){
-      let res = 'lose';
-      if(anyRet && !allWon) res = 'lose';
-      else if(anyRet && allWon){ res = 'win'; balance += bet.stake; DB[currentUser].balance = balance; showToast('🔄 Теннис возврат: +' + bet.stake + ' ₽', true); }
-      else if(anyRet){ res = 'return'; balance += bet.stake; DB[currentUser].balance = balance; showToast('🔄 Теннис возврат: +' + bet.stake + ' ₽', true); }
-      else if(allWon){ res = 'win'; balance += bet.potentialWin; DB[currentUser].balance = balance; showToast('🎾 Теннис выигрыш: +' + bet.potentialWin.toFixed(0) + ' ₽', true); }
-      else { showToast('😔 Теннис не сыграл', false); }
-      bet.status = res;
-      bet.settled = true;
-      updateBalanceUI();
-      saveDB();
-    }
-  });
-}
-
-function tennisTick(){
-  if(selectedSport === '🎾 Теннис') tennisRender();
-  if(currentUser) tennisSettleBets();
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('t_') === 0){
-    renderSpreadHead();
-    tennisRenderSpreadBody();
-  }
 }
 
 // ==========================================
@@ -3508,34 +2639,46 @@ function crashReset(){ crashState=null; renderGameBody(); }
 
 const _origRenderSpreadHead = renderSpreadHead;
 renderSpreadHead = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ document.getElementById('spreadHeadInfo').innerHTML = ufcRenderSpreadHead(); return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ document.getElementById('spreadHeadInfo').innerHTML = hockeyRenderSpreadHead(); return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('t_') === 0){ document.getElementById('spreadHeadInfo').innerHTML = tennisRenderSpreadHead(); return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
+    document.getElementById('spreadHeadInfo').innerHTML = ufcRenderSpreadHead();
+    return;
+  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){
+    document.getElementById('spreadHeadInfo').innerHTML = hockeyRenderSpreadHead();
+    return;
+  }
   _origRenderSpreadHead();
 };
 
 const _origRenderSpreadTabs = renderSpreadTabs;
 renderSpreadTabs = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки UFC</button>'; return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки Хоккея</button>'; return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('t_') === 0){ document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки Тенниса</button>'; return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
+    document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки UFC</button>';
+    return;
+  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){
+    document.getElementById('spreadTabs').innerHTML = '<button class="spread-tab active">Рынки Хоккея</button>';
+    return;
+  }
   _origRenderSpreadTabs();
 };
 
 const _origRenderSpreadBody = renderSpreadBody;
 renderSpreadBody = function(){
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){ ufcRenderSpreadBody(); return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){ hockeyRenderSpreadBody(); return; }
-  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('t_') === 0){ tennisRenderSpreadBody(); return; }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('ufc_') === 0){
+    ufcRenderSpreadBody();
+    return;
+  }
+  if(currentSpreadMatch && String(currentSpreadMatch).indexOf('h_') === 0){
+    hockeyRenderSpreadBody();
+    return;
+  }
   _origRenderSpreadBody();
 };
 
 const _origToggleStats = toggleStats;
 toggleStats = function(){
-  if(currentSpreadMatch){
-    const s = String(currentSpreadMatch);
-    if(s.indexOf('ufc_') === 0 || s.indexOf('h_') === 0 || s.indexOf('t_') === 0) return;
-  }
+  if(currentSpreadMatch && (String(currentSpreadMatch).indexOf('ufc_') === 0 || String(currentSpreadMatch).indexOf('h_') === 0)) return;
   _origToggleStats();
 };
 
@@ -3556,7 +2699,6 @@ setInterval(()=>{
   checkBetResults();
   if(typeof ufcTick==='function') ufcTick();
   if(typeof hockeyTick==='function') hockeyTick();
-  if(typeof tennisTick==='function') tennisTick();
   cleanLockedBets();
   if(currentSpreadMatch){renderSpreadHead();renderSpreadBody();}
   if(document.getElementById('pageProfile').style.display!=='none')renderProfile();
