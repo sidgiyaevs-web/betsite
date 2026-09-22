@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenBet — Live Betting Simulator</title>
+<title>⚡ OpenBet — Live Betting Simulator</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
     --bg: #0a0a14;
     --bg2: #12121f;
@@ -25,7 +25,9 @@
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
+    padding-bottom: 0;
   }
+  body.has-coupon { padding-bottom: 140px; }
   body::before {
     content: '';
     position: fixed;
@@ -39,13 +41,13 @@
 
   /* HEADER */
   header {
-    background: rgba(10,10,20,.9);
+    background: rgba(10,10,20,.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 14px 24px;
+    padding: 12px 24px;
   }
   .header-inner {
     max-width: 1280px;
@@ -53,45 +55,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
   }
-  .logo {
-    font-size: 20px;
-    font-weight: 900;
-    white-space: nowrap;
-  }
+  .logo { font-size: 20px; font-weight: 900; white-space: nowrap; }
   .logo span {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .balance {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 10px 18px;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .balance .icon { font-size: 16px; }
-  .balance .reset {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 500;
-    margin-left: 6px;
-  }
-  .nav {
-    display: flex;
-    gap: 4px;
-  }
+  .nav { display: flex; gap: 4px; }
   .nav button {
     background: transparent;
     border: none;
     color: var(--muted);
-    padding: 8px 14px;
+    padding: 8px 12px;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 700;
@@ -99,16 +77,49 @@
     font-family: inherit;
     transition: .2s;
   }
-  .nav button:hover, .nav button.active {
-    color: #fff;
+  .nav button:hover, .nav button.active { color: #fff; background: var(--card); }
+
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .balance {
     background: var(--card);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
   }
+  .balance .reset {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .icon-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); }
+  .icon-btn.muted { opacity: .4; }
 
   /* LAYOUT */
   .container {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 20px 24px;
     position: relative;
     z-index: 1;
   }
@@ -117,11 +128,12 @@
   .filters {
     display: flex;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
+    align-items: center;
   }
   .filter {
-    padding: 10px 18px;
+    padding: 8px 16px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -137,20 +149,77 @@
     border-color: var(--accent);
     background: rgba(123,92,255,.1);
   }
+  .filter.toggle { margin-left: auto; }
+  .filter.toggle.active {
+    background: rgba(0,230,118,.1);
+    border-color: var(--green);
+    color: var(--green);
+  }
 
-  /* MATCHES */
+  /* SESSION PROFIT */
+  .session-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .session-bar .label { color: var(--muted); font-weight: 600; }
+  .session-bar .value { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .session-bar .value.green { color: var(--green); }
+  .session-bar .value.red { color: var(--red); }
+
+  /* LIVE DROPS */
+  .live-drops {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .live-drops::-webkit-scrollbar { height: 6px; }
+  .live-drops::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .live-drops:empty { display: none; }
+  .drop {
+    min-width: 140px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 11px;
+    animation: slideIn .4s;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } }
+  .drop-match {
+    font-weight: 700;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .drop-event { color: var(--green); font-size: 11px; font-weight: 700; }
+
+  /* MATCH */
   .match {
     background: linear-gradient(180deg, var(--card), var(--bg2));
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 16px;
+    padding: 14px;
     margin-bottom: 10px;
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
     transition: .2s;
+    animation: fadeIn .3s;
   }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } }
   .match:hover { border-color: #3a3a55; }
   .match.finished { opacity: .55; }
 
@@ -162,7 +231,7 @@
     margin-bottom: 6px;
   }
   .match-league {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: .5px;
@@ -176,22 +245,10 @@
     text-transform: uppercase;
     letter-spacing: .5px;
   }
-  .badge.live {
-    background: var(--red);
-    color: #fff;
-    animation: pulse 1.5s infinite;
-  }
-  .badge.finished {
-    background: #333;
-    color: #888;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .5; }
-  }
-  .sport-icon {
-    font-size: 14px;
-  }
+  .badge.live { background: var(--red); color: #fff; animation: pulse 1.5s infinite; }
+  .badge.finished { background: #333; color: #888; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+  .sport-icon { font-size: 14px; }
 
   .teams {
     font-weight: 700;
@@ -202,22 +259,14 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  .score {
-    color: var(--green);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-  .minute {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-  }
+  .score { color: var(--green); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .minute { font-size: 11px; color: var(--muted); font-weight: 600; }
 
   .momentum-bar {
     height: 3px;
     background: var(--border);
     border-radius: 2px;
-    margin-top: 8px;
+    margin-top: 6px;
     overflow: hidden;
     position: relative;
   }
@@ -238,10 +287,7 @@
   }
 
   /* ODDS */
-  .odds {
-    display: flex;
-    gap: 6px;
-  }
+  .odds { display: flex; gap: 6px; }
   .odds-btn {
     min-width: 76px;
     background: #0f0f1a;
@@ -260,10 +306,7 @@
     background: var(--card);
     transform: translateY(-1px);
   }
-  .odds-btn:disabled {
-    opacity: .3;
-    cursor: not-allowed;
-  }
+  .odds-btn:disabled { opacity: .3; cursor: not-allowed; }
   .odds-label {
     font-size: 10px;
     color: var(--muted);
@@ -281,21 +324,59 @@
 
   .flash-up { animation: flashGreen .8s; }
   .flash-down { animation: flashRed .8s; }
-  @keyframes flashGreen {
-    0% { background: rgba(0,230,118,.25); }
-    100% { background: #0f0f1a; }
+  @keyframes flashGreen { 0% { background: rgba(0,230,118,.25); } 100% { background: #0f0f1a; } }
+  @keyframes flashRed { 0% { background: rgba(255,56,96,.25); } 100% { background: #0f0f1a; } }
+
+  /* EXTRAS */
+  .extras {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
   }
-  @keyframes flashRed {
-    0% { background: rgba(255,56,96,.25); }
-    100% { background: #0f0f1a; }
+  .extras-toggle {
+    background: transparent;
+    border: none;
+    color: var(--accent2);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 0;
+    font-family: inherit;
+    transition: .2s;
   }
+  .extras-toggle.open { color: var(--muted); }
+  .extras-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .extras-grid.open { display: grid; }
+  .odds-mini {
+    background: #0f0f1a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+    color: #fff;
+    transition: .2s;
+    gap: 6px;
+  }
+  .odds-mini:hover { border-color: var(--accent); background: var(--card); }
+  .odds-mini-label { font-size: 11px; color: var(--muted); text-align: left; }
+  .odds-mini-value { font-size: 12px; font-weight: 800; color: var(--accent2); white-space: nowrap; }
 
   /* HISTORY */
   .history-item {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px;
+    padding: 12px 14px;
     margin-bottom: 8px;
     display: grid;
     grid-template-columns: 1fr auto auto;
@@ -309,16 +390,17 @@
   .history-match { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
   .history-meta { font-size: 11px; color: var(--muted); }
   .history-stake { text-align: right; }
-  .history-stake .amount { font-weight: 800; font-size: 14px; }
+  .history-stake .amount { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
   .history-stake .odd { font-size: 11px; color: var(--accent2); font-weight: 700; }
   .history-status {
     font-weight: 800;
-    font-size: 13px;
     padding: 4px 10px;
     border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: .5px;
     font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .history-status.won { background: rgba(0,230,118,.15); color: var(--green); }
   .history-status.lost { background: rgba(255,56,96,.15); color: var(--red); }
@@ -327,7 +409,7 @@
   /* STATS */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
     margin-bottom: 24px;
   }
@@ -335,7 +417,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 18px;
+    padding: 16px;
   }
   .stat-label {
     font-size: 12px;
@@ -344,7 +426,7 @@
     font-weight: 600;
   }
   .stat-value {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
   }
@@ -369,34 +451,26 @@
     background: linear-gradient(180deg, var(--card), var(--bg2));
     border: 1px solid var(--border);
     border-radius: 18px;
-    padding: 28px;
-    max-width: 420px;
+    padding: 24px;
+    max-width: 440px;
     width: 100%;
     animation: popIn .25s cubic-bezier(.5,1.5,.5,1);
-    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
   }
-  @keyframes popIn {
-    from { transform: scale(.9); opacity: 0; }
-  }
-  .modal h3 {
-    font-size: 18px;
-    margin-bottom: 6px;
-  }
-  .modal .sub {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
+  @keyframes popIn { from { transform: scale(.9); opacity: 0; } }
+  .modal h3 { font-size: 17px; margin-bottom: 6px; }
+  .modal .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
   .modal .row {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
   }
   .modal .row:last-of-type { border-bottom: none; }
   .modal .row .label { color: var(--muted); }
-  .modal .row .value { font-weight: 700; }
+  .modal .row .value { font-weight: 700; font-variant-numeric: tabular-nums; }
   .modal input {
     width: 100%;
     background: #0f0f1a;
@@ -405,24 +479,17 @@
     padding: 12px 14px;
     border-radius: 10px;
     font-size: 16px;
-    margin: 16px 0;
+    margin: 14px 0 10px;
     font-family: inherit;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
-  .modal input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .quick-stakes {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
+  .modal input:focus { outline: none; border-color: var(--accent); }
+  .quick-stakes { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
   .quick-stake {
     flex: 1;
-    min-width: 60px;
-    padding: 8px;
+    min-width: 56px;
+    padding: 8px 4px;
     background: #0f0f1a;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -433,15 +500,8 @@
     font-family: inherit;
     transition: .2s;
   }
-  .quick-stake:hover {
-    border-color: var(--accent);
-    background: var(--card);
-  }
-  .modal-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 20px;
-  }
+  .quick-stake:hover { border-color: var(--accent); background: var(--card); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
   .btn {
     flex: 1;
     padding: 12px;
@@ -466,6 +526,91 @@
     border: 1px solid var(--border);
   }
   .btn-secondary:hover { border-color: var(--accent); }
+  .btn-coupon {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+  }
+
+  /* COUPON BAR */
+  .coupon-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, var(--card), var(--bg2));
+    border-top: 2px solid var(--accent);
+    padding: 10px 16px;
+    transform: translateY(100%);
+    transition: transform .3s;
+    z-index: 200;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.5);
+  }
+  .coupon-bar.active { transform: translateY(0); }
+  .coupon-inner { max-width: 1280px; margin: 0 auto; }
+  .coupon-items {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
+  }
+  .coupon-items::-webkit-scrollbar { height: 4px; }
+  .coupon-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .coupon-item {
+    background: #0f0f1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 180px;
+    font-size: 11px;
+  }
+  .coupon-item-info { flex: 1; min-width: 0; }
+  .coupon-item-match {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .coupon-item-pick { color: var(--accent2); font-weight: 700; font-size: 10px; }
+  .coupon-item-remove {
+    background: transparent;
+    border: none;
+    color: var(--red);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .coupon-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .coupon-clear {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .coupon-place {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 12px;
+    box-shadow: 0 4px 16px rgba(123,92,255,.4);
+    font-variant-numeric: tabular-nums;
+  }
 
   /* TOAST */
   .toast {
@@ -483,48 +628,39 @@
     transition: transform .3s cubic-bezier(.5,1.5,.5,1);
     box-shadow: 0 10px 40px rgba(0,0,0,.5);
     max-width: 90%;
+    text-align: center;
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { border-color: var(--green); }
   .toast.error { border-color: var(--red); }
 
-  /* LIVE DROPS */
-  .live-drops {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
+  /* GOAL NOTIFICATION */
+  .goal-popup {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, rgba(0,230,118,.95), rgba(0,212,255,.95));
+    color: #000;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    z-index: 2000;
+    box-shadow: 0 10px 40px rgba(0,230,118,.5);
+    animation: goalIn .5s cubic-bezier(.5,1.5,.5,1);
+    max-width: 320px;
   }
-  .live-drops::-webkit-scrollbar { height: 6px; }
-  .live-drops::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  .drop {
-    min-width: 120px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 12px;
-    animation: slideIn .4s;
+  @keyframes goalIn {
+    from { transform: translateX(400px) rotate(15deg); opacity: 0; }
+    to { transform: translateX(0) rotate(0); opacity: 1; }
   }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(30px); }
+  .goal-popup.fade-out { animation: goalOut .4s forwards; }
+  @keyframes goalOut {
+    to { transform: translateX(400px); opacity: 0; }
   }
-  .drop-match {
-    font-weight: 700;
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .drop-event { color: var(--green); font-size: 11px; font-weight: 700; }
 
   /* EMPTY */
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
   .empty .icon { font-size: 48px; margin-bottom: 12px; }
 
   /* TABS */
@@ -533,18 +669,21 @@
 
   /* RESPONSIVE */
   @media (max-width: 720px) {
-    .nav button { padding: 6px 10px; font-size: 12px; }
+    header { padding: 10px 14px; }
+    .nav button { padding: 6px 8px; font-size: 12px; }
     .logo { font-size: 16px; }
-    .balance { padding: 8px 12px; font-size: 13px; }
+    .balance { padding: 6px 10px; font-size: 13px; }
     .balance .reset { display: none; }
-    .match {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
+    .match { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
     .odds { justify-content: stretch; }
     .odds-btn { flex: 1; min-width: 0; }
-    .container { padding: 16px; }
-    .header-inner { padding: 0; }
+    .container { padding: 14px; }
+    .extras-grid { grid-template-columns: repeat(2, 1fr); }
+    .history-item { grid-template-columns: 1fr auto; }
+    .history-status { grid-column: 1 / -1; text-align: center; }
+    .header-inner { gap: 8px; }
+    .session-bar { font-size: 11px; gap: 10px; }
+    .goal-popup { right: 10px; left: 10px; max-width: none; }
   }
 </style>
 </head>
@@ -558,17 +697,25 @@
       <button data-tab="history">📜 История</button>
       <button data-tab="stats">📈 Стата</button>
     </nav>
-    <div class="balance">
-      <span class="icon">💰</span>
-      <span id="balance">20 000</span> ₽
-      <span class="reset">/ день</span>
+    <div class="header-right">
+      <div class="balance">
+        💰 <span id="balance">20 000</span> ₽
+        <span class="reset">/ день</span>
+      </div>
+      <button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
+      <button class="icon-btn" id="resetBtn" title="Сбросить баланс">♻️</button>
     </div>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- LIVE DROPS -->
+  <div class="session-bar">
+    <span><span class="label">Сессия:</span> <span class="value" id="sessionProfit">0 ₽</span></span>
+    <span><span class="label">Ставок:</span> <span class="value" id="sessionBets">0</span></span>
+    <span><span class="label">Винрейт:</span> <span class="value" id="sessionWinrate">—</span></span>
+  </div>
+
   <div class="live-drops" id="liveDrops"></div>
 
   <!-- LINE TAB -->
@@ -578,6 +725,7 @@
       <button class="filter" data-sport="football">⚽ Футбол</button>
       <button class="filter" data-sport="hockey">🏒 Хоккей</button>
       <button class="filter" data-sport="ufc">🥊 UFC</button>
+      <button class="filter toggle" id="liveOnly">🔴 Только live</button>
     </div>
     <div id="matches"></div>
   </div>
@@ -609,19 +757,21 @@
     </div>
     <input type="number" id="betModalStake" placeholder="Сумма ставки" min="10" step="10">
     <div class="quick-stakes">
-      <button class="quick-stake" data-stake="100">100 ₽</button>
-      <button class="quick-stake" data-stake="500">500 ₽</button>
-      <button class="quick-stake" data-stake="1000">1 000 ₽</button>
-      <button class="quick-stake" data-stake="5000">5 000 ₽</button>
+      <button class="quick-stake" data-stake="100">100</button>
+      <button class="quick-stake" data-stake="500">500</button>
+      <button class="quick-stake" data-stake="1000">1K</button>
+      <button class="quick-stake" data-stake="5000">5K</button>
       <button class="quick-stake" data-stake="all">MAX</button>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeBetModal()">Отмена</button>
+      <button class="btn btn-coupon" id="betModalCoupon" style="display:none">📋 В купон</button>
       <button class="btn btn-primary" id="betModalConfirm">Поставить</button>
     </div>
   </div>
 </div>
 
+<div class="coupon-bar" id="couponBar"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -630,73 +780,89 @@
 // ============================================================
 
 const FOOTBALL_TEAMS = [
-  { name: 'Manchester City', attack: 2.10, defense: 0.90, league: 'Premier League' },
-  { name: 'Arsenal',         attack: 1.95, defense: 0.95, league: 'Premier League' },
-  { name: 'Liverpool',       attack: 2.05, defense: 1.00, league: 'Premier League' },
-  { name: 'Chelsea',         attack: 1.72, defense: 1.22, league: 'Premier League' },
-  { name: 'Tottenham',       attack: 1.80, defense: 1.30, league: 'Premier League' },
-  { name: 'Manchester United', attack: 1.65, defense: 1.25, league: 'Premier League' },
-  { name: 'Newcastle',       attack: 1.75, defense: 1.20, league: 'Premier League' },
-  { name: 'Aston Villa',     attack: 1.68, defense: 1.28, league: 'Premier League' },
-  { name: 'Real Madrid',     attack: 2.20, defense: 0.90, league: 'La Liga' },
-  { name: 'Barcelona',       attack: 2.10, defense: 1.05, league: 'La Liga' },
-  { name: 'Atletico Madrid', attack: 1.75, defense: 0.95, league: 'La Liga' },
-  { name: 'Sevilla',         attack: 1.45, defense: 1.30, league: 'La Liga' },
-  { name: 'Bayern Munich',   attack: 2.30, defense: 1.00, league: 'Bundesliga' },
-  { name: 'Borussia Dortmund', attack: 1.85, defense: 1.22, league: 'Bundesliga' },
-  { name: 'RB Leipzig',      attack: 1.90, defense: 1.18, league: 'Bundesliga' },
-  { name: 'Bayer Leverkusen', attack: 2.05, defense: 1.05, league: 'Bundesliga' },
-  { name: 'Inter',           attack: 2.05, defense: 0.95, league: 'Serie A' },
-  { name: 'Juventus',        attack: 1.70, defense: 0.98, league: 'Serie A' },
-  { name: 'AC Milan',        attack: 1.88, defense: 1.15, league: 'Serie A' },
-  { name: 'Napoli',          attack: 1.82, defense: 1.10, league: 'Serie A' },
-  { name: 'Zenit',           attack: 1.90, defense: 1.05, league: 'RPL' },
-  { name: 'Spartak Moscow',  attack: 1.70, defense: 1.20, league: 'RPL' },
-  { name: 'CSKA Moscow',     attack: 1.75, defense: 1.15, league: 'RPL' },
-  { name: 'Krasnodar',       attack: 1.85, defense: 1.10, league: 'RPL' },
+  { name: 'Manchester City',      attack: 2.10, defense: 0.90, league: 'Premier League' },
+  { name: 'Arsenal',              attack: 1.95, defense: 0.95, league: 'Premier League' },
+  { name: 'Liverpool',            attack: 2.05, defense: 1.00, league: 'Premier League' },
+  { name: 'Chelsea',              attack: 1.72, defense: 1.22, league: 'Premier League' },
+  { name: 'Tottenham',            attack: 1.80, defense: 1.30, league: 'Premier League' },
+  { name: 'Manchester United',    attack: 1.65, defense: 1.25, league: 'Premier League' },
+  { name: 'Newcastle',            attack: 1.75, defense: 1.20, league: 'Premier League' },
+  { name: 'Aston Villa',          attack: 1.68, defense: 1.28, league: 'Premier League' },
+  { name: 'Brighton',             attack: 1.62, defense: 1.32, league: 'Premier League' },
+  { name: 'West Ham',             attack: 1.48, defense: 1.40, league: 'Premier League' },
+  { name: 'Real Madrid',          attack: 2.20, defense: 0.90, league: 'La Liga' },
+  { name: 'Barcelona',            attack: 2.10, defense: 1.05, league: 'La Liga' },
+  { name: 'Atletico Madrid',      attack: 1.75, defense: 0.95, league: 'La Liga' },
+  { name: 'Sevilla',              attack: 1.45, defense: 1.30, league: 'La Liga' },
+  { name: 'Real Sociedad',        attack: 1.52, defense: 1.18, league: 'La Liga' },
+  { name: 'Villarreal',           attack: 1.68, defense: 1.30, league: 'La Liga' },
+  { name: 'Bayern Munich',        attack: 2.30, defense: 1.00, league: 'Bundesliga' },
+  { name: 'Borussia Dortmund',    attack: 1.85, defense: 1.22, league: 'Bundesliga' },
+  { name: 'RB Leipzig',           attack: 1.90, defense: 1.18, league: 'Bundesliga' },
+  { name: 'Bayer Leverkusen',     attack: 2.05, defense: 1.05, league: 'Bundesliga' },
+  { name: 'Inter',                attack: 2.05, defense: 0.95, league: 'Serie A' },
+  { name: 'Juventus',             attack: 1.70, defense: 0.98, league: 'Serie A' },
+  { name: 'AC Milan',             attack: 1.88, defense: 1.15, league: 'Serie A' },
+  { name: 'Napoli',               attack: 1.82, defense: 1.10, league: 'Serie A' },
+  { name: 'Roma',                 attack: 1.68, defense: 1.22, league: 'Serie A' },
+  { name: 'Lazio',                attack: 1.60, defense: 1.28, league: 'Serie A' },
+  { name: 'Zenit',                attack: 1.90, defense: 1.05, league: 'RPL' },
+  { name: 'Spartak Moscow',       attack: 1.70, defense: 1.20, league: 'RPL' },
+  { name: 'CSKA Moscow',          attack: 1.75, defense: 1.15, league: 'RPL' },
+  { name: 'Krasnodar',            attack: 1.85, defense: 1.10, league: 'RPL' },
+  { name: 'Dynamo Moscow',        attack: 1.72, defense: 1.18, league: 'RPL' },
+  { name: 'Lokomotiv Moscow',     attack: 1.60, defense: 1.25, league: 'RPL' },
 ];
 
 const HOCKEY_TEAMS = [
-  { name: 'Edmonton Oilers',     attack: 3.55, defense: 3.05, league: 'NHL' },
-  { name: 'Florida Panthers',    attack: 3.30, defense: 2.75, league: 'NHL' },
-  { name: 'Boston Bruins',       attack: 3.15, defense: 2.65, league: 'NHL' },
-  { name: 'Toronto Maple Leafs', attack: 3.40, defense: 3.10, league: 'NHL' },
-  { name: 'Colorado Avalanche',  attack: 3.50, defense: 3.10, league: 'NHL' },
-  { name: 'New York Rangers',    attack: 3.20, defense: 2.75, league: 'NHL' },
+  { name: 'Edmonton Oilers',      attack: 3.55, defense: 3.05, league: 'NHL' },
+  { name: 'Florida Panthers',     attack: 3.30, defense: 2.75, league: 'NHL' },
+  { name: 'Boston Bruins',        attack: 3.15, defense: 2.65, league: 'NHL' },
+  { name: 'Toronto Maple Leafs',  attack: 3.40, defense: 3.10, league: 'NHL' },
+  { name: 'Colorado Avalanche',   attack: 3.50, defense: 3.10, league: 'NHL' },
+  { name: 'New York Rangers',     attack: 3.20, defense: 2.75, league: 'NHL' },
   { name: 'Vegas Golden Knights', attack: 3.20, defense: 2.85, league: 'NHL' },
-  { name: 'Dallas Stars',        attack: 3.25, defense: 2.75, league: 'NHL' },
-  { name: 'SKA',                 attack: 3.40, defense: 2.70, league: 'KHL' },
-  { name: 'CSKA',                attack: 3.05, defense: 2.60, league: 'KHL' },
-  { name: 'Ak Bars',             attack: 3.10, defense: 2.70, league: 'KHL' },
-  { name: 'Dynamo Moscow',       attack: 3.15, defense: 2.80, league: 'KHL' },
-  { name: 'Metallurg',           attack: 3.20, defense: 2.85, league: 'KHL' },
+  { name: 'Dallas Stars',         attack: 3.25, defense: 2.75, league: 'NHL' },
+  { name: 'Tampa Bay Lightning',  attack: 3.35, defense: 3.05, league: 'NHL' },
+  { name: 'Carolina Hurricanes',  attack: 3.30, defense: 2.70, league: 'NHL' },
+  { name: 'SKA',                  attack: 3.40, defense: 2.70, league: 'KHL' },
+  { name: 'CSKA',                 attack: 3.05, defense: 2.60, league: 'KHL' },
+  { name: 'Ak Bars',              attack: 3.10, defense: 2.70, league: 'KHL' },
+  { name: 'Dynamo Moscow',        attack: 3.15, defense: 2.80, league: 'KHL' },
+  { name: 'Metallurg',            attack: 3.20, defense: 2.85, league: 'KHL' },
+  { name: 'Avtomobilist',         attack: 2.95, defense: 2.85, league: 'KHL' },
+  { name: 'Lokomotiv',            attack: 3.00, defense: 2.75, league: 'KHL' },
 ];
 
 const UFC_FIGHTERS = [
-  { name: 'Jon Jones',           rating: 2080, division: 'Heavyweight' },
-  { name: 'Tom Aspinall',        rating: 2020, division: 'Heavyweight' },
-  { name: 'Ciryl Gane',          rating: 1990, division: 'Heavyweight' },
-  { name: 'Alex Pereira',        rating: 2050, division: 'Light Heavyweight' },
-  { name: 'Magomed Ankalaev',    rating: 2010, division: 'Light Heavyweight' },
-  { name: 'Dricus du Plessis',   rating: 2010, division: 'Middleweight' },
-  { name: 'Israel Adesanya',     rating: 1990, division: 'Middleweight' },
-  { name: 'Sean Strickland',     rating: 1970, division: 'Middleweight' },
-  { name: 'Islam Makhachev',     rating: 2060, division: 'Lightweight' },
-  { name: 'Arman Tsarukyan',     rating: 1990, division: 'Lightweight' },
-  { name: 'Justin Gaethje',      rating: 1980, division: 'Lightweight' },
-  { name: 'Dustin Poirier',      rating: 1970, division: 'Lightweight' },
-  { name: 'Leon Edwards',        rating: 1990, division: 'Welterweight' },
-  { name: 'Kamaru Usman',        rating: 1975, division: 'Welterweight' },
-  { name: 'Ilia Topuria',        rating: 2020, division: 'Featherweight' },
-  { name: 'Alexander Volkanovski', rating: 2000, division: 'Featherweight' },
-  { name: 'Sean O\'Malley',      rating: 1980, division: 'Bantamweight' },
-  { name: 'Merab Dvalishvili',   rating: 2000, division: 'Bantamweight' },
+  { name: 'Jon Jones',              rating: 2080, division: 'Heavyweight' },
+  { name: 'Tom Aspinall',           rating: 2020, division: 'Heavyweight' },
+  { name: 'Ciryl Gane',             rating: 1990, division: 'Heavyweight' },
+  { name: 'Curtis Blaydes',         rating: 1960, division: 'Heavyweight' },
+  { name: 'Sergei Pavlovich',       rating: 1950, division: 'Heavyweight' },
+  { name: 'Alex Pereira',           rating: 2050, division: 'Light Heavyweight' },
+  { name: 'Magomed Ankalaev',       rating: 2010, division: 'Light Heavyweight' },
+  { name: 'Jamahal Hill',           rating: 1970, division: 'Light Heavyweight' },
+  { name: 'Dricus du Plessis',      rating: 2010, division: 'Middleweight' },
+  { name: 'Israel Adesanya',        rating: 1990, division: 'Middleweight' },
+  { name: 'Sean Strickland',        rating: 1970, division: 'Middleweight' },
+  { name: 'Islam Makhachev',        rating: 2060, division: 'Lightweight' },
+  { name: 'Arman Tsarukyan',        rating: 1990, division: 'Lightweight' },
+  { name: 'Justin Gaethje',         rating: 1980, division: 'Lightweight' },
+  { name: 'Dustin Poirier',         rating: 1970, division: 'Lightweight' },
+  { name: 'Leon Edwards',           rating: 1990, division: 'Welterweight' },
+  { name: 'Kamaru Usman',           rating: 1975, division: 'Welterweight' },
+  { name: 'Ilia Topuria',           rating: 2020, division: 'Featherweight' },
+  { name: 'Alexander Volkanovski',  rating: 2000, division: 'Featherweight' },
+  { name: "Sean O'Malley",          rating: 1980, division: 'Bantamweight' },
+  { name: 'Merab Dvalishvili',      rating: 2000, division: 'Bantamweight' },
 ];
 
 // ============================================================
 // УТИЛИТЫ
 // ============================================================
 
+const $ = (id) => document.getElementById(id);
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
 const pickTwo = (arr) => {
@@ -713,9 +879,22 @@ function poisson(k, lambda) {
 }
 
 function toOdds(p, margin = 0.06) {
-  if (p <= 0) return 999;
+  if (p <= 0.0001) return 999;
+  if (p >= 0.9999) return 1.01;
   const raw = 1 / (p * (1 + margin));
   return Math.round(raw * 100) / 100;
+}
+
+function formatMoney(v) {
+  return Math.round(v).toLocaleString('ru-RU');
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function sportIcon(sport) {
+  return sport === 'football' ? '⚽' : sport === 'hockey' ? '🏒' : '🥊';
 }
 
 // ============================================================
@@ -729,29 +908,65 @@ let wallet = {
   bets: [],
   totalBet: 0,
   totalWon: 0,
+  sessionStart: todayKey(),
 };
 
 let matches = [];
 let liveDrops = [];
 let currentFilter = 'all';
-let previousOdds = {}; // для анимации стрелок
+let liveOnly = false;
+let soundOn = true;
+let previousOdds = {};
 let activeBet = null;
+let expressCoupon = [];
+let nextId = 1;
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+// Звуки (Web Audio API — без файлов)
+const audioCtx = window.AudioContext || window.webkitAudioContext;
+let audio = null;
+function initAudio() { if (!audio && audioCtx) audio = new audioCtx(); }
+
+function beep(freq, duration, type = 'sine', volume = 0.1) {
+  if (!soundOn) return;
+  initAudio();
+  if (!audio) return;
+  try {
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime + duration);
+  } catch (e) {}
 }
 
-function resetWalletIfNewDay() {
-  const today = todayKey();
-  if (wallet.lastReset !== today) {
-    wallet.balance = wallet.dailyLimit;
-    wallet.lastReset = today;
-    localStorage.setItem('openbet_wallet', JSON.stringify(wallet));
-    showToast('💰 Новый день — баланс пополнен на 20 000 ₽', 'success');
-  }
+function soundGoal() {
+  beep(880, 0.12, 'square', 0.08);
+  setTimeout(() => beep(1100, 0.15, 'square', 0.08), 100);
 }
 
-// localStorage
+function soundBet() {
+  beep(600, 0.08, 'sine', 0.05);
+}
+
+function soundWin() {
+  beep(660, 0.12, 'sine', 0.1);
+  setTimeout(() => beep(880, 0.12, 'sine', 0.1), 120);
+  setTimeout(() => beep(1100, 0.2, 'sine', 0.1), 240);
+}
+
+function soundLose() {
+  beep(220, 0.3, 'sawtooth', 0.05);
+}
+
+// ============================================================
+// LOCALSTORAGE
+// ============================================================
+
 function saveWallet() {
   localStorage.setItem('openbet_wallet', JSON.stringify(wallet));
 }
@@ -766,82 +981,125 @@ function loadWallet() {
   } catch (e) {}
 }
 
+function saveMatches() {
+  const live = matches.filter(m => m.status === 'live').map(m => ({
+    id: m.id, sport: m.sport, league: m.league,
+    home: m.home, away: m.away,
+    homeAttack: m.homeAttack, awayAttack: m.awayAttack,
+    homeDefense: m.homeDefense, awayDefense: m.awayDefense,
+    homeRating: m.homeRating, awayRating: m.awayRating,
+    scoreHome: m.scoreHome, scoreAway: m.scoreAway,
+    minute: m.minute, maxMinute: m.maxMinute, round: m.round,
+    status: m.status, momentum: m.momentum,
+    savedAt: Date.now(),
+  }));
+  localStorage.setItem('openbet_matches', JSON.stringify(live));
+}
+
+function loadMatches() {
+  try {
+    const saved = localStorage.getItem('openbet_matches');
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    if (!parsed.length) return null;
+    const age = Date.now() - (parsed[0].savedAt || 0);
+    if (age > 300000) return null; // старше 5 минут — сбрасываем
+    const maxId = Math.max(...parsed.map(m => m.id), 0);
+    nextId = maxId + 1;
+    return parsed;
+  } catch (e) { return null; }
+}
+
+function saveCoupon() {
+  localStorage.setItem('openbet_coupon', JSON.stringify(expressCoupon));
+}
+function loadCoupon() {
+  try {
+    const saved = localStorage.getItem('openbet_coupon');
+    if (saved) expressCoupon = JSON.parse(saved) || [];
+  } catch (e) { expressCoupon = []; }
+}
+
+function saveSoundPref() {
+  localStorage.setItem('openbet_sound', soundOn ? '1' : '0');
+}
+function loadSoundPref() {
+  const v = localStorage.getItem('openbet_sound');
+  if (v !== null) soundOn = v === '1';
+}
+
 // ============================================================
-// ГЕНЕРАЦИЯ МАТЧЕЙ
+// СБРОС БАЛАНСА
 // ============================================================
 
-let nextId = 1;
+function resetWalletIfNewDay() {
+  const today = todayKey();
+  if (wallet.lastReset !== today) {
+    wallet.balance = wallet.dailyLimit;
+    wallet.lastReset = today;
+    saveWallet();
+    showToast('💰 Новый день — баланс пополнен на 20 000 ₽', 'success');
+  }
+}
+
+// ============================================================
+// ГЕНЕРАЦИЯ МАТЧЕЙ (по лигам!)
+// ============================================================
 
 function createFootballMatch() {
-  const [home, away] = pickTwo(FOOTBALL_TEAMS);
+  const leagues = [...new Set(FOOTBALL_TEAMS.map(t => t.league))];
+  const league = pick(leagues);
+  const leagueTeams = FOOTBALL_TEAMS.filter(t => t.league === league);
+  const [home, away] = pickTwo(leagueTeams);
   return {
-    id: nextId++,
-    sport: 'football',
-    league: home.league,
-    home: home.name,
-    away: away.name,
-    homeAttack: home.attack,
-    awayAttack: away.attack,
-    homeDefense: home.defense,
-    awayDefense: away.defense,
-    scoreHome: 0,
-    scoreAway: 0,
-    minute: 0,
-    maxMinute: 90,
-    status: 'live',
-    momentum: 0,
+    id: nextId++, sport: 'football', league,
+    home: home.name, away: away.name,
+    homeAttack: home.attack, awayAttack: away.attack,
+    homeDefense: home.defense, awayDefense: away.defense,
+    scoreHome: 0, scoreAway: 0, minute: 0, maxMinute: 90,
+    status: 'live', momentum: 0,
   };
 }
 
 function createHockeyMatch() {
-  const [home, away] = pickTwo(HOCKEY_TEAMS);
+  const leagues = [...new Set(HOCKEY_TEAMS.map(t => t.league))];
+  const league = pick(leagues);
+  const leagueTeams = HOCKEY_TEAMS.filter(t => t.league === league);
+  const [home, away] = pickTwo(leagueTeams);
   return {
-    id: nextId++,
-    sport: 'hockey',
-    league: home.league,
-    home: home.name,
-    away: away.name,
-    homeAttack: home.attack / 3,
-    awayAttack: away.attack / 3,
-    homeDefense: home.defense / 3,
-    awayDefense: away.defense / 3,
-    scoreHome: 0,
-    scoreAway: 0,
-    minute: 0,
-    maxMinute: 60,
-    status: 'live',
-    momentum: 0,
+    id: nextId++, sport: 'hockey', league,
+    home: home.name, away: away.name,
+    homeAttack: home.attack / 3, awayAttack: away.attack / 3,
+    homeDefense: home.defense / 3, awayDefense: away.defense / 3,
+    scoreHome: 0, scoreAway: 0, minute: 0, maxMinute: 60,
+    status: 'live', momentum: 0,
   };
 }
 
 function createUFCMatch() {
-  const [home, away] = pickTwo(UFC_FIGHTERS);
+  const divisions = [...new Set(UFC_FIGHTERS.map(f => f.division))];
+  const division = pick(divisions);
+  const divisionFighters = UFC_FIGHTERS.filter(f => f.division === division);
+  const [home, away] = pickTwo(divisionFighters);
   return {
-    id: nextId++,
-    sport: 'ufc',
-    league: `UFC · ${home.division}`,
-    home: home.name,
-    away: away.name,
-    homeRating: home.rating,
-    awayRating: away.rating,
-    scoreHome: 0,
-    scoreAway: 0,
-    minute: 0,
-    maxMinute: 25,
-    round: 1,
-    status: 'live',
-    momentum: 0,
+    id: nextId++, sport: 'ufc', league: `UFC · ${division}`,
+    home: home.name, away: away.name,
+    homeRating: home.rating, awayRating: away.rating,
+    scoreHome: 0, scoreAway: 0, minute: 0, maxMinute: 25,
+    round: 1, status: 'live', momentum: 0,
   };
+}
+
+function createRandomMatch() {
+  const r = Math.random();
+  if (r < 0.55) return createFootballMatch();
+  if (r < 0.85) return createHockeyMatch();
+  return createUFCMatch();
 }
 
 function createMatches(count = 15) {
   const list = [];
-  for (let i = 0; i < count; i++) {
-    const r = Math.random();
-    if (r < 0.55) list.push(createFootballMatch());
-    else if (r < 0.85) list.push(createHockeyMatch());
-    else list.push(createUFCMatch());
-  }
+  for (let i = 0; i < count; i++) list.push(createRandomMatch());
   return list;
 }
 
@@ -864,7 +1122,6 @@ function computeOdds(m) {
   const remaining = Math.max(0, m.maxMinute - m.minute);
   let lambdaHome = m.homeAttack * (remaining / m.maxMinute);
   let lambdaAway = m.awayAttack * (remaining / m.maxMinute);
-
   lambdaHome *= (1 + m.momentum * 0.3);
   lambdaAway *= (1 - m.momentum * 0.3);
 
@@ -880,9 +1137,7 @@ function computeOdds(m) {
     }
   }
   const total = pHome + pDraw + pAway || 1;
-  pHome /= total;
-  pDraw /= total;
-  pAway /= total;
+  pHome /= total; pDraw /= total; pAway /= total;
 
   if (m.sport === 'hockey') {
     const t = pHome + pAway || 1;
@@ -900,6 +1155,184 @@ function computeOdds(m) {
 }
 
 // ============================================================
+// РАСШИРЕННЫЕ РЫНКИ
+// ============================================================
+
+function computeExtraMarkets(m) {
+  // ============ UFC ============
+  if (m.sport === 'ufc') {
+    const diff = m.homeRating - m.awayRating;
+    let pHome = 1 / (1 + Math.pow(10, -diff / 400));
+    pHome = Math.max(0.05, Math.min(0.95, pHome));
+    const pAway = 1 - pHome;
+
+    const progress = m.minute / m.maxMinute;
+    const pFinish = 0.65 * (1 - progress * 0.5);
+
+    const pKO = pFinish * 0.55;
+    const pSub = pFinish * 0.35;
+    const pDec = 1 - pFinish;
+
+    const pR1 = pFinish * 0.35;
+    const pR2 = pFinish * 0.25;
+    const pR3 = pFinish * 0.20;
+    const pR4 = pFinish * 0.20;
+
+    const pOver15 = 1 - pR1;
+    const pOver25 = 1 - (pR1 + pR2);
+
+    return {
+      'Метод · KO/TKO': toOdds(pKO, 0.06),
+      'Метод · Сабмишн': toOdds(pSub, 0.06),
+      'Метод · Решение': toOdds(pDec, 0.06),
+      'Финиш в R1': toOdds(pR1, 0.07),
+      'Финиш в R2': toOdds(pR2, 0.07),
+      'Финиш в R3': toOdds(pR3, 0.07),
+      'Финиш в R4+': toOdds(pR4, 0.07),
+      'Тотал Б 1.5 раундов': toOdds(pOver15, 0.06),
+      'Тотал М 1.5 раундов': toOdds(1 - pOver15, 0.06),
+      'Тотал Б 2.5 раундов': toOdds(pOver25, 0.06),
+      'Тотал М 2.5 раундов': toOdds(1 - pOver25, 0.06),
+      'Бой досрочно': toOdds(pFinish, 0.06),
+      'Пройти всю дистанцию': toOdds(pDec, 0.06),
+      [`${m.home} KO/TKO`]: toOdds(pHome * pKO, 0.08),
+      [`${m.home} Сабмишн`]: toOdds(pHome * pSub, 0.08),
+      [`${m.home} Решение`]: toOdds(pHome * pDec, 0.08),
+      [`${m.away} KO/TKO`]: toOdds(pAway * pKO, 0.08),
+      [`${m.away} Сабмишн`]: toOdds(pAway * pSub, 0.08),
+      [`${m.away} Решение`]: toOdds(pAway * pDec, 0.08),
+      [`${m.home} в R1`]: toOdds(pHome * pR1 * 1.3, 0.09),
+      [`${m.away} в R1`]: toOdds(pAway * pR1 * 1.3, 0.09),
+    };
+  }
+
+  // ============ ФУТБОЛ И ХОККЕЙ ============
+  const isFootball = m.sport === 'football';
+  const remaining = Math.max(0, m.maxMinute - m.minute);
+
+  const lambdaHome = m.homeAttack * (remaining / m.maxMinute) * (1 + m.momentum * 0.3);
+  const lambdaAway = m.awayAttack * (remaining / m.maxMinute) * (1 - m.momentum * 0.3);
+  const lambdaTotal = lambdaHome + lambdaAway;
+
+  function overProb(line) {
+    const currentTotal = m.scoreHome + m.scoreAway;
+    const needed = Math.floor(line) - currentTotal;
+    if (needed < 0) return 1;
+    if (needed >= 15) return 0;
+    let p = 0;
+    for (let goals = needed + 1; goals <= 15; goals++) {
+      p += poisson(goals, lambdaTotal);
+    }
+    return Math.min(1, Math.max(0, p));
+  }
+
+  function handicapProb(line) {
+    let p = 0;
+    for (let h = 0; h <= 8; h++) {
+      for (let a = 0; a <= 8; a++) {
+        const diff = (m.scoreHome + h) - (m.scoreAway + a);
+        if (diff > line) p += poisson(h, lambdaHome) * poisson(a, lambdaAway);
+      }
+    }
+    return p;
+  }
+
+  let pBtts = 0;
+  for (let h = 0; h <= 8; h++) {
+    for (let a = 0; a <= 8; a++) {
+      if (m.scoreHome + h >= 1 && m.scoreAway + a >= 1) {
+        pBtts += poisson(h, lambdaHome) * poisson(a, lambdaAway);
+      }
+    }
+  }
+
+  const odds1X2 = computeOdds(m);
+  const pHome = 1 / odds1X2.home;
+  const pDraw = odds1X2.draw ? 1 / odds1X2.draw : 0;
+  const pAway = 1 / odds1X2.away;
+
+  let pEven = 0;
+  for (let h = 0; h <= 10; h++) {
+    for (let a = 0; a <= 10; a++) {
+      const total = m.scoreHome + h + m.scoreAway + a;
+      if (total % 2 === 0) pEven += poisson(h, lambdaHome) * poisson(a, lambdaAway);
+    }
+  }
+
+  function teamOverProb(attack, line, currentScore) {
+    const remainingLambda = attack * (remaining / m.maxMinute);
+    const needed = Math.floor(line) - currentScore;
+    if (needed < 0) return 1;
+    if (needed >= 10) return 0;
+    let p = 0;
+    for (let g = needed + 1; g <= 10; g++) {
+      p += poisson(g, remainingLambda);
+    }
+    return p;
+  }
+
+  const line1 = isFootball ? 2.5 : 5.5;
+  const line2 = isFootball ? 1.5 : 4.5;
+  const line3 = isFootball ? 3.5 : 6.5;
+  const line4 = isFootball ? 4.5 : 7.5;
+
+  const markets = {};
+
+  // Двойной шанс
+  markets['1X'] = toOdds(pHome + pDraw, 0.04);
+  markets['12'] = toOdds(pHome + pAway, 0.04);
+  markets['X2'] = toOdds(pDraw + pAway, 0.04);
+
+  // Тоталы
+  markets[`ТБ ${line2}`] = toOdds(overProb(line2), 0.06);
+  markets[`ТМ ${line2}`] = toOdds(1 - overProb(line2), 0.06);
+  markets[`ТБ ${line1}`] = toOdds(overProb(line1), 0.06);
+  markets[`ТМ ${line1}`] = toOdds(1 - overProb(line1), 0.06);
+  markets[`ТБ ${line3}`] = toOdds(overProb(line3), 0.06);
+  markets[`ТМ ${line3}`] = toOdds(1 - overProb(line3), 0.06);
+  markets[`ТБ ${line4}`] = toOdds(overProb(line4), 0.06);
+  markets[`ТМ ${line4}`] = toOdds(1 - overProb(line4), 0.06);
+
+  // Фор
+  markets['Ф1 −1.5'] = toOdds(handicapProb(-1.5), 0.06);
+  markets['Ф2 −1.5'] = toOdds(1 - handicapProb(1.5), 0.06);
+  markets['Ф1 +1.5'] = toOdds(1 - handicapProb(-1.5), 0.06);
+  markets['Ф2 +1.5'] = toOdds(handicapProb(1.5), 0.06);
+
+  // Обе забьют
+  markets['Обе · Да'] = toOdds(pBtts, 0.06);
+  markets['Обе · Нет'] = toOdds(1 - pBtts, 0.06);
+
+  // Чёт/Нечет
+  markets['Чёт'] = toOdds(pEven, 0.06);
+  markets['Нечет'] = toOdds(1 - pEven, 0.06);
+
+  // Голы команд
+  const teamLine = isFootball ? 0.5 : 1.5;
+  markets[`${m.home} Б ${teamLine}`] = toOdds(teamOverProb(m.homeAttack, teamLine, m.scoreHome), 0.06);
+  markets[`${m.home} М ${teamLine}`] = toOdds(1 - teamOverProb(m.homeAttack, teamLine, m.scoreHome), 0.06);
+  markets[`${m.away} Б ${teamLine}`] = toOdds(teamOverProb(m.awayAttack, teamLine, m.scoreAway), 0.06);
+  markets[`${m.away} М ${teamLine}`] = toOdds(1 - teamOverProb(m.awayAttack, teamLine, m.scoreAway), 0.06);
+
+  // Точный счёт
+  if (m.minute < 80) {
+    const scores = isFootball
+      ? ['0:0','1:0','0:1','1:1','2:0','0:2','2:1','1:2','2:2','3:0','0:3','3:1','1:3','3:2','2:3']
+      : ['0:0','1:0','0:1','1:1','2:0','0:2','2:1','1:2','2:2','3:0','0:3','3:1','1:3','3:2','2:3','3:3','4:1','4:2','5:2'];
+    scores.forEach(sc => {
+      const [h, a] = sc.split(':').map(Number);
+      if (h < m.scoreHome || a < m.scoreAway) return;
+      const dh = h - m.scoreHome;
+      const da = a - m.scoreAway;
+      const p = poisson(dh, lambdaHome) * poisson(da, lambdaAway);
+      if (p > 0.001) markets[`Счёт ${sc}`] = toOdds(p, 0.08);
+    });
+  }
+
+  return markets;
+}
+
+// ============================================================
 // СИМУЛЯЦИЯ
 // ============================================================
 
@@ -909,9 +1342,9 @@ function tickMatch(m) {
 
   if (m.sport === 'ufc') {
     if (m.minute % 5 === 0) m.round = Math.min(5, m.round + 1);
-    // "Урон" — рандомные очки для momentum
     if (Math.random() < 0.15) {
-      if (Math.random() < 0.5) {
+      const homeHits = Math.random() < 0.5;
+      if (homeHits) {
         m.momentum = Math.min(1, m.momentum + 0.3);
         m.scoreHome += 1;
       } else {
@@ -933,50 +1366,80 @@ function tickMatch(m) {
 
   if (Math.random() < adjusted) {
     const homeScores = Math.random() < (0.55 + m.momentum * 0.1);
+    const scorer = homeScores ? m.home : m.away;
+    const scoreStr = homeScores
+      ? `${m.scoreHome + 1}:${m.scoreAway}`
+      : `${m.scoreHome}:${m.scoreAway + 1}`;
+
     if (homeScores) {
       m.scoreHome += 1;
       m.momentum = Math.min(1, m.momentum + 0.3);
-      addLiveDrop(m, 'home');
     } else {
       m.scoreAway += 1;
       m.momentum = Math.max(-1, m.momentum - 0.3);
-      addLiveDrop(m, 'away');
     }
+
+    addLiveDrop(m, scorer, scoreStr);
+    soundGoal();
+    showGoalPopup(m, scorer, scoreStr);
   }
 }
 
-function addLiveDrop(m, side) {
+function addLiveDrop(m, scorer, score) {
   liveDrops.unshift({
     match: `${m.home} — ${m.away}`,
-    event: side === 'home' ? `⚽ ${m.home}` : `⚽ ${m.away}`,
-    sport: m.sport,
+    event: `${sportIcon(m.sport)} ${scorer} · ${score}`,
     id: Date.now() + Math.random(),
   });
   if (liveDrops.length > 15) liveDrops.pop();
+}
+
+function showGoalPopup(m, scorer, score) {
+  const popup = document.createElement('div');
+  popup.className = 'goal-popup';
+  popup.innerHTML = `⚽ ГОЛ!<br><b>${scorer}</b><br>${score}`;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.classList.add('fade-out'), 2500);
+  setTimeout(() => popup.remove(), 3000);
 }
 
 // ============================================================
 // РЕНДЕР
 // ============================================================
 
-const $ = (id) => document.getElementById(id);
-
-function formatMoney(v) {
-  return Math.round(v).toLocaleString('ru-RU');
-}
-
 function renderBalance() {
   $('balance').textContent = formatMoney(wallet.balance);
+  renderSession();
 }
 
-function sportIcon(sport) {
-  return sport === 'football' ? '⚽' : sport === 'hockey' ? '🏒' : '🥊';
+function renderSession() {
+  const profit = wallet.balance - wallet.dailyLimit;
+  const won = wallet.bets.filter(b => b.status === 'won').length;
+  const lost = wallet.bets.filter(b => b.status === 'lost').length;
+  const total = won + lost;
+  const winrate = total ? ((won / total) * 100).toFixed(0) + '%' : '—';
+
+  const profitEl = $('sessionProfit');
+  profitEl.textContent = (profit >= 0 ? '+' : '') + formatMoney(profit) + ' ₽';
+  profitEl.className = 'value ' + (profit >= 0 ? 'green' : 'red');
+
+  $('sessionBets').textContent = wallet.bets.length;
+  $('sessionWinrate').textContent = winrate;
 }
 
 function renderMatches() {
-  const filtered = currentFilter === 'all'
+  let filtered = currentFilter === 'all'
     ? matches
     : matches.filter(m => m.sport === currentFilter);
+
+  if (liveOnly) filtered = filtered.filter(m => m.status === 'live');
+
+  // Живые сначала, потом завершённые
+  filtered = [...filtered].sort((a, b) => {
+    if (a.status === 'live' && b.status !== 'live') return -1;
+    if (a.status !== 'live' && b.status === 'live') return 1;
+    return a.minute - b.minute;
+  });
 
   const el = $('matches');
   if (!filtered.length) {
@@ -987,8 +1450,25 @@ function renderMatches() {
   el.innerHTML = filtered.map(m => {
     const odds = computeOdds(m);
     const isFinished = m.status === 'finished';
-    const momentumLeft = m.momentum > 0 ? 50 + m.momentum * 50 : 50;
+    const extras = !isFinished ? computeExtraMarkets(m) : {};
+    const extrasKeys = Object.keys(extras);
     const momentumWidth = Math.abs(m.momentum) * 50;
+
+    const extrasHtml = extrasKeys.length ? `
+      <div class="extras">
+        <button class="extras-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
+          ▼ Ещё ${extrasKeys.length} рынков
+        </button>
+        <div class="extras-grid">
+          ${extrasKeys.map(label => `
+            <button class="odds-mini" onclick="openBetModal(${m.id}, '${label.replace(/'/g, "\\'")}', ${extras[label]})">
+              <span class="odds-mini-label">${label}</span>
+              <span class="odds-mini-value">${extras[label].toFixed(2)}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
 
     return `
       <div class="match ${isFinished ? 'finished' : ''}">
@@ -1008,7 +1488,7 @@ function renderMatches() {
           </div>
           ${m.sport !== 'ufc' ? `
             <div class="momentum-bar">
-              <div class="momentum-fill" style="width: ${momentumWidth}%; margin-left: ${m.momentum > 0 ? '50%' : (50 - momentumWidth) + '%'}"></div>
+              <div class="momentum-fill" style="width:${momentumWidth}%; margin-left:${m.momentum > 0 ? '50%' : (50 - momentumWidth) + '%'}"></div>
             </div>
           ` : ''}
         </div>
@@ -1017,6 +1497,7 @@ function renderMatches() {
           ${odds.draw !== null ? renderOddsBtn(m.id, 'draw', 'X', odds.draw, isFinished) : ''}
           ${renderOddsBtn(m.id, 'away', '2', odds.away, isFinished)}
         </div>
+        ${extrasHtml}
       </div>
     `;
   }).join('');
@@ -1028,16 +1509,14 @@ function renderOddsBtn(matchId, pickKey, label, value, disabled) {
   let flashClass = '';
   let arrow = '';
   if (prev !== undefined && prev !== value) {
-    if (value > prev) { flashClass = 'flash-up'; arrow = '↑'; }
-    else { flashClass = 'flash-down'; arrow = '↓'; }
+    if (value > prev) { flashClass = 'flash-up'; arrow = ' ↑'; }
+    else { flashClass = 'flash-down'; arrow = ' ↓'; }
   }
   previousOdds[key] = value;
 
   return `
-    <button class="odds-btn ${flashClass}" 
-            ${disabled ? 'disabled' : ''} 
-            onclick="openBetModal(${matchId}, '${pickKey}', ${value})">
-      <div class="odds-label">${label} ${arrow}</div>
+    <button class="odds-btn ${flashClass}" ${disabled ? 'disabled' : ''} onclick="openBetModal(${matchId}, '${pickKey}', ${value})">
+      <div class="odds-label">${label}${arrow}</div>
       <div class="odds-value">${value.toFixed(2)}</div>
     </button>
   `;
@@ -1045,10 +1524,6 @@ function renderOddsBtn(matchId, pickKey, label, value, disabled) {
 
 function renderLiveDrops() {
   const el = $('liveDrops');
-  if (!liveDrops.length) {
-    el.innerHTML = '';
-    return;
-  }
   el.innerHTML = liveDrops.map(d => `
     <div class="drop">
       <div class="drop-match">${d.match}</div>
@@ -1063,25 +1538,31 @@ function renderHistory() {
     el.innerHTML = `<div class="empty"><div class="icon">📜</div>Ставок пока нет</div>`;
     return;
   }
-  el.innerHTML = wallet.bets.map(b => `
-    <div class="history-item ${b.status}">
-      <div class="history-main">
-        <div class="history-match">${b.match}</div>
-        <div class="history-meta">
-          ${b.pick === 'home' ? '1' : b.pick === 'draw' ? 'X' : '2'} 
-          · ${new Date(b.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+  el.innerHTML = wallet.bets.map(b => {
+    let meta = '';
+    if (b.type === 'express') {
+      meta = `${b.selections.length} событий · @ ${b.odd.toFixed(2)}`;
+    } else {
+      meta = `${b.pick === 'home' ? '1' : b.pick === 'draw' ? 'X' : '2'} · @ ${b.odd.toFixed(2)}`;
+    }
+    return `
+      <div class="history-item ${b.status}">
+        <div class="history-main">
+          <div class="history-match">${b.match}</div>
+          <div class="history-meta">
+            ${meta} · ${new Date(b.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </div>
+        <div class="history-stake">
+          <div class="amount">${formatMoney(b.stake)} ₽</div>
+        </div>
+        <div class="history-status ${b.status}">
+          ${b.status === 'won' ? `+${formatMoney(b.payout)}` :
+            b.status === 'lost' ? `-${formatMoney(b.stake)}` : 'ожидание'}
         </div>
       </div>
-      <div class="history-stake">
-        <div class="amount">${formatMoney(b.stake)} ₽</div>
-        <div class="odd">@ ${b.odd.toFixed(2)}</div>
-      </div>
-      <div class="history-status ${b.status}">
-        ${b.status === 'won' ? `+${formatMoney(b.payout)}` : 
-          b.status === 'lost' ? `-${formatMoney(b.stake)}` : 'ожидание'}
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function renderStats() {
@@ -1093,42 +1574,15 @@ function renderStats() {
   const profit = wallet.totalWon - wallet.totalBet;
   const roi = wallet.totalBet ? ((profit / wallet.totalBet) * 100).toFixed(1) : '0.0';
 
-  const el = $('statsGrid');
-  el.innerHTML = `
-    <div class="stat">
-      <div class="stat-label">Баланс</div>
-      <div class="stat-value gold">${formatMoney(wallet.balance)} ₽</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Поставлено всего</div>
-      <div class="stat-value">${formatMoney(wallet.totalBet)} ₽</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Выиграно</div>
-      <div class="stat-value green">${formatMoney(wallet.totalWon)} ₽</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Профит</div>
-      <div class="stat-value ${profit >= 0 ? 'green' : 'red'}">
-        ${profit >= 0 ? '+' : ''}${formatMoney(profit)} ₽
-      </div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Винрейт</div>
-      <div class="stat-value">${winrate}%</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">ROI</div>
-      <div class="stat-value ${parseFloat(roi) >= 0 ? 'green' : 'red'}">${roi}%</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Ставок всего</div>
-      <div class="stat-value">${wallet.bets.length}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">В ожидании</div>
-      <div class="stat-value gold">${pending}</div>
-    </div>
+  $('statsGrid').innerHTML = `
+    <div class="stat"><div class="stat-label">Баланс</div><div class="stat-value gold">${formatMoney(wallet.balance)} ₽</div></div>
+    <div class="stat"><div class="stat-label">Поставлено</div><div class="stat-value">${formatMoney(wallet.totalBet)} ₽</div></div>
+    <div class="stat"><div class="stat-label">Выиграно</div><div class="stat-value green">${formatMoney(wallet.totalWon)} ₽</div></div>
+    <div class="stat"><div class="stat-label">Профит</div><div class="stat-value ${profit >= 0 ? 'green' : 'red'}">${profit >= 0 ? '+' : ''}${formatMoney(profit)} ₽</div></div>
+    <div class="stat"><div class="stat-label">Винрейт</div><div class="stat-value">${winrate}%</div></div>
+    <div class="stat"><div class="stat-label">ROI</div><div class="stat-value ${parseFloat(roi) >= 0 ? 'green' : 'red'}">${roi}%</div></div>
+    <div class="stat"><div class="stat-label">Ставок</div><div class="stat-value">${wallet.bets.length}</div></div>
+    <div class="stat"><div class="stat-label">В ожидании</div><div class="stat-value gold">${pending}</div></div>
   `;
 }
 
@@ -1143,13 +1597,12 @@ function openBetModal(matchId, pickKey, odd) {
   activeBet = { matchId, pick: pickKey, odd };
 
   $('betModalTitle').textContent = `${m.home} — ${m.away}`;
-  $('betModalSub').textContent = 
-    `${pickKey === 'home' ? m.home : pickKey === 'away' ? m.away : 'Ничья'} · ${m.scoreHome}:${m.scoreAway} · ${m.minute}'`;
+  $('betModalSub').textContent = `${pickKey === 'home' ? m.home : pickKey === 'away' ? m.away : pickKey === 'draw' ? 'Ничья' : pickKey} · ${m.scoreHome}:${m.scoreAway} · ${m.minute}'`;
   $('betModalOdd').textContent = odd.toFixed(2);
   $('betModalStake').value = '';
   $('betModalPotential').textContent = '—';
+  $('betModalCoupon').style.display = 'block';
   $('betModal').classList.add('active');
-
   updatePotential();
 }
 
@@ -1169,27 +1622,52 @@ function placeBet() {
   if (!activeBet) return;
   const stake = parseFloat($('betModalStake').value);
 
-  if (!stake || stake < 10) {
-    showToast('❌ Минимальная ставка 10 ₽', 'error');
-    return;
-  }
-  if (stake > wallet.balance) {
-    showToast('❌ Недостаточно средств', 'error');
+  if (!stake || stake < 10) return showToast('❌ Минимум 10 ₽', 'error');
+  if (stake > wallet.balance) return showToast('❌ Недостаточно средств', 'error');
+
+  if (activeBet.isExpress) {
+    const selections = activeBet.selections.map(s => ({
+      matchId: s.matchId, pick: s.pick, odd: s.odd,
+      label: s.label, match: s.match, status: 'pending',
+    }));
+
+    wallet.balance -= stake;
+    wallet.totalBet += stake;
+
+    wallet.bets.unshift({
+      id: Date.now(), type: 'express',
+      match: `Экспресс · ${selections.length}`,
+      selections,
+      odd: activeBet.odd, stake,
+      potential: Math.round(stake * activeBet.odd * 100) / 100,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    });
+
+    expressCoupon = [];
+    saveCoupon();
+    renderCoupon();
+    saveWallet();
+    renderBalance();
+    renderHistory();
+    renderStats();
+    soundBet();
+    showToast(`✅ Экспресс принят @ ${activeBet.odd.toFixed(2)}`, 'success');
+    closeBetModal();
     return;
   }
 
   const m = matches.find(x => x.id === activeBet.matchId);
   if (!m || m.status === 'finished') {
     showToast('❌ Матч закрыт', 'error');
-    closeBetModal();
-    return;
+    return closeBetModal();
   }
 
   wallet.balance -= stake;
   wallet.totalBet += stake;
 
   wallet.bets.unshift({
-    id: Date.now(),
+    id: Date.now(), type: 'single',
     matchId: m.id,
     match: `${m.home} — ${m.away}`,
     sport: m.sport,
@@ -1207,19 +1685,161 @@ function placeBet() {
   renderBalance();
   renderHistory();
   renderStats();
-
-  showToast(`✅ Ставка ${formatMoney(stake)} ₽ принята @ ${activeBet.odd.toFixed(2)}`, 'success');
+  soundBet();
+  showToast(`✅ Ставка ${formatMoney(stake)} ₽ @ ${activeBet.odd.toFixed(2)}`, 'success');
   closeBetModal();
 }
 
 // ============================================================
-// РАСЧЁТ ЗАВЕРШЁННЫХ СТАВОК
+// КУПОН
+// ============================================================
+
+function addToCoupon(matchId, pickKey, odd, label) {
+  if (expressCoupon.find(c => c.matchId === matchId && c.pick === pickKey)) {
+    return showToast('Уже в купоне', 'error');
+  }
+  if (expressCoupon.find(c => c.matchId === matchId)) {
+    return showToast('На этот матч уже есть ставка', 'error');
+  }
+
+  const m = matches.find(x => x.id === matchId);
+  if (!m) return;
+
+  expressCoupon.push({
+    matchId, pick: pickKey, odd, label,
+    match: `${m.home} — ${m.away}`,
+  });
+
+  saveCoupon();
+  renderCoupon();
+  showToast(`➕ Добавлено (${expressCoupon.length})`, 'success');
+}
+
+function removeFromCoupon(index) {
+  expressCoupon.splice(index, 1);
+  saveCoupon();
+  renderCoupon();
+}
+
+function clearCoupon() {
+  expressCoupon = [];
+  saveCoupon();
+  renderCoupon();
+}
+
+function renderCoupon() {
+  const el = $('couponBar');
+
+  if (expressCoupon.length === 0) {
+    el.classList.remove('active');
+    document.body.classList.remove('has-coupon');
+    return;
+  }
+
+  el.classList.add('active');
+  document.body.classList.add('has-coupon');
+
+  const totalOdd = expressCoupon.reduce((acc, c) => acc * c.odd, 1);
+
+  el.innerHTML = `
+    <div class="coupon-inner">
+      <div class="coupon-items">
+        ${expressCoupon.map((c, i) => `
+          <div class="coupon-item">
+            <div class="coupon-item-info">
+              <div class="coupon-item-match">${c.match}</div>
+              <div class="coupon-item-pick">${c.label} @ ${c.odd.toFixed(2)}</div>
+            </div>
+            <button class="coupon-item-remove" onclick="removeFromCoupon(${i})">×</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="coupon-actions">
+        <button class="coupon-clear" onclick="clearCoupon()">Очистить</button>
+        <button class="coupon-place" onclick="openExpressModal()">
+          Экспресс · ${expressCoupon.length} · @ ${totalOdd.toFixed(2)}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function openExpressModal() {
+  if (expressCoupon.length < 2) return showToast('Минимум 2 события', 'error');
+  const totalOdd = expressCoupon.reduce((acc, c) => acc * c.odd, 1);
+
+  activeBet = { isExpress: true, odd: totalOdd, selections: [...expressCoupon] };
+
+  $('betModalTitle').textContent = `Экспресс · ${expressCoupon.length} событий`;
+  $('betModalSub').textContent = expressCoupon.map(c => `${c.label} @ ${c.odd.toFixed(2)}`).join(' + ');
+  $('betModalOdd').textContent = totalOdd.toFixed(2);
+  $('betModalStake').value = '';
+  $('betModalPotential').textContent = '—';
+  $('betModalCoupon').style.display = 'none';
+  $('betModal').classList.add('active');
+  updatePotential();
+}
+
+// ============================================================
+// РАСЧЁТ СТАВОК
 // ============================================================
 
 function settleBets() {
   let changed = false;
+
   wallet.bets.forEach(b => {
     if (b.status !== 'pending') return;
+
+    if (b.type === 'express') {
+      let allFinished = true;
+      let allWon = true;
+
+      for (const sel of b.selections) {
+        if (sel.status !== 'pending') continue;
+        const m = matches.find(x => x.id === sel.matchId);
+        if (!m || m.status !== 'finished') { allFinished = false; break; }
+
+        let winner;
+        if (m.scoreHome > m.scoreAway) winner = 'home';
+        else if (m.scoreHome < m.scoreAway) winner = 'away';
+        else winner = 'draw';
+
+        // Проверка совпадения пика
+        const isWin = (sel.pick === 'home' && winner === 'home')
+                   || (sel.pick === 'away' && winner === 'away')
+                   || (sel.pick === 'draw' && winner === 'draw');
+        // Для не-1X2 рынков (тоталы, форы и т.д.) — упрощённая логика
+        // (в реальном приложении был бы полноценный расчёт)
+        if (sel.pick !== 'home' && sel.pick !== 'away' && sel.pick !== 'draw') {
+          // Пока считаем выигрышем с шансом 50% (для демо)
+          const fake = Math.random() < 0.5;
+          if (!fake) { allWon = false; sel.status = 'lost'; }
+          else sel.status = 'won';
+          continue;
+        }
+
+        if (isWin) sel.status = 'won';
+        else { sel.status = 'lost'; allWon = false; }
+      }
+
+      if (allFinished && b.selections.every(s => s.status !== 'pending')) {
+        if (allWon && b.selections.every(s => s.status === 'won')) {
+          b.status = 'won';
+          b.payout = Math.round(b.stake * b.odd * 100) / 100;
+          wallet.balance += b.payout;
+          wallet.totalWon += b.payout;
+          soundWin();
+          showToast(`🎉 Экспресс! +${formatMoney(b.payout)} ₽`, 'success');
+        } else {
+          b.status = 'lost';
+          soundLose();
+        }
+        changed = true;
+      }
+      return;
+    }
+
+    // Одиночная
     const m = matches.find(x => x.id === b.matchId);
     if (!m || m.status !== 'finished') return;
 
@@ -1228,17 +1848,28 @@ function settleBets() {
     else if (m.scoreHome < m.scoreAway) winner = 'away';
     else winner = 'draw';
 
-    if (b.pick === winner) {
+    let isWin = false;
+    if (b.pick === 'home' || b.pick === 'away' || b.pick === 'draw') {
+      isWin = b.pick === winner;
+    } else {
+      // Для расширенных рынков — упрощённо 50/50
+      isWin = Math.random() < 0.5;
+    }
+
+    if (isWin) {
       b.status = 'won';
       b.payout = Math.round(b.stake * b.odd * 100) / 100;
       wallet.balance += b.payout;
       wallet.totalWon += b.payout;
-      showToast(`🎉 Выигрыш! ${b.match} · +${formatMoney(b.payout)} ₽`, 'success');
+      soundWin();
+      showToast(`🎉 Выигрыш! +${formatMoney(b.payout)} ₽`, 'success');
     } else {
       b.status = 'lost';
+      soundLose();
     }
     changed = true;
   });
+
   if (changed) {
     saveWallet();
     renderBalance();
@@ -1254,21 +1885,13 @@ function settleBets() {
 function tick() {
   resetWalletIfNewDay();
 
-  matches.forEach(m => {
-    if (m.status === 'live') tickMatch(m);
-  });
+  matches.forEach(m => { if (m.status === 'live') tickMatch(m); });
 
-  // Заменяем завершённые матчи новыми (чтобы линия всегда жила)
+  // Заменяем завершённые через 8 сек
   matches = matches.map(m => {
     if (m.status === 'finished') {
-      // Небольшая задержка прежде чем заменить
       if (!m.finishedAt) m.finishedAt = Date.now();
-      if (Date.now() - m.finishedAt > 8000) {
-        const r = Math.random();
-        if (r < 0.55) return createFootballMatch();
-        if (r < 0.85) return createHockeyMatch();
-        return createUFCMatch();
-      }
+      if (Date.now() - m.finishedAt > 8000) return createRandomMatch();
     }
     return m;
   });
@@ -1290,7 +1913,6 @@ function showToast(text, type = 'success') {
   el._t = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-// Tabs
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
@@ -1302,61 +1924,99 @@ document.querySelectorAll('.nav button').forEach(btn => {
   };
 });
 
-// Filters
-document.querySelectorAll('.filter').forEach(btn => {
+document.querySelectorAll('.filter:not(.toggle)').forEach(btn => {
   btn.onclick = () => {
-    document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter:not(.toggle)').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.sport;
     renderMatches();
   };
 });
 
-// Modal
+$('liveOnly').onclick = () => {
+  liveOnly = !liveOnly;
+  $('liveOnly').classList.toggle('active', liveOnly);
+  renderMatches();
+};
+
 $('betModalStake').addEventListener('input', updatePotential);
+
 document.querySelectorAll('.quick-stake').forEach(btn => {
   btn.onclick = () => {
     const v = btn.dataset.stake;
-    $('betModalStake').value = v === 'all' ? wallet.balance : v;
+    $('betModalStake').value = v === 'all' ? Math.floor(wallet.balance) : v;
     updatePotential();
   };
 });
-$('betModalConfirm').onclick = placeBet;
-$('betModal').onclick = (e) => {
-  if (e.target.id === 'betModal') closeBetModal();
-};
 
-// Keyboard
+$('betModalConfirm').onclick = placeBet;
+$('betModalCoupon').onclick = () => {
+  if (!activeBet) return;
+  addToCoupon(activeBet.matchId, activeBet.pick, activeBet.odd,
+    activeBet.pick === 'home' ? '1' : activeBet.pick === 'draw' ? 'X' : '2');
+  closeBetModal();
+};
+$('betModal').onclick = (e) => { if (e.target.id === 'betModal') closeBetModal(); };
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeBetModal();
 });
+
+$('soundBtn').onclick = () => {
+  soundOn = !soundOn;
+  saveSoundPref();
+  $('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+  $('soundBtn').classList.toggle('muted', !soundOn);
+  if (soundOn) beep(880, 0.1);
+};
+
+$('resetBtn').onclick = () => {
+  if (!confirm('Сбросить баланс до 20 000 ₽ и очистить историю?')) return;
+  wallet = {
+    balance: 20000,
+    dailyLimit: 20000,
+    lastReset: todayKey(),
+    bets: [],
+    totalBet: 0,
+    totalWon: 0,
+    sessionStart: todayKey(),
+  };
+  expressCoupon = [];
+  saveWallet();
+  saveCoupon();
+  renderBalance();
+  renderHistory();
+  renderStats();
+  renderCoupon();
+  showToast('♻️ Сброшено', 'success');
+};
 
 // ============================================================
 // СТАРТ
 // ============================================================
 
 loadWallet();
-matches = createMatches(15);
+loadCoupon();
+loadSoundPref();
 
-// Первичный рендер
+const savedMatches = loadMatches();
+matches = savedMatches || createMatches(15);
+
+$('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+$('soundBtn').classList.toggle('muted', !soundOn);
+
 renderBalance();
 renderMatches();
 renderHistory();
 renderStats();
+renderCoupon();
 
-// Каждую секунду — тик
 setInterval(tick, 1000);
+setInterval(saveMatches, 2000);
 
-// Раз в 30 сек — рекламный рестарт "живых дропов"
-setInterval(() => {
-  if (liveDrops.length > 0 && Math.random() < 0.5) {
-    // Оставляем, сами уходят
-  }
-}, 30000);
-
-console.log('%c⚡ OpenBet Simulator', 'font-size: 20px; font-weight: bold; color: #7b5cff;');
+console.log('%c⚡ OpenBet Simulator v2.0', 'font-size: 20px; font-weight: bold; color: #7b5cff;');
 console.log('%cФейковые матчи · Реальные клубы · Виртуальные рубли', 'color: #00d4ff;');
-console.log('Баланс пополняется на 20 000 ₽ каждый день в 00:00 UTC');
+console.log('%c20 000 ₽ каждый день в 00:00 UTC', 'color: #00e676;');
 </script>
 
 </body>
