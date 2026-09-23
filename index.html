@@ -9,146 +9,216 @@
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
     --bg: #0a0a14;
-    --bg2: #12121f;
-    --card: #1a1a2e;
+    --bg2: #0f0f1c;
+    --card: rgba(26,26,46,.72);
+    --card-solid: #1a1a2e;
     --card2: #1f1f38;
-    --border: #2a2a45;
+    --border: rgba(80,80,130,.28);
+    --border-2: rgba(100,100,160,.4);
     --text: #fff;
-    --muted: #888;
+    --muted: #8a8aa8;
     --accent: #7b5cff;
     --accent2: #00d4ff;
     --green: #00e676;
     --red: #ff3860;
     --gold: #ffb800;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.25);
+    --shadow-md: 0 6px 24px rgba(0,0,0,.35);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,.5);
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; overflow-x: hidden;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-size: 14px;
+    line-height: 1.4;
   }
   body.has-coupon { padding-bottom: 140px; }
   body::before {
-    content: ''; position: fixed; inset: 0;
+    content: '';
+    position: fixed; inset: 0;
     background:
-      radial-gradient(circle at 20% 0%, rgba(123,92,255,.15), transparent 50%),
-      radial-gradient(circle at 80% 100%, rgba(0,212,255,.1), transparent 50%);
-    pointer-events: none; z-index: 0;
+      radial-gradient(circle at 15% -10%, rgba(123,92,255,.22), transparent 45%),
+      radial-gradient(circle at 85% 110%, rgba(0,212,255,.14), transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(123,92,255,.04), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
   }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: var(--bg2); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,120,180,.35); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(120,120,180,.55); }
 
+  /* ============ HEADER ============ */
   header {
-    background: rgba(10,10,20,.92);
-    backdrop-filter: blur(12px);
+    background: rgba(10,10,20,.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 100;
-    padding: 12px 20px;
+    padding: 10px 20px;
   }
   .header-inner {
-    max-width: 1400px; margin: 0 auto;
+    max-width: 1440px; margin: 0 auto;
     display: flex; justify-content: space-between; align-items: center;
     gap: 10px; flex-wrap: wrap;
   }
-  .logo { font-size: 19px; font-weight: 900; white-space: nowrap; }
+  .logo {
+    font-size: 20px; font-weight: 900; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+    letter-spacing: -.3px;
+  }
   .logo span {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  .nav { display: flex; gap: 3px; overflow-x: auto; scrollbar-width: none; }
+  .nav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
   .nav::-webkit-scrollbar { display: none; }
   .nav button {
     background: transparent; border: none; color: var(--muted);
-    padding: 8px 12px; border-radius: 10px; cursor: pointer;
-    font-weight: 700; font-size: 12px; font-family: inherit; transition: .2s;
+    padding: 8px 12px; border-radius: 9px; cursor: pointer;
+    font-weight: 700; font-size: 12px; font-family: inherit;
+    transition: color .15s, background .15s;
     white-space: nowrap;
   }
-  .nav button:hover, .nav button.active { color: #fff; background: var(--card); }
+  .nav button:hover { color: #fff; background: rgba(255,255,255,.05); }
+  .nav button.active { color: #fff; background: var(--card); }
+
   .header-right { display: flex; align-items: center; gap: 6px; }
   .balance {
-    background: var(--card); border: 1px solid var(--border);
-    padding: 7px 12px; border-radius: 10px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 11px;
     font-weight: 800; font-size: 13px;
-    display: flex; align-items: center; gap: 5px;
+    display: flex; align-items: center; gap: 6px;
     font-variant-numeric: tabular-nums;
-    transition: box-shadow .4s;
+    transition: box-shadow .4s, border-color .4s;
   }
-  .balance.flash { box-shadow: 0 0 20px rgba(0,230,118,.6); }
+  .balance.flash-win {
+    box-shadow: 0 0 24px rgba(0,230,118,.7);
+    border-color: var(--green);
+  }
+  .balance.flash-lose {
+    box-shadow: 0 0 24px rgba(255,56,96,.6);
+    border-color: var(--red);
+  }
+  .balance .coin { font-size: 14px; }
   .icon-btn {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; width: 34px; height: 34px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    width: 36px; height: 36px;
     cursor: pointer; color: #fff; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    transition: .2s;
+    transition: border-color .15s, transform .15s;
   }
-  .icon-btn:hover { border-color: var(--accent); background: var(--card2); }
-  .icon-btn.muted { opacity: .4; }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .icon-btn:active { transform: translateY(0); }
+  .icon-btn.muted { opacity: .45; }
 
+  /* ============ LAYOUT ============ */
   .container {
-    max-width: 1400px; margin: 0 auto;
-    padding: 18px 20px; position: relative; z-index: 1;
+    max-width: 1440px; margin: 0 auto;
+    padding: 16px 20px;
+    position: relative; z-index: 1;
   }
 
+  /* ============ SESSION BAR ============ */
   .session-bar {
-    display: flex; gap: 14px; align-items: center;
-    padding: 9px 14px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 14px; font-size: 12px; flex-wrap: wrap;
+    display: flex; gap: 16px; align-items: center;
+    padding: 10px 16px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px; font-size: 12px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm);
   }
   .session-bar .label { color: var(--muted); font-weight: 600; }
   .session-bar .value { font-weight: 800; font-variant-numeric: tabular-nums; }
   .session-bar .value.green { color: var(--green); }
   .session-bar .value.red { color: var(--red); }
 
+  /* ============ LIVE DROPS ============ */
   .live-drops {
-    display: flex; gap: 6px; overflow-x: auto;
-    padding-bottom: 6px; margin-bottom: 14px;
+    display: flex; gap: 8px; overflow-x: auto;
+    padding-bottom: 8px; margin-bottom: 12px;
   }
   .live-drops::-webkit-scrollbar { height: 4px; }
-  .live-drops::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .live-drops:empty { display: none; }
   .drop {
-    min-width: 160px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 9px;
-    padding: 8px 10px; font-size: 11px;
+    min-width: 170px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 11px; font-size: 11px;
+    animation: dropIn .35s cubic-bezier(.5,1.5,.5,1);
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateX(20px) scale(.95); }
   }
   .drop-match {
     font-weight: 700; margin-bottom: 3px;
     overflow: hidden; text-overflow: ellipsis;
-    white-space: nowrap; font-size: 10px; color: var(--muted);
+    white-space: nowrap; font-size: 10px;
+    color: var(--muted);
   }
   .drop-event { color: var(--green); font-size: 11px; font-weight: 700; }
 
+  /* ============ SEARCH ROW ============ */
   .search-row {
     display: flex; gap: 8px;
-    margin-bottom: 12px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 10px; flex-wrap: wrap; align-items: center;
   }
   .search-input {
     flex: 1; min-width: 180px;
-    background: var(--card); border: 1px solid var(--border);
-    color: #fff; padding: 9px 14px;
-    border-radius: 10px; font-size: 13px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    color: #fff; padding: 10px 14px;
+    border-radius: 11px; font-size: 13px;
     font-family: inherit;
+    transition: border-color .15s;
   }
   .search-input:focus { outline: none; border-color: var(--accent); }
   .search-input::placeholder { color: var(--muted); }
 
   .filter {
-    padding: 8px 14px; background: var(--card);
-    border: 1px solid var(--border); border-radius: 10px;
-    cursor: pointer; font-weight: 700; color: var(--muted);
-    font-size: 12px; font-family: inherit; transition: .2s;
+    padding: 8px 14px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer; font-weight: 700;
+    color: var(--muted);
+    font-size: 12px; font-family: inherit;
+    transition: color .15s, border-color .15s, background .15s;
     white-space: nowrap;
   }
-  .filter:hover, .filter.active {
+  .filter:hover { color: #fff; }
+  .filter.active {
     color: #fff; border-color: var(--accent);
-    background: rgba(123,92,255,.1);
+    background: rgba(123,92,255,.15);
   }
-  .filter.star.active { background: rgba(255,184,0,.1); border-color: var(--gold); color: var(--gold); }
-  .filter.toggle.active { background: rgba(0,230,118,.1); border-color: var(--green); color: var(--green); }
+  .filter.star.active {
+    background: rgba(255,184,0,.12);
+    border-color: var(--gold); color: var(--gold);
+  }
+  .filter.toggle.active {
+    background: rgba(0,230,118,.1);
+    border-color: var(--green); color: var(--green);
+  }
   .filters-row {
     display: flex; gap: 6px;
-    margin-bottom: 14px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 12px; flex-wrap: wrap; align-items: center;
   }
   .filters-row .label {
     font-size: 10px; color: var(--muted);
@@ -156,16 +226,25 @@
     letter-spacing: .5px; margin-right: 4px;
   }
 
+  /* ============ MATCH ============ */
   .match {
-    background: linear-gradient(180deg, var(--card), var(--bg2));
-    border: 1px solid var(--border); border-radius: 14px;
-    padding: 12px; margin-bottom: 9px;
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 10px; align-items: center;
-    transition: border-color .2s;
+    background: var(--card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .15s, transform .15s;
   }
-  .match:hover { border-color: #3a3a55; }
-  .match.finished { opacity: .7; }
+  .match:hover { border-color: var(--border-2); }
+  .match.finished { opacity: .65; }
+
   .match-info { min-width: 0; }
   .match-top {
     display: flex; align-items: center; gap: 6px;
@@ -173,308 +252,494 @@
   }
   .match-league {
     font-size: 10px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .4px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px; font-weight: 700;
   }
   .badge {
-    font-size: 9px; padding: 2px 6px; border-radius: 4px;
-    font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
+    font-size: 9px; padding: 3px 7px; border-radius: 5px;
+    font-weight: 800; text-transform: uppercase;
+    letter-spacing: .4px;
   }
-  .badge.live { background: var(--red); color: #fff; }
-  .badge.finished { background: #333; color: #888; }
+  .badge.live {
+    background: var(--red); color: #fff;
+    box-shadow: 0 0 8px rgba(255,56,96,.5);
+  }
+  .badge.finished { background: rgba(100,100,120,.3); color: #aaa; }
   .badge.prematch { background: var(--accent); color: #fff; }
+  .badge.break { background: var(--gold); color: #000; }
 
   .teams-row {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 6px; flex-wrap: wrap;
   }
   .team {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 8px;
     font-weight: 700; font-size: 13px;
   }
   .team-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
+    width: 28px; height: 28px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 9px; color: #fff;
+    font-weight: 900; font-size: 10px; color: #fff;
     flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,.12);
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
   }
   .team-score {
     color: var(--green); font-weight: 800;
     font-variant-numeric: tabular-nums;
-    font-size: 15px; padding: 0 4px;
+    font-size: 16px;
+    padding: 0 4px;
+    letter-spacing: -.5px;
   }
   .team-name { white-space: nowrap; }
-  .minute {
-    font-size: 10px; color: var(--muted);
-    font-weight: 600; margin-left: auto;
-  }
 
-  /* UFC финальный блок */
-  .ufc-final {
-    display: flex; gap: 8px; align-items: center;
-    margin: 8px 0; padding: 10px 12px;
-    background: linear-gradient(135deg, rgba(255,184,0,.15), rgba(255,56,96,.1));
-    border: 1px solid var(--gold);
-    border-radius: 8px;
-    font-size: 12px; font-weight: 700;
+  /* ============ PERIOD PROGRESS ============ */
+  .period-progress {
+    display: flex; gap: 4px;
+    margin: 8px 0 6px;
   }
-  .ufc-final-icon { font-size: 20px; }
-  .ufc-final-text { flex: 1; }
-  .ufc-final-text b { color: var(--gold); }
-
-  .stats-bar {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    margin: 6px 0; padding: 6px 8px;
-    background: rgba(0,0,0,.25);
-    border-radius: 7px; font-size: 10px;
-  }
-  .stat-item { display: flex; align-items: center; gap: 4px; color: var(--muted); }
-  .stat-item b { color: var(--text); font-weight: 700; }
-
-  .form-row {
-    display: flex; gap: 3px; align-items: center;
-    font-size: 10px; margin-top: 4px;
-  }
-  .form-label { color: var(--muted); margin-right: 4px; font-weight: 600; }
-  .form-dot {
-    width: 13px; height: 13px; border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 8px; font-weight: 900;
-  }
-  .form-dot.W { background: rgba(0,230,118,.25); color: var(--green); }
-  .form-dot.D { background: rgba(255,184,0,.25); color: var(--gold); }
-  .form-dot.L { background: rgba(255,56,96,.25); color: var(--red); }
-
-  .odds { display: flex; gap: 5px; }
-  .odds-btn {
-    width: 84px;
-    background: #0f0f1a; border: 1px solid var(--border);
-    border-radius: 8px; padding: 7px 6px;
-    text-align: center; cursor: pointer;
-    transition: border-color .2s; color: #fff;
-    font-family: inherit; font-variant-numeric: tabular-nums;
+  .period-seg {
+    height: 3px; flex: 1;
+    background: rgba(120,120,160,.2);
+    border-radius: 2px;
+    position: relative;
     overflow: hidden;
   }
-  .odds-btn:hover:not(:disabled):not(.disabled) {
-    border-color: var(--accent); background: var(--card);
+  .period-seg.done { background: var(--green); }
+  .period-seg.active {
+    background: rgba(123,92,255,.3);
   }
-  .odds-btn:disabled, .odds-btn.disabled { opacity: .35; cursor: not-allowed; }
-  .odds-label { font-size: 10px; color: var(--muted); margin-bottom: 1px; font-weight: 600; }
-  .odds-value { font-size: 15px; font-weight: 800; color: var(--accent2); }
+  .period-seg.active::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--p, 0%);
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width .5s linear;
+  }
 
+  /* ============ STATS BAR ============ */
+  .stats-bar {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 8px 0 4px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,.25);
+    border-radius: 8px; font-size: 10px;
+  }
+  .stat-item { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+  .stat-item b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ============ UFC FINAL ============ */
+  .ufc-final {
+    display: flex; gap: 10px; align-items: center;
+    margin: 10px 0 4px; padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(255,184,0,.18), rgba(255,56,96,.08));
+    border: 1px solid rgba(255,184,0,.45);
+    border-radius: 10px;
+    font-size: 12px; font-weight: 700;
+    box-shadow: 0 0 20px rgba(255,184,0,.15);
+  }
+  .ufc-final-icon { font-size: 22px; }
+  .ufc-final-text { flex: 1; line-height: 1.5; }
+  .ufc-final-text b { color: var(--gold); }
+  .ufc-final-sub { color: var(--muted); font-weight: 600; font-size: 11px; }
+
+  /* ============ ODDS ============ */
+  .odds { display: flex; gap: 6px; }
+  .odds-btn {
+    width: 90px;
+    background: rgba(15,15,26,.9);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 8px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+    color: #fff;
+    font-family: inherit; font-variant-numeric: tabular-nums;
+    overflow: hidden; position: relative;
+  }
+  .odds-btn:hover:not(:disabled):not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(26,26,46,.9);
+  }
+  .odds-btn:active:not(:disabled):not(.disabled) {
+    transform: scale(.97);
+  }
+  .odds-btn:disabled, .odds-btn.disabled {
+    opacity: .35; cursor: not-allowed;
+  }
+  .odds-label {
+    font-size: 10px; color: var(--muted);
+    margin-bottom: 2px; font-weight: 600;
+  }
+  .odds-value {
+    font-size: 15px; font-weight: 800;
+    color: var(--accent2);
+    transition: color .2s;
+  }
+
+  /* ============ EXTRAS ============ */
   .extras {
-    grid-column: 1 / -1; margin-top: 2px;
-    border-top: 1px solid var(--border); padding-top: 6px;
+    grid-column: 1 / -1; margin-top: 4px;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
   }
   .extras-toggle {
     background: transparent; border: none;
     color: var(--accent2); cursor: pointer;
     font-size: 11px; font-weight: 700;
     padding: 4px 0; font-family: inherit;
+    transition: color .15s;
   }
+  .extras-toggle:hover { color: #fff; }
   .extras-toggle.open { color: var(--muted); }
   .extras-grid {
     display: none;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 5px; margin-top: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 6px; margin-top: 8px;
   }
   .extras-grid.open { display: grid; }
   .odds-mini {
-    background: #0f0f1a; border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 8px;
+    background: rgba(15,15,26,.9);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 9px;
     cursor: pointer; display: flex;
     justify-content: space-between; align-items: center;
     font-family: inherit; color: #fff;
-    transition: border-color .2s; gap: 5px;
-    min-width: 0; overflow: hidden;
+    transition: border-color .15s, background .15s;
+    gap: 6px; min-width: 0; overflow: hidden;
   }
-  .odds-mini:hover:not(.disabled) { border-color: var(--accent); background: var(--card); }
+  .odds-mini:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(26,26,46,.9);
+  }
   .odds-mini.disabled { opacity: .35; cursor: not-allowed; }
-  .odds-mini-label { font-size: 10px; color: var(--muted); text-align: left; }
-  .odds-mini-value { font-size: 12px; font-weight: 800; color: var(--accent2); white-space: nowrap; }
+  .odds-mini-label {
+    font-size: 10px; color: var(--muted);
+    text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .odds-mini-value {
+    font-size: 12px; font-weight: 800;
+    color: var(--accent2); white-space: nowrap;
+  }
 
   .star-btn {
     background: transparent; border: none;
-    font-size: 15px; cursor: pointer;
-    padding: 3px; color: #444; transition: color .2s;
+    font-size: 16px; cursor: pointer;
+    padding: 3px; color: #444;
+    transition: color .15s, transform .15s;
   }
+  .star-btn:hover { transform: scale(1.15); }
   .star-btn.active { color: var(--gold); }
 
-  .history-filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  .history-item {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px;
-    margin-bottom: 8px; display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 10px; align-items: center;
+  /* ============ HISTORY ============ */
+  .history-filters {
+    display: flex; gap: 6px; margin-bottom: 12px;
+    flex-wrap: wrap;
   }
+  .history-item {
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px; align-items: center;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .history-item:hover { border-color: var(--border-2); }
   .history-item.won { border-left: 3px solid var(--green); }
   .history-item.lost { border-left: 3px solid var(--red); }
   .history-item.pending { border-left: 3px solid var(--gold); }
+
   .history-main { min-width: 0; }
   .history-match { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
   .history-meta { font-size: 10px; color: var(--muted); }
   .history-stake { text-align: right; }
-  .history-stake .amount { font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .history-stake .amount {
+    font-weight: 800; font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
   .history-status {
-    font-weight: 800; padding: 3px 9px;
-    border-radius: 5px; text-transform: uppercase;
+    font-weight: 800; padding: 4px 10px;
+    border-radius: 6px; text-transform: uppercase;
     letter-spacing: .4px; font-size: 9px;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
   .history-status.won { background: rgba(0,230,118,.15); color: var(--green); }
   .history-status.lost { background: rgba(255,56,96,.15); color: var(--red); }
   .history-status.pending { background: rgba(255,184,0,.15); color: var(--gold); }
+
+  .cashout-row {
+    grid-column: 1 / -1;
+    display: flex; gap: 8px; align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
   .cashout-btn {
     background: linear-gradient(135deg, var(--green), #00b050);
     border: none; color: #000;
-    padding: 5px 10px; border-radius: 6px;
+    padding: 7px 14px; border-radius: 8px;
     cursor: pointer; font-family: inherit;
-    font-weight: 800; font-size: 10px;
-    margin-top: 6px; grid-column: 1 / -1;
-    width: fit-content;
+    font-weight: 800; font-size: 11px;
+    transition: transform .1s, box-shadow .15s;
   }
+  .cashout-btn:hover { box-shadow: 0 4px 14px rgba(0,230,118,.4); }
+  .cashout-btn:active { transform: scale(.97); }
+  .cashout-info {
+    font-size: 11px; color: var(--muted);
+  }
+  .cashout-info b { color: var(--gold); }
 
+  /* ============ STATS ============ */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px; margin-bottom: 20px;
   }
   .stat {
-    background: var(--card); border: 1px solid var(--border);
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
     border-radius: 12px; padding: 14px;
+    box-shadow: var(--shadow-sm);
   }
-  .stat-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
-  .stat-value { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat-label {
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 4px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .3px;
+  }
+  .stat-value {
+    font-size: 20px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.5px;
+  }
   .stat-value.green { color: var(--green); }
   .stat-value.red { color: var(--red); }
   .stat-value.gold { color: var(--gold); }
 
   .chart-container {
-    background: var(--card); border: 1px solid var(--border);
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
     border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
   }
   .chart-title {
     font-size: 11px; color: var(--muted); font-weight: 700;
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 10px;
   }
   .chart-canvas { width: 100%; height: 180px; display: block; }
 
+  /* ============ ACHIEVEMENTS ============ */
   .achievements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px; margin-bottom: 20px;
+    gap: 10px; margin-bottom: 20px;
   }
   .achievement {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px;
-    text-align: center; opacity: .35;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 10px;
+    text-align: center;
+    opacity: .4;
+    transition: opacity .2s, border-color .2s, box-shadow .2s;
   }
   .achievement.unlocked {
-    opacity: 1; border-color: var(--gold);
-    box-shadow: 0 0 20px rgba(255,184,0,.15);
+    opacity: 1;
+    border-color: var(--gold);
+    box-shadow: 0 0 24px rgba(255,184,0,.18);
   }
-  .achievement-icon { font-size: 28px; margin-bottom: 6px; }
-  .achievement-name { font-size: 10px; font-weight: 700; }
-  .achievement-desc { font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .achievement-icon { font-size: 30px; margin-bottom: 6px; }
+  .achievement-name { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+  .achievement-desc { font-size: 9px; color: var(--muted); }
 
-  .leaderboard { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  /* ============ LEADERBOARD ============ */
+  .leaderboard {
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .lb-header {
+    color: var(--muted); font-size: 12px;
+    margin-bottom: 12px; font-weight: 600;
+  }
+  .lb-header b { color: var(--gold); font-weight: 800; }
   .lb-row {
-    display: grid; grid-template-columns: 36px 1fr auto;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
     gap: 10px; align-items: center;
-    padding: 9px 0; border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
     font-size: 12px;
   }
   .lb-row:last-child { border-bottom: none; }
   .lb-row.me {
-    background: rgba(123,92,255,.1);
-    margin: 0 -14px; padding: 9px 14px;
+    background: rgba(123,92,255,.12);
+    margin: 0 -14px; padding: 10px 14px;
     border-radius: 8px; border-bottom: none;
   }
-  .lb-rank { font-weight: 900; font-size: 15px; color: var(--muted); }
+  .lb-rank {
+    font-weight: 900; font-size: 15px;
+    color: var(--muted); text-align: center;
+  }
   .lb-rank.top1 { color: var(--gold); }
   .lb-rank.top2 { color: #c0c0c0; }
   .lb-rank.top3 { color: #cd7f32; }
   .lb-name { font-weight: 700; }
   .lb-name.me { color: var(--accent2); }
-  .lb-value { font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .lb-value {
+    font-weight: 800; color: var(--green);
+    font-variant-numeric: tabular-nums; font-size: 12px;
+  }
 
+  /* ============ MODAL ============ */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+    background: rgba(0,0,0,.75);
+    backdrop-filter: blur(8px);
     display: none; align-items: center; justify-content: center;
     z-index: 1000; padding: 16px;
+    animation: fadeIn .2s;
   }
+  @keyframes fadeIn { from { opacity: 0; } }
   .modal-overlay.active { display: flex; }
   .modal {
-    background: linear-gradient(180deg, var(--card), var(--bg2));
-    border: 1px solid var(--border); border-radius: 18px;
-    padding: 22px; max-width: 420px; width: 100%;
+    background: linear-gradient(180deg, rgba(31,31,56,.98), rgba(18,18,31,.98));
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    padding: 24px;
+    max-width: 420px; width: 100%;
+    box-shadow: var(--shadow-lg);
+    animation: popIn .25s cubic-bezier(.4,1.4,.6,1);
     max-height: 90vh; overflow-y: auto;
   }
-  .modal h3 { font-size: 16px; margin-bottom: 5px; }
-  .modal .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; line-height: 1.4; }
+  @keyframes popIn {
+    from { transform: scale(.94); opacity: 0; }
+  }
+  .modal h3 {
+    font-size: 16px; margin-bottom: 6px;
+    letter-spacing: -.3px;
+  }
+  .modal .sub {
+    color: var(--muted); font-size: 12px;
+    margin-bottom: 16px; line-height: 1.5;
+  }
   .modal .row {
     display: flex; justify-content: space-between;
-    padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
   }
   .modal .row:last-of-type { border-bottom: none; }
   .modal .row .label { color: var(--muted); }
-  .modal .row .value { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .modal .row .value {
+    font-weight: 700; font-variant-numeric: tabular-nums;
+  }
   .modal input[type="number"] {
-    width: 100%; background: #0f0f1a;
-    border: 1px solid var(--border); color: #fff;
-    padding: 11px 12px; border-radius: 10px;
-    font-size: 15px; margin: 12px 0 8px;
+    width: 100%;
+    background: rgba(15,15,26,.9);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px; margin: 12px 0 10px;
     font-family: inherit; font-weight: 700;
     font-variant-numeric: tabular-nums;
+    transition: border-color .15s;
   }
-  .modal input[type="number"]:focus { outline: none; border-color: var(--accent); }
-  .quick-stakes { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+  .modal input[type="number"]:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .quick-stakes {
+    display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+  }
   .quick-stake {
-    flex: 1; min-width: 52px; padding: 7px 4px;
-    background: #0f0f1a; border: 1px solid var(--border);
-    border-radius: 8px; color: #fff; font-size: 11px;
-    font-weight: 700; cursor: pointer; font-family: inherit; transition: .2s;
+    flex: 1; min-width: 56px;
+    padding: 8px 4px;
+    background: rgba(15,15,26,.9);
+    border: 1px solid var(--border);
+    border-radius: 8px; color: #fff;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: border-color .15s, background .15s;
   }
-  .quick-stake:hover { border-color: var(--accent); background: var(--card); }
-  .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .quick-stake:hover {
+    border-color: var(--accent);
+    background: rgba(26,26,46,.9);
+  }
+  .modal-actions {
+    display: flex; gap: 8px; margin-top: 16px;
+  }
   .btn {
-    flex: 1; padding: 11px; border-radius: 10px;
-    border: none; font-weight: 800; cursor: pointer;
-    font-family: inherit; font-size: 13px; transition: .2s;
+    flex: 1; padding: 12px;
+    border-radius: 10px; border: none;
+    font-weight: 800; cursor: pointer;
+    font-family: inherit; font-size: 13px;
+    transition: transform .1s, box-shadow .15s;
   }
+  .btn:active:not(:disabled) { transform: scale(.98); }
   .btn-primary {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff;
+    box-shadow: 0 4px 16px rgba(123,92,255,.4);
   }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 22px rgba(123,92,255,.55);
+  }
   .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-  .btn-secondary { background: #0f0f1a; color: #fff; border: 1px solid var(--border); }
-  .btn-coupon { background: var(--card); border: 1px solid var(--accent); color: var(--accent2); }
+  .btn-secondary {
+    background: rgba(15,15,26,.9); color: #fff;
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-coupon {
+    background: rgba(123,92,255,.12);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+  }
 
+  /* ============ COUPON ============ */
   .coupon-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(180deg, var(--card), var(--bg2));
+    background: linear-gradient(180deg, rgba(26,26,46,.98), rgba(18,18,31,.98));
+    backdrop-filter: blur(16px);
     border-top: 2px solid var(--accent);
     padding: 10px 16px;
     transform: translateY(100%);
-    transition: transform .3s;
+    transition: transform .3s cubic-bezier(.4,1,.3,1);
     z-index: 200;
-    box-shadow: 0 -10px 40px rgba(0,0,0,.5);
+    box-shadow: 0 -12px 48px rgba(0,0,0,.6);
   }
   .coupon-bar.active { transform: translateY(0); }
-  .coupon-inner { max-width: 1400px; margin: 0 auto; }
+  .coupon-inner { max-width: 1440px; margin: 0 auto; }
   .coupon-items {
-    display: flex; gap: 5px; overflow-x: auto;
+    display: flex; gap: 6px; overflow-x: auto;
     padding-bottom: 6px; margin-bottom: 6px;
   }
   .coupon-items::-webkit-scrollbar { height: 4px; }
-  .coupon-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .coupon-items::-webkit-scrollbar-thumb {
+    background: var(--border); border-radius: 2px;
+  }
   .coupon-item {
-    background: #0f0f1a; border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 8px;
-    display: flex; align-items: center; gap: 6px;
-    min-width: 170px; font-size: 11px;
+    background: rgba(15,15,26,.9);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 7px 9px;
+    display: flex; align-items: center; gap: 8px;
+    min-width: 180px; font-size: 11px;
   }
   .coupon-item-info { flex: 1; min-width: 0; }
   .coupon-item-match {
@@ -484,24 +749,44 @@
   .coupon-item-pick { color: var(--accent2); font-weight: 700; font-size: 10px; }
   .coupon-item-remove {
     background: transparent; border: none;
-    color: var(--red); font-size: 16px;
+    color: var(--red); font-size: 18px;
     cursor: pointer; padding: 0 4px;
     font-family: inherit; line-height: 1;
+    transition: transform .15s;
   }
-  .coupon-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .coupon-item-remove:hover { transform: scale(1.2); }
+  .coupon-actions {
+    display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+  }
   .coupon-clear {
-    background: transparent; border: 1px solid var(--border);
+    background: transparent;
+    border: 1px solid var(--border);
     color: var(--muted); padding: 8px 14px;
     border-radius: 8px; cursor: pointer;
     font-family: inherit; font-weight: 700; font-size: 12px;
+    transition: border-color .15s, color .15s;
   }
+  .coupon-clear:hover { border-color: var(--red); color: var(--red); }
   .coupon-place {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     border: none; color: #fff;
-    padding: 8px 16px; border-radius: 8px;
+    padding: 9px 18px; border-radius: 8px;
     cursor: pointer; font-family: inherit;
     font-weight: 800; font-size: 12px;
+    box-shadow: 0 4px 16px rgba(123,92,255,.4);
+    transition: box-shadow .15s;
   }
+  .coupon-place:hover {
+    box-shadow: 0 6px 22px rgba(123,92,255,.55);
+  }
+
+  /* ============ EMPTY / SKELETON ============ */
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 42px; margin-bottom: 10px; }
+  .empty .text { font-size: 13px; }
 
   .skeleton {
     background: linear-gradient(90deg, var(--card) 25%, var(--card2) 50%, var(--card) 75%);
@@ -509,29 +794,35 @@
     animation: shimmer 1.5s infinite;
     border-radius: 14px;
   }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .skeleton-match { height: 110px; margin-bottom: 10px; }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-match { height: 120px; margin-bottom: 10px; }
 
-  .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
-  .empty .icon { font-size: 42px; margin-bottom: 10px; }
-
-  .tab-content { display: none; }
+  /* ============ TABS ============ */
+  .tab-content { display: none; animation: fadeSlide .25s; }
   .tab-content.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+  }
 
+  /* ============ RESPONSIVE ============ */
   @media (max-width: 720px) {
     header { padding: 10px 12px; }
-    .nav button { padding: 6px 8px; font-size: 11px; }
-    .logo { font-size: 15px; }
+    .nav button { padding: 6px 9px; font-size: 11px; }
+    .logo { font-size: 16px; }
     .balance { padding: 6px 10px; font-size: 12px; }
-    .match { grid-template-columns: 1fr; gap: 8px; padding: 10px; }
-    .odds { justify-content: flex-start; flex-wrap: wrap; }
-    .odds-btn { width: 70px; }
+    .match { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+    .odds { justify-content: stretch; }
+    .odds-btn { flex: 1; min-width: 0; width: auto; }
     .container { padding: 12px; }
     .extras-grid { grid-template-columns: repeat(2, 1fr); }
     .history-item { grid-template-columns: 1fr auto; }
     .history-status { grid-column: 1 / -1; text-align: center; }
-    .session-bar { font-size: 11px; gap: 10px; }
+    .session-bar { font-size: 11px; gap: 10px; padding: 8px 12px; }
     .team-name { font-size: 12px; }
+    .team-avatar { width: 24px; height: 24px; font-size: 9px; }
   }
 </style>
 </head>
@@ -549,7 +840,8 @@
     </nav>
     <div class="header-right">
       <div class="balance" id="balanceBox">
-        💰 <span id="balance">20 000</span> ₽
+        <span class="coin">💰</span>
+        <span id="balance">20 000</span> ₽
       </div>
       <button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
       <button class="icon-btn" id="newLineBtn" title="Новая линия">🔄</button>
@@ -567,9 +859,10 @@
 
   <div class="live-drops" id="liveDrops"></div>
 
+  <!-- LINE -->
   <div class="tab-content active" id="tab-line">
     <div class="search-row">
-      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск команды...">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск команды или лиги...">
       <button class="filter star" id="favOnly">⭐ Избранные</button>
       <button class="filter toggle" id="liveOnly">🔴 Только live</button>
       <button class="filter" id="sortBtn">↕ Время</button>
@@ -588,6 +881,7 @@
     <div id="matches"></div>
   </div>
 
+  <!-- HISTORY -->
   <div class="tab-content" id="tab-history">
     <div class="history-filters">
       <button class="filter active" data-hfilter="all">Все</button>
@@ -599,6 +893,7 @@
     <div id="history"></div>
   </div>
 
+  <!-- STATS -->
   <div class="tab-content" id="tab-stats">
     <div class="stats-grid" id="statsGrid"></div>
     <div class="chart-container">
@@ -607,15 +902,18 @@
     </div>
   </div>
 
+  <!-- ACHIEVEMENTS -->
   <div class="tab-content" id="tab-achiv">
     <div class="achievements-grid" id="achievementsGrid"></div>
   </div>
 
+  <!-- LEADERBOARD -->
   <div class="tab-content" id="tab-top">
     <div class="leaderboard" id="leaderboard"></div>
   </div>
 </div>
 
+<!-- BET MODAL -->
 <div class="modal-overlay" id="betModal">
   <div class="modal">
     <h3 id="betModalTitle">Ставка</h3>
@@ -650,7 +948,6 @@
 // ============================================================
 // ДАННЫЕ
 // ============================================================
-
 const FOOTBALL_TEAMS = [
   { name: 'Manchester City', attack: 2.10, defense: 0.90, league: 'Premier League' },
   { name: 'Arsenal', attack: 1.95, defense: 0.95, league: 'Premier League' },
@@ -678,7 +975,6 @@ const FOOTBALL_TEAMS = [
   { name: 'Krasnodar', attack: 1.85, defense: 1.10, league: 'RPL' },
 ];
 
-// ВАЖНО: attack/defense = ожидаемые голы ЗА МАТЧ (не /3)
 const HOCKEY_TEAMS = [
   { name: 'Edmonton Oilers', attack: 3.55, defense: 3.05, league: 'NHL' },
   { name: 'Florida Panthers', attack: 3.30, defense: 2.75, league: 'NHL' },
@@ -711,7 +1007,6 @@ const UFC_FIGHTERS = [
 // ============================================================
 // УТИЛИТЫ
 // ============================================================
-
 const $ = (id) => document.getElementById(id);
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
@@ -733,7 +1028,7 @@ function poisson(k, lambda) {
 function toOdds(p, margin = 0.05) {
   if (p <= 0) return 999;
   if (p >= 1) return 1.01;
-  return Math.floor((1 / (p * (1 + margin))) * 100) / 100;
+  return Math.ceil((1 / (p * (1 + margin))) * 100) / 100;
 }
 
 function isOddValid(odd) {
@@ -772,14 +1067,11 @@ function generateForm() {
   return form;
 }
 
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 // ============================================================
 // КОЭФФИЦИЕНТЫ
 // ============================================================
-
 function expectedGoalsRemaining(m) {
   const remaining = Math.max(0, m.maxMinute - m.minute);
   const isFootball = m.sport === 'football';
@@ -796,10 +1088,8 @@ function expectedGoalsRemaining(m) {
     else if (m.minute < 40) intensity = 1.05;
     else intensity = 1.2;
   }
-
   const homeRate = (m.homeAttack / m.maxMinute) * intensity;
   const awayRate = (m.awayAttack / m.maxMinute) * intensity;
-
   return {
     lambdaHome: Math.max(0, homeRate * remaining * (1 + m.momentum * 0.25)),
     lambdaAway: Math.max(0, awayRate * remaining * (1 - m.momentum * 0.25)),
@@ -835,8 +1125,8 @@ function computeOdds(m) {
 
   const { lambdaHome, lambdaAway } = expectedGoalsRemaining(m);
   let pHome = 0, pDraw = 0, pAway = 0;
-  for (let h = 0; h <= 12; h++) {
-    for (let a = 0; a <= 12; a++) {
+  for (let h = 0; h <= 15; h++) {
+    for (let a = 0; a <= 15; a++) {
       const p = poisson(h, lambdaHome) * poisson(a, lambdaAway);
       const fh = m.scoreHome + h;
       const fa = m.scoreAway + a;
@@ -849,9 +1139,10 @@ function computeOdds(m) {
   pHome /= total; pDraw /= total; pAway /= total;
 
   if (m.sport === 'hockey') {
-    const t = pHome + pAway || 1;
-    const oH = toOdds(pHome / t, 0.05);
-    const oA = toOdds(pAway / t, 0.05);
+    const pHomeOT = pHome + pDraw * 0.52;
+    const pAwayOT = pAway + pDraw * 0.48;
+    const oH = toOdds(pHomeOT, 0.05);
+    const oA = toOdds(pAwayOT, 0.05);
     return {
       home: isOddValid(oH) ? oH : null,
       away: isOddValid(oA) ? oA : null,
@@ -883,14 +1174,15 @@ function computeExtraMarkets(m) {
 
     const round = m.round;
     let pFinish;
-    if (round === 1) pFinish = 0.35;
-    else if (round === 2) pFinish = 0.30;
-    else if (round === 3) pFinish = 0.25;
-    else if (round === 4) pFinish = 0.15;
-    else pFinish = 0.08;
+    if (round === 1) pFinish = 0.55;
+    else if (round === 2) pFinish = 0.45;
+    else if (round === 3) pFinish = 0.32;
+    else if (round === 4) pFinish = 0.22;
+    else pFinish = 0.12;
+    if (m.minute >= m.maxMinute - 3) pFinish *= 0.5;
 
-    const pKO = pFinish * 0.60;
-    const pSub = pFinish * 0.40;
+    const pKO = pFinish * 0.62;
+    const pSub = pFinish * 0.32;
     const pDec = 1 - pFinish;
 
     const raw = {};
@@ -898,8 +1190,8 @@ function computeExtraMarkets(m) {
     raw['Метод · Сабмишн'] = toOdds(pSub, 0.06);
     raw['Метод · Решение'] = toOdds(pDec, 0.06);
 
-    const pOver15 = round >= 2 ? 1 : 1 - pFinish * 0.7;
-    const pOver25 = round >= 3 ? 1 : 1 - pFinish * 0.9;
+    const pOver15 = round >= 2 ? 1 : 1 - pFinish * 0.85;
+    const pOver25 = round >= 3 ? 1 : 1 - pFinish * 0.95;
     raw['Тотал Б 1.5 раундов'] = toOdds(pOver15, 0.06);
     raw['Тотал М 1.5 раундов'] = toOdds(1 - pOver15, 0.06);
     raw['Тотал Б 2.5 раундов'] = toOdds(pOver25, 0.06);
@@ -908,10 +1200,10 @@ function computeExtraMarkets(m) {
     raw['Бой досрочно'] = toOdds(pFinish, 0.06);
     raw['Пройти всю дистанцию'] = toOdds(pDec, 0.06);
 
-    if (round <= 1) raw['Финиш в R1'] = toOdds(0.30, 0.08);
-    if (round <= 2) raw['Финиш в R2'] = toOdds(0.25, 0.08);
-    if (round <= 3) raw['Финиш в R3'] = toOdds(0.20, 0.08);
-    if (round <= 4) raw['Финиш в R4+'] = toOdds(0.15, 0.08);
+    if (round <= 1) raw['Финиш в R1'] = toOdds(pFinish * 0.40, 0.08);
+    if (round <= 2) raw['Финиш в R2'] = toOdds(pFinish * 0.28, 0.08);
+    if (round <= 3) raw['Финиш в R3'] = toOdds(pFinish * 0.20, 0.08);
+    if (round <= 4) raw['Финиш в R4+'] = toOdds(pFinish * 0.12, 0.08);
 
     raw[`${m.home} KO/TKO`] = toOdds(pHome * pKO, 0.08);
     raw[`${m.home} Сабмишн`] = toOdds(pHome * pSub, 0.08);
@@ -920,74 +1212,75 @@ function computeExtraMarkets(m) {
     raw[`${m.away} Сабмишн`] = toOdds(pAway * pSub, 0.08);
     raw[`${m.away} Решение`] = toOdds(pAway * pDec, 0.08);
 
+    if (round <= 1) {
+      raw[`${m.home} в R1`] = toOdds(pHome * pFinish * 0.20, 0.10);
+      raw[`${m.away} в R1`] = toOdds(pAway * pFinish * 0.20, 0.10);
+    }
+
     return raw;
   }
 
   // Футбол / хоккей
   const isFootball = m.sport === 'football';
   const { lambdaHome, lambdaAway } = expectedGoalsRemaining(m);
-  const lambdaTotal = lambdaHome + lambdaAway;
   const currentTotal = m.scoreHome + m.scoreAway;
 
-  const remDist = [];
-  for (let g = 0; g <= 15; g++) remDist.push(poisson(g, lambdaTotal));
+  const MAX_GOALS = 15;
+  const homeDist = [], awayDist = [];
+  for (let g = 0; g <= MAX_GOALS; g++) {
+    homeDist.push(poisson(g, lambdaHome));
+    awayDist.push(poisson(g, lambdaAway));
+  }
 
-  function overProb(line) {
-    let p = 0;
-    for (let g = 0; g <= 15; g++) if (currentTotal + g > line) p += remDist[g];
-    return p;
+  const scoreMatrix = {};
+  let sumAll = 0;
+  for (let h = 0; h <= MAX_GOALS; h++) {
+    for (let a = 0; a <= MAX_GOALS; a++) {
+      const p = homeDist[h] * awayDist[a];
+      const fh = m.scoreHome + h;
+      const fa = m.scoreAway + a;
+      const key = `${fh}:${fa}`;
+      scoreMatrix[key] = (scoreMatrix[key] || 0) + p;
+      sumAll += p;
+    }
   }
-  function underProb(line) {
-    let p = 0;
-    for (let g = 0; g <= 15; g++) if (currentTotal + g < line) p += remDist[g];
-    return p;
+  for (const k in scoreMatrix) scoreMatrix[k] /= sumAll;
+
+  let pHome = 0, pDraw = 0, pAway = 0, pEven = 0, pBtts = 0;
+  for (const [score, p] of Object.entries(scoreMatrix)) {
+    const [h, a] = score.split(':').map(Number);
+    if (h > a) pHome += p;
+    else if (h === a) pDraw += p;
+    else pAway += p;
+    if ((h + a) % 2 === 0) pEven += p;
+    if (h >= 1 && a >= 1) pBtts += p;
   }
-  function handicapProb(line) {
+
+  function pOver(line) {
     let p = 0;
-    for (let h = 0; h <= 12; h++) {
-      for (let a = 0; a <= 12; a++) {
-        if ((m.scoreHome + h) - (m.scoreAway + a) > line) {
-          p += poisson(h, lambdaHome) * poisson(a, lambdaAway);
-        }
-      }
+    for (const [score, prob] of Object.entries(scoreMatrix)) {
+      const [h, a] = score.split(':').map(Number);
+      if (h + a > line) p += prob;
     }
     return p;
   }
 
-  let pBtts = 0;
-  for (let h = 0; h <= 12; h++) {
-    for (let a = 0; a <= 12; a++) {
-      if (m.scoreHome + h >= 1 && m.scoreAway + a >= 1) {
-        pBtts += poisson(h, lambdaHome) * poisson(a, lambdaAway);
-      }
-    }
-  }
-
-  const odds1X2 = computeOdds(m);
-  const pHome = odds1X2.home && isOddValid(odds1X2.home) ? 1 / odds1X2.home : 0;
-  const pDraw = odds1X2.draw && isOddValid(odds1X2.draw) ? 1 / odds1X2.draw : 0;
-  const pAway = odds1X2.away && isOddValid(odds1X2.away) ? 1 / odds1X2.away : 0;
-
-  let pEven = 0;
-  for (let h = 0; h <= 12; h++) {
-    for (let a = 0; a <= 12; a++) {
-      if ((m.scoreHome + h + m.scoreAway + a) % 2 === 0) {
-        pEven += poisson(h, lambdaHome) * poisson(a, lambdaAway);
-      }
-    }
-  }
-
-  function teamOverProb(attack, line, currentScore) {
-    const remaining = Math.max(0, m.maxMinute - m.minute);
-    const intensity = isFootball
-      ? (m.minute < 15 ? 0.65 : m.minute < 45 ? 1.1 : m.minute < 75 ? 1.1 : 1.4)
-      : (m.minute < 20 ? 0.9 : m.minute < 40 ? 1.05 : 1.2);
-    const remLambda = (attack / m.maxMinute) * remaining * intensity;
-    const needed = Math.floor(line) - currentScore;
-    if (needed < 0) return 1;
-    if (needed >= 12) return 0;
+  function pHandicap(line) {
     let p = 0;
-    for (let g = needed + 1; g <= 12; g++) p += poisson(g, remLambda);
+    for (const [score, prob] of Object.entries(scoreMatrix)) {
+      const [h, a] = score.split(':').map(Number);
+      if (h - a > line) p += prob;
+    }
+    return p;
+  }
+
+  function pTeamOver(side, line) {
+    let p = 0;
+    for (const [score, prob] of Object.entries(scoreMatrix)) {
+      const [h, a] = score.split(':').map(Number);
+      const goals = side === 'home' ? h : a;
+      if (goals > line) p += prob;
+    }
     return p;
   }
 
@@ -997,49 +1290,68 @@ function computeExtraMarkets(m) {
 
   const raw = {};
 
-  if (odds1X2.home && odds1X2.draw && isOddValid(odds1X2.home) && isOddValid(odds1X2.draw)) {
+  if (isFootball) {
     raw['1X'] = toOdds(pHome + pDraw, 0.04);
-  }
-  if (odds1X2.home && odds1X2.away && isOddValid(odds1X2.home) && isOddValid(odds1X2.away)) {
     raw['12'] = toOdds(pHome + pAway, 0.04);
-  }
-  if (odds1X2.draw && odds1X2.away && isOddValid(odds1X2.draw) && isOddValid(odds1X2.away)) {
     raw['X2'] = toOdds(pDraw + pAway, 0.04);
   }
 
   lines.forEach(line => {
-    raw[`ТБ ${line}`] = toOdds(overProb(line), 0.06);
-    raw[`ТМ ${line}`] = toOdds(underProb(line), 0.06);
+    const pO = pOver(line);
+    const pU = 1 - pO;
+    if (pO > 0.005 && pO < 0.995) {
+      raw[`ТБ ${line}`] = toOdds(pO, 0.05);
+      raw[`ТМ ${line}`] = toOdds(pU, 0.05);
+    }
   });
 
-  raw['Ф1 −1.5'] = toOdds(handicapProb(-1.5), 0.06);
-  raw['Ф2 −1.5'] = toOdds(1 - handicapProb(1.5), 0.06);
-  raw['Ф1 +1.5'] = toOdds(1 - handicapProb(-1.5), 0.06);
-  raw['Ф2 +1.5'] = toOdds(handicapProb(1.5), 0.06);
+  if (isFootball) {
+    const pF1m15 = pHandicap(-1.5);
+    const pF2p15 = 1 - pF1m15;
+    const pF2m15 = 1 - pHandicap(1.5);
+    const pF1p15 = 1 - pF2m15;
+    if (pF1m15 > 0.005 && pF1m15 < 0.995) raw['Ф1 −1.5'] = toOdds(pF1m15, 0.05);
+    if (pF1p15 > 0.005 && pF1p15 < 0.995) raw['Ф1 +1.5'] = toOdds(pF1p15, 0.05);
+    if (pF2m15 > 0.005 && pF2m15 < 0.995) raw['Ф2 −1.5'] = toOdds(pF2m15, 0.05);
+    if (pF2p15 > 0.005 && pF2p15 < 0.995) raw['Ф2 +1.5'] = toOdds(pF2p15, 0.05);
+  } else {
+    const pF1m15 = pHandicap(-1.5);
+    const pF2m15 = 1 - pHandicap(1.5);
+    raw['Ф1 −1.5'] = toOdds(pF1m15, 0.05);
+    raw['Ф1 +1.5'] = toOdds(1 - pF1m15, 0.05);
+    raw['Ф2 −1.5'] = toOdds(pF2m15, 0.05);
+    raw['Ф2 +1.5'] = toOdds(1 - pF2m15, 0.05);
+  }
 
-  raw['Обе · Да'] = toOdds(pBtts, 0.06);
-  raw['Обе · Нет'] = toOdds(1 - pBtts, 0.06);
+  if (pBtts > 0.005 && pBtts < 0.995) {
+    raw['Обе · Да'] = toOdds(pBtts, 0.05);
+    raw['Обе · Нет'] = toOdds(1 - pBtts, 0.05);
+  }
 
-  raw['Чёт'] = toOdds(pEven, 0.06);
-  raw['Нечет'] = toOdds(1 - pEven, 0.06);
+  if (pEven > 0.005 && pEven < 0.995) {
+    raw['Чёт'] = toOdds(pEven, 0.05);
+    raw['Нечет'] = toOdds(1 - pEven, 0.05);
+  }
 
   const teamLine = isFootball ? 0.5 : 1.5;
-  const homeOver = teamOverProb(m.homeAttack, teamLine, m.scoreHome);
-  const awayOver = teamOverProb(m.awayAttack, teamLine, m.scoreAway);
-  raw[`${m.home} Б ${teamLine}`] = toOdds(homeOver, 0.06);
-  raw[`${m.home} М ${teamLine}`] = toOdds(1 - homeOver, 0.06);
-  raw[`${m.away} Б ${teamLine}`] = toOdds(awayOver, 0.06);
-  raw[`${m.away} М ${teamLine}`] = toOdds(1 - awayOver, 0.06);
+  const homeOver = pTeamOver('home', teamLine);
+  const awayOver = pTeamOver('away', teamLine);
+  if (homeOver > 0.005 && homeOver < 0.995) {
+    raw[`${m.home} Б ${teamLine}`] = toOdds(homeOver, 0.05);
+    raw[`${m.home} М ${teamLine}`] = toOdds(1 - homeOver, 0.05);
+  }
+  if (awayOver > 0.005 && awayOver < 0.995) {
+    raw[`${m.away} Б ${teamLine}`] = toOdds(awayOver, 0.05);
+    raw[`${m.away} М ${teamLine}`] = toOdds(1 - awayOver, 0.05);
+  }
 
   if (isFootball && m.minute < 85) {
-    const scores = ['0:0','1:0','0:1','1:1','2:0','0:2','2:1','1:2','2:2','3:0','0:3','3:1','1:3','3:2','2:3'];
-    scores.forEach(sc => {
-      const [h, a] = sc.split(':').map(Number);
-      const dh = Math.max(0, h - m.scoreHome);
-      const da = Math.max(0, a - m.scoreAway);
-      const p = poisson(dh, lambdaHome) * poisson(da, lambdaAway);
-      raw[`Счёт ${sc}`] = toOdds(p, 0.08);
-    });
+    for (const [score, p] of Object.entries(scoreMatrix)) {
+      const [h, a] = score.split(':').map(Number);
+      if (h > 4 || a > 4) continue;
+      if (p < 0.003) continue;
+      raw[`Счёт ${score}`] = toOdds(p, 0.08);
+    }
   }
 
   return raw;
@@ -1048,7 +1360,6 @@ function computeExtraMarkets(m) {
 // ============================================================
 // СОЗДАНИЕ МАТЧЕЙ
 // ============================================================
-
 let nextId = 1;
 
 function createFootballMatch(isPrematch = false) {
@@ -1061,14 +1372,13 @@ function createFootballMatch(isPrematch = false) {
     id: nextId++, sport: 'football', league,
     home: home.name, away: away.name,
     homeAttack: home.attack, awayAttack: away.attack,
-    homeDefense: home.defense, awayDefense: away.defense,
     scoreHome: 0, scoreAway: 0,
     minute: 0, maxMinute: 90,
+    period: '1H', breakLeft: 0,
     status: isPrematch ? 'prematch' : 'live',
     momentum: 0,
     startsIn: isPrematch ? rand(3, 30) : 0,
-    formHome: generateForm(),
-    formAway: generateForm(),
+    formHome: generateForm(), formAway: generateForm(),
   };
 }
 
@@ -1082,14 +1392,13 @@ function createHockeyMatch(isPrematch = false) {
     id: nextId++, sport: 'hockey', league,
     home: home.name, away: away.name,
     homeAttack: home.attack, awayAttack: away.attack,
-    homeDefense: home.defense, awayDefense: away.defense,
     scoreHome: 0, scoreAway: 0,
     minute: 0, maxMinute: 60,
+    period: 'P1', breakLeft: 0,
     status: isPrematch ? 'prematch' : 'live',
     momentum: 0,
     startsIn: isPrematch ? rand(3, 30) : 0,
-    formHome: generateForm(),
-    formAway: generateForm(),
+    formHome: generateForm(), formAway: generateForm(),
   };
 }
 
@@ -1104,13 +1413,12 @@ function createUFCMatch(isPrematch = false) {
     home: home.name, away: away.name,
     homeRating: home.rating, awayRating: away.rating,
     scoreHome: 0, scoreAway: 0,
-    minute: 0, maxMinute: 25,
-    round: 1,
+    minute: 0, maxMinute: 35,
+    round: 1, breakLeft: 0,
     status: isPrematch ? 'prematch' : 'live',
     momentum: 0,
     startsIn: isPrematch ? rand(5, 40) : 0,
-    // Финальный результат — заполнится в конце
-    finalResult: null, // { winner: 'home'|'away', method: 'KO/TKO'|'Сабмишн'|'Решение', round: 1-5 }
+    finalResult: null,
   };
 }
 
@@ -1137,7 +1445,6 @@ function createMatches(count = 15) {
 // ============================================================
 // СОСТОЯНИЕ
 // ============================================================
-
 let wallet = {
   balance: 20000,
   dailyLimit: 20000,
@@ -1164,7 +1471,6 @@ let expressCoupon = [];
 let openExtras = new Set();
 let favorites = new Set();
 
-// Звуки
 let audio = null;
 function beep(freq, duration, type = 'sine', volume = 0.08) {
   if (!soundOn) return;
@@ -1182,16 +1488,16 @@ function beep(freq, duration, type = 'sine', volume = 0.08) {
 }
 function soundBet() { beep(600, 0.08); }
 function soundWin() {
-  beep(660, 0.12); setTimeout(() => beep(880, 0.12), 120);
+  beep(660, 0.12);
+  setTimeout(() => beep(880, 0.12), 120);
   setTimeout(() => beep(1100, 0.2), 240);
 }
 function soundLose() { beep(220, 0.3, 'sawtooth', 0.05); }
 function vibrate(ms = 10) { if (navigator.vibrate) navigator.vibrate(ms); }
 
 // ============================================================
-// LOCALSTORAGE
+// STORAGE
 // ============================================================
-
 function saveWallet() { localStorage.setItem('openbet_wallet', JSON.stringify(wallet)); }
 function loadWallet() {
   try {
@@ -1258,9 +1564,8 @@ function resetWalletIfNewDay() {
 }
 
 // ============================================================
-// СИМУЛЯЦИЯ МАТЧЕЙ
+// СИМУЛЯЦИЯ
 // ============================================================
-
 function tickMatch(m) {
   if (m.status === 'prematch') {
     m.startsIn -= 1;
@@ -1270,77 +1575,126 @@ function tickMatch(m) {
 
   if (m.status !== 'live') return;
 
+  // Перерыв
+  if (m.breakLeft > 0) {
+    m.breakLeft -= 1;
+    if (m.breakLeft === 0) {
+      if (m.sport === 'football' && m.period === 'HT') {
+        m.period = '2H';
+      } else if (m.sport === 'hockey' && m.period === 'BR1') {
+        m.period = 'P2';
+      } else if (m.sport === 'hockey' && m.period === 'BR2') {
+        m.period = 'P3';
+      }
+    }
+    return;
+  }
+
   m.minute += 1;
   m.momentum *= 0.93;
 
-  // ============ UFC ============
+  // UFC
   if (m.sport === 'ufc') {
-    if (m.minute % 5 === 0) m.round = Math.min(5, m.round + 1);
+    const cycle = 7; // 5 тиков раунд + 2 перерыв
+    const tick = m.minute % cycle;
+    m.round = Math.min(5, Math.floor(m.minute / cycle) + 1);
 
-    const homeAdv = (m.homeRating - m.awayRating) / 400;
-    const homeWinsRound = Math.random() < (0.5 + homeAdv * 0.3);
-    if (homeWinsRound) {
-      m.momentum = Math.min(1, m.momentum + 0.25);
-    } else {
-      m.momentum = Math.max(-1, m.momentum - 0.25);
-    }
-
-    // Досрочный финиш (5% в минуту)
-    if (Math.random() < 0.05) {
-      const winner = Math.random() < (0.5 + homeAdv) ? 'home' : 'away';
-      const method = Math.random() < 0.6 ? 'KO/TKO' : 'Сабмишн';
-      // Счёт: победитель 1, проигравший 0 — как в UFC (не голики)
-      if (winner === 'home') {
-        m.scoreHome = 1;
-        m.scoreAway = 0;
-      } else {
-        m.scoreHome = 0;
-        m.scoreAway = 1;
-      }
-      m.finalResult = {
-        winner,
-        method,
-        round: m.round,
-      };
-      m.status = 'finished';
+    if (tick >= 5 && m.round < 5) {
+      m.breakLeft = 1;
       return;
     }
 
-    // Дошёл до конца (все 5 раундов / 25 "минут")
-    if (m.minute >= m.maxMinute) {
+    const homeAdv = (m.homeRating - m.awayRating) / 400;
+    const homeWins = Math.random() < (0.5 + homeAdv * 0.3);
+    if (homeWins) m.momentum = Math.min(1, m.momentum + 0.25);
+    else m.momentum = Math.max(-1, m.momentum - 0.25);
+
+    if (Math.random() < 0.06) {
+      const winner = Math.random() < (0.5 + homeAdv) ? 'home' : 'away';
+      const method = Math.random() < 0.6 ? 'KO/TKO' : 'Сабмишн';
+      if (winner === 'home') { m.scoreHome = 1; m.scoreAway = 0; }
+      else { m.scoreHome = 0; m.scoreAway = 1; }
+      m.finalResult = { winner, method, round: m.round };
+      m.status = 'finished';
+      m.finishedAt = Date.now();
+      return;
+    }
+
+    if (m.minute >= 33) {
       const winner = m.momentum > 0 ? 'home' : 'away';
       if (winner === 'home') { m.scoreHome = 1; m.scoreAway = 0; }
       else { m.scoreHome = 0; m.scoreAway = 1; }
-      m.finalResult = {
-        winner,
-        method: 'Решение',
-        round: 5,
-      };
+      m.finalResult = { winner, method: 'Решение', round: 5 };
       m.status = 'finished';
+      m.finishedAt = Date.now();
       return;
     }
     return;
   }
 
-  // ============ Футбол / хоккей ============
-  if (m.minute >= m.maxMinute) {
-    m.status = 'finished';
+  // Футбол
+  if (m.sport === 'football') {
+    if (m.minute === 45 && m.period === '1H') {
+      m.period = 'HT';
+      m.breakLeft = 3;
+      return;
+    }
+    if (m.minute >= 90) {
+      m.status = 'finished';
+      m.finishedAt = Date.now();
+      return;
+    }
+
+    const { lambdaHome, lambdaAway } = expectedGoalsRemaining(m);
+    const remaining = Math.max(1, m.maxMinute - m.minute);
+    const pHome = lambdaHome / remaining;
+    const pAway = lambdaAway / remaining;
+
+    if (Math.random() < pHome) {
+      m.scoreHome += 1;
+      m.momentum = Math.min(1, m.momentum + 0.35);
+      addLiveDrop(m, m.home, `${m.scoreHome}:${m.scoreAway}`);
+    } else if (Math.random() < pAway) {
+      m.scoreAway += 1;
+      m.momentum = Math.max(-1, m.momentum - 0.35);
+      addLiveDrop(m, m.away, `${m.scoreHome}:${m.scoreAway}`);
+    }
     return;
   }
 
-  const { lambdaHome, lambdaAway } = expectedGoalsRemaining(m);
-  const remaining = Math.max(1, m.maxMinute - m.minute);
-  const pHome = lambdaHome / remaining;
-  const pAway = lambdaAway / remaining;
+  // Хоккей
+  if (m.sport === 'hockey') {
+    if (m.minute === 20 && m.period === 'P1') {
+      m.period = 'BR1';
+      m.breakLeft = 3;
+      return;
+    }
+    if (m.minute === 40 && m.period === 'P2') {
+      m.period = 'BR2';
+      m.breakLeft = 3;
+      return;
+    }
+    if (m.minute >= 60) {
+      m.status = 'finished';
+      m.finishedAt = Date.now();
+      return;
+    }
 
-  if (Math.random() < pHome) {
-    m.scoreHome += 1;
-    m.momentum = Math.min(1, m.momentum + 0.35);
-    addLiveDrop(m, m.home, `${m.scoreHome}:${m.scoreAway}`);
-  } else if (Math.random() < pAway) {
-    m.scoreAway += 1;
-    m.momentum = Math.max(-1, m.momentum - 0.35);
-    addLiveDrop(m, m.away, `${m.scoreHome}:${m.scoreAway}`);
+    const { lambdaHome, lambdaAway } = expectedGoalsRemaining(m);
+    const remaining = Math.max(1, m.maxMinute - m.minute);
+    const pHome = lambdaHome / remaining;
+    const pAway = lambdaAway / remaining;
+
+    if (Math.random() < pHome) {
+      m.scoreHome += 1;
+      m.momentum = Math.min(1, m.momentum + 0.35);
+      addLiveDrop(m, m.home, `${m.scoreHome}:${m.scoreAway}`);
+    } else if (Math.random() < pAway) {
+      m.scoreAway += 1;
+      m.momentum = Math.max(-1, m.momentum - 0.35);
+      addLiveDrop(m, m.away, `${m.scoreHome}:${m.scoreAway}`);
+    }
+    return;
   }
 }
 
@@ -1356,7 +1710,6 @@ function addLiveDrop(m, scorer, score) {
 // ============================================================
 // РЕНДЕР
 // ============================================================
-
 function renderBalance() {
   $('balance').textContent = formatMoney(wallet.balance);
   renderSession();
@@ -1376,10 +1729,12 @@ function renderSession() {
   $('sessionWinrate').textContent = winrate;
 }
 
-function flashBalance() {
+function flashBalance(type) {
   const box = $('balanceBox');
-  box.classList.add('flash');
-  setTimeout(() => box.classList.remove('flash'), 500);
+  box.classList.add(type === 'win' ? 'flash-win' : 'flash-lose');
+  setTimeout(() => {
+    box.classList.remove('flash-win', 'flash-lose');
+  }, 800);
 }
 
 function renderLeagueFilters() {
@@ -1408,6 +1763,42 @@ function setSort() {
   const labels = { time: '↕ Время', 'odd-high': '↕ Кэф ↑', 'odd-low': '↕ Кэф ↓' };
   $('sortBtn').textContent = labels[next];
   renderMatches();
+}
+
+function renderPeriodProgress(m) {
+  if (m.status !== 'live' && m.status !== 'finished') return '';
+
+  if (m.sport === 'football') {
+    const h1 = Math.min(1, m.minute / 45);
+    const h2 = Math.max(0, Math.min(1, (m.minute - 45) / 45));
+    return `<div class="period-progress">
+      <div class="period-seg ${h1 >= 1 ? 'done' : 'active'}" style="--p: ${h1 * 100}%"></div>
+      <div class="period-seg ${h2 >= 1 ? 'done' : 'active'}" style="--p: ${h2 * 100}%"></div>
+    </div>`;
+  }
+  if (m.sport === 'hockey') {
+    const p1 = Math.min(1, m.minute / 20);
+    const p2 = Math.max(0, Math.min(1, (m.minute - 20) / 20));
+    const p3 = Math.max(0, Math.min(1, (m.minute - 40) / 20));
+    return `<div class="period-progress">
+      <div class="period-seg ${p1 >= 1 ? 'done' : 'active'}" style="--p: ${p1 * 100}%"></div>
+      <div class="period-seg ${p2 >= 1 ? 'done' : 'active'}" style="--p: ${p2 * 100}%"></div>
+      <div class="period-seg ${p3 >= 1 ? 'done' : 'active'}" style="--p: ${p3 * 100}%"></div>
+    </div>`;
+  }
+  if (m.sport === 'ufc') {
+    const segs = [];
+    for (let i = 1; i <= 5; i++) {
+      const done = m.round > i || (m.status === 'finished' && m.round >= i);
+      const active = m.round === i && m.status === 'live';
+      let p = 0;
+      if (active) p = ((m.minute % 7) / 5) * 100;
+      if (done) p = 100;
+      segs.push(`<div class="period-seg ${done ? 'done' : active ? 'active' : ''}" style="--p: ${Math.min(100, p)}%"></div>`);
+    }
+    return `<div class="period-progress">${segs.join('')}</div>`;
+  }
+  return '';
 }
 
 function renderMatches() {
@@ -1442,7 +1833,7 @@ function renderMatches() {
 
   const el = $('matches');
   if (!filtered.length) {
-    el.innerHTML = `<div class="empty"><div class="icon">🎯</div>Матчей нет</div>`;
+    el.innerHTML = `<div class="empty"><div class="icon">🎯</div><div class="text">Матчей нет</div></div>`;
     return;
   }
 
@@ -1454,7 +1845,6 @@ function renderMatches() {
     const extrasKeys = Object.keys(extras);
     const isOpen = openExtras.has(m.id);
     const isFav = favorites.has(m.id);
-    const momentumWidth = Math.abs(m.momentum) * 50;
 
     const extrasHtml = extrasKeys.length ? `
       <div class="extras">
@@ -1466,7 +1856,9 @@ function renderMatches() {
             const odd = extras[label];
             const valid = isOddValid(odd);
             return `<button class="odds-mini ${valid ? '' : 'disabled'}"
-              data-mid="${m.id}" data-mk="${encodeURIComponent(label)}" data-odd="${valid ? odd : ''}"
+              data-mid="${m.id}"
+              data-mk="${encodeURIComponent(label)}"
+              data-odd="${valid ? odd : ''}"
               ${valid ? '' : 'disabled'}>
               <span class="odds-mini-label">${label}</span>
               <span class="odds-mini-value">${valid ? odd.toFixed(2) : '—'}</span>
@@ -1479,13 +1871,6 @@ function renderMatches() {
     const homeAvatar = `<div class="team-avatar" style="background:${teamColor(m.home)}">${teamInitials(m.home)}</div>`;
     const awayAvatar = `<div class="team-avatar" style="background:${teamColor(m.away)}">${teamInitials(m.away)}</div>`;
 
-    const formHtml = (m.formHome && m.formAway) ? `
-      <div class="form-row">
-        <span class="form-label">Форма:</span>
-        ${m.formHome.map(r => `<span class="form-dot ${r}">${r}</span>`).join('')}
-      </div>
-    ` : '';
-
     const statsHtml = (m.status === 'live' || isFinished) && m.sport !== 'ufc' ? `
       <div class="stats-bar">
         <span class="stat-item">xG: <b>${((m.homeAttack * m.minute / m.maxMinute) || 0).toFixed(2)} — ${((m.awayAttack * m.minute / m.maxMinute) || 0).toFixed(2)}</b></span>
@@ -1494,41 +1879,44 @@ function renderMatches() {
       </div>
     ` : '';
 
-    // UFC — прематч: показать таймер, live: раунд, finished: результат
-    let prematchInfo = '';
+    let statusBadge;
+    if (isFinished) statusBadge = '<span class="badge finished">Завершён</span>';
+    else if (isPrematch) statusBadge = '<span class="badge prematch">Скоро</span>';
+    else if (m.breakLeft > 0) statusBadge = '<span class="badge break">⏸ ПЕРЕРЫВ</span>';
+    else statusBadge = '<span class="badge live">LIVE</span>';
+
+    let timeInfo = '';
     if (isPrematch) {
-      prematchInfo = `<div class="minute">⏰ через ${m.startsIn} мин</div>`;
+      timeInfo = `<span class="team-name" style="color:var(--muted);font-size:11px">⏰ через ${m.startsIn} мин</span>`;
     } else if (m.status === 'live') {
-      prematchInfo = `<span class="minute">R${m.round} · ${m.minute}'</span>`;
+      let label = '';
+      if (m.sport === 'football') label = m.period === '1H' ? '1-й тайм' : m.period === 'HT' ? 'перерыв' : '2-й тайм';
+      else if (m.sport === 'hockey') label = m.period === 'P1' ? '1-й период' : m.period === 'P2' ? '2-й период' : m.period === 'P3' ? '3-й период' : 'перерыв';
+      else if (m.sport === 'ufc') label = `R${m.round}/5`;
+      timeInfo = `<span class="team-name" style="color:var(--muted);font-size:11px">${label} · ${m.minute}'</span>`;
     }
 
-    // UFC — финальный блок (только после окончания)
     let ufcFinalHtml = '';
     if (m.sport === 'ufc' && isFinished && m.finalResult) {
       const winnerName = m.finalResult.winner === 'home' ? m.home : m.away;
-      const methodIcon = m.finalResult.method === 'KO/TKO' ? '💥' 
+      const methodIcon = m.finalResult.method === 'KO/TKO' ? '💥'
         : m.finalResult.method === 'Сабмишн' ? '🤼' : '📋';
       ufcFinalHtml = `
         <div class="ufc-final">
           <span class="ufc-final-icon">${methodIcon}</span>
           <div class="ufc-final-text">
             Победа: <b>${winnerName}</b><br>
-            <span style="color:var(--muted);font-weight:600">${m.finalResult.method} · R${m.finalResult.round}</span>
+            <span class="ufc-final-sub">${m.finalResult.method} · R${m.finalResult.round} · ${m.scoreHome}:${m.scoreAway}</span>
           </div>
         </div>
       `;
     }
 
-    // Счёт — в UFC не показываем во время боя
     let scoreDisplay;
-    if (m.sport === 'ufc') {
-      if (isFinished && m.finalResult) {
-        scoreDisplay = `<span class="team-score">${m.scoreHome}:${m.scoreAway}</span>`;
-      } else if (isPrematch) {
-        scoreDisplay = `<span class="team-score" style="color:var(--muted)">—</span>`;
-      } else {
-        scoreDisplay = `<span class="team-score" style="color:var(--muted)">—</span>`;
-      }
+    if (m.sport === 'ufc' && !isFinished) {
+      scoreDisplay = `<span class="team-score" style="color:var(--muted)">—</span>`;
+    } else if (m.sport === 'ufc' && isFinished && m.finalResult) {
+      scoreDisplay = `<span class="team-score">${m.scoreHome}:${m.scoreAway}</span>`;
     } else {
       scoreDisplay = `<span class="team-score">${m.scoreHome}:${m.scoreAway}</span>`;
     }
@@ -1539,25 +1927,18 @@ function renderMatches() {
           <div class="match-top">
             <span class="sport-icon">${sportIcon(m.sport)}</span>
             <span class="match-league">${m.league}</span>
-            ${isFinished ? '<span class="badge finished">Завершён</span>' :
-              isPrematch ? '<span class="badge prematch">Скоро</span>' :
-              '<span class="badge live">LIVE</span>'}
-            <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${m.id})" style="margin-left:auto">${isFav ? '★' : '☆'}</button>
+            ${statusBadge}
+            <button class="star-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation();toggleFav(${m.id})" style="margin-left:auto">${isFav ? '★' : '☆'}</button>
           </div>
           <div class="teams-row">
             <div class="team">${homeAvatar}<span class="team-name">${m.home}</span></div>
             ${scoreDisplay}
             <div class="team">${awayAvatar}<span class="team-name">${m.away}</span></div>
-            ${prematchInfo}
+            ${timeInfo}
           </div>
+          ${renderPeriodProgress(m)}
           ${ufcFinalHtml}
           ${statsHtml}
-          ${formHtml}
-          ${m.sport !== 'ufc' && !isPrematch ? `
-            <div class="momentum-bar">
-              <div class="momentum-fill" style="width:${momentumWidth}%; margin-left:${m.momentum > 0 ? '50%' : (50 - momentumWidth) + '%'}"></div>
-            </div>
-          ` : ''}
         </div>
         <div class="odds">
           ${renderOddsBtn(m, 'home', '1', odds.home, isFinished || isPrematch)}
@@ -1616,7 +1997,7 @@ function renderHistory() {
   if (currentHistoryFilter !== 'all') list = list.filter(b => b.status === currentHistoryFilter);
 
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="icon">📜</div>Ставок пока нет</div>`;
+    el.innerHTML = `<div class="empty"><div class="icon">📜</div><div class="text">Ставок пока нет</div></div>`;
     return;
   }
 
@@ -1625,14 +2006,20 @@ function renderHistory() {
       ? `${b.selections.length} событий · @ ${b.odd.toFixed(2)}`
       : `${b.pick === 'home' ? '1' : b.pick === 'draw' ? 'X' : b.pick === 'away' ? '2' : b.pick} · @ ${b.odd.toFixed(2)}`;
 
+    // Кэшаут — только для live одиночных ставок
     const m = matches.find(x => x.id === b.matchId);
     let cashoutHtml = '';
-    if (b.status === 'pending' && m && m.status === 'live' && b.type !== 'express') {
-      const co = Math.round(b.stake * 0.85 * 100) / 100;
-      cashoutHtml = `<button class="cashout-btn" onclick="cashoutBet(${b.id})">💰 Забрать ${formatMoney(co)} ₽</button>`;
+    if (b.status === 'pending' && b.type !== 'express' && m && m.status === 'live') {
+      const co = computeCashoutValue(b, m);
+      if (co > 0) {
+        cashoutHtml = `<div class="cashout-row">
+          <button class="cashout-btn" onclick="event.stopPropagation();doCashout(${b.id})">💰 Забрать ${formatMoney(co)} ₽</button>
+          <span class="cashout-info">из потенциальных <b>${formatMoney(b.potential)} ₽</b></span>
+        </div>`;
+      }
     }
 
-    return `<div class="history-item ${b.status}">
+    return `<div class="history-item ${b.status}" onclick="openMatchFromHistory(${b.matchId || 0})">
       <div class="history-main">
         <div class="history-match">${b.match}</div>
         <div class="history-meta">${meta} · ${new Date(b.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>
@@ -1649,23 +2036,71 @@ function renderHistory() {
   }).join('');
 }
 
-function cashoutBet(id) {
-  const b = wallet.bets.find(x => x.id === id);
+// ============================================================
+// КЭШАУТ
+// ============================================================
+function computeCashoutValue(b, m) {
+  if (!m || m.status !== 'live' || b.status !== 'pending') return 0;
+
+  // Текущая вероятность выигрыша ставки
+  const currentOdds = computeOdds(m);
+  if (!b.pick || !currentOdds[b.pick]) {
+    // Для расширенных рынков — упрощённо: 50% от потенциального
+    return Math.round(b.stake * 0.5 * 100) / 100;
+  }
+
+  const currentOdd = currentOdds[b.pick];
+  // Игрок "стоит" потенциальный выигрыш (potential), 
+  // и его текущая "стоимость" = potential / currentOdd (нормализовано)
+  const fairValue = b.potential / currentOdd;
+  // Букмекер даёт 92% от fair value (маржа на cashout)
+  const payout = Math.max(b.stake * 0.1, Math.round(fairValue * 0.92 * 100) / 100);
+  // Не больше потенциального выигрыша
+  return Math.min(payout, b.potential);
+}
+
+function doCashout(betId) {
+  const b = wallet.bets.find(x => x.id === betId);
   if (!b || b.status !== 'pending') return;
-  const co = Math.round(b.stake * 0.85 * 100) / 100;
+  const m = matches.find(x => x.id === b.matchId);
+  if (!m) return;
+
+  const co = computeCashoutValue(b, m);
+  if (co <= 0) return;
+
   b.status = 'won';
   b.payout = co;
   b.cashout = true;
   wallet.balance += co;
   wallet.totalWon += co;
   saveWallet();
-  flashBalance();
+  flashBalance('win');
   renderBalance();
   renderHistory();
   renderStats();
+  renderAchievements();
   soundBet();
 }
 
+// Клик по матчу в истории
+function openMatchFromHistory(matchId) {
+  if (!matchId) return;
+  const m = matches.find(x => x.id === matchId);
+  if (!m) {
+    alert('Матч не найден — он был заменён');
+    return;
+  }
+  if (m.status === 'finished') {
+    alert(`Матч завершён: ${m.home} ${m.scoreHome}:${m.scoreAway} ${m.away}`);
+    return;
+  }
+  // Показываем модалку с информацией о матче
+  alert(`${m.home} vs ${m.away}\n${m.status === 'live' ? `${m.minute}' · ${m.scoreHome}:${m.scoreAway}` : `начнётся через ${m.startsIn} мин`}`);
+}
+
+// ============================================================
+// СТАТИСТИКА
+// ============================================================
 function renderStats() {
   const won = wallet.bets.filter(b => b.status === 'won').length;
   const lost = wallet.bets.filter(b => b.status === 'lost').length;
@@ -1723,7 +2158,7 @@ function drawProfitChart() {
 
   const step = w / (history.length - 1);
   const gradient = ctx.createLinearGradient(0, 0, 0, h);
-  gradient.addColorStop(0, 'rgba(123,92,255,.4)');
+  gradient.addColorStop(0, 'rgba(123,92,255,.45)');
   gradient.addColorStop(1, 'rgba(123,92,255,0)');
 
   ctx.beginPath();
@@ -1746,7 +2181,6 @@ function drawProfitChart() {
 // ============================================================
 // ДОСТИЖЕНИЯ
 // ============================================================
-
 const ACHIEVEMENTS = [
   { id: 'first_bet', icon: '🎯', name: 'Первая ставка', desc: 'Сделай первую ставку', check: w => w.bets.length >= 1 },
   { id: 'bet_10', icon: '📊', name: '10 ставок', desc: '10 ставок', check: w => w.bets.length >= 10 },
@@ -1758,7 +2192,7 @@ const ACHIEVEMENTS = [
   { id: 'express', icon: '🎰', name: 'Экспресс', desc: 'Сделай экспресс', check: w => w.bets.some(b => b.type === 'express') },
   { id: 'rich', icon: '👑', name: 'Богач', desc: 'Баланс 100 000 ₽', check: w => w.balance >= 100000 },
   { id: 'lucky', icon: '🍀', name: 'Удача', desc: 'Кэф 5.00+ выиграл', check: w => w.bets.some(b => b.status === 'won' && b.odd >= 5) },
-  { id: 'cashout', icon: '💸', name: 'Кэшаут', desc: 'Кэшаут', check: w => w.bets.some(b => b.cashout) },
+  { id: 'cashout', icon: '💸', name: 'Кэшаут', desc: 'Используй кэшаут', check: w => w.bets.some(b => b.cashout) },
   { id: 'exact_score', icon: '🎯', name: 'Точный счёт', desc: 'Угадай счёт', check: w => w.bets.some(b => b.status === 'won' && b.pick && b.pick.startsWith('Счёт')) },
 ];
 
@@ -1785,7 +2219,6 @@ function renderAchievements() {
 // ============================================================
 // ЛИДЕРБОРД
 // ============================================================
-
 const BOT_PLAYERS = [
   { name: 'CryptoKing', profit: 2450000 },
   { name: 'BetMaster', profit: 1890500 },
@@ -1806,7 +2239,7 @@ function renderLeaderboard() {
   const myRank = all.findIndex(p => p.me) + 1;
 
   $('leaderboard').innerHTML = `
-    <div style="color:var(--muted);font-size:12px;margin-bottom:12px">Твой ранг: <b style="color:var(--gold)">#${myRank}</b></div>
+    <div class="lb-header">Твой ранг: <b>#${myRank}</b></div>
     ${all.slice(0, 15).map((p, i) => `
       <div class="lb-row ${p.me ? 'me' : ''}">
         <div class="lb-rank ${i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">#${i + 1}</div>
@@ -1820,7 +2253,6 @@ function renderLeaderboard() {
 // ============================================================
 // СТАВКИ
 // ============================================================
-
 function openBetModal(matchId, pickKey, odd) {
   if (!isOddValid(odd)) return;
   const m = matches.find(x => x.id === matchId);
@@ -1901,7 +2333,7 @@ function placeBet() {
   }
 
   saveWallet();
-  flashBalance();
+  flashBalance('win');
   renderBalance();
   renderHistory();
   renderStats();
@@ -1914,7 +2346,6 @@ function placeBet() {
 // ============================================================
 // КУПОН
 // ============================================================
-
 function addToCoupon(matchId, pickKey, odd, label) {
   if (!isOddValid(odd)) return;
   if (expressCoupon.find(c => c.matchId === matchId && c.pick === pickKey)) return;
@@ -1931,8 +2362,16 @@ function addToCoupon(matchId, pickKey, odd, label) {
   renderCoupon();
 }
 
-function removeFromCoupon(i) { expressCoupon.splice(i, 1); saveCoupon(); renderCoupon(); }
-function clearCoupon() { expressCoupon = []; saveCoupon(); renderCoupon(); }
+function removeFromCoupon(i) {
+  expressCoupon.splice(i, 1);
+  saveCoupon();
+  renderCoupon();
+}
+function clearCoupon() {
+  expressCoupon = [];
+  saveCoupon();
+  renderCoupon();
+}
 
 function renderCoupon() {
   const el = $('couponBar');
@@ -1984,28 +2423,28 @@ function openExpressModal() {
 // ============================================================
 // РАСЧЁТ СТАВОК
 // ============================================================
-
 function checkSelection(m, pick) {
-  if (m.status !== 'finished') return 'pending';
+  if (!m || m.status !== 'finished') return 'pending';
 
   const total = m.scoreHome + m.scoreAway;
 
-  // ============ UFC ============
   if (m.sport === 'ufc') {
-    if (!m.finalResult) return 'lost';
-    const isHomeWin = m.finalResult.winner === 'home';
-    const isAwayWin = m.finalResult.winner === 'away';
-    const method = m.finalResult.method;
-    const finalRound = m.finalResult.round;
+    if (!m.finalResult) {
+      const winner = m.scoreHome > m.scoreAway ? 'home' : m.scoreAway > m.scoreHome ? 'away' : 'home';
+      m.finalResult = { winner, method: 'Решение', round: 5 };
+    }
+    const fr = m.finalResult;
+    const isHomeWin = fr.winner === 'home';
+    const isAwayWin = fr.winner === 'away';
+    const method = fr.method;
+    const finalRound = fr.round;
     const wasFinish = method !== 'Решение';
 
     if (pick === 'home') return isHomeWin ? 'won' : 'lost';
     if (pick === 'away') return isAwayWin ? 'won' : 'lost';
-
     if (pick === 'Метод · KO/TKO') return method === 'KO/TKO' ? 'won' : 'lost';
     if (pick === 'Метод · Сабмишн') return method === 'Сабмишн' ? 'won' : 'lost';
     if (pick === 'Метод · Решение') return method === 'Решение' ? 'won' : 'lost';
-
     if (pick === 'Бой досрочно') return wasFinish ? 'won' : 'lost';
     if (pick === 'Пройти всю дистанцию') return !wasFinish ? 'won' : 'lost';
 
@@ -2015,50 +2454,38 @@ function checkSelection(m, pick) {
       if (ufcR[1] === 'Б') return finalRound > line ? 'won' : 'lost';
       return finalRound < line ? 'won' : 'lost';
     }
-
     const finishR = pick.match(/^Финиш в R(\d+)\+?$/);
     if (finishR) {
       const target = parseInt(finishR[1]);
       if (pick.includes('+')) return (wasFinish && finalRound >= target) ? 'won' : 'lost';
       return (wasFinish && finalRound === target) ? 'won' : 'lost';
     }
-
     if (pick === `${m.home} KO/TKO`) return (isHomeWin && method === 'KO/TKO') ? 'won' : 'lost';
     if (pick === `${m.home} Сабмишн`) return (isHomeWin && method === 'Сабмишн') ? 'won' : 'lost';
     if (pick === `${m.home} Решение`) return (isHomeWin && method === 'Решение') ? 'won' : 'lost';
     if (pick === `${m.away} KO/TKO`) return (isAwayWin && method === 'KO/TKO') ? 'won' : 'lost';
     if (pick === `${m.away} Сабмишн`) return (isAwayWin && method === 'Сабмишн') ? 'won' : 'lost';
     if (pick === `${m.away} Решение`) return (isAwayWin && method === 'Решение') ? 'won' : 'lost';
-
     if (pick === `${m.home} в R1`) return (isHomeWin && finalRound === 1 && wasFinish) ? 'won' : 'lost';
     if (pick === `${m.away} в R1`) return (isAwayWin && finalRound === 1 && wasFinish) ? 'won' : 'lost';
-
     return 'lost';
   }
 
-  // ============ ФУТБОЛ / ХОККЕЙ ============
-  if (pick === 'home' || pick === 'away' || pick === 'draw') {
-    if (m.sport === 'hockey') {
-      if (m.scoreHome > m.scoreAway) return pick === 'home' ? 'won' : 'lost';
-      if (m.scoreHome < m.scoreAway) return pick === 'away' ? 'won' : 'lost';
-      return 'lost';
-    }
-    if (m.scoreHome > m.scoreAway) return pick === 'home' ? 'won' : 'lost';
-    if (m.scoreHome < m.scoreAway) return pick === 'away' ? 'won' : 'lost';
-    return pick === 'draw' ? 'won' : 'lost';
-  }
+  if (pick === 'home') return m.scoreHome > m.scoreAway ? 'won' : 'lost';
+  if (pick === 'away') return m.scoreAway > m.scoreHome ? 'won' : 'lost';
+  if (pick === 'draw') return m.scoreHome === m.scoreAway ? 'won' : 'lost';
 
-  if (pick === '1X') return (m.scoreHome >= m.scoreAway) ? 'won' : 'lost';
-  if (pick === '12') return (m.scoreHome !== m.scoreAway) ? 'won' : 'lost';
-  if (pick === 'X2') return (m.scoreHome <= m.scoreAway) ? 'won' : 'lost';
+  if (pick === '1X') return m.scoreHome >= m.scoreAway ? 'won' : 'lost';
+  if (pick === '12') return m.scoreHome !== m.scoreAway ? 'won' : 'lost';
+  if (pick === 'X2') return m.scoreHome <= m.scoreAway ? 'won' : 'lost';
 
-  const tO = pick.match(/^ТБ\s*(\d+\.?\d*)$/);
-  const tU = pick.match(/^ТМ\s*(\d+\.?\d*)$/);
+  const tO = pick.match(/^ТБ\s*([\d.]+)$/);
+  const tU = pick.match(/^ТМ\s*([\d.]+)$/);
   if (tO) return total > parseFloat(tO[1]) ? 'won' : 'lost';
   if (tU) return total < parseFloat(tU[1]) ? 'won' : 'lost';
 
-  const f1 = pick.match(/^Ф1\s*([−\-+]?\d+\.?\d*)$/);
-  const f2 = pick.match(/^Ф2\s*([−\-+]?\d+\.?\d*)$/);
+  const f1 = pick.match(/^Ф1\s*([−\-+]?[\d.]+)$/);
+  const f2 = pick.match(/^Ф2\s*([−\-+]?[\d.]+)$/);
   if (f1) return (m.scoreHome - m.scoreAway) > parseFloat(f1[1].replace('−', '-')) ? 'won' : 'lost';
   if (f2) return (m.scoreAway - m.scoreHome) > parseFloat(f2[1].replace('−', '-')) ? 'won' : 'lost';
 
@@ -2067,8 +2494,8 @@ function checkSelection(m, pick) {
   if (pick === 'Чёт') return total % 2 === 0 ? 'won' : 'lost';
   if (pick === 'Нечет') return total % 2 !== 0 ? 'won' : 'lost';
 
-  const homeTeam = pick.match(new RegExp(`^${escapeRegex(m.home)}\\s+(Б|М)\\s+(\\d+\\.?\\d*)$`));
-  const awayTeam = pick.match(new RegExp(`^${escapeRegex(m.away)}\\s+(Б|М)\\s+(\\d+\\.?\\d*)$`));
+  const homeTeam = pick.match(new RegExp(`^${escapeRegex(m.home)}\\s+(Б|М)\\s+([\\d.]+)$`));
+  const awayTeam = pick.match(new RegExp(`^${escapeRegex(m.away)}\\s+(Б|М)\\s+([\\d.]+)$`));
   if (homeTeam) {
     const line = parseFloat(homeTeam[2]);
     return homeTeam[1] === 'Б' ? (m.scoreHome > line ? 'won' : 'lost') : (m.scoreHome < line ? 'won' : 'lost');
@@ -2098,7 +2525,7 @@ function settleBets() {
       for (const sel of b.selections) {
         if (sel.status === 'lost') { anyLost = true; continue; }
         if (sel.status === 'won') continue;
-        const m = matches.find(x => x.id === sel.matchId);
+        const m = matches.find(x => Number(x.id) === Number(sel.matchId));
         if (!m || m.status !== 'finished') { allDone = false; allWon = false; continue; }
         const r = checkSelection(m, sel.pick);
         sel.status = r;
@@ -2121,13 +2548,14 @@ function settleBets() {
         soundWin();
         vibrate(50);
         changed = true;
+        flashBalance('win');
         wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
         if (wallet.profitHistory.length > 100) wallet.profitHistory.shift();
       }
       return;
     }
 
-    const m = matches.find(x => x.id === b.matchId);
+    const m = matches.find(x => Number(x.id) === Number(b.matchId));
     if (!m || m.status !== 'finished') return;
 
     const r = checkSelection(m, b.pick);
@@ -2138,9 +2566,11 @@ function settleBets() {
       wallet.totalWon += b.payout;
       soundWin();
       vibrate(50);
-    } else if (r === 'lost') {
+      flashBalance('win');
+    } else {
       b.status = 'lost';
       soundLose();
+      flashBalance('lose');
     }
     changed = true;
     wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
@@ -2149,7 +2579,6 @@ function settleBets() {
 
   if (changed) {
     saveWallet();
-    flashBalance();
     renderBalance();
     renderHistory();
     renderStats();
@@ -2160,7 +2589,6 @@ function settleBets() {
 // ============================================================
 // CSV
 // ============================================================
-
 function exportCSV() {
   const rows = [['Дата', 'Матч', 'Тип', 'Исход', 'Кэф', 'Ставка', 'Потенциал', 'Статус', 'Выплата']];
   wallet.bets.forEach(b => {
@@ -2187,7 +2615,6 @@ function exportCSV() {
 // ============================================================
 // ГЛАВНЫЙ ЦИКЛ
 // ============================================================
-
 function tick() {
   resetWalletIfNewDay();
 
@@ -2195,26 +2622,35 @@ function tick() {
     if (m.status === 'live' || m.status === 'prematch') tickMatch(m);
   });
 
-  if (matches.length > 0 && matches.every(m => m.status === 'finished')) {
+  settleBets();
+
+  const allFinishedLong = matches.length > 0 && matches.every(m =>
+    m.status === 'finished' && (Date.now() - (m.finishedAt || Date.now())) > 30000
+  );
+
+  if (allFinishedLong) {
     matches = createMatches(15);
     openExtras.clear();
+    saveMatches();
     renderMatches();
     renderLeagueFilters();
     return;
   }
 
-  settleBets();
+  matches.forEach(m => {
+    if (m.status === 'finished' && !m.finishedAt) m.finishedAt = Date.now();
+  });
+
   renderMatches();
   renderLiveDrops();
   if ($('tab-stats').classList.contains('active')) renderStats();
+  if ($('tab-history').classList.contains('active')) renderHistory();
 }
 
 // ============================================================
-// ГЛОБАЛЬНОЕ ДЕЛЕГИРОВАНИЕ КЛИКОВ
+// ДЕЛЕГИРОВАНИЕ КЛИКОВ ПО КЭФАМ
 // ============================================================
-
 document.addEventListener('click', (e) => {
-  // Клик по 1X2
   const mainBtn = e.target.closest('.odds-btn[data-match-id]');
   if (mainBtn) {
     if (mainBtn.disabled || mainBtn.classList.contains('disabled')) return;
@@ -2226,7 +2662,6 @@ document.addEventListener('click', (e) => {
     return;
   }
 
-  // Клик по расширенному рынку
   const miniBtn = e.target.closest('.odds-mini[data-mid]');
   if (miniBtn) {
     if (miniBtn.disabled || miniBtn.classList.contains('disabled')) return;
@@ -2242,7 +2677,6 @@ document.addEventListener('click', (e) => {
 // ============================================================
 // UI EVENTS
 // ============================================================
-
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
@@ -2354,7 +2788,6 @@ window.addEventListener('resize', () => {
 // ============================================================
 // СТАРТ
 // ============================================================
-
 loadWallet();
 loadCoupon();
 loadSoundPref();
@@ -2381,8 +2814,8 @@ setTimeout(() => {
   setInterval(saveMatches, 2000);
 }, 300);
 
-console.log('%c⚡ OpenBet v17', 'font-size: 20px; font-weight: bold; color: #7b5cff;');
-console.log('%cUFC: результат показывается только в конце боя', 'color: #00d4ff;');
+console.log('%c⚡ OpenBet v18', 'font-size: 20px; font-weight: bold; color: #7b5cff;');
+console.log('%cКэшаут работает от кэфа · История кликабельна · Без уведомлений', 'color: #00d4ff;');
 </script>
 
 </body>
