@@ -610,25 +610,69 @@ function probHomeWinVolley(m) {
   // Вероятность выиграть розыгрыш
   const pRally = clamp(0.5 + atkDiff * 0.15, 0.35, 0.65);
 
-  // Вероятность выиграть сет из счёта (h, a) до target
-  function probWinSet(ph, pa, target) {
-    // pRally = вероятность выиграть следующее очко
-    // DP таблица: вероятность дойти до победы с текущего счёта
+  function probHomeWinVolley(m) {
+  const atkDiff = m.homeAtk - m.awayAtk;
+  const pRally = clamp(0.5 + atkDiff * 0.15, 0.35, 0.65);
+
+  /* Вероятность выиграть текущий сет из счёта (h, a) до target.
+     DP со строгими границами: сет гарантированно закончится к h+a = 2*target.
+  */
+  function probWinSet(h, a, target, pRally) {
     const memo = {};
     function f(h, a) {
-      const key = h + ',' + a;
-      if (memo[key] !== undefined) return memo[key];
+      // Завершение
       if (h >= target && h - a >= 2) return 1;
       if (a >= target && a - h >= 2) return 0;
-      // Если h,a >= target-1, идёт "больше-меньше"
-      const w = pRally;
-      const r = w * f(h + 1, a) + (1 - w) * f(h, a + 1);
+      // Жёсткий предохранитель: не больше чем 2*target + 5 суммарных очков
+      if (h + a >= 2 * target + 5) {
+        return h > a ? 1 : 0;
+      }
+      const key = h * 100 + a;
+      if (memo[key] !== undefined) return memo[key];
+      const r = pRally * f(h + 1, a) + (1 - pRally) * f(h, a + 1);
       memo[key] = r;
       return r;
     }
-    return f(ph, pa);
+    return f(h, a);
   }
 
+  const target = (m.setsHome === 2 && m.setsAway === 2) ? 15 : 25;
+  const pCurrentSet = probWinSet(m.pointsHome, m.pointsAway, target, pRally);
+
+  // Вероятность выиграть отдельно взятый сет (для будущих сетов)
+  const pSetWin = clamp(0.5 + atkDiff * 0.20, 0.30, 0.70);
+
+  // Считаем сколько сетов осталось выиграть каждой команде
+  const setsToWinH = 3 - m.setsHome;
+  const setsToWinA = 3 - m.setsAway;
+
+  // Вероятность выиграть матч из позиции "нужно needW сетов, у соперника needL"
+  // через биномиальное распределение
+  function binomP(n, k, p) {
+    if (k < 0 || k > n) return 0;
+    let c = 1;
+    for (let i = 1; i <= k; i++) c = c * (n - i + 1) / i;
+    return c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+  }
+  function probWinSeries(needW, needL, p) {
+    if (needW <= 0) return 1;
+    if (needL <= 0) return 0;
+    let total = 0;
+    for (let losses = 0; losses < needL; losses++) {
+      const other = needW + losses - 1;
+      total += binomP(other, needW - 1, p) * Math.pow(1 - p, losses) * p;
+    }
+    return total;
+  }
+
+  const pWinRestIfTakeSet = probWinSeries(setsToWinH - 1, setsToWinA, pSetWin);
+  const pWinRestIfLoseSet = probWinSeries(setsToWinH, setsToWinA - 1, pSetWin);
+
+  return clamp(
+    pCurrentSet * pWinRestIfTakeSet + (1 - pCurrentSet) * pWinRestIfLoseSet,
+    0.02, 0.98
+  );
+}
   const target = (m.setsHome === 2 && m.setsAway === 2) ? 15 : 25;
   let pCurrentSet = probWinSet(m.pointsHome, m.pointsAway, target);
 
