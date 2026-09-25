@@ -3,60 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0a0a12">
-<title>⚡ OpenBet Pro v5</title>
+<meta name="theme-color" content="#07070f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>⚡ OpenBet v6 — Live Betting Engine</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-button,input{font-family:inherit;color:inherit}
+button,input,select{font-family:inherit;color:inherit;outline:none}
 button{cursor:pointer;border:none;background:none}
-:root{--bg:#0a0a12;--bg2:#12121f;--card:#14142a;--card-hover:#1c1c38;--border:rgba(100,100,150,.12);--border-2:rgba(120,120,180,.3);--text:#f0f0ff;--text-2:#b0b0d0;--muted:#5a5a7a;--accent:#7c5cff;--accent-2:#00d4ff;--green:#00e676;--red:#ff3860;--gold:#ffb800;--r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px}
-body.light{--bg:#f2f3f9;--bg2:#e8eaf2;--card:#fff;--card-hover:#f5f6fc;--border:rgba(90,90,130,.1);--border-2:rgba(90,90,130,.22);--text:#0e0e1c;--text-2:#3a3a55;--muted:#7a7a95}
+:root{--bg:#07070f;--bg2:#0f0f1d;--bg3:#16162a;--card:#111125;--card-hover:#181834;--border:rgba(110,110,170,.14);--border-2:rgba(130,130,200,.35);--text:#f2f2ff;--text-2:#b4b4d4;--muted:#5a5a80;--accent:#8b5cff;--accent-2:#00d4ff;--green:#00e676;--red:#ff3860;--gold:#ffb800;--r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;--shadow-1:0 4px 20px rgba(0,0,0,.4);--shadow-2:0 12px 40px rgba(0,0,0,.5)}
+body.light{--bg:#f0f1f8;--bg2:#e6e8f2;--card:#ffffff;--card-hover:#f5f6fc;--border:rgba(80,80,140,.12);--border-2:rgba(80,80,140,.28);--text:#0a0a18;--text-2:#3a3a58;--muted:#7a7a98;--shadow-1:0 4px 20px rgba(60,60,100,.08);--shadow-2:0 12px 40px rgba(60,60,100,.12)}
+html{scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .3s,color .3s}
-body.has-coupon{padding-bottom:140px}
-.header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);padding:14px 20px;backdrop-filter:blur(20px);background:rgba(10,10,18,.85)}
-body.light .header{background:rgba(242,243,249,.9)}
-.header-inner{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px}
-.logo{font-size:20px;font-weight:900;cursor:pointer;user-select:none;display:flex;align-items:center;gap:10px}
-.logo-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7c5cff,#00d4ff);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 4px 16px rgba(124,92,255,.4)}
-.logo span{background:linear-gradient(135deg,#7c5cff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+body.has-coupon{padding-bottom:160px}
+.header{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);padding:14px 20px;backdrop-filter:blur(24px);background:rgba(7,7,15,.82)}
+body.light .header{background:rgba(240,241,248,.9)}
+.header-inner{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.logo{font-size:20px;font-weight:900;letter-spacing:-.5px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#8b5cff,#00d4ff);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 20px rgba(139,92,255,.5)}
+.logo span{background:linear-gradient(135deg,#8b5cff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .header-actions{display:flex;align-items:center;gap:8px}
-.balance{background:var(--card);border:1px solid var(--border);padding:9px 16px;border-radius:var(--r-md);font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:all .25s;white-space:nowrap}
-.balance:hover{border-color:var(--accent)}
-.balance.flash-bonus{border-color:var(--gold);box-shadow:0 0 28px rgba(255,184,0,.5)}
-.balance.flash-win{border-color:var(--green);box-shadow:0 0 24px rgba(0,230,118,.5)}
+.balance{background:var(--card);border:1px solid var(--border);padding:10px 16px;border-radius:var(--r-md);font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:all .25s;white-space:nowrap;font-variant-numeric:tabular-nums}
+.balance:hover{border-color:var(--accent);transform:translateY(-1px)}
+.balance.flash-bonus{border-color:var(--gold);box-shadow:0 0 32px rgba(255,184,0,.55);transform:scale(1.04)}
+.balance.flash-win{border-color:var(--green);box-shadow:0 0 24px rgba(0,230,118,.5);transform:scale(1.03)}
 .balance.flash-lose{border-color:var(--red);box-shadow:0 0 24px rgba(255,56,96,.5)}
-.icon-btn{width:40px;height:40px;border-radius:var(--r-md);background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
-.icon-btn:hover{border-color:var(--accent)}
+.icon-btn{width:42px;height:42px;border-radius:var(--r-md);background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.icon-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
 .icon-btn.muted{opacity:.5}
-.container{max-width:1280px;margin:0 auto;padding:20px}
-.nav-tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.container{max-width:1320px;margin:0 auto;padding:20px}
+.nav-tabs{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .nav-tabs::-webkit-scrollbar{display:none}
-.nav-tab{padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:13px;white-space:nowrap;transition:all .2s}
-.nav-tab.active{color:var(--text);border-color:var(--accent);background:rgba(124,92,255,.12)}
-.session{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;font-size:13px}
+.nav-tab{padding:11px 20px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:13px;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px}
+.nav-tab:hover{color:var(--text);transform:translateY(-1px)}
+.nav-tab.active{color:var(--text);border-color:var(--accent);background:rgba(139,92,255,.12);box-shadow:0 4px 20px rgba(139,92,255,.2)}
+.session{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 22px;margin-bottom:20px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;font-size:13px;box-shadow:var(--shadow-1)}
 .session .label{color:var(--muted);font-weight:600}
-.session .value{font-weight:800}
+.session .value{font-weight:800;font-variant-numeric:tabular-nums}
 .session .value.green{color:var(--green)}
 .session .value.red{color:var(--red)}
 .session .value.gold{color:var(--gold)}
 .session .spacer{margin-left:auto}
-.bonus-hint{font-size:12px;color:var(--gold);font-weight:700;cursor:pointer;padding:6px 12px;border-radius:8px;background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.2)}
-.sport-filters{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.bonus-hint{font-size:12px;color:var(--gold);font-weight:700;cursor:pointer;padding:7px 14px;border-radius:10px;background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.25);transition:all .2s}
+.bonus-hint:hover{background:rgba(255,184,0,.2);transform:translateY(-1px)}
+.sport-filters{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .sport-filters::-webkit-scrollbar{display:none}
-.sport-chip{padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:13px;white-space:nowrap;transition:all .2s}
-.sport-chip.active{color:var(--text);border-color:var(--accent);background:rgba(124,92,255,.12)}
+.sport-chip{padding:11px 20px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:13px;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px}
+.sport-chip:hover{color:var(--text);transform:translateY(-1px)}
+.sport-chip.active{color:var(--text);border-color:var(--accent);background:rgba(139,92,255,.12);box-shadow:0 4px 20px rgba(139,92,255,.2)}
+.stats-bar{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:700px){.stats-bar{grid-template-columns:repeat(4,1fr)}}
+.stat-mini{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px}
+.stat-mini-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-mini-value{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat-mini-value.green{color:var(--green)}
+.stat-mini-value.red{color:var(--red)}
+.stat-mini-value.gold{color:var(--gold)}
 .matches-list{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:900px){.matches-list{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:1400px){.matches-list{grid-template-columns:repeat(3,1fr)}}
-.match{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;display:flex;flex-direction:column;gap:16px;transition:all .25s}
-.match:hover{border-color:var(--border-2)}
-.match.finished{opacity:.5}
+.match{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;display:flex;flex-direction:column;gap:16px;transition:all .25s;box-shadow:var(--shadow-1)}
+.match:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:var(--shadow-2)}
+.match.finished{opacity:.55}
 .match-head{display:flex;align-items:center;gap:10px}
-.match-sport{font-size:18px}
+.match-sport{font-size:20px}
 .match-league{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .match-status{font-size:10px;padding:5px 12px;border-radius:8px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
 .match-status.live{background:var(--red);color:#fff;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
 .match-status.live::before{content:'●';margin-right:5px;font-size:9px}
 .match-status.finished{background:rgba(120,120,140,.2);color:var(--muted)}
 .match-status.countdown{background:var(--accent-2);color:#000}
@@ -64,142 +77,178 @@ body.light .header{background:rgba(242,243,249,.9)}
 .team-line{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .team-info{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
 .team-logo-wrap{position:relative;flex-shrink:0}
-.team-logo{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;border:2px solid rgba(255,255,255,.12)}
+.team-logo{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;border:2px solid rgba(255,255,255,.12);box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .2s}
 .team-logo.scored{animation:avScore 1.2s ease}
-@keyframes avScore{0%,100%{transform:scale(1)}40%{transform:scale(1.4)}}
+@keyframes avScore{0%,100%{transform:scale(1)}40%{transform:scale(1.42);box-shadow:0 0 32px var(--green)}}
 .team-rating{position:absolute;top:-4px;right:-4px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:9px;font-weight:800;padding:2px 6px;color:var(--accent-2)}
-.team-flag{position:absolute;bottom:-4px;right:-4px;font-size:14px}
+.team-flag{position:absolute;bottom:-4px;right:-4px;font-size:15px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .team-name{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.team-score{font-weight:900;font-size:28px;min-width:36px;text-align:right;transition:all .3s}
-.team-score.scored{animation:scFlash 1.2s ease;color:var(--green)}
-@keyframes scFlash{0%,100%{transform:scale(1)}30%{transform:scale(1.6)}}
+.team-score{font-weight:900;font-size:30px;font-variant-numeric:tabular-nums;letter-spacing:-1.5px;min-width:40px;text-align:right;transition:all .3s}
+.team-score.scored{animation:scFlash 1.2s ease}
+@keyframes scFlash{0%,100%{transform:scale(1)}30%{transform:scale(1.65);text-shadow:0 0 32px var(--green);color:var(--green)}}
 .match-info{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-weight:600;flex-wrap:wrap}
-.match-info .time{font-weight:800;color:var(--text-2)}
-.prob-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:4px;background:rgba(120,120,160,.15)}
-.prob-bar i{display:block;height:100%;transition:width .5s}
-.prob-bar .ph{background:var(--accent-2)}
+.match-info .time{font-weight:800;color:var(--text-2);font-variant-numeric:tabular-nums}
+.prob-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:4px;background:rgba(120,120,160,.12)}
+.prob-bar i{display:block;height:100%;transition:width .5s ease}
+.prob-bar .ph{background:linear-gradient(90deg,var(--accent-2),var(--accent-2))}
 .prob-bar .pd{background:var(--muted)}
-.prob-bar .pa{background:var(--red)}
-.progress{display:flex;gap:4px;height:5px}
-.progress-seg{flex:1;background:rgba(120,120,160,.15);border-radius:3px;overflow:hidden;position:relative}
+.prob-bar .pa{background:linear-gradient(90deg,var(--red),var(--red))}
+.progress{display:flex;gap:4px;height:6px}
+.progress-seg{flex:1;background:rgba(120,120,160,.12);border-radius:3px;overflow:hidden;position:relative}
 .progress-seg.done{background:var(--green)}
-.progress-seg.active::after{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-.ufc-result{background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,56,96,.08));border:1px solid rgba(255,184,0,.4);border-radius:var(--r-md);padding:14px;font-size:13px;font-weight:700}
+.progress-seg.active::after{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .5s ease}
+.ufc-result{background:linear-gradient(135deg,rgba(255,184,0,.15),rgba(255,56,96,.08));border:1px solid rgba(255,184,0,.4);border-radius:var(--r-md);padding:14px;font-size:13px;font-weight:700;line-height:1.5}
 .ufc-result .win{color:var(--gold);font-weight:900}
 .odds-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .odds-row.two-col{grid-template-columns:1fr 1fr}
-.odd-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 10px;text-align:center;display:flex;flex-direction:column;gap:5px;transition:all .2s;font-family:inherit;color:var(--text)}
-.odd-btn:hover:not(:disabled):not(.disabled){border-color:var(--accent);background:var(--card-hover)}
-.odd-btn:disabled,.odd-btn.disabled{opacity:.25;cursor:not-allowed}
-.odd-btn.up{border-color:rgba(0,230,118,.5)}
-.odd-btn.down{border-color:rgba(255,56,96,.5)}
-.odd-label{font-size:11px;color:var(--muted);font-weight:700}
-.odd-value{font-size:18px;font-weight:800;color:var(--accent-2)}
+.odd-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 10px;text-align:center;display:flex;flex-direction:column;gap:5px;transition:all .2s;font-family:inherit;color:var(--text);position:relative;overflow:hidden}
+.odd-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(139,92,255,.15),transparent);transform:translateX(-100%);transition:transform .4s}
+.odd-btn:hover:not(:disabled):not(.disabled)::after{transform:translateX(100%)}
+.odd-btn:hover:not(:disabled):not(.disabled){border-color:var(--accent);background:var(--card-hover);transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,255,.25)}
+.odd-btn:active:not(:disabled):not(.disabled){transform:scale(.97)}
+.odd-btn:disabled,.odd-btn.disabled{opacity:.22;cursor:not-allowed}
+.odd-btn.up{border-color:rgba(0,230,118,.5);background:rgba(0,230,118,.06)}
+.odd-btn.down{border-color:rgba(255,56,96,.5);background:rgba(255,56,96,.06)}
+.odd-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.odd-value{font-size:19px;font-weight:800;color:var(--accent-2);font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .extras{border-top:1px solid var(--border);padding-top:14px}
-.extras-toggle{color:var(--accent-2);font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;padding:6px 0}
+.extras-toggle{color:var(--accent-2);font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;padding:6px 0;transition:color .2s}
+.extras-toggle:hover{color:var(--accent)}
 .extras-toggle.open{color:var(--muted)}
 .extras-grid{display:none;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
-.extras-grid.open{display:grid}
+.extras-grid.open{display:grid;animation:fadeIn .3s}
 @media(min-width:600px){.extras-grid{grid-template-columns:repeat(3,1fr)}}
-.odd-mini{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:all .2s;font-family:inherit;color:var(--text)}
-.odd-mini:hover:not(.disabled){border-color:var(--accent)}
+.odd-mini{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;transition:all .2s;font-family:inherit;color:var(--text);position:relative}
+.odd-mini:hover:not(.disabled){border-color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 16px rgba(139,92,255,.2)}
+.odd-mini.disabled{opacity:.25;cursor:not-allowed}
 .odd-mini-label{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-weight:600}
-.odd-mini-value{font-size:13px;font-weight:800;color:var(--accent-2);white-space:nowrap}
+.odd-mini-value{font-size:13px;font-weight:800;color:var(--accent-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .empty{text-align:center;padding:80px 20px;color:var(--muted)}
-.empty-icon{font-size:56px;margin-bottom:16px;opacity:.4}
-.history-filters{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.empty-icon{font-size:60px;margin-bottom:16px;opacity:.4}
+.empty-text{font-size:15px;font-weight:600}
+.history-filters{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .history-filters::-webkit-scrollbar{display:none}
-.history-chip{padding:9px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:12.5px;white-space:nowrap}
-.history-chip.active{color:var(--text);border-color:var(--accent);background:rgba(124,92,255,.1)}
+.history-chip{padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);font-weight:700;color:var(--muted);font-size:12.5px;white-space:nowrap;transition:all .2s}
+.history-chip:hover{color:var(--text);transform:translateY(-1px)}
+.history-chip.active{color:var(--text);border-color:var(--accent);background:rgba(139,92,255,.12)}
 .history-list{display:flex;flex-direction:column;gap:12px}
-.history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:all .2s}
+.history-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-1)}
+.history-item:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:var(--shadow-2)}
 .history-item.won{border-left:4px solid var(--green)}
 .history-item.lost{border-left:4px solid var(--red)}
 .history-item.pending{border-left:4px solid var(--gold)}
 .history-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
-.history-match{font-weight:700;font-size:14.5px}
+.history-match{font-weight:700;font-size:14.5px;line-height:1.35}
 .history-meta{font-size:11.5px;color:var(--muted);margin-top:4px;font-weight:600}
-.history-amount{font-weight:800;font-size:16px;white-space:nowrap}
+.history-amount{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .history-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-top:12px;border-top:1px solid var(--border)}
 .history-odd{font-size:12.5px;color:var(--muted);font-weight:600}
 .history-odd b{color:var(--accent-2);font-weight:800}
-.history-status{font-weight:800;padding:5px 14px;border-radius:8px;text-transform:uppercase;font-size:10.5px;white-space:nowrap}
+.history-status{font-weight:800;padding:5px 14px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px;font-size:10.5px;white-space:nowrap}
 .history-status.won{background:rgba(0,230,118,.15);color:var(--green)}
 .history-status.lost{background:rgba(255,56,96,.15);color:var(--red)}
 .history-status.pending{background:rgba(255,184,0,.15);color:var(--gold)}
-.cashout-btn{background:linear-gradient(135deg,var(--green),#00b050);color:#000;padding:11px 20px;border-radius:var(--r-md);font-weight:800;font-size:13px;align-self:flex-start}
+.cashout-btn{background:linear-gradient(135deg,var(--green),#00b050);color:#000;padding:11px 20px;border-radius:var(--r-md);font-weight:800;font-size:13px;align-self:flex-start;transition:all .2s;box-shadow:0 4px 18px rgba(0,230,118,.35)}
+.cashout-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,230,118,.5)}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:22px}
 @media(min-width:700px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
-.stat-label{font-size:11.5px;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase}
-.stat-value{font-size:24px;font-weight:800}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-1);transition:all .2s}
+.stat-card:hover{border-color:var(--border-2);transform:translateY(-2px)}
+.stat-label{font-size:11.5px;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.8px}
 .stat-value.green{color:var(--green)}
 .stat-value.red{color:var(--red)}
 .stat-value.gold{color:var(--gold)}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px}
-.chart-title{font-size:12.5px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:18px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;margin-bottom:18px;box-shadow:var(--shadow-1)}
+.chart-title{font-size:12.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px}
 .chart-canvas{width:100%;height:220px;display:block}
-.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.ach{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 14px;text-align:center;opacity:.35;transition:all .3s}
-.ach.unlocked{opacity:1;border-color:var(--gold);box-shadow:0 0 32px rgba(255,184,0,.2)}
-.ach-icon{font-size:36px;margin-bottom:12px}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.ach{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 14px;text-align:center;opacity:.35;transition:all .3s;box-shadow:var(--shadow-1)}
+.ach.unlocked{opacity:1;border-color:var(--gold);box-shadow:0 0 36px rgba(255,184,0,.2);transform:translateY(-2px)}
+.ach-icon{font-size:38px;margin-bottom:12px}
 .ach-name{font-size:12.5px;font-weight:800;margin-bottom:4px}
 .ach-desc{font-size:10.5px;color:var(--muted);font-weight:600}
-.leaderboard{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+.ach-progress{margin-top:8px;height:4px;background:rgba(120,120,160,.2);border-radius:2px;overflow:hidden}
+.ach-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s}
+.ach-progress-text{font-size:10px;color:var(--muted);margin-top:4px;font-weight:700}
+.leaderboard{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-1)}
 .lb-header{color:var(--muted);font-size:13px;margin-bottom:16px;font-weight:700}
 .lb-header b{color:var(--gold);font-weight:900}
-.lb-row{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.lb-row{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);font-size:13.5px;transition:all .2s}
+.lb-row:hover{background:rgba(139,92,255,.05);margin:0 -20px;padding:14px 20px;border-radius:var(--r-md)}
 .lb-row:last-child{border-bottom:none}
-.lb-row.me{background:rgba(124,92,255,.12);margin:0 -20px;padding:14px 20px;border-radius:var(--r-md);border-bottom:none}
+.lb-row.me{background:rgba(139,92,255,.12);margin:0 -20px;padding:14px 20px;border-radius:var(--r-md);border-bottom:none;box-shadow:0 0 24px rgba(139,92,255,.18)}
 .lb-rank{font-weight:900;font-size:17px;color:var(--muted);text-align:center}
 .lb-rank.top1{color:var(--gold)}
 .lb-rank.top2{color:#c0c0c0}
 .lb-rank.top3{color:#cd7f32}
 .lb-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-name.me{color:var(--accent-2)}
-.lb-value{font-weight:800;color:var(--green);font-size:13.5px}
+.lb-value{font-weight:800;color:var(--green);font-variant-numeric:tabular-nums;font-size:13.5px}
 .tab-content{display:none}
 .tab-content.active{display:block;animation:fadeIn .25s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal-overlay.active{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border-2);border-radius:var(--r-xl);padding:28px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+.modal{background:var(--bg2);border:1px solid var(--border-2);border-radius:var(--r-xl);padding:28px;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;animation:popIn .3s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--shadow-2)}
+@keyframes popIn{from{transform:scale(.9);opacity:0}}
 .modal h3{font-size:18px;margin-bottom:8px;font-weight:800}
-.modal-sub{color:var(--muted);font-size:13px;margin-bottom:22px;font-weight:600}
+.modal-sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.5;font-weight:600}
 .modal-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:13.5px}
 .modal-row:last-of-type{border-bottom:none}
 .modal-row .label{color:var(--muted);font-weight:600}
-.modal-row .value{font-weight:800}
-.modal input[type="number"]{width:100%;background:var(--card);border:1px solid var(--border);padding:16px;border-radius:var(--r-md);font-size:17px;margin:18px 0 14px;font-weight:800}
-.modal input[type="number"]:focus{outline:none;border-color:var(--accent)}
+.modal-row .value{font-weight:800;font-variant-numeric:tabular-nums}
+.modal input[type="number"]{width:100%;background:var(--card);border:1px solid var(--border);padding:16px;border-radius:var(--r-md);font-size:17px;margin:18px 0 14px;font-weight:800;font-variant-numeric:tabular-nums;transition:all .2s;color:var(--text)}
+.modal input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,255,.15)}
 .quick-stakes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:18px}
-.quick-stake{padding:11px 4px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);font-size:11.5px;font-weight:800;text-align:center}
+.quick-stake{padding:11px 4px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);font-size:11.5px;font-weight:800;text-align:center;transition:all .2s}
+.quick-stake:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 14px rgba(139,92,255,.2)}
 .modal-actions{display:flex;gap:10px;margin-top:18px}
 .btn{flex:1;padding:15px;border-radius:var(--r-md);font-weight:800;font-size:14px;transition:all .2s}
+.btn:active:not(:disabled){transform:scale(.98)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 4px 22px rgba(139,92,255,.4)}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,255,.55)}
 .btn-secondary{background:var(--card);border:1px solid var(--border)}
-.btn-coupon{background:rgba(124,92,255,.15);border:1px solid var(--accent);color:var(--accent-2)}
+.btn-secondary:hover{border-color:var(--border-2)}
+.btn-coupon{background:rgba(139,92,255,.15);border:1px solid var(--accent);color:var(--accent-2)}
 .btn-builder{background:rgba(255,184,0,.15);border:1px solid var(--gold);color:var(--gold)}
-.coupon-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--accent);padding:14px 20px;transform:translateY(100%);transition:transform .35s;z-index:200}
+.coupon-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--accent);padding:14px 20px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:200;box-shadow:0 -16px 56px rgba(0,0,0,.6)}
 .coupon-bar.active{transform:translateY(0)}
-.coupon-inner{max-width:1280px;margin:0 auto}
-.coupon-items{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px}
-.coupon-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;display:flex;align-items:center;gap:12px;min-width:220px;font-size:12px}
+.coupon-inner{max-width:1320px;margin:0 auto}
+.coupon-items{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;scrollbar-width:thin}
+.coupon-items::-webkit-scrollbar{height:4px}
+.coupon-items::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:2px}
+.coupon-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;display:flex;align-items:center;gap:12px;min-width:230px;font-size:12px;transition:all .2s}
+.coupon-item:hover{border-color:var(--border-2)}
 .coupon-item-info{flex:1;min-width:0}
 .coupon-item-match{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .coupon-item-pick{color:var(--accent-2);font-weight:800;font-size:11px;margin-top:3px}
-.coupon-item-remove{color:var(--red);font-size:22px;padding:0 6px;line-height:1}
+.coupon-item-remove{color:var(--red);font-size:22px;padding:0 6px;line-height:1;transition:transform .2s}
+.coupon-item-remove:hover{transform:scale(1.25)}
 .coupon-actions{display:flex;gap:10px;justify-content:flex-end}
-.coupon-clear{border:1px solid var(--border);color:var(--muted);padding:11px 18px;border-radius:var(--r-md);font-weight:700;font-size:13px}
-.coupon-place{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:11px 24px;border-radius:var(--r-md);font-weight:800;font-size:13.5px}
+.coupon-clear{border:1px solid var(--border);color:var(--muted);padding:11px 18px;border-radius:var(--r-md);font-weight:700;font-size:13px;transition:all .2s}
+.coupon-clear:hover{border-color:var(--red);color:var(--red)}
+.coupon-place{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:11px 24px;border-radius:var(--r-md);font-weight:800;font-size:13.5px;transition:all .2s;box-shadow:0 4px 22px rgba(139,92,255,.4)}
+.coupon-place:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,255,.55)}
 .skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--card-hover) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--r-xl);height:220px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.toast-container{position:fixed;top:80px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:340px}
+.toast{background:var(--bg2);border:1px solid var(--border-2);border-radius:var(--r-md);padding:14px 18px;font-size:13px;font-weight:700;box-shadow:var(--shadow-2);animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;display:flex;align-items:center;gap:10px}
+.toast.win{border-color:var(--green);color:var(--green)}
+.toast.lose{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--accent-2);color:var(--accent-2)}
+.toast.gold{border-color:var(--gold);color:var(--gold)}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}}
 @media(max-width:600px){
 .header{padding:12px 14px}.logo{font-size:18px}.logo span{display:none}
-.balance{padding:8px 12px;font-size:12.5px}.icon-btn{width:38px;height:38px}
-.container{padding:14px}.match{padding:16px}.team-logo{width:40px;height:40px}.team-score{font-size:24px}
-.quick-stakes{grid-template-columns:repeat(3,1fr)}.stats-grid{grid-template-columns:1fr 1fr}
+.balance{padding:8px 12px;font-size:12.5px}.icon-btn{width:38px;height:38px;font-size:15px}
+.container{padding:14px}.match{padding:16px}.team-logo{width:40px;height:40px;font-size:13px}
+.team-score{font-size:26px}.odd-value{font-size:17px}
+.quick-stakes{grid-template-columns:repeat(3,1fr)}
+.stats-grid{grid-template-columns:1fr 1fr}
+.session{padding:14px 16px;gap:14px;font-size:12px}
+.toast-container{right:10px;left:10px;max-width:none}
 }
 </style>
 </head>
@@ -209,7 +258,7 @@ body.light .header{background:rgba(242,243,249,.9)}
   <div class="header-inner">
     <div class="logo" onclick="location.reload()">
       <div class="logo-icon">⚡</div>
-      <span>OpenBet Pro</span>
+      <span>OpenBet</span>
     </div>
     <div class="header-actions">
       <div class="balance" id="balanceBox">💰 <span id="balance">100 000</span> ₽</div>
@@ -304,16 +353,19 @@ body.light .header{background:rgba(242,243,249,.9)}
 </div>
 
 <div class="coupon-bar" id="couponBar"></div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
 /* ============================================================
-   OpenBet Pro v5 — REAL SIMULATION, ZERO BUGS
-   Вся математика — итеративная, без рекурсии.
+   OpenBet v6 — Real Simulation Engine
+   Всё итеративно. Никакой рекурсии. Событийная модель.
    ============================================================ */
+'use strict';
 
 var $ = function(id) { return document.getElementById(id); };
 var $$ = function(s) { return document.querySelectorAll(s); };
 var rand = function(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; };
+var randf = function(a, b) { return a + Math.random() * (b - a); };
 var pick = function(a) { return a[rand(0, a.length - 1)]; };
 var clamp = function(v, l, h) { return Math.max(l, Math.min(h, v)); };
 var fmt = function(v) { return Math.round(v).toLocaleString('ru-RU'); };
@@ -322,7 +374,7 @@ var todayKey = function() { return new Date().toISOString().slice(0, 10); };
 var sIcon = function(s) { return s === 'football' ? '⚽' : s === 'hockey' ? '🏒' : s === 'volleyball' ? '🏐' : '🥊'; };
 
 function teamColor(n) {
-  var c = ['#7c5cff','#00d4ff','#ff3860','#00e676','#ffb800','#ff6b6b','#4ecdc4','#a855f7','#3b82f6','#10b981','#f59e0b','#ec4899'];
+  var c = ['#8b5cff','#00d4ff','#ff3860','#00e676','#ffb800','#ff6b6b','#4ecdc4','#a855f7','#3b82f6','#10b981','#f59e0b','#ec4899'];
   var h = 0;
   for (var i = 0; i < n.length; i++) h = n.charCodeAt(i) + ((h << 5) - h);
   return c[Math.abs(h) % c.length];
@@ -332,7 +384,7 @@ function teamInit(n) {
   return w.length === 1 ? w[0].slice(0,2).toUpperCase() : (w[0][0] + w[1][0]).toUpperCase();
 }
 
-/* ============ ДАННЫЕ (atk/def — множители к среднему) ============ */
+/* ============ ДАННЫЕ ============ */
 var TEAMS = {
   football: [
     {n:'Manchester City',atk:1.45,def:0.72,lg:'Premier League',country:'gb',rt:93},
@@ -431,21 +483,21 @@ var BOTS = [
 ];
 
 var ACH = [
-  {i:'🎯',n:'Первая ставка',d:'Ставка №1',f:function(w){return w.bets.length>=1;}},
-  {i:'📊',n:'10 ставок',d:'10 ставок',f:function(w){return w.bets.length>=10;}},
-  {i:'🔥',n:'5 выигрышей',d:'5 побед',f:function(w){return w.bets.filter(function(b){return b.status==='won';}).length>=5;}},
-  {i:'💎',n:'Крупная',d:'5000 ₽',f:function(w){return w.bets.some(function(b){return b.stake>=5000;});}},
-  {i:'📈',n:'ROI +20%',d:'ROI 20%',f:function(w){var t=w.totalWon-w.totalBet;return w.totalBet>0&&(t/w.totalBet)>=0.2;}},
-  {i:'💰',n:'50K профит',d:'+50 000 ₽',f:function(w){return (w.totalWon-w.totalBet)>=50000;}},
-  {i:'⚡',n:'Серия 3',d:'3 подряд',f:function(w){var s=0,m=0;var arr=w.bets.slice().reverse();for(var i=0;i<arr.length;i++){if(arr[i].status==='won'){s++;if(s>m)m=s;}else if(arr[i].status==='lost'){s=0;}}return m>=3;}},
-  {i:'🎰',n:'Экспресс',d:'Собери экспресс',f:function(w){return w.bets.some(function(b){return b.type==='express';});}},
-  {i:'👑',n:'Богач',d:'Баланс 200k',f:function(w){return w.balance>=200000;}},
-  {i:'🍀',n:'Удача',d:'Кэф 5+ зашёл',f:function(w){return w.bets.some(function(b){return b.status==='won'&&b.odd>=5;});}},
-  {i:'💸',n:'Кэшаут',d:'Используй',f:function(w){return w.bets.some(function(b){return b.cashout;});}},
-  {i:'🧩',n:'Билдер',d:'Собери билдер',f:function(w){return w.bets.some(function(b){return b.type==='builder';});}},
-  {i:'🏐',n:'Волейбол',d:'5 побед',f:function(w){return w.bets.filter(function(b){return b.status==='won'&&b.sport==='volleyball';}).length>=5;}},
-  {i:'🥊',n:'UFC-мастер',d:'5 побед UFC',f:function(w){return w.bets.filter(function(b){return b.status==='won'&&b.sport==='ufc';}).length>=5;}},
-  {i:'🏆',n:'Легенда',d:'Профит 500k',f:function(w){return (w.totalWon-w.totalBet)>=500000;}}
+  {i:'🎯',n:'Первая ставка',d:'Ставка №1',f:function(w){return w.bets.length>=1;},prog:function(w){return [w.bets.length,1];}},
+  {i:'📊',n:'10 ставок',d:'10 ставок',f:function(w){return w.bets.length>=10;},prog:function(w){return [w.bets.length,10];}},
+  {i:'🔥',n:'5 выигрышей',d:'5 побед',f:function(w){return w.bets.filter(function(b){return b.status==='won';}).length>=5;},prog:function(w){return [w.bets.filter(function(b){return b.status==='won';}).length,5];}},
+  {i:'💎',n:'Крупная',d:'5000 ₽',f:function(w){return w.bets.some(function(b){return b.stake>=5000;});},prog:function(w){return [w.bets.some(function(b){return b.stake>=5000;})?1:0,1];}},
+  {i:'📈',n:'ROI +20%',d:'ROI 20%',f:function(w){var t=w.totalWon-w.totalBet;return w.totalBet>0&&(t/w.totalBet)>=0.2;},prog:function(w){return [Math.max(0,(w.totalWon-w.totalBet)),Math.max(1,w.totalBet*0.2)];}},
+  {i:'💰',n:'50K профит',d:'+50 000 ₽',f:function(w){return (w.totalWon-w.totalBet)>=50000;},prog:function(w){return [Math.max(0,w.totalWon-w.totalBet),50000];}},
+  {i:'⚡',n:'Серия 3',d:'3 подряд',f:function(w){var s=0,m=0;var arr=w.bets.slice().reverse();for(var i=0;i<arr.length;i++){if(arr[i].status==='won'){s++;if(s>m)m=s;}else if(arr[i].status==='lost'){s=0;}}return m>=3;},prog:function(w){return [0,3];}},
+  {i:'🎰',n:'Экспресс',d:'Собери экспресс',f:function(w){return w.bets.some(function(b){return b.type==='express';});},prog:function(w){return [w.bets.some(function(b){return b.type==='express';})?1:0,1];}},
+  {i:'👑',n:'Богач',d:'Баланс 200k',f:function(w){return w.balance>=200000;},prog:function(w){return [w.balance,200000];}},
+  {i:'🍀',n:'Удача',d:'Кэф 5+ зашёл',f:function(w){return w.bets.some(function(b){return b.status==='won'&&b.odd>=5;});},prog:function(w){return [w.bets.some(function(b){return b.status==='won'&&b.odd>=5;})?1:0,1];}},
+  {i:'💸',n:'Кэшаут',d:'Используй',f:function(w){return w.bets.some(function(b){return b.cashout;});},prog:function(w){return [w.bets.some(function(b){return b.cashout;})?1:0,1];}},
+  {i:'🧩',n:'Билдер',d:'Собери билдер',f:function(w){return w.bets.some(function(b){return b.type==='builder';});},prog:function(w){return [w.bets.some(function(b){return b.type==='builder';})?1:0,1];}},
+  {i:'🏐',n:'Волейбол',d:'5 побед',f:function(w){return w.bets.filter(function(b){return b.status==='won'&&b.sport==='volleyball';}).length>=5;},prog:function(w){return [w.bets.filter(function(b){return b.status==='won'&&b.sport==='volleyball';}).length,5];}},
+  {i:'🥊',n:'UFC-мастер',d:'5 побед UFC',f:function(w){return w.bets.filter(function(b){return b.status==='won'&&b.sport==='ufc';}).length>=5;},prog:function(w){return [w.bets.filter(function(b){return b.status==='won'&&b.sport==='ufc';}).length,5];}},
+  {i:'🏆',n:'Легенда',d:'Профит 500k',f:function(w){return (w.totalWon-w.totalBet)>=500000;},prog:function(w){return [Math.max(0,w.totalWon-w.totalBet),500000];}}
 ];
 
 /* ============ СОСТОЯНИЕ ============ */
@@ -465,10 +517,11 @@ var coupon = [];
 var openExtras = {};
 var builderBets = {};
 var prevOdds = {};
+var tickCounter = 0;
 
 /* ============ МАТЕМАТИКА ============ */
 function poissonP(k, l) {
-  if (k < 0 || k > 20) return 0;
+  if (k < 0 || k > 18) return 0;
   if (l <= 1e-9) return k === 0 ? 1 : 0;
   var lf = 0;
   for (var i = 2; i <= k; i++) lf += Math.log(i);
@@ -506,37 +559,36 @@ function sBonus() { beep(880, 0.1); setTimeout(function(){beep(1100, 0.1);}, 100
 function vibe(ms) { if (navigator.vibrate) navigator.vibrate(ms || 10); }
 
 /* ============ STORAGE ============ */
-function saveWallet() { try { localStorage.setItem('ob5_w', JSON.stringify(wallet)); } catch(e){} }
-function loadWallet() { try { var s = localStorage.getItem('ob5_w'); if (s) { var w = JSON.parse(s); for (var k in w) wallet[k] = w[k]; } } catch(e){} }
-function saveMatches() { try { localStorage.setItem('ob5_m', JSON.stringify({ m: matches, ts: Date.now() })); } catch(e){} }
+function saveWallet() { try { localStorage.setItem('ob6_w', JSON.stringify(wallet)); } catch(e){} }
+function loadWallet() { try { var s = localStorage.getItem('ob6_w'); if (s) { var w = JSON.parse(s); for (var k in w) wallet[k] = w[k]; } } catch(e){} }
+function saveMatches() { try { localStorage.setItem('ob6_m', JSON.stringify({ m: matches, ts: Date.now() })); } catch(e){} }
 function loadMatches() {
   try {
-    var s = localStorage.getItem('ob5_m');
+    var s = localStorage.getItem('ob6_m');
     if (!s) return null;
     var d = JSON.parse(s);
     var a = d.m || d;
     if (!a || !a.length) return null;
     var el = Math.floor((Date.now() - (d.ts || 0)) / 1000);
-    var r = [];
+    var maxId = 0;
     for (var i = 0; i < a.length; i++) {
       var m = a[i];
-      if (m.status === 'finished' || m.status === 'countdown') { r.push(m); continue; }
-      var skip = Math.min(el, 600);
-      for (var j = 0; j < skip && m.status === 'live'; j++) simulateMinute(m);
-      r.push(m);
+      if (m.status === 'live') {
+        var skip = Math.min(el, 300);
+        for (var j = 0; j < skip && m.status === 'live'; j++) simulateMinute(m);
+      }
+      if (m.id > maxId) maxId = m.id;
     }
-    var maxId = 0;
-    for (var k = 0; k < r.length; k++) if (r[k].id > maxId) maxId = r[k].id;
     nextId = maxId + 1;
-    return r;
+    return a;
   } catch(e) { return null; }
 }
-function saveCoupon() { try { localStorage.setItem('ob5_c', JSON.stringify(coupon)); } catch(e){} }
-function loadCoupon() { try { var s = localStorage.getItem('ob5_c'); if (s) coupon = JSON.parse(s) || []; } catch(e){} }
-function saveSound() { try { localStorage.setItem('ob5_s', soundOn ? '1' : '0'); } catch(e){} }
-function loadSound() { var v = localStorage.getItem('ob5_s'); if (v !== null) soundOn = v === '1'; }
-function saveTheme() { try { localStorage.setItem('ob5_t', theme); } catch(e){} }
-function loadTheme() { var v = localStorage.getItem('ob5_t'); if (v) theme = v; }
+function saveCoupon() { try { localStorage.setItem('ob6_c', JSON.stringify(coupon)); } catch(e){} }
+function loadCoupon() { try { var s = localStorage.getItem('ob6_c'); if (s) coupon = JSON.parse(s) || []; } catch(e){} }
+function saveSound() { try { localStorage.setItem('ob6_s', soundOn ? '1' : '0'); } catch(e){} }
+function loadSound() { var v = localStorage.getItem('ob6_s'); if (v !== null) soundOn = v === '1'; }
+function saveTheme() { try { localStorage.setItem('ob6_t', theme); } catch(e){} }
+function loadTheme() { var v = localStorage.getItem('ob6_t'); if (v) theme = v; }
 
 function resetDaily() {
   var t = todayKey();
@@ -545,11 +597,12 @@ function resetDaily() {
 
 /* ============ БОНУС ============ */
 function claimBonus() {
-  if (wallet.lastBonus === todayKey()) return;
+  if (wallet.lastBonus === todayKey()) { toast('info','💎','Бонус уже получен сегодня'); return; }
   wallet.balance += 100000;
   wallet.lastBonus = todayKey();
   saveWallet(); flashBalance('bonus'); sBonus(); vibe(80);
   renderBalance(); updateBonus();
+  toast('gold','💎','+100 000 ₽ бонус!');
 }
 function updateBonus() {
   var el = $('bonusHint');
@@ -558,9 +611,9 @@ function updateBonus() {
   else { el.textContent = '💎 +100 000 ₽'; el.style.color = 'var(--gold)'; }
 }
 
-/* ============ ЧЕСТНЫЕ МОДЕЛИ ============ */
+/* ============ МОДЕЛИ ============ */
 
-/* Ожидаемые лямбды на остаток матча */
+/* Ожидаемые лямбды на остаток */
 function expectedLambdas(m) {
   var isF = m.sport === 'football';
   var base = isF ? 1.35 : 2.9;
@@ -568,18 +621,16 @@ function expectedLambdas(m) {
   var totalMin = isF ? 90 : 60;
   var rem = Math.max(0.01, m.maxMinute - m.minute);
   var frac = rem / totalMin;
-
   var xgHomeFull = base * m.homeAtk * m.awayDef * homeAdv;
   var xgAwayFull = base * m.awayAtk * m.homeDef / homeAdv;
   var momBoost = 1 + m.momentum * 0.15;
-
   return {
     lamHome: xgHomeFull * frac * momBoost,
     lamAway: xgAwayFull * frac / momBoost
   };
 }
 
-/* Футбол/хоккей: интегрируем Poisson на остаток */
+/* Футбол/хоккей */
 function probFootball(m) {
   var L = expectedLambdas(m);
   var pH = 0, pD = 0, pA = 0;
@@ -602,7 +653,7 @@ function probFootball(m) {
   return { pH: pH/t, pD: pD/t, pA: pA/t };
 }
 
-/* UFC: чистая логистика + прогресс */
+/* UFC */
 function probUFC(m) {
   var diff = (m.homeRating - m.awayRating) / 300;
   var pH = 1 / (1 + Math.pow(10, -diff));
@@ -611,52 +662,40 @@ function probUFC(m) {
   return clamp(pH, 0.05, 0.95);
 }
 
-/* Волейбол: вычисляем ИТЕРАТИВНО, без рекурсии.
-   Вероятность выиграть матч:
-   - Сначала победа в текущем сете (через DP-таблицу)
-   - Затем учёт оставшихся сетов
-*/
+/* Волейбол — итеративная DP, без рекурсии */
 function probVolley(m) {
   var atkDiff = m.homeAtk - m.awayAtk;
   var pRally = clamp(0.5 + atkDiff * 0.15, 0.35, 0.65);
   var isFifth = (m.setsHome === 2 && m.setsAway === 2);
   var target = isFifth ? 15 : 25;
-  var h = m.pointsHome, a = m.pointsAway;
+  var h0 = m.pointsHome, a0 = m.pointsAway;
 
-  /* DP для победы в текущем сете из (h, a) до target.
-     Идём ИТЕРАТИВНО, снизу вверх: заполняем таблицу от краёв к началу.
-     Размер таблицы: target+2 x target+2 (защита от бесконечности).
-  */
+  /* DP-таблица: dp[h][a] = вероятность выиграть сет из счёта (h, a) */
   var SZ = target + 2;
   var dp = [];
   for (var i = 0; i < SZ; i++) {
     dp.push([]);
     for (var j = 0; j < SZ; j++) dp[i].push(0);
   }
-  // Граничные условия для "h > target-1 и a > target-1":
-  // Победа — если h >= target и h-a >= 2. То же для a.
-  // Идём с (SZ-1, SZ-1) вниз.
+  /* Заполняем от краёв: сначала выставляем границы, потом все внутренние
+     Одним проходом снизу вверх — итеративно, никакой рекурсии. */
   for (var hi = SZ - 1; hi >= 0; hi--) {
     for (var ai = SZ - 1; ai >= 0; ai--) {
       var isWinH = (hi >= target && hi - ai >= 2);
       var isWinA = (ai >= target && ai - hi >= 2);
       if (isWinH) { dp[hi][ai] = 1; continue; }
       if (isWinA) { dp[hi][ai] = 0; continue; }
-      // Если рядом край — устанавливаем по принципу "next point"
       var rh = (hi + 1 < SZ) ? dp[hi+1][ai] : (hi > ai ? 1 : 0);
       var ra = (ai + 1 < SZ) ? dp[hi][ai+1] : (hi > ai ? 1 : 0);
       dp[hi][ai] = pRally * rh + (1 - pRally) * ra;
     }
   }
-  var pCurrentSet = (h < SZ && a < SZ) ? dp[h][a] : (h > a ? 1 : 0);
+  var pCurrentSet = (h0 < SZ && a0 < SZ) ? dp[h0][a0] : (h0 > a0 ? 1 : 0);
 
-  /* Оставшиеся сеты. pSetWin — вероятность выиграть отдельный будущий сет */
   var pSetWin = clamp(0.5 + atkDiff * 0.20, 0.30, 0.70);
   var needH = 3 - m.setsHome;
   var needA = 3 - m.setsAway;
 
-  /* probWinSeries(needW, needL, p) — вероятность выиграть needW сетов
-     до того как проиграешь needL. Формула через биномиалку. */
   function binomP(n, k, p) {
     if (k < 0 || k > n) return 0;
     var c = 1;
@@ -681,7 +720,7 @@ function probVolley(m) {
   return clamp(res, 0.02, 0.98);
 }
 
-/* Универсальный расчёт исходов */
+/* Универсальный расчёт */
 function computeProbs(m) {
   if (m.status === 'finished' || m.status === 'countdown') {
     return { home: null, draw: null, away: null, pH: null, pD: null, pA: null };
@@ -716,8 +755,9 @@ function computeExtras(m) {
     var pAu = 1 - pHu;
     var roundNum = m.round;
     var minInRound = m.minute - (roundNum - 1) * 24;
+    var roundsElapsed = (roundNum - 1) + (minInRound / 24);
 
-    // Шанс финиша за оставшиеся раунды
+    /* Шанс финиша за оставшиеся раунды */
     var finRateByRound = [0.35, 0.30, 0.22, 0.15, 0.10];
     var pNoFin = 1;
     for (var r = roundNum; r <= 5; r++) {
@@ -737,16 +777,31 @@ function computeExtras(m) {
     add('Бой досрочно', pFinishFuture);
     add('Вся дистанция', pDec);
 
-    // Рынки ТБ раундов — только если ещё НЕ прошли
-    if (roundNum < 3) {
-      var pO25 = clamp(0.6 + (roundNum - 1) * 0.05 - pFinishFuture * 0.3, 0.2, 0.85);
+    /* Тоталы раундов — только пока линии НЕ пройдены */
+    if (roundsElapsed < 1.5) {
+      var remTo15 = 1.5 - roundsElapsed;
+      var curRate = finRateByRound[roundNum - 1] || 0.1;
+      var ratePerMin = curRate / 24;
+      var remMinutes = remTo15 * 24;
+      var pFinBefore15 = 1 - Math.pow(1 - ratePerMin, remMinutes);
+      var pOver15 = clamp(1 - pFinBefore15, 0.02, 0.98);
+      add('ТБ 1.5 раундов', pOver15);
+      add('ТМ 1.5 раундов', 1 - pOver15);
+    }
+    if (roundsElapsed < 2.5) {
+      var pO25 = clamp(1 - pFinishFuture * 0.5, 0.15, 0.90);
       add('ТБ 2.5 раундов', pO25);
       add('ТМ 2.5 раундов', 1 - pO25);
     }
-    if (roundNum < 4) {
-      var pO35 = clamp(0.55 + (roundNum - 1) * 0.05 - pFinishFuture * 0.4, 0.15, 0.85);
+    if (roundsElapsed < 3.5) {
+      var pO35 = clamp(1 - pFinishFuture * 0.7, 0.10, 0.90);
       add('ТБ 3.5 раундов', pO35);
       add('ТМ 3.5 раундов', 1 - pO35);
+    }
+    if (roundsElapsed < 4.5 && roundNum >= 4) {
+      var pO45 = clamp(1 - pFinishFuture, 0.10, 0.90);
+      add('ТБ 4.5 раундов', pO45);
+      add('ТМ 4.5 раундов', 1 - pO45);
     }
 
     if (roundNum < 5) {
@@ -764,11 +819,11 @@ function computeExtras(m) {
   if (m.sport === 'volleyball') {
     var pHvol = probVolley(m);
     var setsPlayed = m.setsHome + m.setsAway;
-
-    // Симуляция 300 раз для распределения сетов
     var pSW = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.20, 0.30, 0.70);
+
+    /* Монте-Карло для распределения */
     var cnt3 = 0, cnt4 = 0, cnt5 = 0;
-    for (var trial = 0; trial < 300; trial++) {
+    for (var trial = 0; trial < 200; trial++) {
       var sh = m.setsHome, sa = m.setsAway;
       var guard = 0;
       while (sh < 3 && sa < 3 && guard++ < 10) {
@@ -779,11 +834,10 @@ function computeExtras(m) {
       else if (total === 4) cnt4++;
       else cnt5++;
     }
-    var p3 = cnt3/300, p4 = cnt4/300, p5 = cnt5/300;
+    var p3 = cnt3/200, p4 = cnt4/200, p5 = cnt5/200;
     if (p3 > 0.02) { add('ТМ 3.5 сетов', p3); add('ТБ 3.5 сетов', p4 + p5); }
     if (p5 > 0.02) { add('ТБ 4.5 сетов', p5); add('ТМ 4.5 сетов', p3 + p4); }
 
-    // Победа в следующем сете
     if (setsPlayed < 5) {
       var nextSet = setsPlayed + 1;
       var pNextH = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.18, 0.30, 0.70);
@@ -791,9 +845,8 @@ function computeExtras(m) {
       add('Победа в ' + nextSet + '-м сете · П2', 1 - pNextH);
     }
 
-    // Точный счёт через симуляцию
     var scores = {};
-    for (var tr = 0; tr < 400; tr++) {
+    for (var tr = 0; tr < 300; tr++) {
       var sh2 = m.setsHome, sa2 = m.setsAway;
       var g2 = 0;
       while (sh2 < 3 && sa2 < 3 && g2++ < 10) {
@@ -803,7 +856,7 @@ function computeExtras(m) {
       scores[key] = (scores[key] || 0) + 1;
     }
     for (var sc in scores) {
-      var psc = scores[sc] / 400;
+      var psc = scores[sc] / 300;
       if (psc > 0.03) add('Счёт ' + sc, psc * 1.03);
     }
     return out;
@@ -817,7 +870,6 @@ function computeExtras(m) {
     distH.push(poissonP(i2, L.lamHome));
     distA.push(poissonP(i2, L.lamAway));
   }
-  // Соберём матрицу
   var matrix = {};
   var totalP = 0;
   for (var h2 = 0; h2 <= MAXG; h2++) {
@@ -833,7 +885,6 @@ function computeExtras(m) {
 
   var isF = m.sport === 'football';
 
-  // Двойной шанс
   var pH2 = 0, pD2 = 0, pA2 = 0;
   for (var kk2 in matrix) {
     var parts = kk2.split(':');
@@ -848,7 +899,6 @@ function computeExtras(m) {
     add('X2', pD2 + pA2);
   }
 
-  // Тоталы
   var linesT = isF ? [0.5, 1.5, 2.5, 3.5, 4.5] : [3.5, 4.5, 5.5, 6.5, 7.5];
   for (var li = 0; li < linesT.length; li++) {
     var lv = linesT[li];
@@ -863,7 +913,6 @@ function computeExtras(m) {
     }
   }
 
-  // Форы -1.5 / +1.5
   var pF1_15 = 0, pF1_15plus = 0;
   for (var kk4 in matrix) {
     var p4 = kk4.split(':');
@@ -876,7 +925,6 @@ function computeExtras(m) {
   add('Ф2 −1.5', 1 - pF1_15plus);
   add('Ф2 +1.5', 1 - pF1_15);
 
-  // Обе забьют
   var pBtts = 0;
   for (var kk5 in matrix) {
     var p5 = kk5.split(':');
@@ -885,7 +933,6 @@ function computeExtras(m) {
   add('Обе · Да', pBtts);
   add('Обе · Нет', 1 - pBtts);
 
-  // Чёт/Нечет
   var pEven = 0;
   for (var kk6 in matrix) {
     var p6 = kk6.split(':');
@@ -894,7 +941,6 @@ function computeExtras(m) {
   add('Чёт', pEven);
   add('Нечет', 1 - pEven);
 
-  // Точные счета
   var sorted = [];
   for (var kk7 in matrix) sorted.push([kk7, matrix[kk7]]);
   sorted.sort(function(a, b) { return b[1] - a[1]; });
@@ -1006,7 +1052,8 @@ function newFootball() {
     if (lgs.indexOf(TEAMS.football[i].lg) < 0) lgs.push(TEAMS.football[i].lg);
   }
   var lg = pick(lgs);
-  var pool = TEAMS.football.filter(function(t) { return t.lg === lg; });
+  var pool = [];
+  for (var j = 0; j < TEAMS.football.length; j++) if (TEAMS.football[j].lg === lg) pool.push(TEAMS.football[j]);
   var a = pick(pool), b = pick(pool);
   var s = 0; while (a.n === b.n && s++ < 50) b = pick(pool);
   return {
@@ -1026,7 +1073,8 @@ function newHockey() {
     if (lgs.indexOf(TEAMS.hockey[i].lg) < 0) lgs.push(TEAMS.hockey[i].lg);
   }
   var lg = pick(lgs);
-  var pool = TEAMS.hockey.filter(function(t) { return t.lg === lg; });
+  var pool = [];
+  for (var j = 0; j < TEAMS.hockey.length; j++) if (TEAMS.hockey[j].lg === lg) pool.push(TEAMS.hockey[j]);
   var a = pick(pool), b = pick(pool);
   var s = 0; while (a.n === b.n && s++ < 50) b = pick(pool);
   return {
@@ -1061,7 +1109,8 @@ function newUFC() {
     if (divs.indexOf(TEAMS.ufc[i].div) < 0) divs.push(TEAMS.ufc[i].div);
   }
   var div = pick(divs);
-  var pool = TEAMS.ufc.filter(function(f) { return f.div === div; });
+  var pool = [];
+  for (var j = 0; j < TEAMS.ufc.length; j++) if (TEAMS.ufc[j].div === div) pool.push(TEAMS.ufc[j]);
   var a = pick(pool), b = pick(pool);
   var s = 0; while (a.n === b.n && s++ < 50) b = pick(pool);
   return {
@@ -1082,16 +1131,30 @@ function createBatch() {
   for (var j = 0; j < 3; j++) matches.push(newHockey());
   for (var k = 0; k < 3; k++) matches.push(newVolleyball());
   for (var l = 0; l < 3; l++) matches.push(newUFC());
-  // Немного прогреваем
   for (var m = 0; m < matches.length; m++) {
     var skip = rand(3, 15);
     for (var n = 0; n < skip && matches[m].status === 'live'; n++) simulateMinute(matches[m]);
   }
-  // Перемешиваем
   for (var q = matches.length - 1; q > 0; q--) {
     var r = Math.floor(Math.random() * (q + 1));
     var tmp = matches[q]; matches[q] = matches[r]; matches[r] = tmp;
   }
+}
+
+/* ============ TOAST ============ */
+function toast(type, icon, text) {
+  var c = $('toastContainer');
+  if (!c) return;
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span style="font-size:18px">' + icon + '</span><span>' + text + '</span>';
+  c.appendChild(el);
+  setTimeout(function() {
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(120%)';
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
+  }, 3000);
 }
 
 /* ============ РЕНДЕР ============ */
@@ -1181,12 +1244,8 @@ function renderMatches() {
   }
   var html = '';
   for (var i = 0; i < list.length; i++) {
-    try {
-      html += renderCard(list[i]);
-    } catch (e) {
-      console.error('renderCard error', list[i].id, e);
-      html += '<div class="match"><div style="padding:20px;color:var(--red)">Ошибка карточки #' + list[i].id + '</div></div>';
-    }
+    try { html += renderCard(list[i]); }
+    catch (e) { console.error('card err', e); html += '<div class="match" style="padding:20px;color:var(--red)">Ошибка #' + list[i].id + '</div>'; }
   }
   el.innerHTML = html;
 }
@@ -1260,8 +1319,7 @@ function renderCard(m) {
     var pH = probs.pH * 100;
     var pD = (probs.pD !== null && probs.pD !== undefined) ? probs.pD * 100 : 0;
     var pA = (probs.pA !== null && probs.pA !== undefined) ? probs.pA * 100 : (1 - probs.pH) * 100;
-    var title = probs.pD !== null ? 'P1: ' + pH.toFixed(0) + '% · X: ' + pD.toFixed(0) + '% · P2: ' + pA.toFixed(0) + '%' : 'P1: ' + pH.toFixed(0) + '% · P2: ' + pA.toFixed(0) + '%';
-    probBar = '<div class="prob-bar" title="' + title + '">' +
+    probBar = '<div class="prob-bar">' +
       '<i class="ph" style="width:' + pH + '%"></i>' +
       (probs.pD !== null ? '<i class="pd" style="width:' + pD + '%"></i>' : '') +
       '<i class="pa" style="width:' + pA + '%"></i>' +
@@ -1368,7 +1426,7 @@ function drawChart() {
   ctx.clearRect(0, 0, w, h);
   var hist = wallet.profitHistory;
   if (!hist || hist.length < 2) {
-    ctx.fillStyle = '#5a5a7a';
+    ctx.fillStyle = '#5a5a80';
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Играй — график появится', w / 2, h / 2);
@@ -1381,15 +1439,15 @@ function drawChart() {
   for (var g = 0; g <= 4; g++) { var y = (h / 4) * g; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
   var step = w / (hist.length - 1);
   var grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, 'rgba(124,92,255,.35)');
-  grad.addColorStop(1, 'rgba(124,92,255,0)');
+  grad.addColorStop(0, 'rgba(139,92,255,.35)');
+  grad.addColorStop(1, 'rgba(139,92,255,0)');
   ctx.beginPath();
   for (var j = 0; j < hist.length; j++) {
     var x = j * step;
     var yy = h - ((hist[j].v - min) / range) * h * 0.85 - h * 0.075;
     if (j === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
   }
-  ctx.strokeStyle = '#7c5cff';
+  ctx.strokeStyle = '#8b5cff';
   ctx.lineWidth = 2.5;
   ctx.stroke();
   ctx.lineTo(w, h);
@@ -1405,7 +1463,12 @@ function renderAchiv() {
     var a = ACH[i];
     var ok = false;
     try { ok = a.f(wallet); } catch(e) {}
-    html += '<div class="ach ' + (ok ? 'unlocked' : '') + '"><div class="ach-icon">' + a.i + '</div><div class="ach-name">' + a.n + '</div><div class="ach-desc">' + a.d + '</div></div>';
+    var progCur = 0, progMax = 1;
+    try { var pr = a.prog(wallet); progCur = pr[0]; progMax = pr[1]; } catch(e) {}
+    var pct = Math.min(100, (progCur / progMax) * 100);
+    html += '<div class="ach ' + (ok ? 'unlocked' : '') + '"><div class="ach-icon">' + a.i + '</div><div class="ach-name">' + a.n + '</div><div class="ach-desc">' + a.d + '</div>' +
+      (!ok ? '<div class="ach-progress"><i style="width:' + pct + '%"></i></div><div class="ach-progress-text">' + Math.round(pct) + '%</div>' : '') +
+      '</div>';
   }
   $('achievementsGrid').innerHTML = html;
 }
@@ -1466,7 +1529,7 @@ function updatePotential() {
 function placeBet() {
   if (!activeBet) return;
   var stake = parseFloat($('betModalStake').value);
-  if (!stake || stake < 10 || stake > wallet.balance) return;
+  if (!stake || stake < 10 || stake > wallet.balance) { toast('lose','⚠️','Некорректная сумма'); return; }
 
   if (activeBet.isExpress) {
     var sel = activeBet.selections.map(function(s) { return { matchId: s.matchId, pick: s.pick, odd: s.odd, label: s.label, match: s.match, status: 'pending' }; });
@@ -1518,6 +1581,7 @@ function placeBet() {
   renderAchiv();
   sBet();
   vibe(20);
+  toast('info','📋','Ставка принята');
   closeBetModal();
 }
 
@@ -1678,6 +1742,7 @@ function doCashout(id) {
   renderStats();
   renderAchiv();
   sBet();
+  toast('win','💰','Кэшаут: +' + fmt(co) + ' ₽');
 }
 
 /* ============ РАСЧЁТ СТАВОК ============ */
@@ -1689,7 +1754,6 @@ function checkSel(m, pick) {
     var fr = m.finalResult || { winner: m.scoreHome > m.scoreAway ? 'home' : 'away', method: 'Решение', round: 5 };
     var isH = fr.winner === 'home', isA = fr.winner === 'away';
     var md = fr.method, rr = fr.round, fin = md !== 'Решение';
-
     if (pick === 'home') return isH ? 'won' : 'lost';
     if (pick === 'away') return isA ? 'won' : 'lost';
     if (pick === 'KO/TKO') return md === 'KO/TKO' ? 'won' : 'lost';
@@ -1697,12 +1761,14 @@ function checkSel(m, pick) {
     if (pick === 'Решение') return md === 'Решение' ? 'won' : 'lost';
     if (pick === 'Бой досрочно') return fin ? 'won' : 'lost';
     if (pick === 'Вся дистанция') return !fin ? 'won' : 'lost';
-
+    var o15 = pick.match(/^(ТБ|ТМ)\s*1\.5 раундов$/);
+    if (o15) { if (o15[1] === 'ТБ') return rr > 1.5 ? 'won' : 'lost'; return rr < 1.5 ? 'won' : 'lost'; }
     var o25 = pick.match(/^(ТБ|ТМ)\s*2\.5 раундов$/);
     if (o25) { if (o25[1] === 'ТБ') return rr > 2.5 ? 'won' : 'lost'; return rr < 2.5 ? 'won' : 'lost'; }
     var o35 = pick.match(/^(ТБ|ТМ)\s*3\.5 раундов$/);
     if (o35) { if (o35[1] === 'ТБ') return rr > 3.5 ? 'won' : 'lost'; return rr < 3.5 ? 'won' : 'lost'; }
-
+    var o45 = pick.match(/^(ТБ|ТМ)\s*4\.5 раундов$/);
+    if (o45) { if (o45[1] === 'ТБ') return rr > 4.5 ? 'won' : 'lost'; return rr < 4.5 ? 'won' : 'lost'; }
     if (pick === m.home + ' KO/TKO') return (isH && md === 'KO/TKO') ? 'won' : 'lost';
     if (pick === m.home + ' Сабмишн') return (isH && md === 'Сабмишн') ? 'won' : 'lost';
     if (pick === m.home + ' Решение') return (isH && md === 'Решение') ? 'won' : 'lost';
@@ -1781,6 +1847,7 @@ function settleBets() {
         sLose(); flashBalance('lose');
         changed = true;
         wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
+        toast('lose','❌','Экспресс проиграл: -' + fmt(b.stake) + ' ₽');
         continue;
       }
       if (allFin && allW && b.selections.every(function(s) { return s.status === 'won'; })) {
@@ -1792,6 +1859,7 @@ function settleBets() {
         changed = true;
         wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
         if (wallet.profitHistory.length > 100) wallet.profitHistory.shift();
+        toast('win','🏆','Экспресс зашёл: +' + fmt(b.payout) + ' ₽');
       }
       continue;
     }
@@ -1804,9 +1872,11 @@ function settleBets() {
       wallet.balance += b.payout;
       wallet.totalWon += b.payout;
       sWin(); vibe(50); flashBalance('win');
+      toast('win','✅','Зашла: +' + fmt(b.payout) + ' ₽');
     } else {
       b.status = 'lost';
       sLose(); flashBalance('lose');
+      toast('lose','❌','Не зашла: -' + fmt(b.stake) + ' ₽');
     }
     changed = true;
     wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
@@ -1842,12 +1912,13 @@ function exportCSV() {
 
 /* ============ ГЛАВНЫЙ ЦИКЛ ============ */
 function tick() {
+  tickCounter++;
   resetDaily();
   for (var i = 0; i < matches.length; i++) {
     var m = matches[i];
     if (m.status === 'live') {
       try { simulateMinute(m); }
-      catch (e) { console.error('sim error', m.id, e); m.status = 'finished'; }
+      catch (e) { console.error('sim err', m.id, e); m.status = 'finished'; }
     }
   }
   for (var j = 0; j < matches.length; j++) {
@@ -1869,53 +1940,56 @@ function tick() {
         else if (m2.sport === 'volleyball') nm = newVolleyball();
         else nm = newUFC();
         nm.id = m2.id;
-        for (var k in m2) delete m2[k];
-        for (var k2 in nm) m2[k2] = nm[k2];
+        var keys = Object.keys(m2);
+        for (var kk = 0; kk < keys.length; kk++) delete m2[keys[kk]];
+        var nk = Object.keys(nm);
+        for (var kk2 = 0; kk2 < nk.length; kk2++) m2[nk[kk2]] = nm[nk[kk2]];
       }
     }
   }
 
   settleBets();
 
-  var cnt = { football: 0, hockey: 0, volleyball: 0, ufc: 0 };
-  for (var q = 0; q < matches.length; q++) {
-    var mm = matches[q];
-    if ((mm.status === 'live' || mm.status === 'countdown') && cnt[mm.sport] !== undefined) cnt[mm.sport]++;
-  }
-  var targets = { football: 5, hockey: 3, volleyball: 3, ufc: 3 };
-  var sports = ['football', 'hockey', 'volleyball', 'ufc'];
-  for (var si = 0; si < sports.length; si++) {
-    var sp = sports[si];
-    if (cnt[sp] < targets[sp] - 1) {
-      var need = targets[sp] - cnt[sp];
-      for (var n = 0; n < need; n++) {
-        var mn;
-        if (sp === 'football') mn = newFootball();
-        else if (sp === 'hockey') mn = newHockey();
-        else if (sp === 'volleyball') mn = newVolleyball();
-        else mn = newUFC();
-        matches.push(mn);
+  if (tickCounter % 5 === 0) {
+    var cnt = { football: 0, hockey: 0, volleyball: 0, ufc: 0 };
+    for (var q = 0; q < matches.length; q++) {
+      var mm = matches[q];
+      if ((mm.status === 'live' || mm.status === 'countdown') && cnt[mm.sport] !== undefined) cnt[mm.sport]++;
+    }
+    var targets = { football: 5, hockey: 3, volleyball: 3, ufc: 3 };
+    var sports = ['football', 'hockey', 'volleyball', 'ufc'];
+    for (var si = 0; si < sports.length; si++) {
+      var sp = sports[si];
+      if (cnt[sp] < targets[sp] - 1) {
+        var need = targets[sp] - cnt[sp];
+        for (var n = 0; n < need; n++) {
+          var mn;
+          if (sp === 'football') mn = newFootball();
+          else if (sp === 'hockey') mn = newHockey();
+          else if (sp === 'volleyball') mn = newVolleyball();
+          else mn = newUFC();
+          matches.push(mn);
+        }
       }
     }
-  }
-
-  if (matches.length > 30) {
-    var seen = {};
-    var filtered = [];
-    for (var fi = 0; fi < matches.length; fi++) {
-      var kk = matches[fi].home + '|' + matches[fi].away + '|' + matches[fi].sport;
-      if (seen[kk]) continue;
-      seen[kk] = true;
-      filtered.push(matches[fi]);
+    if (matches.length > 30) {
+      var seen = {};
+      var filtered = [];
+      for (var fi = 0; fi < matches.length; fi++) {
+        var kk3 = matches[fi].home + '|' + matches[fi].away + '|' + matches[fi].sport;
+        if (seen[kk3]) continue;
+        seen[kk3] = true;
+        filtered.push(matches[fi]);
+      }
+      matches = filtered.slice(0, 30);
     }
-    matches = filtered.slice(0, 30);
   }
 
   renderMatches();
-  if (currentTab === 'stats') renderStats();
+  if (currentTab === 'stats' && tickCounter % 2 === 0) renderStats();
   if (currentTab === 'history') renderHistory();
-  if (currentTab === 'top') renderTop();
-  if (currentTab === 'achiv') renderAchiv();
+  if (currentTab === 'top' && tickCounter % 3 === 0) renderTop();
+  if (currentTab === 'achiv' && tickCounter % 3 === 0) renderAchiv();
 }
 
 /* ============ ДЕЛЕГИРОВАНИЕ ============ */
@@ -1950,10 +2024,10 @@ document.addEventListener('click', function(e) {
     var bet = wallet.bets.find(function(x) { return x.id === bid; });
     if (bet && bet.matchId) {
       var m = matches.find(function(x) { return x.id === bet.matchId; });
-      if (!m) alert('Матч не найден — заменён');
-      else if (m.status === 'finished') alert('Завершён: ' + m.home + ' — ' + m.away);
-      else if (m.status === 'countdown') alert('Новый через ' + ft(m.countdownLeft));
-      else alert(m.home + ' — ' + m.away + '\n' + (m.sport === 'volleyball' ? 'Сеты ' + m.setsHome + ':' + m.setsAway : m.scoreHome + ':' + m.scoreAway) + ' · live');
+      if (!m) toast('info','ℹ️','Матч заменён');
+      else if (m.status === 'finished') toast('info','ℹ️','Завершён: ' + m.home + ' — ' + m.away);
+      else if (m.status === 'countdown') toast('info','ℹ️','Новый через ' + ft(m.countdownLeft));
+      else toast('info','ℹ️', m.home + ' — ' + m.away + ' · ' + (m.sport === 'volleyball' ? m.setsHome + ':' + m.setsAway : m.scoreHome + ':' + m.scoreAway));
     }
     return;
   }
@@ -2037,6 +2111,7 @@ $('newLineBtn').onclick = function() {
   prevOdds = {};
   saveMatches();
   renderMatches();
+  toast('info','🔄','Новая линия');
 };
 
 window.addEventListener('resize', function() { if (currentTab === 'stats') drawChart(); });
@@ -2073,7 +2148,7 @@ setTimeout(function() {
     updateBonus();
     setInterval(tick, 1000);
     setInterval(saveMatches, 2000);
-    console.log('✅ OpenBet Pro v5 запущен');
+    console.log('✅ OpenBet v6 запущен');
   } catch (err) {
     console.error('❌ ОШИБКА:', err);
     document.getElementById('matches').innerHTML = '<div style="padding:40px;text-align:center;color:#ff3860;grid-column:1/-1"><b>Ошибка:</b><br>' + err.message + '<br><small>' + (err.stack || '').slice(0, 200) + '</small></div>';
