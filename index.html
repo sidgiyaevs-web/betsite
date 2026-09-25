@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0a0a12">
-<title>⚡ OpenBet Pro — Live Betting Engine</title>
+<title>⚡ OpenBet Pro — Real Simulation Engine v4</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,input,select{font-family:inherit;color:inherit}
@@ -79,7 +79,7 @@ body.light .header{background:rgba(242,243,249,.9)}
 @keyframes scFlash{0%,100%{transform:scale(1)}30%{transform:scale(1.6);text-shadow:0 0 28px var(--green);color:var(--green)}}
 .match-info{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-weight:600;flex-wrap:wrap}
 .match-info .time{font-weight:800;color:var(--text-2);font-variant-numeric:tabular-nums}
-.prob-bar{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-top:2px;background:rgba(120,120,160,.15)}
+.prob-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:4px;background:rgba(120,120,160,.15)}
 .prob-bar i{display:block;height:100%;transition:width .5s}
 .prob-bar .ph{background:var(--accent-2)}
 .prob-bar .pd{background:var(--muted)}
@@ -342,14 +342,18 @@ body.light .header{background:rgba(242,243,249,.9)}
 
 <script>
 /* ============================================================
-   OPenBet Pro v3.0 — Honest Simulation Engine
-   Честная симуляция: Poisson + UFC-модель + волейбол-модель
+   OpenBet Pro v4.0 — REAL SIMULATION ENGINE
+   Полностью переписано с нуля.
+   - Честные xG для футбола (1.2-1.8, не 3.0)
+   - Волейбол: динамика по очкам, а не только по сетам
+   - UFC: рынки удаляются когда исход уже определён
+   - Жёсткие границы кэфов: [1.05, 30]
+   - Маржа применяется явно, сумма вероятностей = 1
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
 const $$ = (s) => document.querySelectorAll(s);
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const randf = (a, b) => a + Math.random() * (b - a);
 const pick = (a) => a[rand(0, a.length - 1)];
 const clamp = (v, l, h) => Math.max(l, Math.min(h, v));
 const fmt = (v) => Math.round(v).toLocaleString('ru-RU');
@@ -369,92 +373,97 @@ function teamInit(n) {
 }
 
 /* ============ ДАННЫЕ ============ */
+/* atk/def — отношения к среднему: 1.0 = средняя команда лиги
+   Топ-клуб: atk ≈ 1.4, def ≈ 0.7
+   Средний: atk ≈ 1.0, def ≈ 1.0
+   Слабый: atk ≈ 0.7, def ≈ 1.3
+*/
 const TEAMS = {
   football: [
-    {n:'Manchester City',atk:2.35,def:0.72,lg:'Premier League',country:'gb',rt:93},
-    {n:'Arsenal',atk:2.10,def:0.78,lg:'Premier League',country:'gb',rt:91},
-    {n:'Liverpool',atk:2.25,def:0.85,lg:'Premier League',country:'gb',rt:92},
-    {n:'Chelsea',atk:1.70,def:1.15,lg:'Premier League',country:'gb',rt:84},
-    {n:'Tottenham',atk:1.80,def:1.25,lg:'Premier League',country:'gb',rt:82},
-    {n:'Manchester United',atk:1.55,def:1.20,lg:'Premier League',country:'gb',rt:82},
-    {n:'Newcastle',atk:1.75,def:1.10,lg:'Premier League',country:'gb',rt:82},
-    {n:'Aston Villa',atk:1.68,def:1.18,lg:'Premier League',country:'gb',rt:81},
-    {n:'Brighton',atk:1.60,def:1.28,lg:'Premier League',country:'gb',rt:79},
-    {n:'West Ham',atk:1.45,def:1.35,lg:'Premier League',country:'gb',rt:78},
-    {n:'Real Madrid',atk:2.40,def:0.75,lg:'La Liga',country:'es',rt:94},
-    {n:'Barcelona',atk:2.25,def:0.95,lg:'La Liga',country:'es',rt:90},
-    {n:'Atletico Madrid',atk:1.80,def:0.82,lg:'La Liga',country:'es',rt:87},
-    {n:'Sevilla',atk:1.35,def:1.25,lg:'La Liga',country:'es',rt:78},
-    {n:'Real Sociedad',atk:1.50,def:1.10,lg:'La Liga',country:'es',rt:80},
-    {n:'Athletic Bilbao',atk:1.55,def:0.98,lg:'La Liga',country:'es',rt:81},
-    {n:'Bayern Munich',atk:2.55,def:0.85,lg:'Bundesliga',country:'de',rt:93},
-    {n:'Borussia Dortmund',atk:1.90,def:1.15,lg:'Bundesliga',country:'de',rt:85},
-    {n:'RB Leipzig',atk:1.95,def:1.05,lg:'Bundesliga',country:'de',rt:86},
-    {n:'Bayer Leverkusen',atk:2.15,def:0.88,lg:'Bundesliga',country:'de',rt:88},
-    {n:'Inter',atk:2.15,def:0.80,lg:'Serie A',country:'it',rt:89},
-    {n:'Juventus',atk:1.65,def:0.85,lg:'Serie A',country:'it',rt:85},
-    {n:'AC Milan',atk:1.85,def:1.05,lg:'Serie A',country:'it',rt:86},
-    {n:'Napoli',atk:1.80,def:0.95,lg:'Serie A',country:'it',rt:86},
-    {n:'Atalanta',atk:1.95,def:1.10,lg:'Serie A',country:'it',rt:85},
-    {n:'Zenit',atk:2.00,def:0.85,lg:'RPL',country:'ru',rt:80},
-    {n:'Spartak Moscow',atk:1.70,def:1.15,lg:'RPL',country:'ru',rt:75},
-    {n:'CSKA Moscow',atk:1.75,def:1.00,lg:'RPL',country:'ru',rt:77},
-    {n:'Krasnodar',atk:1.90,def:0.92,lg:'RPL',country:'ru',rt:79},
-    {n:'Dinamo Moscow',atk:1.65,def:1.08,lg:'RPL',country:'ru',rt:75},
+    {n:'Manchester City',atk:1.45,def:0.70,lg:'Premier League',country:'gb',rt:93},
+    {n:'Arsenal',atk:1.35,def:0.72,lg:'Premier League',country:'gb',rt:91},
+    {n:'Liverpool',atk:1.40,def:0.78,lg:'Premier League',country:'gb',rt:92},
+    {n:'Chelsea',atk:1.10,def:1.00,lg:'Premier League',country:'gb',rt:84},
+    {n:'Tottenham',atk:1.15,def:1.10,lg:'Premier League',country:'gb',rt:82},
+    {n:'Manchester United',atk:1.00,def:1.05,lg:'Premier League',country:'gb',rt:82},
+    {n:'Newcastle',atk:1.15,def:0.95,lg:'Premier League',country:'gb',rt:82},
+    {n:'Aston Villa',atk:1.10,def:1.00,lg:'Premier League',country:'gb',rt:81},
+    {n:'Brighton',atk:1.05,def:1.10,lg:'Premier League',country:'gb',rt:79},
+    {n:'West Ham',atk:0.90,def:1.20,lg:'Premier League',country:'gb',rt:78},
+    {n:'Real Madrid',atk:1.50,def:0.68,lg:'La Liga',country:'es',rt:94},
+    {n:'Barcelona',atk:1.40,def:0.85,lg:'La Liga',country:'es',rt:90},
+    {n:'Atletico Madrid',atk:1.15,def:0.72,lg:'La Liga',country:'es',rt:87},
+    {n:'Sevilla',atk:0.85,def:1.15,lg:'La Liga',country:'es',rt:78},
+    {n:'Real Sociedad',atk:0.95,def:1.00,lg:'La Liga',country:'es',rt:80},
+    {n:'Athletic Bilbao',atk:1.05,def:0.88,lg:'La Liga',country:'es',rt:81},
+    {n:'Bayern Munich',atk:1.55,def:0.75,lg:'Bundesliga',country:'de',rt:93},
+    {n:'Borussia Dortmund',atk:1.15,def:1.05,lg:'Bundesliga',country:'de',rt:85},
+    {n:'RB Leipzig',atk:1.20,def:0.95,lg:'Bundesliga',country:'de',rt:86},
+    {n:'Bayer Leverkusen',atk:1.35,def:0.80,lg:'Bundesliga',country:'de',rt:88},
+    {n:'Inter',atk:1.35,def:0.72,lg:'Serie A',country:'it',rt:89},
+    {n:'Juventus',atk:1.00,def:0.78,lg:'Serie A',country:'it',rt:85},
+    {n:'AC Milan',atk:1.15,def:0.95,lg:'Serie A',country:'it',rt:86},
+    {n:'Napoli',atk:1.10,def:0.85,lg:'Serie A',country:'it',rt:86},
+    {n:'Atalanta',atk:1.25,def:1.00,lg:'Serie A',country:'it',rt:85},
+    {n:'Zenit',atk:1.30,def:0.75,lg:'RPL',country:'ru',rt:80},
+    {n:'Spartak Moscow',atk:1.05,def:1.05,lg:'RPL',country:'ru',rt:75},
+    {n:'CSKA Moscow',atk:1.10,def:0.90,lg:'RPL',country:'ru',rt:77},
+    {n:'Krasnodar',atk:1.25,def:0.82,lg:'RPL',country:'ru',rt:79},
+    {n:'Dinamo Moscow',atk:1.00,def:1.00,lg:'RPL',country:'ru',rt:75},
   ],
   hockey: [
-    {n:'Edmonton Oilers',atk:3.60,def:2.85,lg:'NHL',country:'ca',rt:91},
-    {n:'Florida Panthers',atk:3.30,def:2.55,lg:'NHL',country:'us',rt:90},
-    {n:'Boston Bruins',atk:3.15,def:2.55,lg:'NHL',country:'us',rt:88},
-    {n:'Toronto Maple Leafs',atk:3.45,def:2.95,lg:'NHL',country:'ca',rt:87},
-    {n:'Colorado Avalanche',atk:3.55,def:2.90,lg:'NHL',country:'us',rt:89},
-    {n:'New York Rangers',atk:3.20,def:2.65,lg:'NHL',country:'us',rt:88},
-    {n:'Vegas Golden Knights',atk:3.25,def:2.70,lg:'NHL',country:'us',rt:88},
-    {n:'Tampa Bay Lightning',atk:3.30,def:2.90,lg:'NHL',country:'us',rt:87},
-    {n:'SKA',atk:3.40,def:2.55,lg:'KHL',country:'ru',rt:86},
-    {n:'CSKA',atk:3.00,def:2.40,lg:'KHL',country:'ru',rt:84},
-    {n:'Ak Bars',atk:3.05,def:2.55,lg:'KHL',country:'ru',rt:83},
-    {n:'Dynamo Moscow',atk:3.10,def:2.65,lg:'KHL',country:'ru',rt:82},
-    {n:'Metallurg',atk:3.15,def:2.60,lg:'KHL',country:'ru',rt:83},
+    {n:'Edmonton Oilers',atk:1.35,def:0.85,lg:'NHL',country:'ca',rt:91},
+    {n:'Florida Panthers',atk:1.20,def:0.78,lg:'NHL',country:'us',rt:90},
+    {n:'Boston Bruins',atk:1.15,def:0.80,lg:'NHL',country:'us',rt:88},
+    {n:'Toronto Maple Leafs',atk:1.30,def:0.92,lg:'NHL',country:'ca',rt:87},
+    {n:'Colorado Avalanche',atk:1.35,def:0.88,lg:'NHL',country:'us',rt:89},
+    {n:'New York Rangers',atk:1.20,def:0.82,lg:'NHL',country:'us',rt:88},
+    {n:'Vegas Golden Knights',atk:1.20,def:0.85,lg:'NHL',country:'us',rt:88},
+    {n:'Tampa Bay Lightning',atk:1.25,def:0.90,lg:'NHL',country:'us',rt:87},
+    {n:'SKA',atk:1.35,def:0.80,lg:'KHL',country:'ru',rt:86},
+    {n:'CSKA',atk:1.15,def:0.78,lg:'KHL',country:'ru',rt:84},
+    {n:'Ak Bars',atk:1.15,def:0.82,lg:'KHL',country:'ru',rt:83},
+    {n:'Dynamo Moscow',atk:1.20,def:0.85,lg:'KHL',country:'ru',rt:82},
+    {n:'Metallurg',atk:1.20,def:0.82,lg:'KHL',country:'ru',rt:83},
   ],
   volleyball: [
-    {n:'Zenit Kazan',atk:1.18,lg:'Суперлига',country:'ru',rt:92},
-    {n:'Dynamo Moscow',atk:1.12,lg:'Суперлига',country:'ru',rt:88},
-    {n:'Belogorie',atk:1.06,lg:'Суперлига',country:'ru',rt:85},
+    {n:'Zenit Kazan',atk:1.35,lg:'Суперлига',country:'ru',rt:92},
+    {n:'Dynamo Moscow',atk:1.25,lg:'Суперлига',country:'ru',rt:88},
+    {n:'Belogorie',atk:1.15,lg:'Суперлига',country:'ru',rt:85},
     {n:'Fakel',atk:1.00,lg:'Суперлига',country:'ru',rt:82},
-    {n:'Lokomotiv Novosibirsk',atk:0.94,lg:'Суперлига',country:'ru',rt:80},
-    {n:'Kuzbass',atk:0.90,lg:'Суперлига',country:'ru',rt:78},
-    {n:'Zenit SPb',atk:1.08,lg:'Суперлига',country:'ru',rt:86},
-    {n:'Ural Ufa',atk:0.96,lg:'Суперлига',country:'ru',rt:79},
+    {n:'Lokomotiv Novosibirsk',atk:0.90,lg:'Суперлига',country:'ru',rt:80},
+    {n:'Kuzbass',atk:0.85,lg:'Суперлига',country:'ru',rt:78},
+    {n:'Zenit SPb',atk:1.20,lg:'Суперлига',country:'ru',rt:86},
+    {n:'Ural Ufa',atk:0.92,lg:'Суперлига',country:'ru',rt:79},
   ],
   ufc: [
     {n:'Jon Jones',rt:2100,div:'Heavyweight',country:'us'},
-    {n:'Tom Aspinall',rt:2040,div:'Heavyweight',country:'gb'},
-    {n:'Ciryl Gane',rt:1985,div:'Heavyweight',country:'fr'},
-    {n:'Curtis Blaydes',rt:1955,div:'Heavyweight',country:'us'},
-    {n:'Alexander Volkov',rt:1950,div:'Heavyweight',country:'ru'},
-    {n:'Alex Pereira',rt:2065,div:'Light Heavyweight',country:'br'},
-    {n:'Magomed Ankalaev',rt:2020,div:'Light Heavyweight',country:'ru'},
-    {n:'Jamahal Hill',rt:1965,div:'Light Heavyweight',country:'us'},
-    {n:'Jiri Prochazka',rt:1980,div:'Light Heavyweight',country:'cz'},
+    {n:'Tom Aspinall',rt:2020,div:'Heavyweight',country:'gb'},
+    {n:'Ciryl Gane',rt:1960,div:'Heavyweight',country:'fr'},
+    {n:'Curtis Blaydes',rt:1930,div:'Heavyweight',country:'us'},
+    {n:'Alexander Volkov',rt:1920,div:'Heavyweight',country:'ru'},
+    {n:'Alex Pereira',rt:2060,div:'Light Heavyweight',country:'br'},
+    {n:'Magomed Ankalaev',rt:2010,div:'Light Heavyweight',country:'ru'},
+    {n:'Jamahal Hill',rt:1940,div:'Light Heavyweight',country:'us'},
+    {n:'Jiri Prochazka',rt:1960,div:'Light Heavyweight',country:'cz'},
     {n:'Dricus du Plessis',rt:2020,div:'Middleweight',country:'za'},
-    {n:'Israel Adesanya',rt:1985,div:'Middleweight',country:'nz'},
-    {n:'Sean Strickland',rt:1960,div:'Middleweight',country:'us'},
+    {n:'Israel Adesanya',rt:1980,div:'Middleweight',country:'nz'},
+    {n:'Sean Strickland',rt:1950,div:'Middleweight',country:'us'},
     {n:'Khamzat Chimaev',rt:2010,div:'Middleweight',country:'ae'},
-    {n:'Islam Makhachev',rt:2075,div:'Lightweight',country:'ru'},
-    {n:'Arman Tsarukyan',rt:2000,div:'Lightweight',country:'am'},
-    {n:'Justin Gaethje',rt:1975,div:'Lightweight',country:'us'},
-    {n:'Dustin Poirier',rt:1955,div:'Lightweight',country:'us'},
-    {n:'Charles Oliveira',rt:1985,div:'Lightweight',country:'br'},
-    {n:'Leon Edwards',rt:1995,div:'Welterweight',country:'gb'},
-    {n:'Kamaru Usman',rt:1965,div:'Welterweight',country:'ng'},
-    {n:'Belal Muhammad',rt:1990,div:'Welterweight',country:'us'},
-    {n:'Shavkat Rakhmonov',rt:2020,div:'Welterweight',country:'kz'},
-    {n:'Ilia Topuria',rt:2035,div:'Featherweight',country:'es'},
+    {n:'Islam Makhachev',rt:2070,div:'Lightweight',country:'ru'},
+    {n:'Arman Tsarukyan',rt:1990,div:'Lightweight',country:'am'},
+    {n:'Justin Gaethje',rt:1960,div:'Lightweight',country:'us'},
+    {n:'Dustin Poirier',rt:1940,div:'Lightweight',country:'us'},
+    {n:'Charles Oliveira',rt:1975,div:'Lightweight',country:'br'},
+    {n:'Leon Edwards',rt:1990,div:'Welterweight',country:'gb'},
+    {n:'Kamaru Usman',rt:1950,div:'Welterweight',country:'ng'},
+    {n:'Belal Muhammad',rt:1985,div:'Welterweight',country:'us'},
+    {n:'Shavkat Rakhmonov',rt:2010,div:'Welterweight',country:'kz'},
+    {n:'Ilia Topuria',rt:2030,div:'Featherweight',country:'es'},
     {n:'Alexander Volkanovski',rt:2000,div:'Featherweight',country:'au'},
-    {n:'Max Holloway',rt:1995,div:'Featherweight',country:'us'},
-    {n:'Sean O\'Malley',rt:2005,div:'Bantamweight',country:'us'},
-    {n:'Merab Dvalishvili',rt:2010,div:'Bantamweight',country:'ge'},
+    {n:'Max Holloway',rt:1985,div:'Featherweight',country:'us'},
+    {n:'Sean O\'Malley',rt:1995,div:'Bantamweight',country:'us'},
+    {n:'Merab Dvalishvili',rt:2005,div:'Bantamweight',country:'ge'},
   ]
 };
 
@@ -511,14 +520,475 @@ function poissonP(k, l) {
   for (let i = 2; i <= k; i++) lf += Math.log(i);
   return Math.exp(k * Math.log(l) - l - lf);
 }
+
+/* Маржа 4% накладывается ПОСЛЕ нормализации. Все кэфы = 1/p * (1 - margin).
+   Это даёт сумму вероятностей рынка ≈ 1.04, что = 4% маржа. */
 const MARGIN = 0.04;
-function toOdd(p, m = MARGIN) {
-  if (p <= 0.005 || p >= 0.995) return null;
-  const r = (1 / p) * (1 - m);
-  if (r < 1.05 || r > 100) return null;
-  return Math.floor(r * 100) / 100;
+function probToOdd(p) {
+  if (p <= 0.001) return null;
+  if (p >= 0.985) return null;
+  const odd = (1 / p) * (1 - MARGIN);
+  if (odd < 1.05) return null;
+  if (odd > 30) return null;       // ЖЁСТКИЙ КЭП
+  return Math.floor(odd * 100) / 100;
 }
-const isValid = (o) => typeof o === 'number' && !isNaN(o) && o >= 1.05 && o <= 100;
+const isValid = (o) => typeof o === 'number' && !isNaN(o) && o >= 1.05 && o <= 30;
+
+/* ============ ЧЕСТНАЯ МОДЕЛЬ ============ */
+
+/* Базовый xG: средняя команда забивает BASE_XG голов за матч
+   Футбол: 1.35 (это среднее по топ-лигам)
+   Хоккей: 2.9 (среднее по NHL) — но в пересчёте на 60 мин
+*/
+const BASE_XG = { football: 1.35, hockey: 2.9 };
+
+/* Домашнее преимущество — применяется как множитель */
+const HOME_ADV = { football: 1.15, hockey: 1.10 };
+
+/* Ожидаемое число голов за оставшееся время
+   xG_total_home = BASE_XG * atkHome * defAway * homeAdv
+   lambda = xG_total_home * (rem / totalMin)
+*/
+function expectedLambdas(m) {
+  const sport = m.sport;
+  const totalMin = sport === 'football' ? 90 : 60;
+  const rem = Math.max(0.01, m.maxMinute - m.minute);
+  const frac = rem / totalMin;
+
+  const base = BASE_XG[sport];
+  // xG на весь матч
+  const xgHomeFull = base * m.homeAtk * m.awayDef * HOME_ADV[sport];
+  const xgAwayFull = base * m.awayAtk * m.homeDef / HOME_ADV[sport];
+
+  // Momentum влияет ±15%
+  const momBoost = 1 + m.momentum * 0.15;
+
+  const lamHome = xgHomeFull * frac * momBoost;
+  const lamAway = xgAwayFull * frac / momBoost;
+
+  return { lamHome, lamAway };
+}
+
+/* Футбол/хоккей — вероятность победы хозяев из текущего счёта
+   Через интегрирование Пуассона остатка */
+function probHomeWinFootball(m) {
+  const { lamHome, lamAway } = expectedLambdas(m);
+  const MAXG = 12;
+  let pH = 0, pD = 0, pA = 0;
+  for (let h = 0; h <= MAXG; h++) {
+    const ph = poissonP(h, lamHome);
+    if (ph < 1e-9) continue;
+    for (let a = 0; a <= MAXG; a++) {
+      const pa = poissonP(a, lamAway);
+      if (pa < 1e-9) continue;
+      const p = ph * pa;
+      const fh = m.scoreHome + h, fa = m.scoreAway + a;
+      if (fh > fa) pH += p; else if (fh === fa) pD += p; else pA += p;
+    }
+  }
+  const t = pH + pD + pA || 1;
+  return { pH: pH/t, pD: pD/t, pA: pA/t };
+}
+
+/* UFC — вероятность победы хозяина
+   Разница рейтингов → логистическая функция
+   Прогресс боя сжимает к 0.5 только если никто не финишировал */
+function probHomeWinUFC(m) {
+  const diff = (m.homeRating - m.awayRating) / 300;
+  let pH = 1 / (1 + Math.pow(10, -diff));
+  // Прогресс уменьшает уверенность
+  const progress = m.minute / m.maxMinute;
+  pH = 0.5 + (pH - 0.5) * (1 - progress * 0.5);
+  return clamp(pH, 0.05, 0.95);
+}
+
+/* Волейбол — вероятность победы в матче
+   Считаем через: вероятность выиграть текущий сет × вероятность на оставшиеся */
+function probHomeWinVolley(m) {
+  // Сила команд
+  const atkDiff = m.homeAtk - m.awayAtk;
+  // Вероятность выиграть розыгрыш
+  const pRally = clamp(0.5 + atkDiff * 0.15, 0.35, 0.65);
+
+  // Вероятность выиграть сет из счёта (h, a) до target
+  function probWinSet(ph, pa, target) {
+    // pRally = вероятность выиграть следующее очко
+    // DP таблица: вероятность дойти до победы с текущего счёта
+    const memo = {};
+    function f(h, a) {
+      const key = h + ',' + a;
+      if (memo[key] !== undefined) return memo[key];
+      if (h >= target && h - a >= 2) return 1;
+      if (a >= target && a - h >= 2) return 0;
+      // Если h,a >= target-1, идёт "больше-меньше"
+      const w = pRally;
+      const r = w * f(h + 1, a) + (1 - w) * f(h, a + 1);
+      memo[key] = r;
+      return r;
+    }
+    return f(ph, pa);
+  }
+
+  const target = (m.setsHome === 2 && m.setsAway === 2) ? 15 : 25;
+  let pCurrentSet = probWinSet(m.pointsHome, m.pointsAway, target);
+
+  // Сколько сетов осталось выиграть команде для победы в матче
+  const setsToWinH = 3 - m.setsHome;
+  const setsToWinA = 3 - m.setsAway;
+
+  // Упрощённая модель оставшихся сетов:
+  // Если команда выигрывает текущий сет, дальше ей нужно меньше
+  // Используем простую формулу: P(win match) = P(win cur) * P(win needed from sets-1)
+  // Заменяем: считаем что в каждом новом сете pH = pRally_adjusted (чуть ближе к 0.5)
+  const pSetWin = clamp(0.5 + atkDiff * 0.20, 0.30, 0.70);
+
+  // Число оставшихся сетов: setsToWinH - 1 (если выиграет текущий) + 0
+  // Считаем через биномиалку: сколько сетов из оставшихся нужно выиграть
+  function binomP(n, k, p) {
+    if (k < 0 || k > n) return 0;
+    let c = 1;
+    for (let i = 1; i <= k; i++) c = c * (n - i + 1) / i;
+    return c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+  }
+  function probWinRemaining(needW, needL, p) {
+    // Вероятность выиграть needW сетов прежде чем проиграть needL
+    if (needW <= 0) return 1;
+    if (needL <= 0) return 0;
+    let total = 0;
+    // Выигрыш в i+1 сетах (i проигрышей подряд перед победой)
+    for (let losses = 0; losses < needL; losses++) {
+      const winsNeeded = needW;
+      // Всего сетов: winsNeeded + losses; последний — победа
+      const other = winsNeeded + losses - 1;
+      total += binomP(other, winsNeeded - 1, p) * Math.pow(1 - p, losses) * p;
+    }
+    return total;
+  }
+
+  // P(win match) = P(win cur) * P(win rest given we won) + (1-P) * P(win rest given we lost)
+  const pWinCur = pCurrentSet;
+  const pWinRestIfWin = probWinRemaining(setsToWinH - 1, setsToWinA, pSetWin);
+  const pWinRestIfLose = probWinRemaining(setsToWinH, setsToWinA - 1, pSetWin);
+
+  return clamp(pWinCur * pWinRestIfWin + (1 - pWinCur) * pWinRestIfLose, 0.02, 0.98);
+}
+
+/* Общая функция вероятностей исходов */
+function computeProbs(m) {
+  if (m.status === 'finished' || m.status === 'countdown') {
+    return { home: null, draw: null, away: null, pH: null, pD: null, pA: null };
+  }
+
+  if (m.sport === 'ufc') {
+    const pH = probHomeWinUFC(m);
+    const pA = 1 - pH;
+    return { home: probToOdd(pH), away: probToOdd(pA), draw: null, pH, pD: null, pA };
+  }
+
+  if (m.sport === 'volleyball') {
+    const pH = probHomeWinVolley(m);
+    const pA = 1 - pH;
+    return { home: probToOdd(pH), away: probToOdd(pA), draw: null, pH, pD: null, pA };
+  }
+
+  // Футбол/хоккей
+  const { pH, pD, pA } = probHomeWinFootball(m);
+  return {
+    home: probToOdd(pH), draw: probToOdd(pD), away: probToOdd(pA),
+    pH, pD, pA
+  };
+}
+
+/* ============ РАСШИРЕННЫЕ РЫНКИ ============ */
+function computeExtras(m) {
+  if (m.status === 'finished' || m.status === 'countdown') return {};
+  const out = {};
+  const add = (label, p) => {
+    const o = probToOdd(p);
+    if (o !== null) out[label] = o;
+  };
+
+  /* ---------- UFC ---------- */
+  if (m.sport === 'ufc') {
+    const pH = probHomeWinUFC(m);
+    const pA = 1 - pH;
+    const roundNum = m.round;
+    const minInRound = m.minute - (roundNum - 1) * 24;
+
+    // Если раунд уже прошёл — соответствующие ТБ уже зашли
+    // ТБ 2.5 раундов = бой прошёл 2.5 раунда = находится в 3-м и далее
+    // ТБ 3.5 раундов = в 4-м и далее
+    const finished = m.finalResult;
+    const method = finished ? finished.method : null;
+    const winR = finished ? finished.round : roundNum;
+    const isFin = method && method !== 'Решение';
+
+    // Метод победы:
+    // Если бой уже закончился — всё определено, не показываем
+    // Если идёт:
+    //   pFinishing = шанс что бой закончится досрочно
+    //   pDecision = шанс что дойдёт до решения
+    //   Шанс финиша за оставшиеся раунды
+    const roundsLeft = 5 - roundNum + 1;
+    // Базовая интенсивность финиша на раунд:
+    // 1-й раунд: 0.35, 2-й: 0.30, 3-й: 0.22, 4-й: 0.15, 5-й: 0.10
+    const finRateByRound = [0.35, 0.30, 0.22, 0.15, 0.10];
+    let pFinTotal = 1;
+    for (let r = roundNum; r <= 5; r++) {
+      // Скорректировать на разницу рейтингов: фаворит чаще финиширует
+      const rIdx = r - 1;
+      const rate = finRateByRound[rIdx];
+      // Если в текущем раунде уже прошла часть — уменьшаем
+      let curRate = rate;
+      if (r === roundNum) {
+        const remainInRound = (24 - minInRound) / 24;
+        curRate = rate * remainInRound;
+      }
+      pFinTotal *= (1 - curRate);
+    }
+    let pFinishFuture = 1 - pFinTotal;
+    // Калибровка: шанс решения ограничен
+    pFinishFuture = clamp(pFinishFuture, 0.05, 0.85);
+    const pDec = 1 - pFinishFuture;
+    const pKO = pFinishFuture * 0.65;
+    const pSub = pFinishFuture * 0.35;
+
+    add('KO/TKO', pKO);
+    add('Сабмишн', pSub);
+    add('Решение', pDec);
+    add('Бой досрочно', pFinishFuture);
+    add('Вся дистанция', pDec);
+
+    // Тоталы раундов: если раунд уже в прошлом — рынок закрыт
+    if (roundNum < 3) {
+      const pOver = pFinishFuture < 0.5 ? 0.55 : 0.45;
+      const pOver25 = clamp(0.6 + (roundNum - 1) * 0.05 - pFinishFuture * 0.3, 0.2, 0.85);
+      add('ТБ 2.5 раундов', pOver25);
+      add('ТМ 2.5 раундов', 1 - pOver25);
+    }
+    if (roundNum < 4) {
+      const pOver35 = clamp(0.55 + (roundNum - 1) * 0.05 - pFinishFuture * 0.4, 0.15, 0.85);
+      add('ТБ 3.5 раундов', pOver35);
+      add('ТМ 3.5 раундов', 1 - pOver35);
+    }
+
+    // Метод + победитель (убрать устаревшие)
+    if (roundNum < 5) {
+      add(m.home + ' KO/TKO', pH * pKO * 0.95);
+      add(m.home + ' Сабмишн', pH * pSub * 0.95);
+      add(m.home + ' Решение', pH * pDec * 0.95);
+      add(m.away + ' KO/TKO', pA * pKO * 0.95);
+      add(m.away + ' Сабмишн', pA * pSub * 0.95);
+      add(m.away + ' Решение', pA * pDec * 0.95);
+    }
+    return out;
+  }
+
+  /* ---------- ВОЛЕЙБОЛ ---------- */
+  if (m.sport === 'volleyball') {
+    const pH = probHomeWinVolley(m);
+    const pA = 1 - pH;
+    const setsPlayed = m.setsHome + m.setsAway;
+    const setsToWinH = 3 - m.setsHome;
+    const setsToWinA = 3 - m.setsAway;
+    const totalSetsMin = setsPlayed + Math.min(setsToWinH, setsToWinA);
+
+    // ТБ/ТМ по сетам
+    // Всего сетов будет: минимум setsPlayed + 1, максимум 5
+    // Если сетов уже 4 — тотал почти определён
+    // Считаем распределение числа сетов
+    if (setsPlayed < 5) {
+      // P(матч закончится в N сетах) где N = setsPlayed + k
+      const pSetWin = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.20, 0.30, 0.70);
+      // Вероятность что матч закончится за 1 сет (setsPlayed+1):
+      // = P(H выиграет setsToWinH сетов подряд) + P(A выиграет setsToWinA подряд)
+      function binomP(n, k, p) {
+        if (k < 0 || k > n) return 0;
+        let c = 1;
+        for (let i = 1; i <= k; i++) c = c * (n - i + 1) / i;
+        return c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+      }
+      // Вероятность что матч закончится за N сетов (N от setsPlayed+1 до 5)
+      let distr = {};
+      let remainingP = 1;
+      for (let finalSets = setsPlayed + 1; finalSets <= 5; finalSets++) {
+        const extraSets = finalSets - setsPlayed;
+        if (extraSets === 1) {
+          // Закончится следующим сетом
+          const pH_Win = (m.setsHome + 1 >= 3) ? 1 : 0;
+          const pA_Win = (m.setsAway + 1 >= 3) ? 1 : 0;
+          // Реально: матч закончится только если кто-то набирает 3 сета
+          // Если pH 2 и pA 0: нужен 1 сет
+          const h = m.setsHome, a = m.setsAway;
+          const pFinish = (h === 2 ? pSetWin : 0) + (a === 2 ? (1 - pSetWin) : 0);
+          distr[finalSets] = pFinish;
+          remainingP = 1 - pFinish;
+        } else {
+          // 2+ сетов впереди
+          distr[finalSets] = remainingP * 0; // будет учтено
+        }
+      }
+      // Упрощённо: вероятность что тотал < 3.5 / 4.5 / 5.5
+      // Считаем через Монте-Карло 500 итераций
+      let cnt = { 3: 0, 4: 0, 5: 0 };
+      for (let trial = 0; trial < 300; trial++) {
+        let sh = m.setsHome, sa = m.setsAway;
+        let guard = 0;
+        while (sh < 3 && sa < 3 && guard++ < 10) {
+          if (Math.random() < pSetWin) sh++; else sa++;
+        }
+        const total = sh + sa;
+        if (total <= 3) cnt[3]++;
+        else if (total === 4) cnt[4]++;
+        else cnt[5]++;
+      }
+      const p3 = cnt[3] / 300;
+      const p4 = cnt[4] / 300;
+      const p5 = cnt[5] / 300;
+      // ТБ 3.5 = больше 3.5 сетов = 4 или 5
+      add('ТБ 3.5 сетов', p4 + p5);
+      add('ТМ 3.5 сетов', p3);
+      // ТБ 4.5 = ровно 5
+      add('ТБ 4.5 сетов', p5);
+      add('ТМ 4.5 сетов', p3 + p4);
+
+      // Победа в следующем сете
+      const nextSet = setsPlayed + 1;
+      if (nextSet <= 5) {
+        // Вероятность победы в след сете через силу
+        const pNextH = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.18, 0.30, 0.70);
+        add('Победа в ' + nextSet + '-м сете · П1', pNextH);
+        add('Победа в ' + nextSet + '-м сете · П2', 1 - pNextH);
+      }
+    }
+
+    // Точный счёт (из оставшихся сценариев)
+    // H выиграл 3:0, 3:1, 3:2 / A выиграл 0:3, 1:3, 2:3
+    const pH_win_30 = (m.setsAway === 0 && m.setsHome <= 2) ? Math.pow(pSetWinCalc(m), 3 - m.setsHome) * 0.5 : 0;
+    // Упростим через симуляцию
+    let scores = {};
+    for (let trial = 0; trial < 500; trial++) {
+      let sh = m.setsHome, sa = m.setsAway;
+      let guard = 0;
+      const pSW = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.20, 0.30, 0.70);
+      while (sh < 3 && sa < 3 && guard++ < 10) {
+        if (Math.random() < pSW) sh++; else sa++;
+      }
+      const key = sh + ':' + sa;
+      scores[key] = (scores[key] || 0) + 1;
+    }
+    Object.keys(scores).forEach(k => {
+      const p = scores[k] / 500;
+      if (p > 0.02) add('Счёт ' + k, p * 1.02);
+    });
+
+    return out;
+  }
+
+  /* ---------- ФУТБОЛ / ХОККЕЙ ---------- */
+  const { lamHome, lamAway } = expectedLambdas(m);
+  const MAXG = 10;
+  // Матрица вероятностей итогового счёта
+  const matrix = {};
+  let totalP = 0;
+  for (let h = 0; h <= MAXG; h++) {
+    const ph = poissonP(h, lamHome);
+    if (ph < 1e-10) continue;
+    for (let a = 0; a <= MAXG; a++) {
+      const pa = poissonP(a, lamAway);
+      if (pa < 1e-10) continue;
+      const p = ph * pa;
+      const fh = m.scoreHome + h, fa = m.scoreAway + a;
+      const key = fh + ':' + fa;
+      matrix[key] = (matrix[key] || 0) + p;
+      totalP += p;
+    }
+  }
+  for (const k in matrix) matrix[k] /= totalP;
+
+  const isF = m.sport === 'football';
+
+  // Двойной шанс
+  let pH = 0, pD = 0, pA = 0;
+  for (const [k, p] of Object.entries(matrix)) {
+    const [h, a] = k.split(':').map(Number);
+    if (h > a) pH += p; else if (h === a) pD += p; else pA += p;
+  }
+  if (isF) {
+    add('1X', pH + pD);
+    add('12', pH + pA);
+    add('X2', pD + pA);
+  }
+
+  // Тоталы
+  const sumOver = (line) => {
+    let s = 0;
+    for (const [k, p] of Object.entries(matrix)) {
+      const [h, a] = k.split(':').map(Number);
+      if (h + a > line) s += p;
+    }
+    return s;
+  };
+  const lines = isF ? [0.5, 1.5, 2.5, 3.5, 4.5] : [3.5, 4.5, 5.5, 6.5, 7.5];
+  lines.forEach(l => {
+    const pO = sumOver(l);
+    if (pO > 0.01 && pO < 0.99) {
+      add('ТБ ' + l, pO);
+      add('ТМ ' + l, 1 - pO);
+    }
+  });
+
+  // Форы
+  const sumHand = (line) => {
+    let s = 0;
+    for (const [k, p] of Object.entries(matrix)) {
+      const [h, a] = k.split(':').map(Number);
+      if (h - a > line) s += p;
+    }
+    return s;
+  };
+  const linesH = isF ? [1.5, 2.5] : [1.5, 2.5];
+  linesH.forEach(l => {
+    const p1 = sumHand(l);
+    const p2 = 1 - sumHand(-l);
+    add('Ф1 −' + l, p1);
+    add('Ф1 +' + l, 1 - p1);
+    add('Ф2 −' + l, p2);
+    add('Ф2 +' + l, 1 - p2);
+  });
+
+  // Обе забьют
+  let pBtts = 0;
+  for (const [k, p] of Object.entries(matrix)) {
+    const [h, a] = k.split(':').map(Number);
+    if (h >= 1 && a >= 1) pBtts += p;
+  }
+  add('Обе · Да', pBtts);
+  add('Обе · Нет', 1 - pBtts);
+
+  // Чёт/Нечет
+  let pEven = 0;
+  for (const [k, p] of Object.entries(matrix)) {
+    const [h, a] = k.split(':').map(Number);
+    if ((h + a) % 2 === 0) pEven += p;
+  }
+  add('Чёт', pEven);
+  add('Нечет', 1 - pEven);
+
+  // Точные счета — топ 5
+  const topScores = Object.entries(matrix)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  topScores.forEach(([k, p]) => {
+    if (p > 0.02) add('Счёт ' + k, p * 1.03);
+  });
+
+  return out;
+}
+
+function pSetWinCalc(m) {
+  return clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.20, 0.30, 0.70);
+}
 
 /* ============ ЗВУКИ ============ */
 let audio = null;
@@ -542,12 +1012,12 @@ const sBonus = () => { beep(880, 0.1); setTimeout(() => beep(1100, 0.1), 100); s
 const vibe = (ms) => { if (navigator.vibrate) navigator.vibrate(ms || 10); };
 
 /* ============ STORAGE ============ */
-const saveWallet = () => localStorage.setItem('ob3_w', JSON.stringify(wallet));
-const loadWallet = () => { try { const s = localStorage.getItem('ob3_w'); if (s) wallet = { ...wallet, ...JSON.parse(s) }; } catch (e) {} };
-const saveMatches = () => localStorage.setItem('ob3_m', JSON.stringify({ m: matches.map(x => ({ ...x, savedAt: Date.now() })), ts: Date.now() }));
+const saveWallet = () => localStorage.setItem('ob4_w', JSON.stringify(wallet));
+const loadWallet = () => { try { const s = localStorage.getItem('ob4_w'); if (s) wallet = { ...wallet, ...JSON.parse(s) }; } catch (e) {} };
+const saveMatches = () => localStorage.setItem('ob4_m', JSON.stringify({ m: matches.map(x => ({ ...x, savedAt: Date.now() })), ts: Date.now() }));
 const loadMatches = () => {
   try {
-    const s = localStorage.getItem('ob3_m');
+    const s = localStorage.getItem('ob4_m');
     if (!s) return null;
     const d = JSON.parse(s);
     const a = d.m || d;
@@ -555,7 +1025,6 @@ const loadMatches = () => {
     const el = Math.floor((Date.now() - (d.ts || 0)) / 1000);
     const r = a.map(m => {
       if (m.status === 'finished' || m.status === 'countdown') return m;
-      // прогоняем пропущенные минуты через честную модель
       for (let i = 0; i < el && m.status === 'live'; i++) simulateMinute(m, true);
       return m;
     });
@@ -563,12 +1032,12 @@ const loadMatches = () => {
     return r;
   } catch (e) { return null; }
 };
-const saveCoupon = () => localStorage.setItem('ob3_c', JSON.stringify(coupon));
-const loadCoupon = () => { try { const s = localStorage.getItem('ob3_c'); if (s) coupon = JSON.parse(s) || []; } catch (e) {} };
-const saveSound = () => localStorage.setItem('ob3_s', soundOn ? '1' : '0');
-const loadSound = () => { const v = localStorage.getItem('ob3_s'); if (v !== null) soundOn = v === '1'; };
-const saveTheme = () => localStorage.setItem('ob3_t', theme);
-const loadTheme = () => { const v = localStorage.getItem('ob3_t'); if (v) theme = v; };
+const saveCoupon = () => localStorage.setItem('ob4_c', JSON.stringify(coupon));
+const loadCoupon = () => { try { const s = localStorage.getItem('ob4_c'); if (s) coupon = JSON.parse(s) || []; } catch (e) {} };
+const saveSound = () => localStorage.setItem('ob4_s', soundOn ? '1' : '0');
+const loadSound = () => { const v = localStorage.getItem('ob4_s'); if (v !== null) soundOn = v === '1'; };
+const saveTheme = () => localStorage.setItem('ob4_t', theme);
+const loadTheme = () => { const v = localStorage.getItem('ob4_t'); if (v) theme = v; };
 
 function resetDaily() {
   const t = todayKey();
@@ -590,27 +1059,7 @@ function updateBonus() {
   el.style.color = wallet.lastBonus === todayKey() ? 'var(--green)' : 'var(--gold)';
 }
 
-/* ============ ЧЕСТНАЯ СИМУЛЯЦИЯ ============ */
-
-/* ФУТБОЛ / ХОККЕЙ — Poisson-based per-minute model
-   homeExpected = homeAtk * (1 + homeAdv) * fatigue * momentum
-   Гол генерится через Пуассона в каждый момент времени
-*/
-function expectedGoals(m, side, minute) {
-  const isF = m.sport === 'football';
-  const baseAtk = side === 'home' ? m.homeAtk : m.awayAtk;
-  const oppDef = side === 'home' ? m.awayDef : m.homeDef;
-  const homeAdv = side === 'home' ? 0.15 : -0.10;
-  // Усталость к концу матча
-  const fatigue = isF ? 1 - 0.2 * (minute / 90) : 1 - 0.15 * (minute / 60);
-  // Momentum [-1,1]
-  const mom = side === 'home' ? m.momentum : -m.momentum;
-  const momentumBoost = 1 + mom * 0.35;
-  // Базовая интенсивность в голах за 90 минут
-  const base = baseAtk * (1.0 / oppDef) * (1 + homeAdv);
-  const per90 = base * 1.35; // нормализация
-  return Math.max(0.05, per90 * fatigue * momentumBoost);
-}
+/* ============ СИМУЛЯЦИЯ ============ */
 
 function simulateMinute(m, fast) {
   if (m.status !== 'live') return;
@@ -618,8 +1067,8 @@ function simulateMinute(m, fast) {
   m.momentum *= 0.94;
   m.justScored = null;
 
-  if (m.sport === 'ufc') return simulateMinuteUFC(m, fast);
-  if (m.sport === 'volleyball') return simulateMinuteVolley(m, fast);
+  if (m.sport === 'ufc') return simulateUFC(m);
+  if (m.sport === 'volleyball') return simulateVolley(m);
 
   // Футбол/хоккей
   if (m.minute >= m.maxMinute) {
@@ -627,51 +1076,32 @@ function simulateMinute(m, fast) {
     m.finishedAt = Date.now();
     return;
   }
+  const { lamHome, lamAway } = expectedLambdas(m);
   const totalMin = m.sport === 'football' ? 90 : 60;
-  const scale = 1 / totalMin; // вклад одной минуты
-  const lamH = expectedGoals(m, 'home', m.minute) * scale;
-  const lamA = expectedGoals(m, 'away', m.minute) * scale;
-
-  // Poisson: вероятность гола в эту минуту ≈ λ (при λ << 1)
-  if (Math.random() < lamH) {
+  // Ожидаемое за 1 минуту
+  const perMinHome = lamHome / (m.maxMinute - m.minute + 1);
+  const perMinAway = lamAway / (m.maxMinute - m.minute + 1);
+  // По формуле Пуассона P(k>=1) ≈ λ при λ << 1
+  if (Math.random() < perMinHome) {
     m.scoreHome += 1;
     m.momentum = Math.min(1, m.momentum + 0.5);
     m.justScored = 'home';
-    // соперник получает импульс
-    if (Math.random() < 0.3) m.momentum -= 0.15;
-  } else if (Math.random() < lamA) {
+  } else if (Math.random() < perMinAway) {
     m.scoreAway += 1;
     m.momentum = Math.max(-1, m.momentum - 0.5);
     m.justScored = 'away';
-    if (Math.random() < 0.3) m.momentum += 0.15;
   }
 }
 
-/* UFC — реальная модель раундов
-   - 5 раундов по 24 "минуты"
-   - В каждом раунде шанс финиша зависит от разницы рейтингов и раунда
-   - Решение (decision) если никто не финишировал
-*/
-function simulateMinuteUFC(m, fast) {
+function simulateUFC(m) {
   const cycle = 24;
   m.round = Math.min(5, Math.floor(m.minute / cycle) + 1);
   const minInRound = m.minute - (m.round - 1) * cycle;
 
-  // Преимущество по рейтингу
-  const ratingDiff = (m.homeRating - m.awayRating) / 200; // в диапазоне примерно [-1, 1]
-  const pFavHome = 1 / (1 + Math.pow(10, -ratingDiff / 2));
-
-  // Вероятность финиша в эту минуту раунда
-  // В UFC финиш чаще в 1-2 раундах, реже в 4-5 (усталость)
-  const roundFactor = [1.0, 0.85, 0.6, 0.45, 0.35][m.round - 1] || 0.3;
-  // Шанс финиша за минуту
-  const baseFinRate = 0.012; // ≈ 1.2% per minute
-  const pFinHome = baseFinRate * roundFactor * (0.5 + (pFavHome - 0.5) * 1.6);
-  const pFinAway = baseFinRate * roundFactor * (0.5 + (0.5 - pFavHome) * 1.6);
-
   if (m.minute >= 120) {
-    // Решение — побеждает фаворит с большей вероятностью
-    const winner = Math.random() < pFavHome ? 'home' : 'away';
+    // Решение
+    const pH = probHomeWinUFC(m);
+    const winner = Math.random() < pH ? 'home' : 'away';
     m.finalResult = { winner, method: 'Решение', round: 5 };
     if (winner === 'home') { m.scoreHome = 1; m.scoreAway = 0; }
     else { m.scoreHome = 0; m.scoreAway = 1; }
@@ -680,32 +1110,30 @@ function simulateMinuteUFC(m, fast) {
     return;
   }
 
-  if (Math.random() < pFinHome) {
-    // Метод финиша — KO чаще у тяжёлых, Sub — у борцов (упрощённо)
-    const method = Math.random() < 0.65 ? 'KO/TKO' : 'Сабмишн';
-    m.finalResult = { winner: 'home', method, round: m.round };
-    m.scoreHome = 1; m.scoreAway = 0;
-    m.justScored = 'home';
+  // Вероятность финиша в эту минуту
+  // На раунд:
+  const finRateByRound = [0.35, 0.30, 0.22, 0.15, 0.10];
+  const ratePerRound = finRateByRound[m.round - 1];
+  const ratePerMin = ratePerRound / 24;
+
+  const pH = probHomeWinUFC(m);
+  const pA = 1 - pH;
+
+  // Кто финиширует — пропорционально силе
+  if (Math.random() < ratePerMin) {
+    // Метод финиша
+    const method = Math.random() < 0.6 ? 'KO/TKO' : 'Сабмишн';
+    // Победитель
+    const winner = Math.random() < pH ? 'home' : 'away';
+    m.finalResult = { winner, method, round: m.round };
+    if (winner === 'home') { m.scoreHome = 1; m.scoreAway = 0; m.justScored = 'home'; }
+    else { m.scoreHome = 0; m.scoreAway = 1; m.justScored = 'away'; }
     m.status = 'finished';
     m.finishedAt = Date.now();
-    return;
-  }
-  if (Math.random() < pFinAway) {
-    const method = Math.random() < 0.65 ? 'KO/TKO' : 'Сабмишн';
-    m.finalResult = { winner: 'away', method, round: m.round };
-    m.scoreHome = 0; m.scoreAway = 1;
-    m.justScored = 'away';
-    m.status = 'finished';
-    m.finishedAt = Date.now();
-    return;
   }
 }
 
-/* ВОЛЕЙБОЛ — розыгрыш очков
-   Каждое очко — отдельный вероятностный розыгрыш
-   до 25 (или 15 в 5-м сете), с разницей 2
-*/
-function simulateMinuteVolley(m, fast) {
+function simulateVolley(m) {
   if (m.minute >= m.maxMinute) {
     if (m.setsHome === m.setsAway) m.setsHome += 1;
     m.status = 'finished';
@@ -720,263 +1148,35 @@ function simulateMinuteVolley(m, fast) {
   const isFifth = (m.setsHome === 2 && m.setsAway === 2);
   const target = isFifth ? 15 : 25;
 
-  // Сила команд: разница atk + домашнее преимущество
-  const diff = (m.homeAtk - m.awayAtk) + 0.08;
-  const pHomePoint = clamp(0.5 + diff * 0.35, 0.30, 0.70);
+  // Вероятность выиграть розыгрыш
+  const pRally = clamp(0.5 + (m.homeAtk - m.awayAtk) * 0.15, 0.35, 0.65);
 
-  // Разыгрываем 1-2 очка за "минуту"
-  const rallies = Math.random() < 0.6 ? 1 : 2;
+  // 1-2 розыгрыша за минуту
+  const rallies = 1 + (Math.random() < 0.4 ? 1 : 0);
   for (let i = 0; i < rallies; i++) {
-    if (Math.random() < pHomePoint) m.pointsHome++;
+    if (Math.random() < pRally) m.pointsHome++;
     else m.pointsAway++;
-  }
 
-  // Проверка завершения сета (нужно ≥ target и разница ≥ 2)
-  if (m.pointsHome >= target && m.pointsHome - m.pointsAway >= 2) {
-    m.setsHome++; m.pointsHome = 0; m.pointsAway = 0;
-    m.justScored = 'home';
-  } else if (m.pointsAway >= target && m.pointsAway - m.pointsHome >= 2) {
-    m.setsAway++; m.pointsHome = 0; m.pointsAway = 0;
-    m.justScored = 'away';
-  } else if (m.pointsHome >= target && m.pointsAway >= target) {
-    // Каждый розыгрыш на "больше-меньше" при равном счёте
-    if (Math.abs(m.pointsHome - m.pointsAway) >= 2) {
-      if (m.pointsHome > m.pointsAway) { m.setsHome++; }
-      else { m.setsAway++; }
-      m.pointsHome = 0; m.pointsAway = 0;
+    // Проверка окончания сета
+    if (m.pointsHome >= target && m.pointsHome - m.pointsAway >= 2) {
+      m.setsHome++; m.pointsHome = 0; m.pointsAway = 0;
+      m.justScored = 'home'; return;
+    }
+    if (m.pointsAway >= target && m.pointsAway - m.pointsHome >= 2) {
+      m.setsAway++; m.pointsHome = 0; m.pointsAway = 0;
+      m.justScored = 'away'; return;
     }
   }
 }
 
-/* ============ ЧЕСТНАЯ МАТЕМАТИКА КОЭФОВ ============ */
-function probHomeWin(m) {
-  if (m.status === 'finished') return m.scoreHome > m.scoreAway ? 1 : m.scoreHome < m.scoreAway ? 0 : 0.5;
-  if (m.status === 'countdown') return 0.5;
-
-  if (m.sport === 'ufc') {
-    const diff = (m.homeRating - m.awayRating) / 400;
-    let pH = 1 / (1 + Math.pow(10, -diff));
-    // Прогресс боя корректирует: чем ближе к концу без финиша, тем ближе к 50/50
-    const progress = m.minute / m.maxMinute;
-    pH = 0.5 + (pH - 0.5) * (1 - progress * 0.6);
-    return clamp(pH, 0.05, 0.95);
-  }
-
-  if (m.sport === 'volleyball') {
-    const diff = (m.homeAtk - m.awayAtk) + 0.08;
-    // Учёт текущего счёта по сетам
-    let pH = clamp(0.5 + diff * 0.30, 0.2, 0.8);
-    const setsPlayed = m.setsHome + m.setsAway;
-    if (setsPlayed > 0) {
-      const diffSets = m.setsHome - m.setsAway;
-      // Если уже 2:0 — почти победа
-      if (m.setsHome === 2 && m.setsAway === 0) pH = 0.88;
-      else if (m.setsHome === 0 && m.setsAway === 2) pH = 0.12;
-      else if (m.setsHome === 2 && m.setsAway === 1) pH = 0.68;
-      else if (m.setsHome === 1 && m.setsAway === 2) pH = 0.32;
-      else pH = clamp(0.5 + diffSets * 0.18, 0.15, 0.85);
-    }
-    return pH;
-  }
-
-  // Футбол/хоккей — Poisson интегрирование на остаток
-  const rem = Math.max(0, m.maxMinute - m.minute);
-  const totalMin = m.sport === 'football' ? 90 : 60;
-  const scale = rem / totalMin;
-  const lamH = expectedGoals(m, 'home', m.minute) * scale;
-  const lamA = expectedGoals(m, 'away', m.minute) * scale;
-
-  const MAXG = 10;
-  const hP = [], aP = [];
-  for (let i = 0; i <= MAXG; i++) {
-    hP.push(poissonP(i, lamH));
-    aP.push(poissonP(i, lamA));
-  }
-  let pH = 0, pD = 0, pA = 0;
-  for (let h = 0; h <= MAXG; h++) {
-    for (let a = 0; a <= MAXG; a++) {
-      const p = hP[h] * aP[a];
-      const fh = m.scoreHome + h, fa = m.scoreAway + a;
-      if (fh > fa) pH += p; else if (fh === fa) pD += p; else pA += p;
-    }
-  }
-  const t = pH + pD + pA;
-  if (t > 0) { pH /= t; }
-  return pH;
-}
-
-function computeProbs(m) {
-  if (m.status === 'finished' || m.status === 'countdown') return { home: null, draw: null, away: null, pH: null, pD: null, pA: null };
-  if (m.sport === 'ufc' || m.sport === 'volleyball') {
-    const pH = probHomeWin(m);
-    return { home: toOdd(pH), away: toOdd(1 - pH), draw: null, pH, pD: null, pA: 1 - pH };
-  }
-  const pH = probHomeWin(m);
-  // Рассчитываем pD через Poisson отдельно
-  const rem = Math.max(0, m.maxMinute - m.minute);
-  const totalMin = m.sport === 'football' ? 90 : 60;
-  const scale = rem / totalMin;
-  const lamH = expectedGoals(m, 'home', m.minute) * scale;
-  const lamA = expectedGoals(m, 'away', m.minute) * scale;
-  const MAXG = 10;
-  let pD = 0, total = 0;
-  for (let h = 0; h <= MAXG; h++) {
-    for (let a = 0; a <= MAXG; a++) {
-      const p = poissonP(h, lamH) * poissonP(a, lamA);
-      total += p;
-      if (m.scoreHome + h === m.scoreAway + a) pD += p;
-    }
-  }
-  if (total > 0) pD /= total;
-  const pHome = pH * (1 - pD);
-  const pAway = (1 - pH) * (1 - pD);
-  return { home: toOdd(pHome), draw: toOdd(pD), away: toOdd(pAway), pH: pHome, pD, pA: pAway };
-}
-
-/* ============ РАСШИРЕННЫЕ РЫНКИ ============ */
-function computeExtras(m) {
-  if (m.status === 'finished' || m.status === 'countdown') return {};
-  const out = {};
-  const add = (label, p) => { const o = toOdd(p); if (o) out[label] = o; };
-
-  if (m.sport === 'ufc') {
-    const diff = (m.homeRating - m.awayRating) / 400;
-    let pH = 1 / (1 + Math.pow(10, -diff));
-    const progress = m.minute / m.maxMinute;
-    pH = 0.5 + (pH - 0.5) * (1 - progress * 0.6);
-    const pA = 1 - pH;
-
-    // Вероятность финиша в целом боя: растёт к концу
-    const roundLeft = 5 - m.round + 1;
-    const pFinishFuture = clamp(0.55 * (roundLeft / 5), 0.15, 0.7);
-    const pDec = 1 - pFinishFuture;
-    const pKO = pFinishFuture * 0.65;
-    const pSub = pFinishFuture * 0.35;
-
-    add('KO/TKO', pKO);
-    add('Сабмишн', pSub);
-    add('Решение', pDec);
-    add('Бой досрочно', pFinishFuture);
-    add('Вся дистанция', pDec);
-
-    const totalRounds = m.round - 1 + (m.minute % 24) / 24;
-    if (m.round < 3) {
-      const pOver = 1 - clamp(0.5 - (totalRounds - 1) * 0.15, 0.1, 0.9);
-      add('ТБ 2.5 раундов', pOver); add('ТМ 2.5 раундов', 1 - pOver);
-    }
-    if (m.round < 4) {
-      const pOver = 1 - clamp(0.4 - (totalRounds - 1.5) * 0.12, 0.1, 0.9);
-      add('ТБ 3.5 раундов', pOver); add('ТМ 3.5 раундов', 1 - pOver);
-    }
-    add(m.home + ' KO/TKO', pH * pKO * 0.9);
-    add(m.home + ' Сабмишн', pH * pSub * 0.9);
-    add(m.home + ' Решение', pH * pDec * 0.9);
-    add(m.away + ' KO/TKO', pA * pKO * 0.9);
-    add(m.away + ' Сабмишн', pA * pSub * 0.9);
-    add(m.away + ' Решение', pA * pDec * 0.9);
-    return out;
-  }
-
-  if (m.sport === 'volleyball') {
-    const pH = probHomeWin(m);
-    const setsPlayed = m.setsHome + m.setsAway;
-    const rem = 5 - setsPlayed;
-
-    // Тоталы по сетам
-    const avgSets = 3.5 + (1 - pH) * 0.5;
-    const pOver35 = avgSets > 3.5 ? 0.55 : 0.45;
-    const pOver45 = avgSets > 4.5 ? 0.35 : 0.55;
-    add('ТБ 3.5 сетов', pOver35); add('ТМ 3.5 сетов', 1 - pOver35);
-    add('ТБ 4.5 сетов', pOver45); add('ТМ 4.5 сетов', 1 - pOver45);
-
-    if (setsPlayed < 5) {
-      const nextSet = setsPlayed + 1;
-      add('Победа в ' + nextSet + '-м сете · П1', pH);
-      add('Победа в ' + nextSet + '-м сете · П2', 1 - pH);
-    }
-    // Точный счёт — через геометрическое
-    const pSetHome = pH;
-    // Упрощённо
-    add('Счёт 3:0', Math.pow(pSetHome, 3) * (1 - m.setsAway * 0.4));
-    add('Счёт 3:1', pSetHome * pSetHome * (1 - pSetHome) * 2.2 * 0.5);
-    add('Счёт 3:2', pSetHome * Math.pow(1 - pSetHome, 2) * 3 * 0.4);
-    add('Счёт 0:3', Math.pow(1 - pSetHome, 3) * (1 - m.setsHome * 0.4));
-    add('Счёт 1:3', (1 - pSetHome) * (1 - pSetHome) * pSetHome * 2.2 * 0.5);
-    add('Счёт 2:3', (1 - pSetHome) * Math.pow(pSetHome, 2) * 3 * 0.4);
-    return out;
-  }
-
-  // Футбол / Хоккей — Poisson матрица на остаток
-  const rem = Math.max(0, m.maxMinute - m.minute);
-  const totalMin = m.sport === 'football' ? 90 : 60;
-  const scale = rem / totalMin;
-  const lamH = expectedGoals(m, 'home', m.minute) * scale;
-  const lamA = expectedGoals(m, 'away', m.minute) * scale;
-  const MAXG = 10;
-  const matrix = {};
-  let sum = 0;
-  for (let h = 0; h <= MAXG; h++) {
-    for (let a = 0; a <= MAXG; a++) {
-      const p = poissonP(h, lamH) * poissonP(a, lamA);
-      const fh = m.scoreHome + h, fa = m.scoreAway + a;
-      matrix[fh + ':' + fa] = (matrix[fh + ':' + fa] || 0) + p;
-      sum += p;
-    }
-  }
-  for (const k in matrix) matrix[k] /= sum;
-
-  const isF = m.sport === 'football';
-  const pOver = (l) => Object.entries(matrix).reduce((acc, [k, p]) => {
-    const [h, a] = k.split(':').map(Number); return acc + (h + a > l ? p : 0);
-  }, 0);
-  const pBtts = Object.entries(matrix).reduce((acc, [k, p]) => {
-    const [h, a] = k.split(':').map(Number); return acc + (h >= 1 && a >= 1 ? p : 0);
-  }, 0);
-  const pEven = Object.entries(matrix).reduce((acc, [k, p]) => {
-    const [h, a] = k.split(':').map(Number); return acc + ((h + a) % 2 === 0 ? p : 0);
-  }, 0);
-  const pHandicap = (handicapHome) => Object.entries(matrix).reduce((acc, [k, p]) => {
-    const [h, a] = k.split(':').map(Number);
-    return acc + ((h - a) > handicapHome ? p : 0);
-  }, 0);
-
-  // Двойной шанс
-  const pH = probHomeWin(m);
-  let pD = 0;
-  for (const [k, p] of Object.entries(matrix)) {
-    const [h, a] = k.split(':').map(Number);
-    if (h === a) pD += p;
-  }
-  const pAway = 1 - pH - pD;
-  if (isF) { add('1X', pH + pD); add('12', pH + pAway); add('X2', pD + pAway); }
-
-  const lines = isF ? [0.5, 1.5, 2.5, 3.5, 4.5] : [3.5, 4.5, 5.5, 6.5, 7.5];
-  lines.forEach(l => { add('ТБ ' + l, pOver(l)); add('ТМ ' + l, 1 - pOver(l)); });
-
-  add('Ф1 −1.5', pHandicap(1.5));
-  add('Ф1 +1.5', 1 - pHandicap(-1.5));
-  add('Ф2 −1.5', 1 - pHandicap(1.5));
-  add('Ф2 +1.5', pHandicap(-1.5));
-
-  add('Обе · Да', pBtts);
-  add('Обе · Нет', 1 - pBtts);
-  add('Чёт', pEven);
-  add('Нечет', 1 - pEven);
-
-  // Точный счёт (только популярные)
-  const sorted = Object.entries(matrix).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  sorted.forEach(([k, p]) => add('Счёт ' + k, p * 1.05));
-
-  return out;
-}
-
-/* ============ СОЗДАНИЕ МАТЧЕЙ ============ */
+/* ============ СОЗДАНИЕ ============ */
 function newFootball() {
   const lgs = [...new Set(TEAMS.football.map(t => t.lg))];
   const lg = pick(lgs);
   const pool = TEAMS.football.filter(t => t.lg === lg);
   const a = pick(pool); let b = pick(pool);
   let s = 0; while (a.n === b.n && s++ < 50) b = pick(pool);
+  // Случайный счёт на "текущий момент" для реализма старта
   return {
     id: nextId++, sport: 'football', league: lg,
     home: a.n, away: b.n,
@@ -1044,6 +1244,11 @@ function createBatch() {
   for (let i = 0; i < 3; i++) matches.push(newHockey());
   for (let i = 0; i < 3; i++) matches.push(newVolleyball());
   for (let i = 0; i < 3; i++) matches.push(newUFC());
+  // Немного "прогреваем" — матчи не с 0-й минуты
+  matches.forEach(m => {
+    const skip = rand(3, 15);
+    for (let i = 0; i < skip && m.status === 'live'; i++) simulateMinute(m, true);
+  });
   for (let i = matches.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [matches[i], matches[j]] = [matches[j], matches[i]];
@@ -1101,13 +1306,14 @@ function renderProgress(m) {
   }
   if (m.sport === 'volleyball') {
     let segs = '';
+    const totalPlayed = m.setsHome + m.setsAway;
     for (let i = 1; i <= 5; i++) {
-      const won = (m.setsHome >= i) || (m.setsAway >= i && m.setsHome < i);
       const homeWon = m.setsHome >= i;
-      const current = (m.setsHome + m.setsAway + 1) === i && m.status === 'live';
+      const awayWon = m.setsAway >= (i - m.setsHome) && !homeWon;
+      const isCurrent = (totalPlayed + 1) === i && m.status === 'live';
       let cls = '';
       if (homeWon) cls = 'done';
-      else if (current) cls = 'active';
+      else if (isCurrent) cls = 'active';
       segs += '<div class="progress-seg ' + cls + '" style="--p:' + (homeWon ? 100 : 0) + '%"></div>';
     }
     return '<div class="progress">' + segs + '</div>';
@@ -1200,13 +1406,13 @@ function renderCard(m) {
   const twoCols = isUFC || probs.draw === null;
   const oddsRowCls = twoCols ? 'odds-row two-col' : 'odds-row';
 
-  // Полоска вероятностей
   let probBar = '';
   if (!isFin && !isCd && probs.pH !== null && probs.pH !== undefined) {
     const pH = probs.pH * 100;
-    const pD = (probs.pD !== null ? probs.pD : 0) * 100;
-    const pA = (probs.pA !== null ? probs.pA : (1 - probs.pH)) * 100;
-    probBar = '<div class="prob-bar" title="P1: ' + pH.toFixed(1) + '% · X: ' + pD.toFixed(1) + '% · P2: ' + pA.toFixed(1) + '%">' +
+    const pD = (probs.pD !== null && probs.pD !== undefined) ? probs.pD * 100 : 0;
+    const pA = (probs.pA !== null && probs.pA !== undefined) ? probs.pA * 100 : (1 - probs.pH) * 100;
+    const title = probs.pD !== null ? 'P1: ' + pH.toFixed(0) + '% · X: ' + pD.toFixed(0) + '% · P2: ' + pA.toFixed(0) + '%' : 'P1: ' + pH.toFixed(0) + '% · P2: ' + pA.toFixed(0) + '%';
+    probBar = '<div class="prob-bar" title="' + title + '">' +
       '<i class="ph" style="width:' + pH + '%"></i>' +
       (probs.pD !== null ? '<i class="pd" style="width:' + pD + '%"></i>' : '') +
       '<i class="pa" style="width:' + pA + '%"></i>' +
@@ -1237,7 +1443,7 @@ function renderOddBtn(m, pk, l, v, dis) {
   const k = m.id + '-' + pk;
   const prev = prevOdds[k];
   let cls = '';
-  if (prev !== undefined && Math.abs(prev - v) > 0.001) cls = v > prev ? 'up' : 'down';
+  if (prev !== undefined && Math.abs(prev - v) > 0.01) cls = v > prev ? 'up' : 'down';
   prevOdds[k] = v;
   return '<button class="odd-btn ' + cls + '" data-match-id="' + m.id + '" data-pick="' + pk + '" data-odd="' + v + '" ' + (dis ? 'disabled' : '') + '><span class="odd-label">' + l + '</span><span class="odd-value">' + v.toFixed(2) + '</span></button>';
 }
@@ -1365,9 +1571,10 @@ function openBetModal(mid, pk, odd) {
   const pl = pk === 'home' ? 'П1' : pk === 'away' ? 'П2' : pk === 'draw' ? 'X' : pk;
   const probs = computeProbs(m);
   let pShown = '—';
-  if (pk === 'home' && probs.pH !== null && probs.pH !== undefined) pShown = (probs.pH * 100).toFixed(1) + '%';
-  else if (pk === 'draw' && probs.pD !== null && probs.pD !== undefined) pShown = (probs.pD * 100).toFixed(1) + '%';
-  else if (pk === 'away' && probs.pA !== null && probs.pA !== undefined) pShown = (probs.pA * 100).toFixed(1) + '%';
+  if (pk === 'home' && probs.pH != null) pShown = (probs.pH * 100).toFixed(1) + '%';
+  else if (pk === 'draw' && probs.pD != null) pShown = (probs.pD * 100).toFixed(1) + '%';
+  else if (pk === 'away' && probs.pA != null) pShown = (probs.pA * 100).toFixed(1) + '%';
+  else pShown = ((1 / odd) * 100).toFixed(1) + '%';
   $('betModalTitle').textContent = m.home + ' — ' + m.away;
   $('betModalSub').textContent = pl + ' · ' + lbl;
   $('betModalOdd').textContent = odd.toFixed(2);
@@ -1524,12 +1731,11 @@ function openExpress() {
   updatePotential();
 }
 
-/* ============ КЭШАУТ — честный ============ */
+/* ============ КЭШАУТ ============ */
 function cashoutValue(b, m) {
   if (!m || m.status !== 'live' || b.status !== 'pending') return 0;
 
   if (b.type === 'express') {
-    // Произведение вероятностей всех исходов
     let cv = 1;
     for (let i = 0; i < b.selections.length; i++) {
       const sel = b.selections[i];
@@ -1542,13 +1748,19 @@ function cashoutValue(b, m) {
       }
       if (sm.status === 'live') {
         const probs = computeProbs(sm);
-        const curOdd = probs[sel.pick];
+        let curOdd = null;
+        if (sel.pick === 'home') curOdd = probs.home;
+        else if (sel.pick === 'away') curOdd = probs.away;
+        else if (sel.pick === 'draw') curOdd = probs.draw;
+        else {
+          // Рынок из extras — оценим через 1/odd
+          curOdd = sel.odd;
+        }
         if (!isValid(curOdd)) return 0;
         cv *= 1 / curOdd;
       } else return 0;
     }
     const fairValue = b.potential * cv;
-    // Маржа кэшаута — 8%
     const pay = Math.max(b.stake * 0.05, fairValue * 0.92);
     return Math.min(pay, b.potential * 0.98);
   }
@@ -1556,17 +1768,21 @@ function cashoutValue(b, m) {
   if (b.type === 'builder') {
     const sm = matches.find(x => Number(x.id) === Number(b.matchId));
     if (!sm || sm.status !== 'live') return 0;
-    // Упрощённо: 60% от ставки × оставшееся время
     const remaining = 1 - sm.minute / sm.maxMinute;
     return Math.round(b.stake * (0.4 + remaining * 0.4) * 100) / 100;
   }
 
   const probs = computeProbs(m);
-  const curOdd = probs[b.pick];
-  if (!isValid(curOdd)) {
-    // Не можем оценить — 50% от ставки
-    return Math.round(b.stake * 0.5 * 100) / 100;
+  let curOdd = null;
+  if (b.pick === 'home') curOdd = probs.home;
+  else if (b.pick === 'away') curOdd = probs.away;
+  else if (b.pick === 'draw') curOdd = probs.draw;
+  else {
+    // Рынок из extras — берём fair из последнего расчёта
+    const extras = computeExtras(m);
+    curOdd = extras[b.pick] || b.odd;
   }
+  if (!isValid(curOdd)) return Math.round(b.stake * 0.4 * 100) / 100;
   const fairValue = b.potential / curOdd;
   const pay = Math.max(b.stake * 0.05, fairValue * 0.93);
   return Math.min(pay, b.potential * 0.98);
@@ -1601,7 +1817,7 @@ function doCashout(id) {
   sBet();
 }
 
-/* ============ РАСЧЁТ (без рандома!) ============ */
+/* ============ РАСЧЁТ СТАВОК ============ */
 function checkSel(m, pick) {
   if (!m || m.status !== 'finished') return 'pending';
   const tot = (m.scoreHome || 0) + (m.scoreAway || 0);
@@ -1645,22 +1861,13 @@ function checkSel(m, pick) {
     if (cs) return (m.setsHome === +cs[1] && m.setsAway === +cs[2]) ? 'won' : 'lost';
     const setWin = pick.match(/^Победа в (\d+)-м сете · (П1|П2)$/);
     if (setWin) {
-      // Определяем победителя сета по финальному счёту — нет, слишком сложно. Считаем по сетам
-      // Если такой сет вообще был
       const setNum = +setWin[1];
-      // Определяем победителя по финальному счёту: сет считается, если он игрался
-      const totalSets = m.setsHome + m.setsAway;
-      if (setNum > totalSets) return 'lost';
-      // Распределение сетов неизвестно, но можем вычислить из итогов
-      // Для упрощения: побеждает та команда, которая выиграла матч чаще
-      // Честнее: разыграть по итогу — нет, делаем детерминированно по счёту в сете
-      // Храним сетскул
-      if (m.setScores && m.setScores[setNum-1]) {
-        const [sh, sa] = m.setScores[setNum-1];
+      if (m.setScores && m.setScores[setNum - 1]) {
+        const [sh, sa] = m.setScores[setNum - 1];
         if (setWin[2] === 'П1') return sh > sa ? 'won' : 'lost';
         else return sa > sh ? 'won' : 'lost';
       }
-      // Fallback — считать по победителю матча
+      // Fallback
       const winnerHome = m.setsHome > m.setsAway;
       if (setWin[2] === 'П1') return winnerHome ? 'won' : 'lost';
       return winnerHome ? 'lost' : 'won';
@@ -1678,16 +1885,30 @@ function checkSel(m, pick) {
   const tU = pick.match(/^ТМ\s*([\d.]+)$/);
   if (tO) return tot > parseFloat(tO[1]) ? 'won' : 'lost';
   if (tU) return tot < parseFloat(tU[1]) ? 'won' : 'lost';
-  const f1 = pick.match(/^Ф1\s*([−\-+]?[\d.]+)$/);
-  const f2 = pick.match(/^Ф2\s*([−\-+]?[\d.]+)$/);
-  if (f1) return (m.scoreHome - m.scoreAway) > parseFloat(f1[1].replace('−', '-')) ? 'won' : 'lost';
-  if (f2) return (m.scoreAway - m.scoreHome) > parseFloat(f2[1].replace('−', '-')) ? 'won' : 'lost';
+  const f1 = pick.match(/^Ф1\s*[−\-]?([\d.]+)$/);
+  const f2 = pick.match(/^Ф2\s*[−\-]?([\d.]+)$/);
+  if (f1) {
+    const line = parseFloat(f1[1]);
+    return (m.scoreHome - m.scoreAway) > line ? 'won' : 'lost';
+  }
+  if (f2) {
+    const line = parseFloat(f2[1]);
+    return (m.scoreAway - m.scoreHome) > line ? 'won' : 'lost';
+  }
+  const f1p = pick.match(/^Ф1\s*\+([\d.]+)$/);
+  const f2p = pick.match(/^Ф2\s*\+([\d.]+)$/);
+  if (f1p) {
+    const line = parseFloat(f1p[1]);
+    return (m.scoreHome - m.scoreAway) > -line ? 'won' : 'lost';
+  }
+  if (f2p) {
+    const line = parseFloat(f2p[1]);
+    return (m.scoreAway - m.scoreHome) > -line ? 'won' : 'lost';
+  }
   if (pick === 'Обе · Да') return (m.scoreHome >= 1 && m.scoreAway >= 1) ? 'won' : 'lost';
   if (pick === 'Обе · Нет') return !(m.scoreHome >= 1 && m.scoreAway >= 1) ? 'won' : 'lost';
   if (pick === 'Чёт') return tot % 2 === 0 ? 'won' : 'lost';
   if (pick === 'Нечет') return tot % 2 !== 0 ? 'won' : 'lost';
-
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const cs = pick.match(/^Счёт\s+(\d+):(\d+)$/);
   if (cs) return (m.scoreHome === +cs[1] && m.scoreAway === +cs[2]) ? 'won' : 'lost';
   return 'lost';
@@ -1711,8 +1932,7 @@ function settleBets() {
       }
       if (anyL) {
         b.status = 'lost';
-        sLose();
-        flashBalance('lose');
+        sLose(); flashBalance('lose');
         changed = true;
         wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
         return;
@@ -1722,9 +1942,7 @@ function settleBets() {
         b.payout = Math.round(b.stake * b.odd * 100) / 100;
         wallet.balance += b.payout;
         wallet.totalWon += b.payout;
-        sWin();
-        vibe(50);
-        flashBalance('win');
+        sWin(); vibe(50); flashBalance('win');
         changed = true;
         wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
         if (wallet.profitHistory.length > 100) wallet.profitHistory.shift();
@@ -1739,13 +1957,10 @@ function settleBets() {
       b.payout = Math.round(b.stake * b.odd * 100) / 100;
       wallet.balance += b.payout;
       wallet.totalWon += b.payout;
-      sWin();
-      vibe(50);
-      flashBalance('win');
+      sWin(); vibe(50); flashBalance('win');
     } else {
       b.status = 'lost';
-      sLose();
-      flashBalance('lose');
+      sLose(); flashBalance('lose');
     }
     changed = true;
     wallet.profitHistory.push({ t: Date.now(), v: wallet.totalWon - wallet.totalBet });
@@ -1998,7 +2213,7 @@ setTimeout(function () {
     updateBonus();
     setInterval(tick, 1000);
     setInterval(saveMatches, 2000);
-    console.log('✅ OpenBet Pro v3.0 запущен');
+    console.log('✅ OpenBet Pro v4.0 запущен');
   } catch (err) {
     console.error('❌ ОШИБКА:', err);
     document.getElementById('matches').innerHTML =
