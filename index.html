@@ -4,67 +4,147 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#1a1c2e">
-<title>⚡ OpenBet</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>⚡ OpenBet — Live Betting</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,input,select{font-family:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
 input{outline:none}
-:root{--bg:#f4f5f8;--card:#fff;--border:#e8eaf0;--text:#0d0e1c;--text-2:#4a4d63;--muted:#878a9e;--accent:#e60023;--green:#00a854;--gold:#f0b400;--header:#1a1c2e;--odd:#f0f2f6;--odd-hover:#e5e8ef}
+:root{
+  --bg:#f4f5f8;--card:#fff;--border:#e8eaf0;--border-2:#dfe2ea;
+  --text:#0d0e1c;--text-2:#4a4d63;--muted:#878a9e;
+  --accent:#e60023;--accent-hover:#c50020;--accent-light:#ffe5e9;
+  --green:#00a854;--green-light:#e6f7ee;
+  --gold:#f0b400;--gold-light:#fff8e1;
+  --blue:#2563eb;--blue-light:#dbeafe;
+  --header:#1a1c2e;--odd:#f0f2f6;--odd-hover:#e5e8ef;
+  --shadow-1:0 1px 3px rgba(20,20,40,.06);
+  --shadow-2:0 8px 32px rgba(20,20,40,.16);
+}
 html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Arial,sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.4;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
 body.coupon-open{overflow:hidden}
+body.has-floating{padding-bottom:80px}
 
 /* ============ AUTH SCREEN ============ */
-.auth-screen{position:fixed;inset:0;background:linear-gradient(160deg,#1a1c2e 0%,#2a2d45 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}
-.auth-card{background:#fff;border-radius:20px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.auth-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
-.auth-logo-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#e60023,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 20px rgba(230,0,35,.4)}
-.auth-logo span{font-size:26px;font-weight:900;letter-spacing:-.5px;background:linear-gradient(135deg,#1a1c2e,#4a4d63);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.auth-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:24px;font-weight:600}
-.auth-tabs{display:flex;background:#f0f2f6;border-radius:10px;padding:4px;margin-bottom:20px}
-.auth-tab{flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:700;color:var(--muted);transition:all .2s;text-align:center}
-.auth-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.auth-screen{
+  position:fixed;inset:0;
+  background:linear-gradient(160deg,#1a1c2e 0%,#2a2d45 50%,#1a1c2e 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;
+  overflow-y:auto;
+}
+.auth-card{
+  background:#fff;border-radius:24px;padding:32px 28px;max-width:420px;width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}
+.auth-logo-icon{
+  width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,#e60023,#ff6b6b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;box-shadow:0 8px 28px rgba(230,0,35,.45);
+}
+.auth-logo span{
+  font-size:30px;font-weight:900;letter-spacing:-.8px;
+  background:linear-gradient(135deg,#1a1c2e,#4a4d63);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.auth-sub{text-align:center;color:var(--muted);font-size:13.5px;margin-bottom:28px;font-weight:600}
+.auth-tabs{display:flex;background:#f0f2f6;border-radius:12px;padding:5px;margin-bottom:22px}
+.auth-tab{
+  flex:1;padding:11px;border-radius:9px;font-size:14px;font-weight:700;
+  color:var(--muted);transition:all .2s;text-align:center;
+}
+.auth-tab.active{background:#fff;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.08)}
 .auth-form{display:flex;flex-direction:column;gap:12px}
-.auth-input{background:#f8f9fc;border:1.5px solid transparent;padding:14px 16px;border-radius:10px;font-size:15px;font-weight:600;transition:all .15s}
-.auth-input:focus{border-color:var(--accent);background:#fff}
+.auth-input{
+  background:#f8f9fc;border:1.5px solid transparent;padding:15px 18px;border-radius:12px;
+  font-size:15px;font-weight:600;transition:all .15s;
+}
+.auth-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(230,0,35,.08)}
 .auth-input::placeholder{color:var(--muted);font-weight:500}
-.auth-error{color:var(--accent);font-size:12px;font-weight:700;padding:8px 12px;background:#ffe5e9;border-radius:8px;display:none}
+.auth-error{
+  color:var(--accent);font-size:12.5px;font-weight:700;padding:10px 14px;
+  background:var(--accent-light);border-radius:10px;display:none;
+}
 .auth-error.show{display:block}
-.auth-submit{background:linear-gradient(135deg,#e60023,#ff3860);color:#fff;padding:16px;border-radius:10px;font-size:16px;font-weight:800;margin-top:8px;box-shadow:0 4px 20px rgba(230,0,35,.35);transition:transform .15s}
+.auth-submit{
+  background:linear-gradient(135deg,#e60023,#ff3860);color:#fff;padding:17px;border-radius:12px;
+  font-size:16px;font-weight:800;margin-top:8px;
+  box-shadow:0 6px 24px rgba(230,0,35,.4);transition:transform .15s;
+}
 .auth-submit:active{transform:scale(.98)}
-.auth-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:16px;line-height:1.5}
+.auth-hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:18px;line-height:1.6}
+.auth-hint b{color:var(--green);font-weight:800}
 
 /* ============ APP ============ */
 .app-wrap{display:none}
 .app-wrap.active{display:block}
 
 /* TOP HEADER */
-.top-header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);color:var(--text);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px}
+.top-header{
+  position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);
+  padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;
+}
 .top-header .title{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .top-header .title.center{flex:1;text-align:center}
-.top-header .back-btn{width:36px;height:36px;border-radius:50%;background:#f0f2f6;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text);cursor:pointer;flex-shrink:0}
-.balance-pill{background:#f0f2f6;padding:8px 14px;border-radius:20px;font-weight:800;font-size:13px;color:var(--text);font-variant-numeric:tabular-nums;cursor:pointer}
-.top-tabs{display:flex;gap:16px;padding:0 16px;background:#fff;border-bottom:1px solid var(--border)}
-.top-tab{padding:12px 0;font-size:15px;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;background:none}
+.top-header .back-btn{
+  width:38px;height:38px;border-radius:50%;background:#f0f2f6;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;color:var(--text);cursor:pointer;flex-shrink:0;
+}
+.balance-pill{
+  background:#f0f2f6;padding:9px 16px;border-radius:22px;
+  font-weight:800;font-size:13.5px;color:var(--text);
+  font-variant-numeric:tabular-nums;cursor:pointer;
+  transition:background .15s;
+}
+.balance-pill:hover{background:#e5e8ef}
+.top-tabs{display:flex;gap:18px;padding:0 16px;background:#fff;border-bottom:1px solid var(--border)}
+.top-tab{
+  padding:13px 0;font-size:15px;font-weight:700;color:var(--muted);
+  border-bottom:2.5px solid transparent;margin-bottom:-1px;cursor:pointer;background:none;
+  transition:all .15s;
+}
 .top-tab.active{color:var(--text);border-bottom-color:var(--text)}
 .top-icons{display:flex;gap:14px;align-items:center}
 .top-icons .icon{font-size:20px;cursor:pointer;color:var(--text-2)}
 
 /* SPORT TABS */
-.sport-tabs{background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:60px;z-index:99}
+.sport-tabs{
+  background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;
+  scrollbar-width:none;position:sticky;top:60px;z-index:99;
+}
 .sport-tabs::-webkit-scrollbar{display:none}
 .sport-tabs-inner{display:flex;padding:0 8px;min-width:max-content}
-.sport-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px;transition:color .15s;background:none;cursor:pointer}
+.sport-tab{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:12px 18px;font-size:11px;font-weight:600;color:var(--muted);
+  white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px;
+  transition:color .15s;background:none;cursor:pointer;
+}
 .sport-tab.active{color:var(--text);border-bottom-color:var(--accent)}
 .sport-tab .icon{font-size:22px;line-height:1}
 .sport-tab .count{font-size:10px;font-weight:500}
 .sport-tab.active .count{color:var(--accent)}
 
 /* FILTER */
-.filter-row{background:#fff;padding:12px 16px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.filter-row{
+  background:#fff;padding:12px 16px;display:flex;gap:10px;
+  overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);
+}
 .filter-row::-webkit-scrollbar{display:none}
-.filter-chip{padding:8px 16px;border-radius:20px;background:#f0f2f6;font-size:13px;font-weight:600;color:var(--text-2);white-space:nowrap;display:flex;align-items:center;gap:6px;cursor:pointer}
+.filter-chip{
+  padding:9px 18px;border-radius:22px;background:#f0f2f6;
+  font-size:13px;font-weight:600;color:var(--text-2);
+  white-space:nowrap;display:flex;align-items:center;gap:6px;cursor:pointer;
+  transition:all .15s;
+}
 .filter-chip.active{background:var(--accent);color:#fff}
 .filter-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .filter-chip.active .dot{background:#fff}
@@ -72,194 +152,530 @@ body.coupon-open{overflow:hidden}
 /* MAIN */
 .main{padding-bottom:80px}
 .league-block{background:#fff;margin-bottom:8px}
-.league-head{background:#eef0f5;padding:10px 16px;display:flex;align-items:center;gap:10px}
-.league-head .league-icon{width:26px;height:26px;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
-.league-head .league-name{font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.league-head{
+  background:#eef0f5;padding:11px 16px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+}
+.league-head .league-icon{
+  width:26px;height:26px;border-radius:5px;background:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.league-head .league-name{
+  font-size:13px;font-weight:700;flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 .league-head .league-filter{font-size:16px;color:var(--muted);padding:4px;background:none;cursor:pointer}
 
 /* MATCH ROW */
-.match-row{display:grid;grid-template-columns:18px 1fr 62px 62px 62px;border-bottom:1px solid var(--border);background:#fff;cursor:pointer;position:relative;transition:background .12s}
+.match-row{
+  display:grid;grid-template-columns:18px 1fr 62px 62px 62px;
+  border-bottom:1px solid var(--border);background:#fff;
+  cursor:pointer;position:relative;transition:background .12s;
+}
 .match-row:last-child{border-bottom:none}
 .match-row:active{background:#fafbfd}
-.match-row .arrow{color:#c0c4d0;font-size:16px;display:flex;align-items:center;justify-content:center;padding-left:4px}
-.match-row .teams{display:flex;flex-direction:column;gap:3px;min-width:0;padding:12px 8px 12px 4px}
-.match-row .team-line{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;overflow:hidden}
-.match-row .team-logo{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff}
+.match-row .arrow{
+  color:#c0c4d0;font-size:16px;display:flex;align-items:center;justify-content:center;
+  padding-left:4px;
+}
+.match-row .teams{
+  display:flex;flex-direction:column;gap:3px;min-width:0;
+  padding:12px 8px 12px 4px;
+}
+.match-row .team-line{
+  display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;overflow:hidden;
+}
+.match-row .team-logo{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:800;color:#fff;
+}
 .match-row .team-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.match-row .team-score{font-weight:800;font-size:14px;margin-left:auto;padding-left:6px;font-variant-numeric:tabular-nums}
+.match-row .team-score{
+  font-weight:800;font-size:14px;margin-left:auto;padding-left:6px;
+  font-variant-numeric:tabular-nums;
+}
 .match-row .team-score.red{color:var(--accent)}
-.match-row .time{font-size:11px;color:var(--muted);font-weight:500;padding-left:26px;margin-top:2px;display:flex;align-items:center;gap:4px}
+.match-row .time{
+  font-size:11px;color:var(--muted);font-weight:500;padding-left:26px;margin-top:2px;
+  display:flex;align-items:center;gap:4px;
+}
 .match-row .time.live{color:var(--green);font-weight:700}
 .match-row .time.prematch{color:var(--text-2)}
-.match-row .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+.match-row .live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  animation:pulse 1.5s infinite;
+}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.odd-cell{display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border-left:1px solid var(--border);cursor:pointer;min-height:60px;padding:8px 4px;transition:background .12s;font-variant-numeric:tabular-nums;color:var(--text)}
+
+/* ODD CELL */
+.odd-cell{
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;border-left:1px solid var(--border);
+  cursor:pointer;min-height:60px;padding:8px 4px;
+  transition:background .12s;font-variant-numeric:tabular-nums;color:var(--text);
+}
 .odd-cell:active{background:var(--odd-hover)}
 .odd-cell.selected{background:var(--accent);color:#fff}
 .odd-cell.disabled,.odd-cell.dash{color:#c0c4d0;cursor:default}
-.show-all{display:block;margin:12px 16px;padding:14px;text-align:center;background:#fff;border-radius:12px;font-size:14px;font-weight:600;border:1px solid var(--border);width:calc(100% - 32px);cursor:pointer}
+.odd-cell.up{color:var(--green);transition:color .3s}
+.odd-cell.down{color:var(--accent);transition:color .3s}
 
-/* MATCH HEADER (Fonbet style — green gradient) */
-.match-top{padding:14px 16px;background:linear-gradient(135deg,#2a5c2a 0%,#1d4420 100%);color:#fff;position:relative}
-.match-top .mt-crumbs{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;font-weight:600}
+/* SHOW ALL */
+.show-all{
+  display:block;margin:12px 16px;padding:15px;text-align:center;
+  background:#fff;border-radius:14px;font-size:14px;font-weight:600;
+  border:1px solid var(--border);width:calc(100% - 32px);cursor:pointer;
+  transition:background .15s;
+}
+.show-all:hover{background:#fafbfd}
+
+/* MATCH HEADER */
+.match-top{
+  padding:14px 16px 0;
+  background:linear-gradient(135deg,#2a5c2a 0%,#1d4420 100%);
+  color:#fff;position:relative;
+}
+.match-top.green{background:linear-gradient(135deg,#2a5c2a 0%,#1d4420 100%)}
+.match-top.blue{background:linear-gradient(135deg,#1e3a8a 0%,#0f2557 100%)}
+.match-top .mt-crumbs{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;font-size:13px;font-weight:600;
+  color:rgba(255,255,255,.9);
+}
 .match-top .mt-icons{display:flex;gap:16px;font-size:20px}
-.match-top .mt-tabs{display:flex;gap:20px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.15)}
-.match-top .mt-tab{font-size:13px;font-weight:700;color:rgba(255,255,255,.6);padding-bottom:6px;border-bottom:2px solid transparent;cursor:pointer;background:none}
+.match-top .mt-tabs{
+  display:flex;gap:22px;margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  overflow-x:auto;scrollbar-width:none;
+}
+.match-top .mt-tabs::-webkit-scrollbar{display:none}
+.match-top .mt-tab{
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.55);
+  padding-bottom:8px;border-bottom:2.5px solid transparent;
+  cursor:pointer;background:none;white-space:nowrap;
+  transition:all .15s;
+}
 .match-top .mt-tab.active{color:#fff;border-bottom-color:#fff}
-.match-top .mt-team{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:16px;font-weight:700}
-.match-top .mt-team .flag{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.15);flex-shrink:0}
-.match-top .mt-team .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.match-top .mt-team .score{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
-.match-top .mt-time{font-size:13px;color:rgba(255,255,255,.8);margin-top:8px;font-variant-numeric:tabular-nums}
+.match-top .mt-team{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+  font-size:16px;font-weight:700;
+}
+.match-top .mt-team .flag{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;background:rgba(255,255,255,.15);flex-shrink:0;
+}
+.match-top .mt-team .name{
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.match-top .mt-team .score{
+  font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;
+}
+.match-top .mt-time{
+  font-size:13px;color:rgba(255,255,255,.8);
+  padding:12px 0 16px;font-variant-numeric:tabular-nums;
+}
 
-/* MARKET LIST (Fonbet style — big list with stars) */
-.market-list{background:#fff}
-.market-row{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border);cursor:pointer;background:#fff;transition:background .12s}
-.market-row:active{background:#fafbfd}
-.market-row .mstar{font-size:18px;color:#c0c4d0;flex-shrink:0}
-.market-row .mstar.active{color:var(--gold)}
-.market-row .mtitle{flex:1;font-size:15px;font-weight:600;color:var(--text)}
-.market-row .mchevron{font-size:14px;color:var(--muted)}
-.market-body-open{display:block;padding:0 16px 16px;border-bottom:1px solid var(--border)}
-.market-body-closed{display:none}
-
-.market-tabs-sub{display:flex;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;padding:0 8px}
+/* MARKET SUB TABS */
+.market-tabs-sub{
+  display:flex;background:#fff;border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;padding:0 8px;
+  position:sticky;top:60px;z-index:50;
+}
 .market-tabs-sub::-webkit-scrollbar{display:none}
-.mt-sub{padding:12px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;background:none}
+.mt-sub{
+  padding:13px 14px;font-size:13px;font-weight:600;color:var(--muted);
+  white-space:nowrap;border-bottom:2.5px solid transparent;margin-bottom:-1px;
+  cursor:pointer;background:none;transition:all .15s;
+}
 .mt-sub.active{color:var(--text);border-bottom-color:var(--accent)}
 
-/* ODD BUTTONS */
+/* MARKET LIST */
+.market-list{background:#fff}
+.market-row{
+  display:flex;align-items:center;gap:12px;padding:16px;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  background:#fff;transition:background .12s;
+}
+.market-row:active{background:#fafbfd}
+.market-row .mstar{font-size:18px;color:#c0c4d0;flex-shrink:0;transition:color .2s}
+.market-row .mstar.active{color:var(--gold)}
+.market-row .mtitle{flex:1;font-size:15px;font-weight:600;color:var(--text)}
+.market-row .mchevron{font-size:14px;color:var(--muted);transition:transform .2s}
+.market-body-open{
+  display:block;padding:0 16px 16px;border-bottom:1px solid var(--border);
+  animation:slideDown .25s ease-out;
+}
+.market-body-closed{display:none}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}}
+
+/* ODDS */
 .odds-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .odds-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.odd-btn{background:var(--odd);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-weight:700;min-height:48px;text-align:left;transition:background .12s;cursor:pointer;color:var(--text);border:none}
-.odd-btn:active:not(.disabled){background:var(--odd-hover)}
+.odd-btn{
+  background:var(--odd);border-radius:10px;padding:13px 12px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-size:14px;font-weight:700;min-height:50px;text-align:left;
+  transition:all .12s;cursor:pointer;color:var(--text);border:none;
+  position:relative;
+}
+.odd-btn:active:not(.disabled){background:var(--odd-hover);transform:scale(.98)}
 .odd-btn.selected{background:var(--accent);color:#fff}
-.odd-btn .lbl{color:var(--muted);font-weight:600;font-size:13px;flex-shrink:0}
+.odd-btn .lbl{
+  color:var(--muted);font-weight:600;font-size:13px;flex-shrink:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;
+}
 .odd-btn.selected .lbl{color:rgba(255,255,255,.85)}
-.odd-btn .val{font-weight:800;font-size:15px;margin-left:auto;font-variant-numeric:tabular-nums}
+.odd-btn .val{
+  font-weight:800;font-size:15px;margin-left:auto;
+  font-variant-numeric:tabular-nums;
+}
 .odd-btn.disabled{opacity:.35;cursor:not-allowed}
+.odd-btn.flash-up{animation:flashUp .6s}
+.odd-btn.flash-down{animation:flashDown .6s}
+@keyframes flashUp{0%{background:rgba(0,168,84,.2)}100%{background:var(--odd)}}
+@keyframes flashDown{0%{background:rgba(230,0,35,.2)}100%{background:var(--odd)}}
+
 .odds-labeled{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
-.odds-labeled .col-head{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;padding:0 4px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.line-selector{display:flex;gap:4px;padding:10px 0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);margin-bottom:10px}
+.odds-labeled .col-head{
+  font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;
+  padding:0 4px;margin-bottom:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* LINE SELECTOR */
+.line-selector{
+  display:flex;gap:5px;padding:10px 0;
+  overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid var(--border);margin-bottom:12px;
+}
 .line-selector::-webkit-scrollbar{display:none}
-.line-opt{padding:8px 14px;background:#f0f2f6;border-radius:8px;font-size:13px;font-weight:700;color:var(--text-2);white-space:nowrap;border:1.5px solid transparent;cursor:pointer}
-.line-opt.active{background:#fff;color:var(--text);border-color:var(--text);font-weight:800}
+.line-opt{
+  padding:9px 15px;background:#f0f2f6;border-radius:9px;
+  font-size:13px;font-weight:700;color:var(--text-2);
+  white-space:nowrap;border:1.5px solid transparent;cursor:pointer;
+  transition:all .15s;
+}
+.line-opt:active{background:#e5e8ef}
+.line-opt.active{
+  background:#fff;color:var(--text);border-color:var(--text);font-weight:800;
+}
 
 /* STATS */
-.stat-params{display:flex;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;padding:0 8px}
+.stat-params{
+  display:flex;background:#fff;border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;padding:0 8px;
+}
 .stat-params::-webkit-scrollbar{display:none}
-.stat-param{padding:12px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;background:none}
+.stat-param{
+  padding:13px 14px;font-size:13px;font-weight:600;color:var(--muted);
+  white-space:nowrap;border-bottom:2.5px solid transparent;margin-bottom:-1px;
+  cursor:pointer;background:none;transition:all .15s;
+}
 .stat-param.active{color:var(--text);border-bottom-color:var(--accent)}
-.stat-counter{display:flex;justify-content:center;align-items:center;gap:16px;padding:16px;background:#f8f9fc;border-radius:12px;margin:8px;text-align:center}
-.stat-counter .cnt-h,.stat-counter .cnt-a{font-size:26px;font-weight:900;min-width:40px;font-variant-numeric:tabular-nums}
+.stat-counter{
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:18px;background:#f8f9fc;border-radius:14px;margin:10px;text-align:center;
+}
+.stat-counter .cnt-h,.stat-counter .cnt-a{
+  font-size:28px;font-weight:900;min-width:44px;font-variant-numeric:tabular-nums;
+}
 .stat-counter .cnt-h{color:var(--accent)}
-.stat-counter .lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat-counter .lbl{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;
+}
 
 /* BOTTOM TAB BAR */
-.tab-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);z-index:200;padding-bottom:env(safe-area-inset-bottom)}
-.tab-bar-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;font-size:10px;font-weight:600;color:var(--muted);position:relative;cursor:pointer;background:none;border:none}
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;background:#fff;
+  border-top:1px solid var(--border);display:grid;
+  grid-template-columns:repeat(4,1fr);z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab-bar-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:11px 4px 9px;font-size:10px;font-weight:600;color:var(--muted);
+  position:relative;cursor:pointer;background:none;border:none;
+  transition:color .15s;
+}
 .tab-bar-item.active{color:var(--accent)}
 .tab-bar-item .tab-icon{font-size:22px;line-height:1}
-.tab-bar-item .badge{position:absolute;top:4px;right:calc(50% - 20px);min-width:18px;height:18px;background:var(--accent);color:#fff;border-radius:9px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;box-sizing:border-box}
+.tab-bar-item .badge{
+  position:absolute;top:4px;right:calc(50% - 20px);
+  min-width:18px;height:18px;background:var(--accent);color:#fff;
+  border-radius:9px;font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 5px;box-sizing:border-box;
+}
 
 /* FLOATING COUPON */
-.floating-coupon{position:fixed;bottom:70px;left:8px;right:8px;background:#fff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(20,20,40,.18);z-index:190;cursor:pointer;border:1px solid var(--border)}
-.floating-coupon .fc-icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+.floating-coupon{
+  position:fixed;bottom:70px;left:8px;right:8px;
+  background:#fff;border-radius:14px;padding:13px 15px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 8px 32px rgba(20,20,40,.18);
+  z-index:190;cursor:pointer;
+  border:1px solid var(--border);
+  transition:transform .15s;
+}
+.floating-coupon:active{transform:scale(.98)}
+.floating-coupon .fc-icon{
+  width:36px;height:36px;background:var(--accent);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;flex-shrink:0;
+}
 .floating-coupon .fc-info{flex:1;min-width:0}
-.floating-coupon .fc-match{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.floating-coupon .fc-pick{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
-.floating-coupon .fc-odd{font-size:18px;font-weight:900;flex-shrink:0;font-variant-numeric:tabular-nums}
+.floating-coupon .fc-match{
+  font-size:11px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.floating-coupon .fc-pick{
+  font-size:13px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;
+}
+.floating-coupon .fc-odd{
+  font-size:18px;font-weight:900;flex-shrink:0;font-variant-numeric:tabular-nums;
+}
 
 /* COUPON PANEL */
-.coupon-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
+.coupon-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
 .coupon-overlay.active{opacity:1;pointer-events:auto}
-.coupon-panel{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:310;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.coupon-panel{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-radius:24px 24px 0 0;z-index:310;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  max-height:90vh;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom);
+}
 .coupon-panel.active{transform:translateY(0)}
-.coupon-head{padding:18px 16px 8px;display:flex;align-items:center;gap:12px;position:relative}
-.coupon-head .grab{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:#e0e2ea;border-radius:2px}
-.coupon-head .settings{font-size:18px;color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none}
-.coupon-head .tabs{display:flex;gap:20px;flex:1;justify-content:center}
-.coupon-head .ct{font-size:15px;font-weight:600;color:var(--muted);padding-bottom:8px;border-bottom:2px solid transparent;cursor:pointer;background:none}
-.coupon-head .ct.active{color:var(--text);border-bottom-color:var(--accent)}
-.coupon-head .close-btn{font-size:20px;color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#f0f2f6;cursor:pointer;border:none}
-.coupon-body{flex:1;overflow-y:auto;padding:8px 16px 16px}
-.coupon-empty{padding:40px 20px;text-align:center;color:var(--muted)}
-.coupon-empty .icon{font-size:48px;margin-bottom:12px;opacity:.4}
-.coupon-empty .txt{font-size:14px;font-weight:600}
-.coupon-item{background:#f8f9fc;border-radius:12px;padding:14px;margin-bottom:10px}
-.coupon-item .ci-head{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:8px}
-.coupon-item .ci-score{background:#dbeafe;color:#2563eb;font-weight:800;padding:2px 8px;border-radius:4px;font-size:11px}
-.coupon-item .ci-league{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.coupon-item .ci-remove{font-size:22px;color:var(--muted);width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none}
-.coupon-item .ci-pick{font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.coupon-item .ci-odd{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
-.coupon-type{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.coupon-type .ct-btn{padding:10px 16px;background:#f0f2f6;border-radius:8px;font-size:14px;font-weight:700;color:var(--text-2);border:1.5px solid transparent;cursor:pointer}
-.coupon-type .ct-btn.active{background:#fff;border-color:var(--text);color:var(--text)}
-.coupon-stake{display:flex;align-items:stretch;background:#fff;border:1px solid #dfe2ea;border-radius:12px;margin-bottom:8px;overflow:hidden}
-.coupon-stake .stake-input{flex:1;padding:14px 16px;font-size:16px;font-weight:700;border:none;background:transparent;width:100%}
+.coupon-head{
+  padding:18px 18px 10px;display:flex;align-items:center;gap:12px;
+  position:relative;
+}
+.coupon-head .grab{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:40px;height:4px;background:#e0e2ea;border-radius:2px;
+}
+.coupon-head .ct-title{
+  flex:1;text-align:center;font-size:17px;font-weight:800;
+}
+.coupon-head .close-btn{
+  font-size:20px;color:var(--muted);width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:#f0f2f6;cursor:pointer;border:none;
+}
+.coupon-body{flex:1;overflow-y:auto;padding:8px 18px 18px}
+.coupon-empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.coupon-empty .icon{font-size:56px;margin-bottom:14px;opacity:.4}
+.coupon-empty .txt{font-size:15px;font-weight:600}
+.coupon-item{
+  background:#f8f9fc;border-radius:14px;padding:15px;margin-bottom:10px;
+  border-left:3px solid var(--accent);
+}
+.coupon-item .ci-head{
+  display:flex;align-items:center;gap:9px;font-size:12.5px;
+  color:var(--muted);margin-bottom:9px;
+}
+.coupon-item .ci-league{
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;
+}
+.coupon-item .ci-remove{
+  font-size:24px;color:var(--muted);width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;background:none;border:none;line-height:1;
+}
+.coupon-item .ci-pick{
+  font-size:15px;font-weight:700;display:flex;
+  justify-content:space-between;align-items:center;gap:8px;
+}
+.coupon-item .ci-odd{
+  font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;
+  color:var(--accent);
+}
+.coupon-type{
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+}
+.coupon-type .ct-btn{
+  padding:11px 18px;background:#f0f2f6;border-radius:10px;
+  font-size:14px;font-weight:700;color:var(--text-2);
+  border:1.5px solid transparent;cursor:pointer;
+}
+.coupon-type .ct-btn.active{
+  background:#fff;border-color:var(--text);color:var(--text);
+}
+.coupon-stake{
+  display:flex;align-items:stretch;background:#fff;
+  border:1.5px solid var(--border-2);border-radius:14px;
+  margin-bottom:10px;overflow:hidden;
+}
+.coupon-stake .stake-input{
+  flex:1;padding:15px 18px;font-size:17px;font-weight:700;
+  border:none;background:transparent;width:100%;
+}
 .coupon-stake .stake-input::placeholder{color:var(--muted);font-weight:500}
-.coupon-stake .stake-right{display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:8px 12px;border-left:1px solid var(--border);gap:2px}
+.coupon-stake .stake-right{
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-end;
+  padding:8px 14px;border-left:1px solid var(--border);gap:2px;
+}
 .coupon-stake .balance-label{font-size:10px;color:var(--muted);font-weight:500}
 .coupon-stake .balance-val{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
-.coupon-stake .add-btn{width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin-top:2px;cursor:pointer}
-.coupon-limits{display:flex;gap:8px;font-size:11px;color:var(--muted);margin-bottom:12px;padding:0 4px;align-items:center}
-.coupon-limits .lmt{padding:6px 10px;background:#f0f2f6;border-radius:6px;font-weight:700;color:var(--text-2);cursor:pointer;border:1px solid transparent}
+.coupon-stake .add-btn{
+  width:26px;height:26px;background:var(--accent);color:#fff;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;margin-top:2px;cursor:pointer;
+}
+.coupon-limits{
+  display:flex;gap:8px;font-size:11px;color:var(--muted);
+  margin-bottom:14px;padding:0 4px;align-items:center;
+}
+.coupon-limits .lmt{
+  padding:7px 12px;background:#f0f2f6;border-radius:8px;
+  font-weight:700;color:var(--text-2);cursor:pointer;
+  border:1px solid transparent;transition:all .15s;
+}
+.coupon-limits .lmt:active{background:#e5e8ef}
 .coupon-limits .lmt b{color:var(--text);font-weight:800}
-.coupon-actions{display:flex;gap:10px;margin-bottom:8px}
-.coupon-actions .potential{flex:1;background:#f8f9fc;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);font-weight:600}
-.coupon-actions .potential b{color:var(--text);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
-.coupon-place{width:100%;padding:16px;background:var(--accent);color:#fff;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;border:none}
+.coupon-actions{display:flex;gap:10px;margin-bottom:10px}
+.coupon-actions .potential{
+  flex:1;background:#f8f9fc;border-radius:14px;padding:14px 18px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13.5px;color:var(--muted);font-weight:600;
+}
+.coupon-actions .potential b{
+  color:var(--text);font-weight:800;font-size:16px;
+  font-variant-numeric:tabular-nums;
+}
+.coupon-place{
+  width:100%;padding:17px;background:var(--accent);color:#fff;
+  border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;
+  border:none;transition:transform .15s;
+}
+.coupon-place:active:not(:disabled){transform:scale(.98)}
 .coupon-place:disabled{background:#e0e2ea;color:var(--muted);cursor:not-allowed}
 
 /* HISTORY */
-.history-item{background:#fff;border-radius:12px;padding:14px 16px;margin:8px 8px 0;box-shadow:0 1px 3px rgba(20,20,40,.06);position:relative;overflow:hidden}
-.history-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.history-item{
+  background:#fff;border-radius:14px;padding:15px 18px;
+  margin:8px 8px 0;box-shadow:var(--shadow-1);
+  position:relative;overflow:hidden;
+}
+.history-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+}
 .history-item.won::before{background:var(--green)}
 .history-item.lost::before{background:var(--accent)}
 .history-item.pending::before{background:var(--gold)}
-.history-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
-.history-match{font-weight:700;font-size:14px;line-height:1.3}
-.history-meta{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
-.history-amount{font-weight:800;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.history-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:10px;border-top:1px solid var(--border)}
-.history-odd{font-size:12px;color:var(--muted);font-weight:600}
+.history-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:12px;margin-bottom:9px;
+}
+.history-match{font-weight:700;font-size:14.5px;line-height:1.35}
+.history-meta{font-size:11.5px;color:var(--muted);margin-top:4px;font-weight:600}
+.history-amount{
+  font-weight:800;font-size:15.5px;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.history-foot{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding-top:11px;border-top:1px solid var(--border);
+}
+.history-odd{font-size:12.5px;color:var(--muted);font-weight:600}
 .history-odd b{color:var(--text);font-weight:800}
-.history-status{font-weight:800;padding:4px 12px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;font-size:10.5px}
-.history-status.won{background:#e6f7ee;color:var(--green)}
-.history-status.lost{background:#ffe5e9;color:var(--accent)}
-.history-status.pending{background:#fff8e1;color:var(--gold)}
-.cashout-btn{background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-weight:800;font-size:12.5px;margin-top:10px;cursor:pointer;border:none;width:100%}
+.history-status{
+  font-weight:800;padding:5px 13px;border-radius:8px;
+  text-transform:uppercase;letter-spacing:.3px;font-size:10.5px;
+}
+.history-status.won{background:var(--green-light);color:var(--green)}
+.history-status.lost{background:var(--accent-light);color:var(--accent)}
+.history-status.pending{background:var(--gold-light);color:var(--gold)}
+.cashout-btn{
+  background:var(--green);color:#fff;padding:11px 20px;
+  border-radius:10px;font-weight:800;font-size:13px;
+  margin-top:11px;cursor:pointer;border:none;width:100%;
+  transition:transform .15s;
+}
+.cashout-btn:active{transform:scale(.98)}
 
 /* PROFILE */
-.profile-head{padding:20px 16px;background:linear-gradient(135deg,#1a1c2e,#3a3d52);color:#fff;display:flex;align-items:center;gap:14px}
-.profile-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#e60023,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#fff;flex-shrink:0}
+.profile-head{
+  padding:22px 18px;background:linear-gradient(135deg,#1a1c2e,#3a3d52);
+  color:#fff;display:flex;align-items:center;gap:16px;
+}
+.profile-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,#e60023,#ff6b6b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:900;color:#fff;flex-shrink:0;
+  box-shadow:0 6px 24px rgba(230,0,35,.4);
+}
 .profile-info{flex:1;min-width:0}
-.profile-name{font-size:18px;font-weight:800;margin-bottom:4px}
-.profile-balance{font-size:22px;font-weight:900;color:#00e676;font-variant-numeric:tabular-nums}
-.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
-.profile-stat{background:#fff;padding:14px 8px;text-align:center}
-.profile-stat .ps-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.profile-stat .ps-value{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.profile-name{font-size:19px;font-weight:800;margin-bottom:5px}
+.profile-balance{
+  font-size:24px;font-weight:900;color:#00e676;
+  font-variant-numeric:tabular-nums;
+}
+.profile-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);border-top:1px solid var(--border);
+}
+.profile-stat{background:#fff;padding:16px 10px;text-align:center}
+.profile-stat .ps-label{
+  font-size:10px;color:var(--muted);font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;
+}
+.profile-stat .ps-value{
+  font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;
+}
 .profile-stat .ps-value.green{color:var(--green)}
 .profile-stat .ps-value.red{color:var(--accent)}
-.menu-item{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;cursor:pointer;font-size:15px;font-weight:600;background:#fff}
-.menu-item:last-child{border-bottom:none}
-.menu-item .mi-icon{font-size:22px;width:32px;text-align:center}
-.menu-item .mi-arrow{margin-left:auto;color:var(--muted);font-size:16px}
-.logout-btn{margin:16px;padding:14px;background:#fff;border:1.5px solid var(--accent);color:var(--accent);border-radius:12px;font-size:15px;font-weight:800;width:calc(100% - 32px);cursor:pointer}
+.profile-stat .ps-value.gold{color:var(--gold)}
 
-/* EMPTY / TOAST */
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty-icon{font-size:56px;margin-bottom:16px;opacity:.4}
+.menu-item{
+  padding:18px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;cursor:pointer;
+  font-size:15.5px;font-weight:600;background:#fff;
+  transition:background .12s;
+}
+.menu-item:active{background:#fafbfd}
+.menu-item:last-child{border-bottom:none}
+.menu-item .mi-icon{font-size:22px;width:34px;text-align:center}
+.menu-item .mi-arrow{margin-left:auto;color:var(--muted);font-size:17px}
+.logout-btn{
+  margin:20px 18px;padding:15px;
+  background:#fff;border:1.5px solid var(--accent);color:var(--accent);
+  border-radius:14px;font-size:15px;font-weight:800;
+  width:calc(100% - 36px);cursor:pointer;transition:all .15s;
+}
+.logout-btn:active{background:var(--accent-light)}
+
+/* EMPTY */
+.empty{text-align:center;padding:70px 20px;color:var(--muted)}
+.empty-icon{font-size:60px;margin-bottom:18px;opacity:.4}
 .empty-text{font-size:15px;font-weight:600}
-.toast-container{position:fixed;top:80px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:320px}
-.toast{background:#1a1c2e;color:#fff;border-radius:12px;padding:14px 18px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(20,20,40,.2);animation:toastIn .3s;pointer-events:auto;display:flex;align-items:center;gap:10px}
-.toast.win{background:#00a854}
-.toast.lose{background:#e60023}
-.toast.gold{background:#f0b400;color:#1a1c2e}
+
+/* TOAST */
+.toast-container{
+  position:fixed;top:80px;right:16px;z-index:2000;
+  display:flex;flex-direction:column;gap:10px;
+  pointer-events:none;max-width:340px;
+}
+.toast{
+  background:#1a1c2e;color:#fff;border-radius:14px;padding:15px 20px;
+  font-size:13.5px;font-weight:600;box-shadow:var(--shadow-2);
+  animation:toastIn .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:auto;display:flex;align-items:center;gap:11px;
+}
+.toast.win{background:var(--green)}
+.toast.lose{background:var(--accent)}
+.toast.gold{background:var(--gold);color:#1a1c2e}
 @keyframes toastIn{from{transform:translateX(120%);opacity:0}}
 
+/* MOBILE */
 @media(min-width:768px){
   body{max-width:480px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.08)}
   .tab-bar{max-width:480px;left:50%;transform:translateX(-50%)}
@@ -267,12 +683,22 @@ body.coupon-open{overflow:hidden}
   .coupon-panel{max-width:480px;left:50%;transform:translateX(-50%) translateY(100%)}
   .coupon-panel.active{transform:translateX(-50%) translateY(0)}
   .toast-container{right:calc(50% - 240px + 16px)}
+  .auth-screen{background:#1a1c2e}
+}
+
+@media(max-width:400px){
+  .sport-tab{padding:10px 14px;font-size:10px}
+  .sport-tab .icon{font-size:20px}
+  .odd-cell{font-size:14px;min-height:54px}
+  .team-name{font-size:13px}
+  .match-row .team-score{font-size:13px}
+  .quick-stakes{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- ============ AUTH SCREEN ============ -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-card">
     <div class="auth-logo">
@@ -280,10 +706,12 @@ body.coupon-open{overflow:hidden}
       <span>OpenBet</span>
     </div>
     <div class="auth-sub">Ставки на спорт в реальном времени</div>
+
     <div class="auth-tabs">
       <button class="auth-tab active" data-auth-tab="login">Вход</button>
       <button class="auth-tab" data-auth-tab="register">Регистрация</button>
     </div>
+
     <div class="auth-form" id="loginForm">
       <input type="text" class="auth-input" id="loginUsername" placeholder="Логин" autocomplete="username">
       <input type="password" class="auth-input" id="loginPassword" placeholder="Пароль" autocomplete="current-password">
@@ -291,6 +719,7 @@ body.coupon-open{overflow:hidden}
       <button class="auth-submit" id="loginSubmit">Войти</button>
       <div class="auth-hint">Первый раз? Нажми «Регистрация» и создай аккаунт</div>
     </div>
+
     <div class="auth-form" id="registerForm" style="display:none">
       <input type="text" class="auth-input" id="regUsername" placeholder="Логин (мин. 3 символа)" autocomplete="username">
       <input type="password" class="auth-input" id="regPassword" placeholder="Пароль (мин. 4 символа)" autocomplete="new-password">
@@ -302,18 +731,16 @@ body.coupon-open{overflow:hidden}
   </div>
 </div>
 
-<!-- APP -->
+<!-- ============ APP ============ -->
 <div class="app-wrap" id="appWrap">
   <div id="app"></div>
   <div class="toast-container" id="toastContainer"></div>
+
   <div class="coupon-overlay" id="couponOverlay"></div>
   <div class="coupon-panel" id="couponPanel">
     <div class="coupon-head">
       <div class="grab"></div>
-      <button class="settings">⚙️</button>
-      <div class="tabs">
-        <button class="ct active">Купон</button>
-      </div>
+      <div class="ct-title">Купон</div>
       <button class="close-btn" id="couponClose">✕</button>
     </div>
     <div class="coupon-body" id="couponBody"></div>
@@ -326,7 +753,9 @@ body.coupon-open{overflow:hidden}
 
 /* ============ УТИЛИТЫ ============ */
 var $ = function(id) { return document.getElementById(id); };
+var $$ = function(sel) { return document.querySelectorAll(sel); };
 var rand = function(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; };
+var randf = function(a, b) { return a + Math.random() * (b - a); };
 var pick = function(a) { return a[rand(0, a.length - 1)]; };
 var clamp = function(v, l, h) { return Math.max(l, Math.min(h, v)); };
 var fmt = function(v) { return Math.round(v).toLocaleString('ru-RU'); };
@@ -334,24 +763,32 @@ var ft = function(s) { s = Math.max(0, s); return Math.floor(s / 60) + ':' + Str
 var todayKey = function() { return new Date().toISOString().slice(0, 10); };
 var sIcon = function(s) { return s === 'football' ? '⚽' : s === 'hockey' ? '🏒' : s === 'volleyball' ? '🏐' : '🥊'; };
 var sName = function(s) { return s === 'football' ? 'Футбол' : s === 'hockey' ? 'Хоккей' : s === 'volleyball' ? 'Волейбол' : 'UFC'; };
+var sColor = function(s) { return s === 'football' ? 'green' : s === 'hockey' ? 'blue' : s === 'volleyball' ? 'green' : 'blue'; };
 
 /* ============ АВТОРИЗАЦИЯ ============ */
 var AUTH = { currentUser: null };
 
 function loadUsers() {
-  try { var s = localStorage.getItem('openbet_users_v2'); return s ? JSON.parse(s) : {}; }
+  try { var s = localStorage.getItem('openbet_users_v3'); return s ? JSON.parse(s) : {}; }
   catch (e) { return {}; }
 }
 function saveUsers(users) {
-  try { localStorage.setItem('openbet_users_v2', JSON.stringify(users)); } catch (e) {}
+  try { localStorage.setItem('openbet_users_v3', JSON.stringify(users)); } catch (e) {}
 }
 function hashPassword(pwd) {
-  var h = 0;
-  for (var i = 0; i < pwd.length; i++) { h = ((h << 5) - h) + pwd.charCodeAt(i); h = h & h; }
+  var h = 5381;
+  for (var i = 0; i < pwd.length; i++) { h = ((h << 5) + h) + pwd.charCodeAt(i); h = h | 0; }
   return 'h_' + Math.abs(h).toString(36);
 }
-function getCurrentUser() { try { return localStorage.getItem('openbet_current_user_v2') || null; } catch (e) { return null; } }
-function setCurrentUser(uid) { try { if (uid) localStorage.setItem('openbet_current_user_v2', uid); else localStorage.removeItem('openbet_current_user_v2'); } catch (e) {} }
+function getCurrentUserId() {
+  try { return localStorage.getItem('openbet_current_v3') || null; } catch (e) { return null; }
+}
+function setCurrentUserId(uid) {
+  try {
+    if (uid) localStorage.setItem('openbet_current_v3', uid);
+    else localStorage.removeItem('openbet_current_v3');
+  } catch (e) {}
+}
 
 function registerUser(username, password) {
   username = (username || '').trim();
@@ -359,15 +796,18 @@ function registerUser(username, password) {
   if (password.length < 4) return { ok: false, error: 'Пароль минимум 4 символа' };
   var users = loadUsers();
   var lk = username.toLowerCase();
-  for (var k in users) if (users[k].username.toLowerCase() === lk) return { ok: false, error: 'Такой логин уже занят' };
+  for (var k in users) {
+    if (users[k].username.toLowerCase() === lk) return { ok: false, error: 'Такой логин уже занят' };
+  }
   var id = 'u_' + Date.now();
   users[id] = {
     id: id, username: username, passwordHash: hashPassword(password),
     createdAt: Date.now(), balance: 100000, totalBet: 0, totalWon: 0,
-    bets: [], coupon: [], matchesState: null, lastSeen: Date.now()
+    bets: [], coupon: [], matchesState: null, lastSeen: Date.now(),
+    lastBonus: null, achievements: []
   };
   saveUsers(users);
-  setCurrentUser(id);
+  setCurrentUserId(id);
   return { ok: true, userId: id };
 }
 
@@ -377,7 +817,10 @@ function loginUser(username, password) {
   var lk = username.toLowerCase();
   for (var k in users) {
     if (users[k].username.toLowerCase() === lk) {
-      if (users[k].passwordHash === hashPassword(password)) { setCurrentUser(k); return { ok: true, userId: k }; }
+      if (users[k].passwordHash === hashPassword(password)) {
+        setCurrentUserId(k);
+        return { ok: true, userId: k };
+      }
       return { ok: false, error: 'Неверный пароль' };
     }
   }
@@ -387,7 +830,7 @@ function loginUser(username, password) {
 function logoutUser() {
   saveUserState();
   saveMatches();
-  setCurrentUser(null);
+  setCurrentUserId(null);
   location.reload();
 }
 
@@ -413,21 +856,24 @@ function loadUserState(userId) {
 }
 
 function initUser() {
-  var userId = getCurrentUser();
+  var userId = getCurrentUserId();
   if (!userId) return false;
   var u = loadUserState(userId);
-  if (!u) { setCurrentUser(null); return false; }
+  if (!u) { setCurrentUserId(null); return false; }
   AUTH.currentUser = {
     id: u.id, username: u.username,
-    balance: u.balance, totalBet: u.totalBet || 0, totalWon: u.totalWon || 0,
-    bets: u.bets || [], coupon: u.coupon || [],
+    balance: u.balance || 100000,
+    totalBet: u.totalBet || 0,
+    totalWon: u.totalWon || 0,
+    bets: u.bets || [],
+    coupon: u.coupon || [],
     matchesState: u.matchesState || null,
     lastBonus: u.lastBonus || null
   };
   return true;
 }
 
-/* Обёртка для доступа к полям */
+/* Обёртка доступа к полям юзера */
 var W = {
   get balance() { return AUTH.currentUser.balance; },
   set balance(v) { AUTH.currentUser.balance = v; },
@@ -448,10 +894,11 @@ var STATE = {
   currentFilter: 'top',
   currentMatch: null,
   currentMarketTab: 'all',
+  currentStatParam: 'fouls',
   currentLine: {},
   matches: [],
   nextId: 1,
-  openMarkets: {},
+  openSections: { 'iss': true },
   favorites: {},
   usedPairs: {}
 };
@@ -465,9 +912,10 @@ function toast(type, icon, text) {
   c.appendChild(el);
   setTimeout(function() {
     el.style.transition = 'opacity .3s, transform .3s';
-    el.style.opacity = '0'; el.style.transform = 'translateX(120%)';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(120%)';
     setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
-  }, 3000);
+  }, 3500);
 }
 
 /* ============ МАТЕМАТИКА ============ */
@@ -478,41 +926,59 @@ function poisson(k, l) {
   for (var i = 2; i <= k; i++) lf += Math.log(i);
   return Math.exp(k * Math.log(l) - l - lf);
 }
+
 function normalCDF(z) {
   var t = 1 / (1 + 0.2316419 * Math.abs(z));
   var d = 0.3989423 * Math.exp(-z * z / 2);
   var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
   return z > 0 ? 1 - p : p;
 }
+
+var MARGIN = 0.05;
 function toOdd(p, m) {
-  m = m === undefined ? 0.05 : m;
+  m = m === undefined ? MARGIN : m;
   if (p <= 0.015 || p >= 0.985) return null;
   var r = 1 / (p * (1 + m));
   if (r < 1.01 || r > 80) return null;
   return Math.ceil(r * 100) / 100;
 }
-var isValid = function(o) { return o !== null && o !== undefined && typeof o === 'number' && !isNaN(o) && o >= 1.01 && o <= 80; };
-var FLAGS = {ru:'🇷🇺',us:'🇺🇸',gb:'🇬🇧',es:'🇪🇸',de:'🇩🇪',it:'🇮🇹',fr:'🇫🇷',br:'🇧🇷',ca:'🇨🇦',am:'🇦🇲',nz:'🇳🇿',za:'🇿🇦',ng:'🇳🇬',au:'🇦🇺',cz:'🇨🇿',ae:'🇦🇪',kz:'🇰🇿',ge:'🇬🇪',nl:'🇳🇱'};
+var isValid = function(o) {
+  return o !== null && o !== undefined && typeof o === 'number' && !isNaN(o) && o >= 1.01 && o <= 80;
+};
+
+var FLAGS = {ru:'🇷🇺',us:'🇺🇸',gb:'🇬🇧',es:'🇪🇸',de:'🇩🇪',it:'🇮🇹',fr:'🇫🇷',br:'🇧🇷',ca:'🇨🇦',am:'🇦🇲',nz:'🇳🇿',za:'🇿🇦',ng:'🇳🇬',au:'🇦🇺',cz:'🇨🇿',ae:'🇦🇪',kz:'🇰🇿',ge:'🇬🇪',nl:'🇳🇱',se:'🇸🇪'};
 
 /* ============ РУССКИЕ НАЗВАНИЯ ============ */
 var RUS_NAMES = {
   'Manchester City':'Манчестер Сити','Arsenal':'Арсенал','Liverpool':'Ливерпуль',
   'Chelsea':'Челси','Tottenham':'Тоттенхэм','Manchester United':'Манчестер Юнайтед',
   'Newcastle':'Ньюкасл','Aston Villa':'Астон Вилла','Brighton':'Брайтон','West Ham':'Вест Хэм',
+  'Fulham':'Фулхэм','Brentford':'Брентфорд','Crystal Palace':'Кристал Пэлас','Wolves':'Вулверхэмптон',
+  'Everton':'Эвертон','Bournemouth':'Борнмут','Nottingham Forest':'Ноттингем Форест','Leicester':'Лестер',
   'Real Madrid':'Реал Мадрид','Barcelona':'Барселона','Atletico Madrid':'Атлетико',
   'Sevilla':'Севилья','Real Sociedad':'Реал Сосьедад','Athletic Bilbao':'Атлетик',
+  'Villarreal':'Вильярреал','Real Betis':'Бетис','Valencia':'Валенсия','Girona':'Жирона',
+  'Celta Vigo':'Сельта','Osasuna':'Осасуна','Getafe':'Хетафе','Mallorca':'Мальорка',
   'Bayern Munich':'Бавария','Borussia Dortmund':'Боруссия Д','RB Leipzig':'РБ Лейпциг',
   'Bayer Leverkusen':'Байер','Stuttgart':'Штутгарт','Eintracht Frankfurt':'Айнтрахт',
+  'Wolfsburg':'Вольфсбург','Freiburg':'Фрайбург','Hoffenheim':'Хоффенхайм','Werder Bremen':'Вердер',
+  'Borussia Monchengladbach':'Боруссия М','Mainz':'Майнц','Augsburg':'Аугсбург','Union Berlin':'Унион Берлин',
   'Inter':'Интер','Juventus':'Ювентус','AC Milan':'Милан','Napoli':'Наполи','Atalanta':'Аталанта',
-  'Roma':'Рома','Lazio':'Лацио','Fiorentina':'Фиорентина',
+  'Roma':'Рома','Lazio':'Лацио','Fiorentina':'Фиорентина','Bologna':'Болонья','Torino':'Торино',
+  'Udinese':'Удинезе','Genoa':'Дженоа','Empoli':'Эмполи','Hellas Verona':'Верона','Cagliari':'Кальяри',
   'PSG':'ПСЖ','Marseille':'Марсель','Monaco':'Монако','Lyon':'Лион','Lille':'Лилль',
+  'Nice':'Ницца','Rennes':'Ренн','Lens':'Ланс','Strasbourg':'Страсбург','Nantes':'Нант','Reims':'Реймс',
   'Zenit':'Зенит','Krasnodar':'Краснодар','CSKA Moscow':'ЦСКА','Spartak Moscow':'Спартак',
-  'Dinamo Moscow':'Динамо М','Lokomotiv Moscow':'Локомотив','Rostov':'Ростов',
+  'Dinamo Moscow':'Динамо М','Lokomotiv Moscow':'Локомотив','Rostov':'Ростов','Rubin':'Рубин',
+  'Krylia Sovetov':'Крылья Советов','Akhmat':'Ахмат',
   'Edmonton Oilers':'Эдмонтон','Florida Panthers':'Флорида','Boston Bruins':'Бостон',
   'Toronto Maple Leafs':'Торонто','Colorado Avalanche':'Колорадо','New York Rangers':'Рейнджерс',
   'Vegas Golden Knights':'Вегас','Tampa Bay Lightning':'Тампа-Бэй','Los Angeles Kings':'Лос-Анджелес',
+  'Carolina Hurricanes':'Каролина','New Jersey Devils':'Нью-Джерси','Dallas Stars':'Даллас',
+  'Seattle Kraken':'Сиэтл','Vancouver Canucks':'Ванкувер','Calgary Flames':'Калгари',
   'SKA':'СКА','CSKA':'ЦСКА','Ak Bars':'Ак Барс','Dynamo Moscow':'Динамо М','Metallurg':'Металлург',
   'Lokomotiv Yaroslavl':'Локомотив Яр','Avangard':'Авангард','Salavat Yulaev':'Салават Юлаев',
+  'Traktor':'Трактор','Spartak':'Спартак','Torpedo':'Торпедо','Severstal':'Северсталь',
   'Zenit Kazan':'Зенит Казань','Belogorie':'Белогорье','Fakel':'Факел',
   'Lokomotiv Novosibirsk':'Локомотив Нск','Kuzbass':'Кузбасс','Zenit SPb':'Зенит СПб','Ural Ufa':'Урал',
   'Jon Jones':'Джон Джонс','Tom Aspinall':'Том Аспиналл','Ciryl Gane':'Сирил Ган',
@@ -531,8 +997,9 @@ var RUS_NAMES = {
 };
 function rusName(n) { return RUS_NAMES[n] || n; }
 
+/* ============ КОМАНДЫ ============ */
 function teamColor(n) {
-  var c = ['#e60023', '#00a854', '#2563eb', '#f0b400', '#7c5cff', '#ff6b6b', '#4ecdc4', '#3b82f6', '#10b981', '#f59e0b'];
+  var c = ['#e60023','#00a854','#2563eb','#f0b400','#7c5cff','#ff6b6b','#4ecdc4','#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6'];
   var h = 0;
   for (var i = 0; i < n.length; i++) h = n.charCodeAt(i) + ((h << 5) - h);
   return c[Math.abs(h) % c.length];
@@ -543,7 +1010,7 @@ function teamInit(n) {
 }
 function uniquePair(pool, usedMap) {
   var s = 0;
-  while (s++ < 300) {
+  while (s++ < 500) {
     var a = pick(pool), b = pick(pool);
     if (a.n === b.n) continue;
     var key = [a.n, b.n].sort().join('|');
@@ -555,512 +1022,19 @@ function uniquePair(pool, usedMap) {
   return [pick(pool), pick(pool)];
 }
 
-/* ==== ЧАСТЬ 3 ==== */
 /* ============================================================
-   ДАННЫЕ — 150 команд
-   ============================================================ */
-var FOOTBALL = [
-  // АПЛ
-  {n:'Manchester City',atk:2.30,def:0.75,lg:'АПЛ',country:'gb',rt:93},
-  {n:'Arsenal',atk:2.10,def:0.80,lg:'АПЛ',country:'gb',rt:91},
-  {n:'Liverpool',atk:2.20,def:0.85,lg:'АПЛ',country:'gb',rt:92},
-  {n:'Chelsea',atk:1.65,def:1.15,lg:'АПЛ',country:'gb',rt:84},
-  {n:'Tottenham',atk:1.75,def:1.25,lg:'АПЛ',country:'gb',rt:82},
-  {n:'Manchester United',atk:1.60,def:1.20,lg:'АПЛ',country:'gb',rt:83},
-  {n:'Newcastle',atk:1.75,def:1.10,lg:'АПЛ',country:'gb',rt:82},
-  {n:'Aston Villa',atk:1.70,def:1.15,lg:'АПЛ',country:'gb',rt:81},
-  {n:'Brighton',atk:1.55,def:1.20,lg:'АПЛ',country:'gb',rt:79},
-  {n:'West Ham',atk:1.40,def:1.35,lg:'АПЛ',country:'gb',rt:77},
-  {n:'Fulham',atk:1.35,def:1.30,lg:'АПЛ',country:'gb',rt:76},
-  {n:'Brentford',atk:1.40,def:1.25,lg:'АПЛ',country:'gb',rt:76},
-  // Ла Лига
-  {n:'Real Madrid',atk:2.40,def:0.75,lg:'Ла Лига',country:'es',rt:94},
-  {n:'Barcelona',atk:2.15,def:0.90,lg:'Ла Лига',country:'es',rt:90},
-  {n:'Atletico Madrid',atk:1.75,def:0.85,lg:'Ла Лига',country:'es',rt:87},
-  {n:'Sevilla',atk:1.35,def:1.30,lg:'Ла Лига',country:'es',rt:78},
-  {n:'Real Sociedad',atk:1.45,def:1.10,lg:'Ла Лига',country:'es',rt:80},
-  {n:'Athletic Bilbao',atk:1.50,def:0.95,lg:'Ла Лига',country:'es',rt:81},
-  {n:'Villarreal',atk:1.55,def:1.15,lg:'Ла Лига',country:'es',rt:80},
-  {n:'Real Betis',atk:1.40,def:1.20,lg:'Ла Лига',country:'es',rt:78},
-  // Бундеслига
-  {n:'Bayern Munich',atk:2.50,def:0.80,lg:'Бундеслига',country:'de',rt:93},
-  {n:'Borussia Dortmund',atk:1.85,def:1.15,lg:'Бундеслига',country:'de',rt:85},
-  {n:'RB Leipzig',atk:1.90,def:1.05,lg:'Бундеслига',country:'de',rt:86},
-  {n:'Bayer Leverkusen',atk:2.10,def:0.90,lg:'Бундеслига',country:'de',rt:88},
-  {n:'Stuttgart',atk:1.75,def:1.10,lg:'Бундеслига',country:'de',rt:83},
-  {n:'Eintracht Frankfurt',atk:1.55,def:1.25,lg:'Бундеслига',country:'de',rt:80},
-  {n:'Wolfsburg',atk:1.35,def:1.30,lg:'Бундеслига',country:'de',rt:76},
-  // Серия А
-  {n:'Inter',atk:2.10,def:0.80,lg:'Серия А',country:'it',rt:89},
-  {n:'Juventus',atk:1.65,def:0.85,lg:'Серия А',country:'it',rt:85},
-  {n:'AC Milan',atk:1.85,def:1.05,lg:'Серия А',country:'it',rt:86},
-  {n:'Napoli',atk:1.80,def:0.95,lg:'Серия А',country:'it',rt:86},
-  {n:'Atalanta',atk:1.95,def:1.05,lg:'Серия А',country:'it',rt:85},
-  {n:'Roma',atk:1.55,def:1.00,lg:'Серия А',country:'it',rt:82},
-  {n:'Lazio',atk:1.50,def:1.05,lg:'Серия А',country:'it',rt:81},
-  {n:'Fiorentina',atk:1.45,def:1.10,lg:'Серия А',country:'it',rt:80},
-  // Лига 1
-  {n:'PSG',atk:2.40,def:0.85,lg:'Лига 1',country:'fr',rt:90},
-  {n:'Marseille',atk:1.60,def:1.20,lg:'Лига 1',country:'fr',rt:80},
-  {n:'Monaco',atk:1.70,def:1.15,lg:'Лига 1',country:'fr',rt:81},
-  {n:'Lyon',atk:1.55,def:1.20,lg:'Лига 1',country:'fr',rt:79},
-  {n:'Lille',atk:1.50,def:1.10,lg:'Лига 1',country:'fr',rt:79},
-  // РПЛ
-  {n:'Zenit',atk:1.95,def:0.90,lg:'РПЛ',country:'ru',rt:80},
-  {n:'Krasnodar',atk:1.85,def:0.95,lg:'РПЛ',country:'ru',rt:79},
-  {n:'CSKA Moscow',atk:1.65,def:1.05,lg:'РПЛ',country:'ru',rt:77},
-  {n:'Spartak Moscow',atk:1.70,def:1.10,lg:'РПЛ',country:'ru',rt:76},
-  {n:'Dinamo Moscow',atk:1.60,def:1.00,lg:'РПЛ',country:'ru',rt:76},
-  {n:'Lokomotiv Moscow',atk:1.55,def:1.05,lg:'РПЛ',country:'ru',rt:75},
-  {n:'Rostov',atk:1.35,def:1.20,lg:'РПЛ',country:'ru',rt:73}
-];
-
-/* ХОККЕЙ — средний матч 5-6 голов */
-var HOCKEY = [
-  // НХЛ
-  {n:'Edmonton Oilers',atk:1.35,def:1.10,lg:'НХЛ',country:'ca',rt:91},
-  {n:'Florida Panthers',atk:1.20,def:1.00,lg:'НХЛ',country:'us',rt:90},
-  {n:'Boston Bruins',atk:1.15,def:1.00,lg:'НХЛ',country:'us',rt:88},
-  {n:'Toronto Maple Leafs',atk:1.30,def:1.15,lg:'НХЛ',country:'ca',rt:87},
-  {n:'Colorado Avalanche',atk:1.35,def:1.10,lg:'НХЛ',country:'us',rt:89},
-  {n:'New York Rangers',atk:1.20,def:1.05,lg:'НХЛ',country:'us',rt:88},
-  {n:'Vegas Golden Knights',atk:1.20,def:1.05,lg:'НХЛ',country:'us',rt:88},
-  {n:'Tampa Bay Lightning',atk:1.25,def:1.10,lg:'НХЛ',country:'us',rt:87},
-  {n:'Los Angeles Kings',atk:1.15,def:1.00,lg:'НХЛ',country:'us',rt:87},
-  {n:'Carolina Hurricanes',atk:1.20,def:0.95,lg:'НХЛ',country:'us',rt:88},
-  {n:'New Jersey Devils',atk:1.25,def:1.10,lg:'НХЛ',country:'us',rt:86},
-  {n:'Dallas Stars',atk:1.20,def:1.00,lg:'НХЛ',country:'us',rt:88},
-  // КХЛ
-  {n:'SKA',atk:1.35,def:1.00,lg:'КХЛ',country:'ru',rt:86},
-  {n:'CSKA',atk:1.15,def:0.95,lg:'КХЛ',country:'ru',rt:84},
-  {n:'Ak Bars',atk:1.15,def:1.00,lg:'КХЛ',country:'ru',rt:83},
-  {n:'Dynamo Moscow',atk:1.20,def:1.05,lg:'КХЛ',country:'ru',rt:82},
-  {n:'Metallurg',atk:1.20,def:1.00,lg:'КХЛ',country:'ru',rt:83},
-  {n:'Lokomotiv Yaroslavl',atk:1.10,def:0.90,lg:'КХЛ',country:'ru',rt:84},
-  {n:'Avangard',atk:1.15,def:1.05,lg:'КХЛ',country:'ru',rt:82},
-  {n:'Salavat Yulaev',atk:1.10,def:0.95,lg:'КХЛ',country:'ru',rt:83},
-  {n:'Traktor',atk:1.05,def:1.00,lg:'КХЛ',country:'ru',rt:80},
-  {n:'Spartak',atk:1.00,def:1.05,lg:'КХЛ',country:'ru',rt:79}
-];
-
-var VOLLEYBALL = [
-  {n:'Zenit Kazan',atk:1.35,serve:1.15,block:1.20,lg:'Суперлига',country:'ru',rt:92},
-  {n:'Dynamo Moscow',atk:1.22,serve:1.08,block:1.12,lg:'Суперлига',country:'ru',rt:88},
-  {n:'Belogorie',atk:1.12,serve:1.02,block:1.08,lg:'Суперлига',country:'ru',rt:85},
-  {n:'Fakel',atk:1.00,serve:1.00,block:1.00,lg:'Суперлига',country:'ru',rt:82},
-  {n:'Lokomotiv Novosibirsk',atk:0.92,serve:0.95,block:0.94,lg:'Суперлига',country:'ru',rt:80},
-  {n:'Kuzbass',atk:0.85,serve:0.92,block:0.90,lg:'Суперлига',country:'ru',rt:78},
-  {n:'Zenit SPb',atk:1.18,serve:1.05,block:1.10,lg:'Суперлига',country:'ru',rt:86},
-  {n:'Ural Ufa',atk:0.95,serve:0.98,block:0.96,lg:'Суперлига',country:'ru',rt:79}
-];
-
-var UFC = [
-  {n:'Jon Jones',rt:2100,div:'Heavyweight',country:'us',style:'mixed',power:88,acc:92,td:95,hpMax:95,stamMax:85},
-  {n:'Tom Aspinall',rt:2020,div:'Heavyweight',country:'gb',style:'striker',power:92,acc:85,td:70,hpMax:88,stamMax:80},
-  {n:'Ciryl Gane',rt:1960,div:'Heavyweight',country:'fr',style:'striker',power:82,acc:88,td:60,hpMax:85,stamMax:82},
-  {n:'Curtis Blaydes',rt:1930,div:'Heavyweight',country:'us',style:'grappler',power:80,acc:70,td:92,hpMax:90,stamMax:75},
-  {n:'Alexander Volkov',rt:1920,div:'Heavyweight',country:'ru',style:'striker',power:78,acc:80,td:55,hpMax:85,stamMax:78},
-  {n:'Alex Pereira',rt:2060,div:'Light Heavyweight',country:'br',style:'striker',power:96,acc:88,td:55,hpMax:88,stamMax:78},
-  {n:'Magomed Ankalaev',rt:2010,div:'Light Heavyweight',country:'ru',style:'mixed',power:85,acc:82,td:88,hpMax:90,stamMax:85},
-  {n:'Jiri Prochazka',rt:1960,div:'Light Heavyweight',country:'cz',style:'striker',power:88,acc:78,td:62,hpMax:82,stamMax:82},
-  {n:'Dricus du Plessis',rt:2020,div:'Middleweight',country:'za',style:'mixed',power:85,acc:78,td:82,hpMax:92,stamMax:88},
-  {n:'Israel Adesanya',rt:1980,div:'Middleweight',country:'nz',style:'striker',power:82,acc:92,td:60,hpMax:82,stamMax:85},
-  {n:'Sean Strickland',rt:1950,div:'Middleweight',country:'us',style:'striker',power:75,acc:88,td:65,hpMax:88,stamMax:90},
-  {n:'Khamzat Chimaev',rt:2010,div:'Middleweight',country:'ae',style:'grappler',power:82,acc:80,td:96,hpMax:88,stamMax:82},
-  {n:'Islam Makhachev',rt:2070,div:'Lightweight',country:'ru',style:'grappler',power:80,acc:88,td:95,hpMax:88,stamMax:92},
-  {n:'Arman Tsarukyan',rt:1990,div:'Lightweight',country:'am',style:'grappler',power:78,acc:85,td:88,hpMax:85,stamMax:88},
-  {n:'Justin Gaethje',rt:1960,div:'Lightweight',country:'us',style:'striker',power:90,acc:82,td:65,hpMax:90,stamMax:82},
-  {n:'Dustin Poirier',rt:1940,div:'Lightweight',country:'us',style:'mixed',power:85,acc:85,td:70,hpMax:88,stamMax:80},
-  {n:'Leon Edwards',rt:1990,div:'Welterweight',country:'gb',style:'mixed',power:78,acc:88,td:82,hpMax:85,stamMax:85},
-  {n:'Kamaru Usman',rt:1950,div:'Welterweight',country:'ng',style:'grappler',power:82,acc:82,td:90,hpMax:90,stamMax:88},
-  {n:'Ilia Topuria',rt:2030,div:'Featherweight',country:'es',style:'mixed',power:90,acc:85,td:82,hpMax:88,stamMax:85},
-  {n:'Alexander Volkanovski',rt:2000,div:'Featherweight',country:'au',style:'mixed',power:80,acc:90,td:82,hpMax:88,stamMax:92},
-  {n:'Max Holloway',rt:1985,div:'Featherweight',country:'us',style:'striker',power:78,acc:92,td:60,hpMax:90,stamMax:92},
-  {n:'Merab Dvalishvili',rt:2005,div:'Bantamweight',country:'ge',style:'grappler',power:72,acc:82,td:96,hpMax:90,stamMax:95}
-];
-
-/* ============================================================
-   СИМУЛЯЦИЯ
-   ============================================================ */
-var FT_TICK_PER_MIN = 6.67;
-var FT_BREAK_SEC = 30;
-var HK_PERIOD_SEC = 20;
-var HK_BREAK_SEC = 2;
-var UFC_ROUND_SEC = 300;
-var UFC_BREAK_SEC = 60;
-var UFC_MAX_ROUNDS = 5;
-
-/* ФУТБОЛ */
-function newFootball() {
-  var lgs = [], seen = {};
-  FOOTBALL.forEach(function(t) { if (!seen[t.lg]) { seen[t.lg] = 1; lgs.push(t.lg); } });
-  var lg = pick(lgs);
-  var pool = FOOTBALL.filter(function(t) { return t.lg === lg; });
-  var pair = uniquePair(pool, STATE.usedPairs);
-  var h = pair[0], a = pair[1];
-  return {
-    id: STATE.nextId++, sport: 'football', league: lg,
-    home: h.n, away: a.n,
-    homeAtk: h.atk, awayAtk: a.atk, homeDef: h.def, awayDef: a.def,
-    homeRating: h.rt, awayRating: a.rt,
-    homeCountry: h.country, awayCountry: a.country,
-    scoreHome: 0, scoreAway: 0, minute: 0, maxMinute: 90, realTick: 0,
-    phase: 'calm', phaseSecLeft: 15 + rand(0, 25),
-    baseTempo: 0.75 + Math.random() * 0.65,
-    xgHome: 0, xgAway: 0, shotsHome: 0, shotsAway: 0,
-    shotsOnTargetHome: 0, shotsOnTargetAway: 0,
-    goalKicksHome: 0, goalKicksAway: 0,
-    throwInsHome: 0, throwInsAway: 0,
-    foulsHome: 0, foulsAway: 0,
-    cornersHome: 0, cornersAway: 0, possessionHome: 50,
-    cardsHome: 0, cardsAway: 0, redHome: false, redAway: false,
-    offsidesHome: 0, offsidesAway: 0, savesHome: 0, savesAway: 0,
-    nextThrowIn: 30 + rand(0, 60), nextGoalKick: 40 + rand(0, 90),
-    nextFoul: 20 + rand(0, 60), nextCorner: 60 + rand(0, 180),
-    nextShot: 30 + rand(0, 120), nextOffside: 150 + rand(0, 350),
-    half: 1, isBreak: false, breakTimer: 0,
-    justScored: null, status: 'live', momentum: 0
-  };
-}
-
-function footballPhaseIntensity(m) {
-  var phase = m.phase, intensity = 1.0, goalBoost = 1.0;
-  if (phase === 'calm') { intensity = 0.55; goalBoost = 0.6; }
-  else if (phase === 'pressure_home' || phase === 'pressure_away') { intensity = 1.7; goalBoost = 1.9; }
-  else if (phase === 'chaos') { intensity = 2.4; goalBoost = 2.3; }
-  else if (phase === 'endgame') { intensity = 2.0; goalBoost = 1.7; }
-  intensity *= m.baseTempo;
-  if (m.minute >= 75 && phase !== 'endgame') { intensity *= 1.4; goalBoost *= 1.35; }
-  return { intensity: intensity, goalBoost: goalBoost };
-}
-
-function switchFootballPhase(m) {
-  m.phaseSecLeft -= 1;
-  if (m.phaseSecLeft > 0) return;
-  var roll = Math.random();
-  var newPhase;
-  if (m.minute >= 80) { newPhase = 'endgame'; m.phaseSecLeft = 999; }
-  else if (roll < 0.30) { newPhase = 'calm'; m.phaseSecLeft = 18 + rand(0, 25); }
-  else if (roll < 0.55) { newPhase = 'pressure_home'; m.phaseSecLeft = 15 + rand(0, 20); }
-  else if (roll < 0.80) { newPhase = 'pressure_away'; m.phaseSecLeft = 15 + rand(0, 20); }
-  else { newPhase = 'chaos'; m.phaseSecLeft = 12 + rand(0, 15); }
-  if (m.redHome) newPhase = 'pressure_away';
-  if (m.redAway) newPhase = 'pressure_home';
-  m.phase = newPhase;
-}
-
-function simulateFootball(m) {
-  if (m.isBreak) {
-    m.breakTimer += 1;
-    if (m.breakTimer >= FT_BREAK_SEC) { m.isBreak = false; m.half = 2; m.minute = 45; }
-    return;
-  }
-  m.realTick += 1;
-  m.minute += 1 / FT_TICK_PER_MIN;
-  m.justScored = null;
-  if (m.minute >= 45 && m.half === 1) { m.minute = 45; m.isBreak = true; m.breakTimer = 0; return; }
-  if (m.minute >= 90) { m.minute = 90; m.status = 'finished'; m.finishedAt = Date.now(); return; }
-
-  switchFootballPhase(m);
-  var I = footballPhaseIntensity(m);
-  var intensity = I.intensity, goalBoost = I.goalBoost;
-
-  m.nextFoul -= intensity * 3;
-  if (m.nextFoul <= 0) {
-    var side = Math.random() < 0.5 ? 'home' : 'away';
-    if (side === 'home') m.foulsHome++; else m.foulsAway++;
-    if (Math.random() < 0.12) {
-      if (side === 'home') m.cardsHome++; else m.cardsAway++;
-      if (Math.random() < 0.03) { if (side === 'home') m.redHome = true; else m.redAway = true; }
-    }
-    m.nextFoul = 20 + rand(0, 60);
-  }
-  m.nextCorner -= intensity * 2;
-  if (m.nextCorner <= 0) {
-    if (Math.random() < 0.55) m.cornersHome++; else m.cornersAway++;
-    m.nextCorner = 60 + rand(0, 180);
-  }
-  m.nextShot -= intensity * 3;
-  if (m.nextShot <= 0) {
-    var s5 = Math.random() < 0.5 ? 'home' : 'away';
-    var onT = Math.random() < 0.42;
-    if (s5 === 'home') {
-      m.shotsHome++; m.xgHome += 0.05 + Math.random() * 0.2;
-      if (onT) { m.shotsOnTargetHome++; if (Math.random() < 0.65) m.savesAway++; }
-    } else {
-      m.shotsAway++; m.xgAway += 0.05 + Math.random() * 0.2;
-      if (onT) { m.shotsOnTargetAway++; if (Math.random() < 0.65) m.savesHome++; }
-    }
-    m.nextShot = 30 + rand(0, 120);
-  }
-  m.nextOffside -= intensity * 1.5;
-  if (m.nextOffside <= 0) {
-    if (Math.random() < 0.5) m.offsidesHome++; else m.offsidesAway++;
-    m.nextOffside = 150 + rand(0, 350);
-  }
-  m.nextGoalKick -= intensity * 2;
-  if (m.nextGoalKick <= 0) {
-    if (Math.random() < 0.5) m.goalKicksHome++; else m.goalKicksAway++;
-    m.nextGoalKick = 60 + rand(0, 150);
-  }
-  m.nextThrowIn -= intensity * 3;
-  if (m.nextThrowIn <= 0) {
-    if (Math.random() < 0.5) m.throwInsHome++; else m.throwInsAway++;
-    m.nextThrowIn = 30 + rand(0, 90);
-  }
-
-  var targetPoss = 50 + (m.homeAtk - m.awayAtk) * 12;
-  if (m.phase === 'pressure_home') targetPoss += 12;
-  if (m.phase === 'pressure_away') targetPoss -= 12;
-  m.possessionHome = Math.round(m.possessionHome * 0.96 + targetPoss * 0.04);
-  m.possessionHome = clamp(m.possessionHome, 25, 75);
-
-  var pGoal = 0.0035 * goalBoost;
-  var lh = footballFullXG(m, 'home') / 90 / FT_TICK_PER_MIN * 3;
-  var la = footballFullXG(m, 'away') / 90 / FT_TICK_PER_MIN * 3;
-  if (Math.random() < pGoal) {
-    if (Math.random() < lh / (lh + la)) {
-      m.scoreHome++; m.xgHome += 0.4; m.shotsOnTargetHome++;
-      m.justScored = 'home';
-      m.phase = 'pressure_away'; m.phaseSecLeft = 20 + rand(0, 20);
-    } else {
-      m.scoreAway++; m.xgAway += 0.4; m.shotsOnTargetAway++;
-      m.justScored = 'away';
-      m.phase = 'pressure_home'; m.phaseSecLeft = 20 + rand(0, 20);
-    }
-  }
-}
-
-/* ХОККЕЙ — 5-6 голов за матч, периоды по 20 "минут" = 20 сек реальных */
-function newHockey() {
-  var lgs = [], seen = {};
-  HOCKEY.forEach(function(t) { if (!seen[t.lg]) { seen[t.lg] = 1; lgs.push(t.lg); } });
-  var lg = pick(lgs);
-  var pool = HOCKEY.filter(function(t) { return t.lg === lg; });
-  var pair = uniquePair(pool, STATE.usedPairs);
-  var h = pair[0], a = pair[1];
-  return {
-    id: STATE.nextId++, sport: 'hockey', league: lg,
-    home: h.n, away: a.n,
-    homeAtk: h.atk, awayAtk: a.atk, homeDef: h.def, awayDef: a.def,
-    homeRating: h.rt, awayRating: a.rt,
-    homeCountry: h.country, awayCountry: a.country,
-    scoreHome: 0, scoreAway: 0,
-    periodScores: [{h:0,a:0},{h:0,a:0},{h:0,a:0}],
-    period: 1, periodSec: 0, minute: 0, maxMinute: 60,
-    penaltyHome: 0, penaltyAway: 0, emptyNet: null,
-    shotsHome: 0, shotsAway: 0, savesHome: 0, savesAway: 0,
-    hitsHome: 0, hitsAway: 0,
-    isBreak: false, breakTimer: 0,
-    overtime: false, finalResult: null,
-    justScored: null, status: 'live', momentum: 0
-  };
-}
-
-function simulateHockey(m) {
-  if (m.isBreak) {
-    m.breakTimer += 1;
-    if (m.breakTimer >= HK_BREAK_SEC) {
-      m.isBreak = false; m.period += 1; m.periodSec = 0;
-      m.penaltyHome = 0; m.penaltyAway = 0; m.emptyNet = null;
-      if (m.period > 3) {
-        if (m.scoreHome === m.scoreAway) { m.overtime = true; m.period = 4; }
-        else { m.status = 'finished'; m.finishedAt = Date.now(); }
-        return;
-      }
-    }
-    return;
-  }
-  m.periodSec += 1; m.minute += 1; m.justScored = null;
-
-  if (m.period === 4 && m.periodSec >= 5) {
-    var hG = 0, aG = 0;
-    for (var i = 0; i < 5; i++) { if (Math.random() < 0.35) hG++; if (Math.random() < 0.35) aG++; }
-    var guard = 0;
-    while (hG === aG && guard++ < 30) { if (Math.random() < 0.4) hG++; if (Math.random() < 0.4) aG++; }
-    if (hG > aG) m.scoreHome++; else m.scoreAway++;
-    m.finalResult = {winner: hG > aG ? 'home' : 'away', method: 'Буллиты', round: 4};
-    m.status = 'finished'; m.finishedAt = Date.now(); return;
-  }
-  if (m.period <= 3 && m.periodSec >= HK_PERIOD_SEC) {
-    m.isBreak = true; m.breakTimer = 0; return;
-  }
-  if (m.penaltyHome > 0) m.penaltyHome--;
-  if (m.penaltyAway > 0) m.penaltyAway--;
-  if (m.period === 3 && m.periodSec >= 18 && m.scoreHome !== m.scoreAway) {
-    m.emptyNet = m.scoreHome < m.scoreAway ? 'home' : 'away';
-  }
-  if (Math.random() < 0.06 && m.penaltyHome === 0 && m.penaltyAway === 0) {
-    if (Math.random() < 0.5) m.penaltyHome = 4; else m.penaltyAway = 4;
-  }
-
-  // Простая λ на 20 сек: среднее за матч ~5.5 голов, делим на 3 периода, на 20 секунд
-  // Итого ~1.83 голов за период, что даёт за 20 секунд = ~0.09
-  var lamBase = 3.00; // базовое xG на матч для средней команды
-  var lh = lamBase * m.homeAtk * (1.0 / m.awayDef) * 1.10 / 60 * 1.5;
-  var la = lamBase * m.awayAtk * (1.0 / m.homeDef) * 0.90 / 60 * 1.5;
-  if (m.penaltyAway > 0) lh *= 2.6;
-  if (m.penaltyHome > 0) la *= 2.6;
-  if (m.emptyNet === 'away') lh *= 4;
-  if (m.emptyNet === 'home') la *= 4;
-
-  if (Math.random() < lh) {
-    m.scoreHome++; m.shotsHome++; m.justScored = 'home';
-    if (m.period <= 3) m.periodScores[m.period - 1].h++;
-  } else if (Math.random() < la) {
-    m.scoreAway++; m.shotsAway++; m.justScored = 'away';
-    if (m.period <= 3) m.periodScores[m.period - 1].a++;
-  } else {
-    if (Math.random() < 0.35) { m.shotsHome++; m.savesAway++; }
-    else if (Math.random() < 0.7) { m.shotsAway++; m.savesHome++; }
-  }
-}
-
-/* UFC */
-function newUFC() {
-  var divs = [], seen = {};
-  UFC.forEach(function(f) { if (!seen[f.div]) { seen[f.div] = 1; divs.push(f.div); } });
-  var div = pick(divs);
-  var pool = UFC.filter(function(f) { return f.div === div; });
-  var pair = uniquePair(pool, STATE.usedPairs);
-  var h = pair[0], a = pair[1];
-  return {
-    id: STATE.nextId++, sport: 'ufc', league: 'UFC · ' + div,
-    home: h.n, away: a.n,
-    homeRating: h.rt, awayRating: a.rt,
-    homeCountry: h.country, awayCountry: a.country,
-    homeFighter: {power: h.power, acc: h.acc, td: h.td, style: h.style, hpMax: h.hpMax, stamMax: h.stamMax},
-    awayFighter: {power: a.power, acc: a.acc, td: a.td, style: a.style, hpMax: a.hpMax, stamMax: a.stamMax},
-    homeHP: h.hpMax, awayHP: a.hpMax,
-    homeStam: h.stamMax, awayStam: a.stamMax,
-    round: 1, roundSec: 0, minute: 0, maxMinute: UFC_MAX_ROUNDS * UFC_ROUND_SEC,
-    phase: 'fight',
-    scoreHome: 0, scoreAway: 0, roundScores: [],
-    status: 'live', momentum: 0,
-    finalResult: null, justScored: null
-  };
-}
-
-function simulateUFC(m) {
-  if (m.phase === 'break') {
-    m.roundSec += 1;
-    if (m.roundSec >= UFC_BREAK_SEC) {
-      m.phase = 'fight'; m.roundSec = 0;
-      m.homeStam = Math.min(m.homeFighter.stamMax, m.homeStam + 18);
-      m.awayStam = Math.min(m.awayFighter.stamMax, m.awayStam + 18);
-    }
-    return;
-  }
-  m.roundSec += 1; m.minute += 1;
-  var hAcc = m.homeFighter.acc * (m.homeStam / m.homeFighter.stamMax);
-  var aAcc = m.awayFighter.acc * (m.awayStam / m.awayFighter.stamMax);
-  var hPow = m.homeFighter.power * (0.7 + 0.3 * (m.homeStam / m.homeFighter.stamMax));
-  var aPow = m.awayFighter.power * (0.7 + 0.3 * (m.awayStam / m.awayFighter.stamMax));
-
-  if (Math.random() < m.homeFighter.td / 100 * 0.05 && m.homeFighter.style !== 'striker') {
-    m.awayHP -= hPow * 0.35; m.homeStam -= 2;
-    if (Math.random() < 0.10 && m.awayHP < 40) { finishUFC(m, 'home', 'Сабмишн', m.round); return; }
-  }
-  if (Math.random() < m.awayFighter.td / 100 * 0.05 && m.awayFighter.style !== 'striker') {
-    m.homeHP -= aPow * 0.35; m.awayStam -= 2;
-    if (Math.random() < 0.10 && m.homeHP < 40) { finishUFC(m, 'away', 'Сабмишн', m.round); return; }
-  }
-  if (Math.random() < hAcc / 100 * 0.35) {
-    if (Math.random() < hAcc / 100 * 0.55) {
-      m.awayHP -= hPow * 0.18; m.homeStam -= 1.2; m.awayStam -= 0.8;
-      if (Math.random() < 0.02 && m.awayHP < 15) { finishUFC(m, 'home', 'KO/TKO', m.round); return; }
-    } else m.homeStam -= 1.5;
-  }
-  if (Math.random() < aAcc / 100 * 0.35) {
-    if (Math.random() < aAcc / 100 * 0.55) {
-      m.homeHP -= aPow * 0.18; m.awayStam -= 1.2; m.homeStam -= 0.8;
-      if (Math.random() < 0.02 && m.homeHP < 15) { finishUFC(m, 'away', 'KO/TKO', m.round); return; }
-    } else m.awayStam -= 1.5;
-  }
-  if (m.homeStam < 5) m.homeStam = 5;
-  if (m.awayStam < 5) m.awayStam = 5;
-  if (m.homeHP < 0) m.homeHP = 0;
-  if (m.awayHP < 0) m.awayHP = 0;
-  if (m.roundSec >= UFC_ROUND_SEC) {
-    var diff = (m.homeHP - m.awayHP) + (m.homeStam - m.awayStam) * 0.3;
-    var rh = 10, ra = 10;
-    if (diff > 15) ra = 8; else if (diff > 3) ra = 9;
-    else if (diff < -15) rh = 8; else if (diff < -3) rh = 9;
-    m.roundScores.push({h: rh, a: ra});
-    if (m.round >= UFC_MAX_ROUNDS) {
-      var totH = 0, totA = 0;
-      m.roundScores.forEach(function(rs) { totH += rs.h; totA += rs.a; });
-      finishUFC(m, totH >= totA ? 'home' : 'away', 'Решение', 5);
-      return;
-    }
-    m.round++; m.phase = 'break'; m.roundSec = 0;
-  }
-}
-
-function finishUFC(m, winner, method, round) {
-  m.finalResult = {winner: winner, method: method, round: round};
-  if (winner === 'home') m.scoreHome = 1; else m.scoreAway = 1;
-  m.status = 'finished'; m.finishedAt = Date.now();
-}
-
-/* ВОЛЕЙБОЛ */
-function newVolleyball() {
-  var pair = uniquePair(VOLLEYBALL, STATE.usedPairs);
-  var h = pair[0], a = pair[1];
-  return {
-    id: STATE.nextId++, sport: 'volleyball', league: h.lg,
-    home: h.n, away: a.n,
-    homeAtk: h.atk, awayAtk: a.atk,
-    homeServe: h.serve, awayServe: a.serve,
-    homeBlock: h.block, awayBlock: a.block,
-    homeRating: h.rt, awayRating: a.rt,
-    homeCountry: h.country, awayCountry: a.country,
-    setsHome: 0, setsAway: 0, pointsHome: 0, pointsAway: 0,
-    setHistory: [], roundSec: 0, minute: 0, maxMinute: 2400,
-    serving: 'home',
-    status: 'live', momentum: 0, justScored: null
-  };
-}
-
-function simulateVolleyball(m) {
-  m.roundSec += 1; m.minute += 1;
-  if (m.roundSec < 5) return;
-  m.roundSec = 0;
-  var isFifth = (m.setsHome === 2 && m.setsAway === 2);
-  var target = isFifth ? 15 : 25;
-  var pHome;
-  if (m.serving === 'home') pHome = 0.5 + (m.homeServe - 1) * 0.18 - (m.awayBlock - 1) * 0.10;
-  else pHome = 0.5 - (m.awayServe - 1) * 0.18 + (m.homeBlock - 1) * 0.10;
-  pHome = clamp(pHome, 0.30, 0.70);
-  if (Math.random() < pHome) { m.pointsHome++; m.serving = 'home'; }
-  else { m.pointsAway++; m.serving = 'away'; }
-  if (m.pointsHome >= target && m.pointsHome - m.pointsAway >= 2) {
-    m.setsHome++;
-    m.setHistory.push({winner: 'home', h: m.pointsHome, a: m.pointsAway});
-    m.justScored = 'home';
-    m.pointsHome = 0; m.pointsAway = 0;
-  } else if (m.pointsAway >= target && m.pointsAway - m.pointsHome >= 2) {
-    m.setsAway++;
-    m.setHistory.push({winner: 'away', h: m.pointsHome, a: m.pointsAway});
-    m.justScored = 'away';
-    m.pointsHome = 0; m.pointsAway = 0;
-  }
-  if (m.setsHome >= 3 || m.setsAway >= 3) { m.status = 'finished'; m.finishedAt = Date.now(); }
-}
-
-/* ============================================================
-   МАТЕМАТИКА КЭФОВ — ЧЕСТНАЯ
+   МАТЕМАТИКА КЭФОВ — ФУТБОЛ
    ============================================================ */
 function footballFullXG(m, side) {
   var isHome = (side === 'home');
   var atk = isHome ? m.homeAtk : m.awayAtk;
   var def = isHome ? m.awayDef : m.homeDef;
-  var avgAtk = 1.85, avgDef = 1.00;
-  var homeAdv = isHome ? 1.25 : 0.80;
-  if (isHome && m.redHome) atk *= 0.35;
-  if (!isHome && m.redAway) atk *= 0.35;
-  var xg = 1.35 * Math.pow(atk / avgAtk, 1.7) * Math.pow(avgDef / def, 1.5) * homeAdv;
-  return clamp(xg, 0.15, 4.5);
+  var avgAtk = 1.80, avgDef = 1.05;
+  var homeAdv = isHome ? 1.22 : 0.82;
+  if (isHome && m.redHome) atk *= 0.40;
+  if (!isHome && m.redAway) atk *= 0.40;
+  var xg = 1.35 * Math.pow(atk / avgAtk, 1.6) * Math.pow(avgDef / def, 1.4) * homeAdv;
+  return clamp(xg, 0.20, 4.2);
 }
 function footballLambda(m, side) {
   var full = footballFullXG(m, side);
@@ -1080,15 +1054,24 @@ function footballOddsFromLambdas(curH, curA, lh, la) {
       if (pa < 1e-12) continue;
       var p = ph * pa;
       var fh = curH + h, fa = curA + a;
-      if (fh > fa) pH += p; else if (fh === fa) pD += p; else pA += p;
+      if (fh > fa) pH += p;
+      else if (fh === fa) pD += p;
+      else pA += p;
     }
   }
   var t = pH + pD + pA || 1;
-  return {home: toOdd(pH / t, 0.05), draw: toOdd(pD / t, 0.06), away: toOdd(pA / t, 0.05), _pH: pH / t, _pD: pD / t, _pA: pA / t};
+  return {
+    home: toOdd(pH / t, 0.045),
+    draw: toOdd(pD / t, 0.055),
+    away: toOdd(pA / t, 0.045),
+    _pH: pH / t, _pD: pD / t, _pA: pA / t
+  };
 }
 function computeFootballOdds(m) {
-  if (m.status === 'finished') return {home: null, draw: null, away: null};
-  if (m.status === 'countdown') return footballOddsFromLambdas(0, 0, footballFullXG(m, 'home'), footballFullXG(m, 'away'));
+  if (m.status === 'finished') return { home: null, draw: null, away: null };
+  if (m.status === 'countdown') {
+    return footballOddsFromLambdas(0, 0, footballFullXG(m, 'home'), footballFullXG(m, 'away'));
+  }
   return footballOddsFromLambdas(m.scoreHome, m.scoreAway, footballLambda(m, 'home'), footballLambda(m, 'away'));
 }
 function footballTotalOverProb(m, line) {
@@ -1149,7 +1132,7 @@ function footballGoalInInterval(m, from, to) {
   return 1 - Math.exp(-(lh + la));
 }
 function footballFirstHalfOdds(m) {
-  if (m.minute >= 45) return {home: null, draw: null, away: null};
+  if (m.minute >= 45) return { home: null, draw: null, away: null };
   var rem1 = 45 - m.minute;
   var lh = footballFullXG(m, 'home') * (rem1 / 90);
   var la = footballFullXG(m, 'away') * (rem1 / 90);
@@ -1165,7 +1148,7 @@ function footballExactScores(m) {
       var p = poisson(h, lh) * poisson(a, la);
       var fh = (m.status === 'countdown' ? 0 : m.scoreHome) + h;
       var fa = (m.status === 'countdown' ? 0 : m.scoreAway) + a;
-      if (fh <= 6 && fa <= 6) arr.push({score: fh + ':' + fa, prob: p});
+      if (fh <= 6 && fa <= 6) arr.push({ score: fh + ':' + fa, prob: p });
     }
   }
   arr.sort(function(a, b) { return b.prob - a.prob; });
@@ -1194,76 +1177,19 @@ function footballStatOverProb(m, statKey, line) {
   var z = (line - expected) / sigma;
   return clamp(1 - normalCDF(z), 0.01, 0.99);
 }
-function computeFootballExtras(m) {
-  if (m.status === 'finished') return {};
-  var out = {};
-  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
-  var odds = computeFootballOdds(m);
-  if (odds._pH && odds._pD) add('1X', odds._pH + odds._pD, 0.04);
-  if (odds._pH && odds._pA) add('12', odds._pH + odds._pA, 0.04);
-  if (odds._pD && odds._pA) add('X2', odds._pD + odds._pA, 0.04);
-  var totalCur = m.scoreHome + m.scoreAway;
-  [0.5, 1.5, 2.5, 3.5, 4.5, 5.5].forEach(function(line) {
-    if (line > totalCur) {
-      var pO = footballTotalOverProb(m, line);
-      if (pO > 0.02 && pO < 0.98) { add('ТБ ' + line, pO, 0.05); add('ТМ ' + line, 1 - pO, 0.05); }
-    }
-  });
-  [0.5, 1.5, 2.5].forEach(function(line) {
-    var pF1m = footballHandicapProb(m, -line, 'home');
-    var pF2p = footballHandicapProb(m, line, 'away');
-    var pF1p = footballHandicapProb(m, line, 'home');
-    var pF2m = footballHandicapProb(m, -line, 'away');
-    if (pF1m > 0.01 && pF1m < 0.99) add('Ф1 −' + line, pF1m, 0.05);
-    if (pF2p > 0.01 && pF2p < 0.99) add('Ф2 +' + line, pF2p, 0.05);
-    if (pF1p > 0.01 && pF1p < 0.99) add('Ф1 +' + line, pF1p, 0.05);
-    if (pF2m > 0.01 && pF2m < 0.99) add('Ф2 −' + line, pF2m, 0.05);
-  });
-  var pB = footballBtts(m);
-  if (pB > 0.02 && pB < 0.98) { add('Обе · Да', pB, 0.05); add('Обе · Нет', 1 - pB, 0.05); }
-  if (m.minute < 45) {
-    var fh = footballFirstHalfOdds(m);
-    if (fh.home) add('1-й тайм · П1', 1 / fh.home, 0.06);
-    if (fh.draw) add('1-й тайм · X', 1 / fh.draw, 0.06);
-    if (fh.away) add('1-й тайм · П2', 1 / fh.away, 0.06);
-  }
-  [[0,15,'0-15'], [15,30,'15-30'], [30,45,'30-45'], [45,60,'45-60'], [60,75,'60-75'], [75,90,'75-90']].forEach(function(iv) {
-    var p = footballGoalInInterval(m, iv[0], iv[1]);
-    if (p !== null && p > 0.02 && p < 0.98) add('Гол ' + iv[2] + ' мин', p, 0.06);
-  });
-  footballExactScores(m).forEach(function(s) {
-    if (s.prob > 0.02) add('Счёт ' + s.score, s.prob * 1.02, 0.06);
-  });
-  var statCfg = {
-    fouls: { lines: [20.5, 24.5, 28.5], label: 'фолов' },
-    corners: { lines: [7.5, 9.5, 11.5], label: 'угловых' },
-    cards: { lines: [2.5, 3.5, 4.5], label: 'жёлтых' },
-    shots: { lines: [18.5, 22.5, 26.5], label: 'ударов' },
-    ontarget: { lines: [6.5, 8.5, 10.5], label: 'в створ' },
-    offsides: { lines: [2.5, 3.5, 4.5], label: 'офсайдов' }
-  };
-  Object.keys(statCfg).forEach(function(key) {
-    var cfg = statCfg[key];
-    cfg.lines.forEach(function(line) {
-      var p = footballStatOverProb(m, key, line);
-      if (p > 0.02 && p < 0.98) {
-        add('ТБ ' + line + ' ' + cfg.label, p, 0.07);
-        add('ТМ ' + line + ' ' + cfg.label, 1 - p, 0.07);
-      }
-    });
-  });
-  return out;
-}
 
-/* ХОККЕЙ КЭФЫ */
+/* ============================================================
+   МАТЕМАТИКА КЭФОВ — ХОККЕЙ
+   Средний матч NHL/KHL = 5-6 голов на двоих
+   ============================================================ */
 function hockeyFullXG(m, side) {
   var isHome = (side === 'home');
   var atk = isHome ? m.homeAtk : m.awayAtk;
   var def = isHome ? m.awayDef : m.homeDef;
   var avgAtk = 1.15, avgDef = 1.05;
-  var homeAdv = isHome ? 1.18 : 0.85;
-  var xg = 3.00 * Math.pow(atk / avgAtk, 1.4) * Math.pow(avgDef / def, 1.3) * homeAdv;
-  return clamp(xg, 1.5, 5.5);
+  var homeAdv = isHome ? 1.15 : 0.87;
+  var xg = 2.85 * Math.pow(atk / avgAtk, 1.4) * Math.pow(avgDef / def, 1.3) * homeAdv;
+  return clamp(xg, 1.2, 5.5);
 }
 function hockeyLambda(m, side) {
   var full = hockeyFullXG(m, side);
@@ -1278,7 +1204,7 @@ function hockeyLambda(m, side) {
   return Math.max(0.02, lam);
 }
 function computeHockeyOdds(m) {
-  if (m.status === 'finished') return {home: null, draw: null, away: null};
+  if (m.status === 'finished') return { home: null, draw: null, away: null };
   var lh, la, curH, curA;
   if (m.status === 'countdown') {
     lh = hockeyFullXG(m, 'home'); la = hockeyFullXG(m, 'away'); curH = 0; curA = 0;
@@ -1294,11 +1220,18 @@ function computeHockeyOdds(m) {
       if (pa < 1e-12) continue;
       var p = ph * pa;
       var fh = curH + h, fa = curA + a;
-      if (fh > fa) pH += p; else if (fh === fa) pD += p; else pA += p;
+      if (fh > fa) pH += p;
+      else if (fh === fa) pD += p;
+      else pA += p;
     }
   }
   var t = pH + pD + pA || 1;
-  return {home: toOdd(pH / t, 0.05), draw: toOdd(pD / t, 0.06), away: toOdd(pA / t, 0.05), _pH: pH / t, _pD: pD / t, _pA: pA / t};
+  return {
+    home: toOdd(pH / t, 0.045),
+    draw: toOdd(pD / t, 0.055),
+    away: toOdd(pA / t, 0.045),
+    _pH: pH / t, _pD: pD / t, _pA: pA / t
+  };
 }
 function hockeyTotalOverProb(m, line) {
   var curTotal = m.scoreHome + m.scoreAway;
@@ -1340,113 +1273,49 @@ function hockeyHandicapProb(m, line, side) {
   }
   return clamp(p, 0.005, 0.995);
 }
-function computeHockeyExtras(m) {
-  if (m.status === 'finished') return {};
-  var out = {};
-  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
-  var odds = computeHockeyOdds(m);
-  if (odds._pH && odds._pD) add('1X', odds._pH + odds._pD, 0.04);
-  if (odds._pH && odds._pA) add('12', odds._pH + odds._pA, 0.04);
-  if (odds._pD && odds._pA) add('X2', odds._pD + odds._pA, 0.04);
-  var totalCur = m.scoreHome + m.scoreAway;
-  [3.5, 4.5, 5.5, 6.5, 7.5, 8.5].forEach(function(line) {
-    if (line > totalCur) {
-      var pO = hockeyTotalOverProb(m, line);
-      if (pO > 0.02 && pO < 0.98) { add('ТБ ' + line, pO, 0.05); add('ТМ ' + line, 1 - pO, 0.05); }
-    }
-  });
-  [1.5, 2.5].forEach(function(line) {
-    var pF1m = hockeyHandicapProb(m, -line, 'home');
-    var pF2p = hockeyHandicapProb(m, line, 'away');
-    var pF1p = hockeyHandicapProb(m, line, 'home');
-    var pF2m = hockeyHandicapProb(m, -line, 'away');
-    if (pF1m > 0.01 && pF1m < 0.99) add('Ф1 −' + line, pF1m, 0.05);
-    if (pF2p > 0.01 && pF2p < 0.99) add('Ф2 +' + line, pF2p, 0.05);
-    if (pF1p > 0.01 && pF1p < 0.99) add('Ф1 +' + line, pF1p, 0.05);
-    if (pF2m > 0.01 && pF2m < 0.99) add('Ф2 −' + line, pF2m, 0.05);
-  });
-  var lh = hockeyLambda(m, 'home'), la = hockeyLambda(m, 'away');
-  var pH0 = m.scoreHome > 0 ? 1 : (1 - Math.exp(-lh));
-  var pA0 = m.scoreAway > 0 ? 1 : (1 - Math.exp(-la));
-  var pB = pH0 * pA0;
-  if (pB > 0.02 && pB < 0.98) { add('Обе · Да', pB, 0.05); add('Обе · Нет', 1 - pB, 0.05); }
-  if (m.penaltyHome > 0) add(m.away + ' в большинстве', 0.42, 0.08);
-  if (m.penaltyAway > 0) add(m.home + ' в большинстве', 0.42, 0.08);
-  return out;
-}
 
-/* UFC / VOLLEY */
+/* ============================================================
+   МАТЕМАТИКА КЭФОВ — UFC
+   ============================================================ */
 function ufcProbHome(m) {
   if (m.status === 'finished') return m.finalResult && m.finalResult.winner === 'home' ? 1 : 0;
   if (m.status === 'countdown') {
-    var rDiff = (m.homeRating - m.awayRating) / 400;
-    return 1 / (1 + Math.pow(10, -rDiff));
+    var rDiff0 = (m.homeRating - m.awayRating) / 400;
+    return 1 / (1 + Math.pow(10, -rDiff0));
   }
   var hpDiff = (m.homeHP - m.awayHP) / Math.max(1, m.homeFighter.hpMax);
   var stamDiff = (m.homeStam - m.awayStam) / Math.max(1, m.homeFighter.stamMax);
-  var rDiff2 = (m.homeRating - m.awayRating) / 400;
-  var base = 1 / (1 + Math.pow(10, -rDiff2));
+  var rDiff = (m.homeRating - m.awayRating) / 400;
+  var base = 1 / (1 + Math.pow(10, -rDiff));
   var prog = m.minute / Math.max(1, m.maxMinute);
   var pH = base + hpDiff * 0.45 + stamDiff * 0.15;
   pH = 0.5 + (clamp(pH, 0.03, 0.97) - 0.5) * (1 - prog * 0.25);
   return clamp(pH, 0.03, 0.97);
 }
 function computeUFCOdds(m) {
-  if (m.status === 'finished') return {home: null, draw: null, away: null};
+  if (m.status === 'finished') return { home: null, draw: null, away: null };
   var pH = ufcProbHome(m);
-  return {home: toOdd(pH, 0.045), away: toOdd(1 - pH, 0.045), draw: null};
+  return { home: toOdd(pH, 0.045), away: toOdd(1 - pH, 0.045), draw: null };
 }
 function ufcFinishProb(m) {
   if (m.status === 'finished') return m.finalResult && m.finalResult.method !== 'Решение' ? 1 : 0;
   if (m.status === 'countdown') return 0.55;
-  var roundsLeft = UFC_MAX_ROUNDS - m.round + 1;
+  var roundsLeft = 5 - m.round + 1;
   var perRound = 0.26;
   if (m.homeHP < 30 || m.awayHP < 30) perRound *= 1.7;
   if (m.homeHP < 15 || m.awayHP < 15) perRound *= 2.2;
   var pNoFin = 1;
   for (var r = 0; r < roundsLeft; r++) {
     var haz = perRound;
-    if (r === 0) haz = perRound * ((UFC_ROUND_SEC - m.roundSec) / UFC_ROUND_SEC);
+    if (r === 0) haz = perRound * ((300 - m.roundSec) / 300);
     pNoFin *= (1 - haz);
   }
   return clamp(1 - pNoFin, 0.04, 0.96);
 }
-function computeUFCExtras(m) {
-  if (m.status === 'finished' || m.status === 'countdown') return {};
-  var out = {};
-  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
-  var pH = ufcProbHome(m);
-  var pA = 1 - pH;
-  var pFin = ufcFinishProb(m);
-  var pDec = 1 - pFin;
-  var pKO = pFin * 0.62, pSub = pFin * 0.38;
-  add('KO/TKO', pKO, 0.06);
-  add('Сабмишн', pSub, 0.06);
-  add('Решение', pDec, 0.05);
-  add('Бой досрочно', pFin, 0.05);
-  add('Вся дистанция', pDec, 0.05);
-  var roundsPlayed = (m.round - 1) + (m.roundSec / UFC_ROUND_SEC);
-  if (m.phase === 'break') roundsPlayed = m.round;
-  [[1.5,'ТБ 1.5 раундов'], [2.5,'ТБ 2.5 раундов'], [3.5,'ТБ 3.5 раундов'], [4.5,'ТБ 4.5 раундов']].forEach(function(pair) {
-    var line = pair[0];
-    if (roundsPlayed < line) {
-      var need = line - roundsPlayed;
-      var perRound = 0.26;
-      if (m.homeHP < 30 || m.awayHP < 30) perRound *= 1.7;
-      var pReach = Math.pow(1 - perRound, need);
-      pReach = clamp(pReach, 0.02, 0.98);
-      add(pair[1], pReach, 0.05);
-      add(pair[1].replace('ТБ', 'ТМ'), 1 - pReach, 0.05);
-    }
-  });
-  add(m.home + ' KO/TKO', pH * pKO * 0.95, 0.07);
-  add(m.home + ' Сабмишн', pH * pSub * 0.95, 0.07);
-  add(m.home + ' Решение', pH * pDec * 0.95, 0.07);
-  add(m.away + ' KO/TKO', pA * pKO * 0.95, 0.07);
-  add(m.away + ' Сабмишн', pA * pSub * 0.95, 0.07);
-  add(m.away + ' Решение', pA * pDec * 0.95, 0.07);
-  return out;
-}
+
+/* ============================================================
+   МАТЕМАТИКА КЭФОВ — ВОЛЕЙБОЛ
+   ============================================================ */
 function volleyProbHome(m) {
   if (m.status === 'finished') return m.setsHome > m.setsAway ? 1 : 0;
   if (m.status === 'countdown') {
@@ -1463,53 +1332,604 @@ function volleyProbHome(m) {
   return clamp(pH, 0.04, 0.96);
 }
 function computeVolleyballOdds(m) {
-  if (m.status === 'finished') return {home: null, draw: null, away: null};
+  if (m.status === 'finished') return { home: null, draw: null, away: null };
   var pH = volleyProbHome(m);
-  return {home: toOdd(pH, 0.045), away: toOdd(1 - pH, 0.045), draw: null};
-}
-function computeVolleyballExtras(m) {
-  if (m.status === 'finished' || m.status === 'countdown') return {};
-  var out = {};
-  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
-  var pH = volleyProbHome(m);
-  var pA = 1 - pH;
-  var setsPlayed = m.setsHome + m.setsAway;
-  if (setsPlayed < 5) {
-    var cnt3 = 0, cnt4 = 0, cnt5 = 0;
-    for (var t = 0; t < 300; t++) {
-      var sh = m.setsHome, sa = m.setsAway, g = 0;
-      while (sh < 3 && sa < 3 && g++ < 10) { if (Math.random() < pH) sh++; else sa++; }
-      var tot = sh + sa;
-      if (tot <= 3) cnt3++; else if (tot === 4) cnt4++; else cnt5++;
-    }
-    var p3 = cnt3 / 300, p4 = cnt4 / 300, p5 = cnt5 / 300;
-    if (p3 > 0.02) { add('ТМ 3.5 сетов', p3, 0.06); add('ТБ 3.5 сетов', p4 + p5, 0.06); }
-    if (p5 > 0.02) { add('ТБ 4.5 сетов', p5, 0.06); add('ТМ 4.5 сетов', p3 + p4, 0.06); }
-  }
-  add('Победа в сете · П1', pH, 0.06);
-  add('Победа в сете · П2', pA, 0.06);
-  add('Счёт 3:0', Math.pow(pH, 3) * 0.55, 0.10);
-  add('Счёт 3:1', pH * pH * (1 - pH) * 1.15, 0.10);
-  add('Счёт 3:2', pH * (1 - pH) * (1 - pH) * 0.85, 0.10);
-  add('Счёт 0:3', Math.pow(1 - pH, 3) * 0.55, 0.10);
-  add('Счёт 1:3', (1 - pH) * (1 - pH) * pH * 1.15, 0.10);
-  add('Счёт 2:3', (1 - pH) * pH * pH * 0.85, 0.10);
-  return out;
+  return { home: toOdd(pH, 0.045), away: toOdd(1 - pH, 0.045), draw: null };
 }
 
+/* ============ УНИВЕРСАЛЬНЫЕ КОЭФЫ ============ */
 function computeOdds(m) {
   if (m.sport === 'football') return computeFootballOdds(m);
   if (m.sport === 'hockey') return computeHockeyOdds(m);
   if (m.sport === 'ufc') return computeUFCOdds(m);
   if (m.sport === 'volleyball') return computeVolleyballOdds(m);
-  return {home: null, draw: null, away: null};
+  return { home: null, draw: null, away: null };
 }
-function computeExtras(m) {
-  if (m.sport === 'football') return computeFootballExtras(m);
-  if (m.sport === 'hockey') return computeHockeyExtras(m);
-  if (m.sport === 'ufc') return computeUFCExtras(m);
-  if (m.sport === 'volleyball') return computeVolleyballExtras(m);
-  return {};
+
+/* ==== ЧАСТЬ 3 ==== */
+/* ============================================================
+   ДАННЫЕ — 150 КОМАНД
+   ============================================================ */
+var FOOTBALL = [
+  // АПЛ
+  {n:'Manchester City',atk:2.30,def:0.75,lg:'АПЛ',country:'gb',rt:93},
+  {n:'Arsenal',atk:2.10,def:0.80,lg:'АПЛ',country:'gb',rt:91},
+  {n:'Liverpool',atk:2.20,def:0.85,lg:'АПЛ',country:'gb',rt:92},
+  {n:'Chelsea',atk:1.65,def:1.15,lg:'АПЛ',country:'gb',rt:84},
+  {n:'Tottenham',atk:1.75,def:1.25,lg:'АПЛ',country:'gb',rt:82},
+  {n:'Manchester United',atk:1.60,def:1.20,lg:'АПЛ',country:'gb',rt:83},
+  {n:'Newcastle',atk:1.75,def:1.10,lg:'АПЛ',country:'gb',rt:82},
+  {n:'Aston Villa',atk:1.70,def:1.15,lg:'АПЛ',country:'gb',rt:81},
+  {n:'Brighton',atk:1.55,def:1.20,lg:'АПЛ',country:'gb',rt:79},
+  {n:'West Ham',atk:1.40,def:1.35,lg:'АПЛ',country:'gb',rt:77},
+  {n:'Fulham',atk:1.35,def:1.30,lg:'АПЛ',country:'gb',rt:76},
+  {n:'Brentford',atk:1.40,def:1.25,lg:'АПЛ',country:'gb',rt:76},
+  {n:'Crystal Palace',atk:1.30,def:1.30,lg:'АПЛ',country:'gb',rt:76},
+  {n:'Wolves',atk:1.25,def:1.40,lg:'АПЛ',country:'gb',rt:74},
+  {n:'Everton',atk:1.15,def:1.35,lg:'АПЛ',country:'gb',rt:74},
+  {n:'Bournemouth',atk:1.30,def:1.35,lg:'АПЛ',country:'gb',rt:75},
+  {n:'Nottingham Forest',atk:1.35,def:1.30,lg:'АПЛ',country:'gb',rt:76},
+  {n:'Leicester',atk:1.20,def:1.40,lg:'АПЛ',country:'gb',rt:73},
+  // Ла Лига
+  {n:'Real Madrid',atk:2.40,def:0.75,lg:'Ла Лига',country:'es',rt:94},
+  {n:'Barcelona',atk:2.15,def:0.90,lg:'Ла Лига',country:'es',rt:90},
+  {n:'Atletico Madrid',atk:1.75,def:0.85,lg:'Ла Лига',country:'es',rt:87},
+  {n:'Sevilla',atk:1.35,def:1.30,lg:'Ла Лига',country:'es',rt:78},
+  {n:'Real Sociedad',atk:1.45,def:1.10,lg:'Ла Лига',country:'es',rt:80},
+  {n:'Athletic Bilbao',atk:1.50,def:0.95,lg:'Ла Лига',country:'es',rt:81},
+  {n:'Villarreal',atk:1.55,def:1.15,lg:'Ла Лига',country:'es',rt:80},
+  {n:'Real Betis',atk:1.40,def:1.20,lg:'Ла Лига',country:'es',rt:78},
+  {n:'Valencia',atk:1.30,def:1.25,lg:'Ла Лига',country:'es',rt:77},
+  {n:'Girona',atk:1.45,def:1.15,lg:'Ла Лига',country:'es',rt:79},
+  {n:'Celta Vigo',atk:1.25,def:1.30,lg:'Ла Лига',country:'es',rt:75},
+  {n:'Osasuna',atk:1.20,def:1.25,lg:'Ла Лига',country:'es',rt:75},
+  {n:'Getafe',atk:1.15,def:1.20,lg:'Ла Лига',country:'es',rt:74},
+  {n:'Mallorca',atk:1.15,def:1.25,lg:'Ла Лига',country:'es',rt:74},
+  // Бундеслига
+  {n:'Bayern Munich',atk:2.50,def:0.80,lg:'Бундеслига',country:'de',rt:93},
+  {n:'Borussia Dortmund',atk:1.85,def:1.15,lg:'Бундеслига',country:'de',rt:85},
+  {n:'RB Leipzig',atk:1.90,def:1.05,lg:'Бундеслига',country:'de',rt:86},
+  {n:'Bayer Leverkusen',atk:2.10,def:0.90,lg:'Бундеслига',country:'de',rt:88},
+  {n:'Stuttgart',atk:1.75,def:1.10,lg:'Бундеслига',country:'de',rt:83},
+  {n:'Eintracht Frankfurt',atk:1.55,def:1.25,lg:'Бундеслига',country:'de',rt:80},
+  {n:'Wolfsburg',atk:1.35,def:1.30,lg:'Бундеслига',country:'de',rt:76},
+  {n:'Freiburg',atk:1.35,def:1.20,lg:'Бундеслига',country:'de',rt:77},
+  {n:'Hoffenheim',atk:1.45,def:1.35,lg:'Бундеслига',country:'de',rt:77},
+  {n:'Werder Bremen',atk:1.40,def:1.30,lg:'Бундеслига',country:'de',rt:76},
+  {n:'Borussia Monchengladbach',atk:1.45,def:1.25,lg:'Бундеслига',country:'de',rt:77},
+  {n:'Mainz',atk:1.25,def:1.25,lg:'Бундеслига',country:'de',rt:74},
+  {n:'Augsburg',atk:1.20,def:1.35,lg:'Бундеслига',country:'de',rt:74},
+  {n:'Union Berlin',atk:1.15,def:1.15,lg:'Бундеслига',country:'de',rt:75},
+  // Серия А
+  {n:'Inter',atk:2.10,def:0.80,lg:'Серия А',country:'it',rt:89},
+  {n:'Juventus',atk:1.65,def:0.85,lg:'Серия А',country:'it',rt:85},
+  {n:'AC Milan',atk:1.85,def:1.05,lg:'Серия А',country:'it',rt:86},
+  {n:'Napoli',atk:1.80,def:0.95,lg:'Серия А',country:'it',rt:86},
+  {n:'Atalanta',atk:1.95,def:1.05,lg:'Серия А',country:'it',rt:85},
+  {n:'Roma',atk:1.55,def:1.00,lg:'Серия А',country:'it',rt:82},
+  {n:'Lazio',atk:1.50,def:1.05,lg:'Серия А',country:'it',rt:81},
+  {n:'Fiorentina',atk:1.45,def:1.10,lg:'Серия А',country:'it',rt:80},
+  {n:'Bologna',atk:1.40,def:0.95,lg:'Серия А',country:'it',rt:81},
+  {n:'Torino',atk:1.20,def:1.00,lg:'Серия А',country:'it',rt:76},
+  {n:'Udinese',atk:1.30,def:1.10,lg:'Серия А',country:'it',rt:77},
+  {n:'Genoa',atk:1.20,def:1.15,lg:'Серия А',country:'it',rt:75},
+  {n:'Empoli',atk:1.10,def:1.25,lg:'Серия А',country:'it',rt:73},
+  {n:'Hellas Verona',atk:1.10,def:1.30,lg:'Серия А',country:'it',rt:72},
+  {n:'Cagliari',atk:1.15,def:1.30,lg:'Серия А',country:'it',rt:73},
+  // Лига 1
+  {n:'PSG',atk:2.40,def:0.85,lg:'Лига 1',country:'fr',rt:90},
+  {n:'Marseille',atk:1.60,def:1.20,lg:'Лига 1',country:'fr',rt:80},
+  {n:'Monaco',atk:1.70,def:1.15,lg:'Лига 1',country:'fr',rt:81},
+  {n:'Lyon',atk:1.55,def:1.20,lg:'Лига 1',country:'fr',rt:79},
+  {n:'Lille',atk:1.50,def:1.10,lg:'Лига 1',country:'fr',rt:79},
+  {n:'Nice',atk:1.40,def:1.15,lg:'Лига 1',country:'fr',rt:78},
+  {n:'Rennes',atk:1.45,def:1.20,lg:'Лига 1',country:'fr',rt:78},
+  {n:'Lens',atk:1.35,def:1.10,lg:'Лига 1',country:'fr',rt:77},
+  {n:'Strasbourg',atk:1.30,def:1.25,lg:'Лига 1',country:'fr',rt:76},
+  {n:'Nantes',atk:1.20,def:1.30,lg:'Лига 1',country:'fr',rt:74},
+  {n:'Reims',atk:1.25,def:1.25,lg:'Лига 1',country:'fr',rt:75},
+  // РПЛ
+  {n:'Zenit',atk:1.95,def:0.90,lg:'РПЛ',country:'ru',rt:80},
+  {n:'Krasnodar',atk:1.85,def:0.95,lg:'РПЛ',country:'ru',rt:79},
+  {n:'CSKA Moscow',atk:1.65,def:1.05,lg:'РПЛ',country:'ru',rt:77},
+  {n:'Spartak Moscow',atk:1.70,def:1.10,lg:'РПЛ',country:'ru',rt:76},
+  {n:'Dinamo Moscow',atk:1.60,def:1.00,lg:'РПЛ',country:'ru',rt:76},
+  {n:'Lokomotiv Moscow',atk:1.55,def:1.05,lg:'РПЛ',country:'ru',rt:75},
+  {n:'Rostov',atk:1.35,def:1.20,lg:'РПЛ',country:'ru',rt:73},
+  {n:'Rubin',atk:1.30,def:1.15,lg:'РПЛ',country:'ru',rt:73},
+  {n:'Krylia Sovetov',atk:1.25,def:1.30,lg:'РПЛ',country:'ru',rt:72},
+  {n:'Akhmat',atk:1.20,def:1.25,lg:'РПЛ',country:'ru',rt:71}
+];
+
+/* ХОККЕЙ — среднее 5-6 голов за матч */
+var HOCKEY = [
+  // НХЛ
+  {n:'Edmonton Oilers',atk:1.40,def:1.15,lg:'НХЛ',country:'ca',rt:91},
+  {n:'Florida Panthers',atk:1.20,def:0.95,lg:'НХЛ',country:'us',rt:90},
+  {n:'Boston Bruins',atk:1.15,def:0.95,lg:'НХЛ',country:'us',rt:88},
+  {n:'Toronto Maple Leafs',atk:1.35,def:1.15,lg:'НХЛ',country:'ca',rt:87},
+  {n:'Colorado Avalanche',atk:1.40,def:1.10,lg:'НХЛ',country:'us',rt:89},
+  {n:'New York Rangers',atk:1.20,def:1.00,lg:'НХЛ',country:'us',rt:88},
+  {n:'Vegas Golden Knights',atk:1.25,def:1.05,lg:'НХЛ',country:'us',rt:88},
+  {n:'Tampa Bay Lightning',atk:1.30,def:1.10,lg:'НХЛ',country:'us',rt:87},
+  {n:'Los Angeles Kings',atk:1.15,def:1.00,lg:'НХЛ',country:'us',rt:87},
+  {n:'Carolina Hurricanes',atk:1.25,def:0.95,lg:'НХЛ',country:'us',rt:88},
+  {n:'New Jersey Devils',atk:1.30,def:1.10,lg:'НХЛ',country:'us',rt:86},
+  {n:'Dallas Stars',atk:1.25,def:0.95,lg:'НХЛ',country:'us',rt:88},
+  {n:'Seattle Kraken',atk:1.10,def:1.05,lg:'НХЛ',country:'us',rt:86},
+  {n:'Vancouver Canucks',atk:1.25,def:1.10,lg:'НХЛ',country:'ca',rt:86},
+  {n:'Calgary Flames',atk:1.05,def:1.15,lg:'НХЛ',country:'ca',rt:84},
+  // КХЛ
+  {n:'SKA',atk:1.40,def:1.00,lg:'КХЛ',country:'ru',rt:86},
+  {n:'CSKA',atk:1.15,def:0.95,lg:'КХЛ',country:'ru',rt:84},
+  {n:'Ak Bars',atk:1.20,def:1.00,lg:'КХЛ',country:'ru',rt:83},
+  {n:'Dynamo Moscow',atk:1.25,def:1.05,lg:'КХЛ',country:'ru',rt:82},
+  {n:'Metallurg',atk:1.20,def:1.00,lg:'КХЛ',country:'ru',rt:83},
+  {n:'Lokomotiv Yaroslavl',atk:1.10,def:0.90,lg:'КХЛ',country:'ru',rt:84},
+  {n:'Avangard',atk:1.15,def:1.05,lg:'КХЛ',country:'ru',rt:82},
+  {n:'Salavat Yulaev',atk:1.10,def:0.95,lg:'КХЛ',country:'ru',rt:83},
+  {n:'Traktor',atk:1.05,def:1.00,lg:'КХЛ',country:'ru',rt:80},
+  {n:'Spartak',atk:1.00,def:1.05,lg:'КХЛ',country:'ru',rt:79},
+  {n:'Torpedo',atk:1.00,def:1.00,lg:'КХЛ',country:'ru',rt:79},
+  {n:'Severstal',atk:1.05,def:0.95,lg:'КХЛ',country:'ru',rt:80}
+];
+
+var VOLLEYBALL = [
+  {n:'Zenit Kazan',atk:1.35,serve:1.15,block:1.20,lg:'Суперлига',country:'ru',rt:92},
+  {n:'Dynamo Moscow',atk:1.22,serve:1.08,block:1.12,lg:'Суперлига',country:'ru',rt:88},
+  {n:'Belogorie',atk:1.12,serve:1.02,block:1.08,lg:'Суперлига',country:'ru',rt:85},
+  {n:'Fakel',atk:1.00,serve:1.00,block:1.00,lg:'Суперлига',country:'ru',rt:82},
+  {n:'Lokomotiv Novosibirsk',atk:0.92,serve:0.95,block:0.94,lg:'Суперлига',country:'ru',rt:80},
+  {n:'Kuzbass',atk:0.85,serve:0.92,block:0.90,lg:'Суперлига',country:'ru',rt:78},
+  {n:'Zenit SPb',atk:1.18,serve:1.05,block:1.10,lg:'Суперлига',country:'ru',rt:86},
+  {n:'Ural Ufa',atk:0.95,serve:0.98,block:0.96,lg:'Суперлига',country:'ru',rt:79}
+];
+
+var UFC = [
+  {n:'Jon Jones',rt:2100,div:'Heavyweight',country:'us',style:'mixed',power:88,acc:92,td:95,hpMax:95,stamMax:85},
+  {n:'Tom Aspinall',rt:2020,div:'Heavyweight',country:'gb',style:'striker',power:92,acc:85,td:70,hpMax:88,stamMax:80},
+  {n:'Ciryl Gane',rt:1960,div:'Heavyweight',country:'fr',style:'striker',power:82,acc:88,td:60,hpMax:85,stamMax:82},
+  {n:'Curtis Blaydes',rt:1930,div:'Heavyweight',country:'us',style:'grappler',power:80,acc:70,td:92,hpMax:90,stamMax:75},
+  {n:'Alexander Volkov',rt:1920,div:'Heavyweight',country:'ru',style:'striker',power:78,acc:80,td:55,hpMax:85,stamMax:78},
+  {n:'Alex Pereira',rt:2060,div:'Light Heavyweight',country:'br',style:'striker',power:96,acc:88,td:55,hpMax:88,stamMax:78},
+  {n:'Magomed Ankalaev',rt:2010,div:'Light Heavyweight',country:'ru',style:'mixed',power:85,acc:82,td:88,hpMax:90,stamMax:85},
+  {n:'Jiri Prochazka',rt:1960,div:'Light Heavyweight',country:'cz',style:'striker',power:88,acc:78,td:62,hpMax:82,stamMax:82},
+  {n:'Jamahal Hill',rt:1940,div:'Light Heavyweight',country:'us',style:'striker',power:88,acc:80,td:65,hpMax:85,stamMax:75},
+  {n:'Dricus du Plessis',rt:2020,div:'Middleweight',country:'za',style:'mixed',power:85,acc:78,td:82,hpMax:92,stamMax:88},
+  {n:'Israel Adesanya',rt:1980,div:'Middleweight',country:'nz',style:'striker',power:82,acc:92,td:60,hpMax:82,stamMax:85},
+  {n:'Sean Strickland',rt:1950,div:'Middleweight',country:'us',style:'striker',power:75,acc:88,td:65,hpMax:88,stamMax:90},
+  {n:'Khamzat Chimaev',rt:2010,div:'Middleweight',country:'ae',style:'grappler',power:82,acc:80,td:96,hpMax:88,stamMax:82},
+  {n:'Islam Makhachev',rt:2070,div:'Lightweight',country:'ru',style:'grappler',power:80,acc:88,td:95,hpMax:88,stamMax:92},
+  {n:'Arman Tsarukyan',rt:1990,div:'Lightweight',country:'am',style:'grappler',power:78,acc:85,td:88,hpMax:85,stamMax:88},
+  {n:'Justin Gaethje',rt:1960,div:'Lightweight',country:'us',style:'striker',power:90,acc:82,td:65,hpMax:90,stamMax:82},
+  {n:'Dustin Poirier',rt:1940,div:'Lightweight',country:'us',style:'mixed',power:85,acc:85,td:70,hpMax:88,stamMax:80},
+  {n:'Leon Edwards',rt:1990,div:'Welterweight',country:'gb',style:'mixed',power:78,acc:88,td:82,hpMax:85,stamMax:85},
+  {n:'Kamaru Usman',rt:1950,div:'Welterweight',country:'ng',style:'grappler',power:82,acc:82,td:90,hpMax:90,stamMax:88},
+  {n:'Ilia Topuria',rt:2030,div:'Featherweight',country:'es',style:'mixed',power:90,acc:85,td:82,hpMax:88,stamMax:85},
+  {n:'Alexander Volkanovski',rt:2000,div:'Featherweight',country:'au',style:'mixed',power:80,acc:90,td:82,hpMax:88,stamMax:92},
+  {n:'Max Holloway',rt:1985,div:'Featherweight',country:'us',style:'striker',power:78,acc:92,td:60,hpMax:90,stamMax:92},
+  {n:'Merab Dvalishvili',rt:2005,div:'Bantamweight',country:'ge',style:'grappler',power:72,acc:82,td:96,hpMax:90,stamMax:95}
+];
+
+/* ============================================================
+   КОНСТАНТЫ СИМУЛЯЦИИ
+   ============================================================ */
+var FT_TICK_PER_MIN = 6.67;
+var FT_BREAK_SEC = 30;
+var HK_PERIOD_SEC = 20;
+var HK_BREAK_SEC = 2;
+var UFC_ROUND_SEC = 300;
+var UFC_BREAK_SEC = 60;
+var UFC_MAX_ROUNDS = 5;
+
+/* ============================================================
+   СОЗДАНИЕ МАТЧЕЙ
+   ============================================================ */
+function newFootball() {
+  var lgs = [], seen = {};
+  FOOTBALL.forEach(function(t) { if (!seen[t.lg]) { seen[t.lg] = 1; lgs.push(t.lg); } });
+  var lg = pick(lgs);
+  var pool = FOOTBALL.filter(function(t) { return t.lg === lg; });
+  var pair = uniquePair(pool, STATE.usedPairs);
+  var h = pair[0], a = pair[1];
+  return {
+    id: STATE.nextId++, sport: 'football', league: lg,
+    home: h.n, away: a.n,
+    homeAtk: h.atk, awayAtk: a.atk, homeDef: h.def, awayDef: a.def,
+    homeRating: h.rt, awayRating: a.rt,
+    homeCountry: h.country, awayCountry: a.country,
+    scoreHome: 0, scoreAway: 0, minute: 0, maxMinute: 90, realTick: 0,
+    phase: 'calm', phaseSecLeft: 15 + rand(0, 25),
+    baseTempo: 0.75 + Math.random() * 0.65,
+    xgHome: 0, xgAway: 0, shotsHome: 0, shotsAway: 0,
+    shotsOnTargetHome: 0, shotsOnTargetAway: 0,
+    goalKicksHome: 0, goalKicksAway: 0,
+    throwInsHome: 0, throwInsAway: 0,
+    foulsHome: 0, foulsAway: 0,
+    cornersHome: 0, cornersAway: 0, possessionHome: 50,
+    cardsHome: 0, cardsAway: 0, redHome: false, redAway: false,
+    offsidesHome: 0, offsidesAway: 0, savesHome: 0, savesAway: 0,
+    nextThrowIn: 30 + rand(0, 60), nextGoalKick: 40 + rand(0, 90),
+    nextFoul: 20 + rand(0, 60), nextCorner: 60 + rand(0, 180),
+    nextShot: 30 + rand(0, 120), nextOffside: 150 + rand(0, 350),
+    half: 1, isBreak: false, breakTimer: 0,
+    justScored: null, status: 'live', momentum: 0
+  };
+}
+
+function newHockey() {
+  var lgs = [], seen = {};
+  HOCKEY.forEach(function(t) { if (!seen[t.lg]) { seen[t.lg] = 1; lgs.push(t.lg); } });
+  var lg = pick(lgs);
+  var pool = HOCKEY.filter(function(t) { return t.lg === lg; });
+  var pair = uniquePair(pool, STATE.usedPairs);
+  var h = pair[0], a = pair[1];
+  return {
+    id: STATE.nextId++, sport: 'hockey', league: lg,
+    home: h.n, away: a.n,
+    homeAtk: h.atk, awayAtk: a.atk, homeDef: h.def, awayDef: a.def,
+    homeRating: h.rt, awayRating: a.rt,
+    homeCountry: h.country, awayCountry: a.country,
+    scoreHome: 0, scoreAway: 0,
+    periodScores: [{h:0,a:0},{h:0,a:0},{h:0,a:0}],
+    period: 1, periodSec: 0, minute: 0, maxMinute: 60,
+    penaltyHome: 0, penaltyAway: 0, emptyNet: null,
+    shotsHome: 0, shotsAway: 0, savesHome: 0, savesAway: 0,
+    hitsHome: 0, hitsAway: 0,
+    isBreak: false, breakTimer: 0,
+    overtime: false, finalResult: null,
+    justScored: null, status: 'live', momentum: 0
+  };
+}
+
+function newUFC() {
+  var divs = [], seen = {};
+  UFC.forEach(function(f) { if (!seen[f.div]) { seen[f.div] = 1; divs.push(f.div); } });
+  var div = pick(divs);
+  var pool = UFC.filter(function(f) { return f.div === div; });
+  var pair = uniquePair(pool, STATE.usedPairs);
+  var h = pair[0], a = pair[1];
+  return {
+    id: STATE.nextId++, sport: 'ufc', league: 'UFC · ' + div,
+    home: h.n, away: a.n,
+    homeRating: h.rt, awayRating: a.rt,
+    homeCountry: h.country, awayCountry: a.country,
+    homeFighter: {power: h.power, acc: h.acc, td: h.td, style: h.style, hpMax: h.hpMax, stamMax: h.stamMax},
+    awayFighter: {power: a.power, acc: a.acc, td: a.td, style: a.style, hpMax: a.hpMax, stamMax: a.stamMax},
+    homeHP: h.hpMax, awayHP: a.hpMax,
+    homeStam: h.stamMax, awayStam: a.stamMax,
+    round: 1, roundSec: 0, minute: 0, maxMinute: UFC_MAX_ROUNDS * UFC_ROUND_SEC,
+    phase: 'fight',
+    scoreHome: 0, scoreAway: 0, roundScores: [],
+    status: 'live', momentum: 0,
+    finalResult: null, justScored: null
+  };
+}
+
+function newVolleyball() {
+  var pair = uniquePair(VOLLEYBALL, STATE.usedPairs);
+  var h = pair[0], a = pair[1];
+  return {
+    id: STATE.nextId++, sport: 'volleyball', league: h.lg,
+    home: h.n, away: a.n,
+    homeAtk: h.atk, awayAtk: a.atk,
+    homeServe: h.serve, awayServe: a.serve,
+    homeBlock: h.block, awayBlock: a.block,
+    homeRating: h.rt, awayRating: a.rt,
+    homeCountry: h.country, awayCountry: a.country,
+    setsHome: 0, setsAway: 0, pointsHome: 0, pointsAway: 0,
+    setHistory: [], roundSec: 0, minute: 0, maxMinute: 2400,
+    serving: 'home',
+    status: 'live', momentum: 0, justScored: null
+  };
+}
+
+/* ============================================================
+   СИМУЛЯЦИЯ ФУТБОЛА
+   ============================================================ */
+function footballPhaseIntensity(m) {
+  var phase = m.phase, intensity = 1.0, goalBoost = 1.0;
+  if (phase === 'calm') { intensity = 0.55; goalBoost = 0.6; }
+  else if (phase === 'pressure_home' || phase === 'pressure_away') { intensity = 1.7; goalBoost = 1.9; }
+  else if (phase === 'chaos') { intensity = 2.4; goalBoost = 2.3; }
+  else if (phase === 'endgame') { intensity = 2.0; goalBoost = 1.7; }
+  intensity *= m.baseTempo;
+  if (m.minute >= 75 && phase !== 'endgame') { intensity *= 1.4; goalBoost *= 1.35; }
+  if (Math.abs(m.scoreHome - m.scoreAway) <= 1 && m.minute > 70) { intensity *= 1.5; goalBoost *= 1.4; }
+  return { intensity: intensity, goalBoost: goalBoost };
+}
+
+function switchFootballPhase(m) {
+  m.phaseSecLeft -= 1;
+  if (m.phaseSecLeft > 0) return;
+  var roll = Math.random();
+  var newPhase;
+  if (m.minute >= 80) { newPhase = 'endgame'; m.phaseSecLeft = 999; }
+  else if (roll < 0.30) { newPhase = 'calm'; m.phaseSecLeft = 18 + rand(0, 25); }
+  else if (roll < 0.55) { newPhase = 'pressure_home'; m.phaseSecLeft = 15 + rand(0, 20); }
+  else if (roll < 0.80) { newPhase = 'pressure_away'; m.phaseSecLeft = 15 + rand(0, 20); }
+  else { newPhase = 'chaos'; m.phaseSecLeft = 12 + rand(0, 15); }
+  if (m.redHome) newPhase = 'pressure_away';
+  if (m.redAway) newPhase = 'pressure_home';
+  m.phase = newPhase;
+}
+
+function simulateFootball(m) {
+  if (m.isBreak) {
+    m.breakTimer += 1;
+    if (m.breakTimer >= FT_BREAK_SEC) {
+      m.isBreak = false; m.half = 2; m.minute = 45;
+    }
+    return;
+  }
+  m.realTick += 1;
+  m.minute += 1 / FT_TICK_PER_MIN;
+  m.justScored = null;
+  if (m.minute >= 45 && m.half === 1) {
+    m.minute = 45; m.isBreak = true; m.breakTimer = 0; return;
+  }
+  if (m.minute >= 90) {
+    m.minute = 90; m.status = 'finished'; m.finishedAt = Date.now(); return;
+  }
+
+  switchFootballPhase(m);
+  var I = footballPhaseIntensity(m);
+  var intensity = I.intensity, goalBoost = I.goalBoost;
+
+  // Фолы
+  m.nextFoul -= intensity * 3;
+  if (m.nextFoul <= 0) {
+    var side = Math.random() < 0.5 ? 'home' : 'away';
+    if (side === 'home') m.foulsHome++; else m.foulsAway++;
+    if (Math.random() < 0.12) {
+      if (side === 'home') m.cardsHome++; else m.cardsAway++;
+      if (Math.random() < 0.03) {
+        if (side === 'home') m.redHome = true; else m.redAway = true;
+      }
+    }
+    m.nextFoul = 20 + rand(0, 60);
+  }
+  // Угловые
+  m.nextCorner -= intensity * 2;
+  if (m.nextCorner <= 0) {
+    if (Math.random() < 0.55) m.cornersHome++; else m.cornersAway++;
+    m.nextCorner = 60 + rand(0, 180);
+  }
+  // Удары
+  m.nextShot -= intensity * 3;
+  if (m.nextShot <= 0) {
+    var s5 = Math.random() < 0.5 ? 'home' : 'away';
+    var onT = Math.random() < 0.42;
+    if (s5 === 'home') {
+      m.shotsHome++; m.xgHome += 0.05 + Math.random() * 0.2;
+      if (onT) { m.shotsOnTargetHome++; if (Math.random() < 0.65) m.savesAway++; }
+    } else {
+      m.shotsAway++; m.xgAway += 0.05 + Math.random() * 0.2;
+      if (onT) { m.shotsOnTargetAway++; if (Math.random() < 0.65) m.savesHome++; }
+    }
+    m.nextShot = 30 + rand(0, 120);
+  }
+  // Офсайды
+  m.nextOffside -= intensity * 1.5;
+  if (m.nextOffside <= 0) {
+    if (Math.random() < 0.5) m.offsidesHome++; else m.offsidesAway++;
+    m.nextOffside = 150 + rand(0, 350);
+  }
+  // Удары от ворот
+  m.nextGoalKick -= intensity * 2;
+  if (m.nextGoalKick <= 0) {
+    if (Math.random() < 0.5) m.goalKicksHome++; else m.goalKicksAway++;
+    m.nextGoalKick = 60 + rand(0, 150);
+  }
+  // Ауты
+  m.nextThrowIn -= intensity * 3;
+  if (m.nextThrowIn <= 0) {
+    if (Math.random() < 0.5) m.throwInsHome++; else m.throwInsAway++;
+    m.nextThrowIn = 30 + rand(0, 90);
+  }
+
+  // Владение
+  var targetPoss = 50 + (m.homeAtk - m.awayAtk) * 12;
+  if (m.phase === 'pressure_home') targetPoss += 12;
+  if (m.phase === 'pressure_away') targetPoss -= 12;
+  m.possessionHome = Math.round(m.possessionHome * 0.96 + targetPoss * 0.04);
+  m.possessionHome = clamp(m.possessionHome, 25, 75);
+
+  // Голы
+  var pGoal = 0.0035 * goalBoost;
+  var lh = footballFullXG(m, 'home') / 90 / FT_TICK_PER_MIN * 3;
+  var la = footballFullXG(m, 'away') / 90 / FT_TICK_PER_MIN * 3;
+  if (Math.random() < pGoal) {
+    if (Math.random() < lh / (lh + la)) {
+      m.scoreHome++; m.xgHome += 0.4; m.shotsOnTargetHome++;
+      m.justScored = 'home';
+      m.phase = 'pressure_away'; m.phaseSecLeft = 20 + rand(0, 20);
+    } else {
+      m.scoreAway++; m.xgAway += 0.4; m.shotsOnTargetAway++;
+      m.justScored = 'away';
+      m.phase = 'pressure_home'; m.phaseSecLeft = 20 + rand(0, 20);
+    }
+  }
+}
+
+/* ============================================================
+   СИМУЛЯЦИЯ ХОККЕЯ — 5-6 ГОЛОВ
+   ============================================================ */
+function simulateHockey(m) {
+  if (m.isBreak) {
+    m.breakTimer += 1;
+    if (m.breakTimer >= HK_BREAK_SEC) {
+      m.isBreak = false; m.period += 1; m.periodSec = 0;
+      m.penaltyHome = 0; m.penaltyAway = 0; m.emptyNet = null;
+      if (m.period > 3) {
+        if (m.scoreHome === m.scoreAway) { m.overtime = true; m.period = 4; }
+        else { m.status = 'finished'; m.finishedAt = Date.now(); }
+        return;
+      }
+    }
+    return;
+  }
+  m.periodSec += 1; m.minute += 1; m.justScored = null;
+
+  if (m.period === 4 && m.periodSec >= 5) {
+    var hG = 0, aG = 0;
+    for (var i = 0; i < 5; i++) { if (Math.random() < 0.35) hG++; if (Math.random() < 0.35) aG++; }
+    var guard = 0;
+    while (hG === aG && guard++ < 30) { if (Math.random() < 0.4) hG++; if (Math.random() < 0.4) aG++; }
+    if (hG > aG) m.scoreHome++; else m.scoreAway++;
+    m.finalResult = { winner: hG > aG ? 'home' : 'away', method: 'Буллиты', round: 4 };
+    m.status = 'finished'; m.finishedAt = Date.now(); return;
+  }
+  if (m.period <= 3 && m.periodSec >= HK_PERIOD_SEC) {
+    m.isBreak = true; m.breakTimer = 0; return;
+  }
+  if (m.penaltyHome > 0) m.penaltyHome--;
+  if (m.penaltyAway > 0) m.penaltyAway--;
+  if (m.period === 3 && m.periodSec >= 18 && m.scoreHome !== m.scoreAway) {
+    m.emptyNet = m.scoreHome < m.scoreAway ? 'home' : 'away';
+  }
+  if (Math.random() < 0.06 && m.penaltyHome === 0 && m.penaltyAway === 0) {
+    if (Math.random() < 0.5) m.penaltyHome = 4; else m.penaltyAway = 4;
+  }
+
+  // λ на 1 тик (20 сек): среднее за матч ~5.5 / 60 мин / 20 сек
+  // Период 20 сек. Матч = 60 тиков.
+  // 5.5 голов / 60 тиков = 0.092 за тик
+  var lh = hockeyLambda(m, 'home') / 60;
+  var la = hockeyLambda(m, 'away') / 60;
+
+  if (Math.random() < lh) {
+    m.scoreHome++; m.shotsHome++; m.justScored = 'home';
+    if (m.period <= 3) m.periodScores[m.period - 1].h++;
+  } else if (Math.random() < la) {
+    m.scoreAway++; m.shotsAway++; m.justScored = 'away';
+    if (m.period <= 3) m.periodScores[m.period - 1].a++;
+  } else {
+    if (Math.random() < 0.35) { m.shotsHome++; m.savesAway++; }
+    else if (Math.random() < 0.7) { m.shotsAway++; m.savesHome++; }
+  }
+}
+
+/* ============================================================
+   СИМУЛЯЦИЯ UFC
+   ============================================================ */
+function simulateUFC(m) {
+  if (m.phase === 'break') {
+    m.roundSec += 1;
+    if (m.roundSec >= UFC_BREAK_SEC) {
+      m.phase = 'fight'; m.roundSec = 0;
+      m.homeStam = Math.min(m.homeFighter.stamMax, m.homeStam + 18);
+      m.awayStam = Math.min(m.awayFighter.stamMax, m.awayStam + 18);
+    }
+    return;
+  }
+  m.roundSec += 1; m.minute += 1;
+  var hAcc = m.homeFighter.acc * (m.homeStam / m.homeFighter.stamMax);
+  var aAcc = m.awayFighter.acc * (m.awayStam / m.awayFighter.stamMax);
+  var hPow = m.homeFighter.power * (0.7 + 0.3 * (m.homeStam / m.homeFighter.stamMax));
+  var aPow = m.awayFighter.power * (0.7 + 0.3 * (m.awayStam / m.awayFighter.stamMax));
+
+  if (Math.random() < m.homeFighter.td / 100 * 0.05 && m.homeFighter.style !== 'striker') {
+    m.awayHP -= hPow * 0.35; m.homeStam -= 2;
+    if (Math.random() < 0.10 && m.awayHP < 40) { finishUFC(m, 'home', 'Сабмишн', m.round); return; }
+  }
+  if (Math.random() < m.awayFighter.td / 100 * 0.05 && m.awayFighter.style !== 'striker') {
+    m.homeHP -= aPow * 0.35; m.awayStam -= 2;
+    if (Math.random() < 0.10 && m.homeHP < 40) { finishUFC(m, 'away', 'Сабмишн', m.round); return; }
+  }
+  if (Math.random() < hAcc / 100 * 0.35) {
+    if (Math.random() < hAcc / 100 * 0.55) {
+      m.awayHP -= hPow * 0.18; m.homeStam -= 1.2; m.awayStam -= 0.8;
+      if (Math.random() < 0.02 && m.awayHP < 15) { finishUFC(m, 'home', 'KO/TKO', m.round); return; }
+    } else m.homeStam -= 1.5;
+  }
+  if (Math.random() < aAcc / 100 * 0.35) {
+    if (Math.random() < aAcc / 100 * 0.55) {
+      m.homeHP -= aPow * 0.18; m.awayStam -= 1.2; m.homeStam -= 0.8;
+      if (Math.random() < 0.02 && m.homeHP < 15) { finishUFC(m, 'away', 'KO/TKO', m.round); return; }
+    } else m.awayStam -= 1.5;
+  }
+  if (m.homeStam < 5) m.homeStam = 5;
+  if (m.awayStam < 5) m.awayStam = 5;
+  if (m.homeHP < 0) m.homeHP = 0;
+  if (m.awayHP < 0) m.awayHP = 0;
+
+  if (m.roundSec >= UFC_ROUND_SEC) {
+    var diff = (m.homeHP - m.awayHP) + (m.homeStam - m.awayStam) * 0.3;
+    var rh = 10, ra = 10;
+    if (diff > 15) ra = 8; else if (diff > 3) ra = 9;
+    else if (diff < -15) rh = 8; else if (diff < -3) rh = 9;
+    m.roundScores.push({h: rh, a: ra});
+    if (m.round >= UFC_MAX_ROUNDS) {
+      var totH = 0, totA = 0;
+      m.roundScores.forEach(function(rs) { totH += rs.h; totA += rs.a; });
+      finishUFC(m, totH >= totA ? 'home' : 'away', 'Решение', 5);
+      return;
+    }
+    m.round++; m.phase = 'break'; m.roundSec = 0;
+  }
+}
+
+function finishUFC(m, winner, method, round) {
+  m.finalResult = { winner: winner, method: method, round: round };
+  if (winner === 'home') m.scoreHome = 1; else m.scoreAway = 1;
+  m.status = 'finished'; m.finishedAt = Date.now();
+}
+
+/* ============================================================
+   СИМУЛЯЦИЯ ВОЛЕЙБОЛА
+   ============================================================ */
+function simulateVolleyball(m) {
+  m.roundSec += 1; m.minute += 1;
+  if (m.roundSec < 5) return;
+  m.roundSec = 0;
+  var isFifth = (m.setsHome === 2 && m.setsAway === 2);
+  var target = isFifth ? 15 : 25;
+  var pHome;
+  if (m.serving === 'home') pHome = 0.5 + (m.homeServe - 1) * 0.18 - (m.awayBlock - 1) * 0.10;
+  else pHome = 0.5 - (m.awayServe - 1) * 0.18 + (m.homeBlock - 1) * 0.10;
+  pHome = clamp(pHome, 0.30, 0.70);
+  if (Math.random() < pHome) { m.pointsHome++; m.serving = 'home'; }
+  else { m.pointsAway++; m.serving = 'away'; }
+  if (m.pointsHome >= target && m.pointsHome - m.pointsAway >= 2) {
+    m.setsHome++;
+    m.setHistory.push({ winner: 'home', h: m.pointsHome, a: m.pointsAway });
+    m.justScored = 'home';
+    m.pointsHome = 0; m.pointsAway = 0;
+  } else if (m.pointsAway >= target && m.pointsAway - m.pointsHome >= 2) {
+    m.setsAway++;
+    m.setHistory.push({ winner: 'away', h: m.pointsHome, a: m.pointsAway });
+    m.justScored = 'away';
+    m.pointsHome = 0; m.pointsAway = 0;
+  }
+  if (m.setsHome >= 3 || m.setsAway >= 3) {
+    m.status = 'finished'; m.finishedAt = Date.now();
+  }
+}
+
+/* ============================================================
+   ЕДИНЫЙ ТИК
+   ============================================================ */
+function tickMatch(m) {
+  if (m.status === 'countdown') {
+    if (!m.startTime) m.startTime = Date.now() + 60000;
+    if (Date.now() >= m.startTime) {
+      var nm;
+      if (m.sport === 'football') nm = newFootball();
+      else if (m.sport === 'hockey') nm = newHockey();
+      else if (m.sport === 'volleyball') nm = newVolleyball();
+      else nm = newUFC();
+      nm.id = m.id;
+      for (var k in m) delete m[k];
+      for (var k2 in nm) m[k2] = nm[k2];
+    }
+    return;
+  }
+  if (m.status !== 'live') return;
+  if (m.sport === 'football') simulateFootball(m);
+  else if (m.sport === 'hockey') simulateHockey(m);
+  else if (m.sport === 'volleyball') simulateVolleyball(m);
+  else if (m.sport === 'ufc') simulateUFC(m);
 }
 
 /* ==== ЧАСТЬ 4 ==== */
@@ -1551,28 +1971,6 @@ function formatTimeLeft(m) {
   return '';
 }
 
-function tickMatch(m) {
-  if (m.status === 'countdown') {
-    if (!m.startTime) m.startTime = Date.now() + 60000;
-    if (Date.now() >= m.startTime) {
-      var nm;
-      if (m.sport === 'football') nm = newFootball();
-      else if (m.sport === 'hockey') nm = newHockey();
-      else if (m.sport === 'volleyball') nm = newVolleyball();
-      else nm = newUFC();
-      nm.id = m.id;
-      for (var k in m) delete m[k];
-      for (var k2 in nm) m[k2] = nm[k2];
-    }
-    return;
-  }
-  if (m.status !== 'live') return;
-  if (m.sport === 'football') simulateFootball(m);
-  else if (m.sport === 'hockey') simulateHockey(m);
-  else if (m.sport === 'volleyball') simulateVolleyball(m);
-  else if (m.sport === 'ufc') simulateUFC(m);
-}
-
 /* ============================================================
    РАСЧЁТ СТАВОК
    ============================================================ */
@@ -1594,14 +1992,20 @@ function checkSel(m, pick) {
     if (pick === 'home') return m.setsHome > m.setsAway ? 'won' : 'lost';
     if (pick === 'away') return m.setsAway > m.setsHome ? 'won' : 'lost';
     var totS = m.setsHome + m.setsAway;
-    var t35 = pick.match(/^(ТБ|ТМ)\s*3\.5 сетов$/);
+    var t35 = pick.match(/^(ТБ|ТМ)\s*3\.5\s*сетов$/);
     if (t35) { if (t35[1] === 'ТБ') return totS > 3.5 ? 'won' : 'lost'; return totS < 3.5 ? 'won' : 'lost'; }
-    var t45 = pick.match(/^(ТБ|ТМ)\s*4\.5 сетов$/);
+    var t45 = pick.match(/^(ТБ|ТМ)\s*4\.5\s*сетов$/);
     if (t45) { if (t45[1] === 'ТБ') return totS > 4.5 ? 'won' : 'lost'; return totS < 4.5 ? 'won' : 'lost'; }
     var cs = pick.match(/^Счёт (\d+):(\d+)$/);
     if (cs) return (m.setsHome === +cs[1] && m.setsAway === +cs[2]) ? 'won' : 'lost';
+    if (pick.indexOf('Победа в сете') === 0) {
+      // Определяем по разнице сетов — фаворит
+      if (pick.indexOf('П1') > -1) return m.setsHome > m.setsAway ? 'won' : 'lost';
+      return m.setsAway > m.setsHome ? 'won' : 'lost';
+    }
     return 'lost';
   }
+  // Футбол/хоккей
   var tot = (m.scoreHome || 0) + (m.scoreAway || 0);
   if (pick === 'home') return m.scoreHome > m.scoreAway ? 'won' : 'lost';
   if (pick === 'away') return m.scoreAway > m.scoreHome ? 'won' : 'lost';
@@ -1613,16 +2017,22 @@ function checkSel(m, pick) {
   var tU = pick.match(/^ТМ\s*([\d.]+)$/);
   if (tO) return tot > parseFloat(tO[1]) ? 'won' : 'lost';
   if (tU) return tot < parseFloat(tU[1]) ? 'won' : 'lost';
-  var f1 = pick.match(/^Ф1\s*[−\-]([\d.]+)$/);
+  var f1 = pick.match(/^Ф1\s*[−\-]\s*([\d.]+)$/);
   if (f1) return (m.scoreHome - m.scoreAway) > parseFloat(f1[1]) ? 'won' : 'lost';
-  var f2 = pick.match(/^Ф2\s*[−\-]([\d.]+)$/);
+  var f2 = pick.match(/^Ф2\s*[−\-]\s*([\d.]+)$/);
   if (f2) return (m.scoreAway - m.scoreHome) > parseFloat(f2[1]) ? 'won' : 'lost';
-  var f1p = pick.match(/^Ф1\s*\+([\d.]+)$/);
+  var f1p = pick.match(/^Ф1\s*\+\s*([\d.]+)$/);
   if (f1p) return (m.scoreHome - m.scoreAway) > -parseFloat(f1p[1]) ? 'won' : 'lost';
-  var f2p = pick.match(/^Ф2\s*\+([\d.]+)$/);
+  var f2p = pick.match(/^Ф2\s*\+\s*([\d.]+)$/);
   if (f2p) return (m.scoreAway - m.scoreHome) > -parseFloat(f2p[1]) ? 'won' : 'lost';
   if (pick === 'Обе · Да') return (m.scoreHome >= 1 && m.scoreAway >= 1) ? 'won' : 'lost';
   if (pick === 'Обе · Нет') return !(m.scoreHome >= 1 && m.scoreAway >= 1) ? 'won' : 'lost';
+  if (pick === '1-й тайм · П1') return m.scoreHome > m.scoreAway ? 'won' : 'lost';
+  if (pick === '1-й тайм · X') return m.scoreHome === m.scoreAway ? 'won' : 'lost';
+  if (pick === '1-й тайм · П2') return m.scoreAway > m.scoreHome ? 'won' : 'lost';
+  if (pick.indexOf('Гол ') === 0) return 'lost';
+  var scoreR = pick.match(/^Счёт\s+(\d+):(\d+)$/);
+  if (scoreR) return (m.scoreHome === +scoreR[1] && m.scoreAway === +scoreR[2]) ? 'won' : 'lost';
   var statT = pick.match(/^(ТБ|ТМ)\s*([\d.]+)\s+(фолов|угловых|жёлтых|ударов|в створ|офсайдов)$/);
   if (statT) {
     var line = parseFloat(statT[2]);
@@ -1684,12 +2094,13 @@ function saveMatches() {
   };
   saveUserState();
 }
+
 function loadMatches() {
   if (!AUTH.currentUser || !AUTH.currentUser.matchesState) return false;
   var st = AUTH.currentUser.matchesState;
   if (!st.matches || !st.matches.length) return false;
   var elapsed = Math.floor((Date.now() - (st.ts || Date.now())) / 1000);
-  elapsed = Math.min(elapsed, 3600);
+  elapsed = Math.min(elapsed, 1800);
   STATE.matches = st.matches;
   STATE.nextId = st.nextId || 100;
   STATE.usedPairs = st.usedPairs || {};
@@ -1739,6 +2150,7 @@ function escapeHtml(s) {
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
 }
+
 function countLive(sport) {
   var c = 0;
   for (var i = 0; i < STATE.matches.length; i++) {
@@ -1802,6 +2214,7 @@ function renderMatchRow(m) {
   var hColor = teamColor(m.home);
   var aColor = teamColor(m.away);
   var hDisp = rusName(m.home), aDisp = rusName(m.away);
+
   var homeScore = '', awayScore = '';
   if (!isCd && m.sport !== 'ufc') {
     if (m.sport === 'volleyball') {
@@ -1820,9 +2233,11 @@ function renderMatchRow(m) {
     var liveDot = (m.status === 'live') ? '<span class="live-dot"></span>' : '';
     timeHtml = '<div class="time ' + (m.status === 'live' ? 'live' : '') + '">' + liveDot + formatTimeLeft(m) + '</div>';
   }
+
   var cellH = renderOddCell(m, 'home', odds.home, isFin);
   var cellD = (m.sport === 'ufc' || m.sport === 'volleyball') ? '<div class="odd-cell dash"></div>' : renderOddCell(m, 'draw', odds.draw, isFin);
   var cellA = renderOddCell(m, 'away', odds.away, isFin);
+
   return '<div class="match-row" data-match-id="' + m.id + '">' +
     '<div class="arrow">›</div>' +
     '<div class="teams">' +
@@ -1889,7 +2304,7 @@ function renderMatchScreen() {
   if (!m) { STATE.screen = 'main'; renderApp(); return; }
   var html = renderTopHeader({title: sName(m.sport), back: true});
   html += renderMatchTop(m);
-  html += renderMatchTabs(m);
+  html += renderMarketTabs(m);
   html += '<div class="main" style="padding-bottom:16px">' + renderMatchBody(m) + '</div>';
   $('app').innerHTML = html;
   bindMatchScreen();
@@ -1903,7 +2318,9 @@ function renderMatchTop(m) {
   else if (m.status === 'finished') timeText = 'Завершён';
   else timeText = formatTimeLeft(m);
 
-  return '<div class="match-top">' +
+  var colorCls = sColor(m.sport);
+
+  return '<div class="match-top ' + colorCls + '">' +
     '<div class="mt-crumbs"><span>' + escapeHtml(m.league) + '</span>' +
       '<span class="mt-icons"><span>⭐</span><span>⚙️</span></span></div>' +
     '<div class="mt-tabs">' +
@@ -1916,124 +2333,227 @@ function renderMatchTop(m) {
     '<div class="mt-team">' +
       '<div class="flag" style="background:' + hColor + '">' + teamInit(m.home) + '</div>' +
       '<div class="name">' + escapeHtml(hDisp) + '</div>' +
-      '<div class="score">' + (m.sport === 'volleyball' ? m.setsHome : m.scoreHome) + '</div>' +
+      '<div class="score">' + (m.sport === 'volleyball' ? m.setsHome : (m.sport === 'ufc' ? '—' : m.scoreHome)) + '</div>' +
     '</div>' +
     '<div class="mt-team">' +
       '<div class="flag" style="background:' + aColor + '">' + teamInit(m.away) + '</div>' +
       '<div class="name">' + escapeHtml(aDisp) + '</div>' +
-      '<div class="score">' + (m.sport === 'volleyball' ? m.setsAway : m.scoreAway) + '</div>' +
+      '<div class="score">' + (m.sport === 'volleyball' ? m.setsAway : (m.sport === 'ufc' ? '—' : m.scoreAway)) + '</div>' +
     '</div>' +
     '<div class="mt-time">🕐 ' + timeText + '</div>' +
   '</div>';
 }
 
-function renderMatchTabs(m) {
+function renderMarketTabs(m) {
   return '<div class="market-tabs-sub">' +
-    '<button class="mt-sub active" data-mtab="all">Все</button>' +
-    '<button class="mt-sub" data-mtab="match">Матч</button>' +
-    '<button class="mt-sub" data-mtab="1h">1-й тайм</button>' +
-    '<button class="mt-sub" data-mtab="2h">2-й тайм</button>' +
-    '<button class="mt-sub" data-mtab="stats">Показатели</button>' +
+    '<button class="mt-sub ' + (STATE.currentMarketTab === 'all' ? 'active' : '') + '" data-mtab="all">Все</button>' +
+    '<button class="mt-sub ' + (STATE.currentMarketTab === 'stats' ? 'active' : '') + '" data-mtab="stats">Показатели</button>' +
   '</div>';
 }
 
 function renderMatchBody(m) {
   if (STATE.currentMarketTab === 'stats') return renderStatsTab(m);
-  var odds = computeOdds(m);
-  var extras = computeExtras(m);
-  var isTwo = (m.sport === 'ufc' || m.sport === 'volleyball');
   var html = '<div class="market-list">';
-
-  // Исход матча
-  html += '<div class="market-row" data-toggle-market="iss"><span class="mstar">⭐</span><span class="mtitle">Исход матча (основное время)</span><span class="mchevron">▼</span></div>';
-  html += '<div class="market-body-open" id="body-iss">';
-  if (isTwo) {
-    html += '<div class="odds-grid-2">' + renderOdd(m, 'home', 'П1', odds.home) + renderOdd(m, 'away', 'П2', odds.away) + '</div>';
-  } else {
-    html += '<div class="odds-grid-3">' + renderOdd(m, 'home', '1', odds.home) + renderOdd(m, 'draw', 'X', odds.draw) + renderOdd(m, 'away', '2', odds.away) + '</div>';
-  }
-  html += '</div>';
-
-  // Основные
-  html += '<div class="market-row" data-toggle-market="main"><span class="mstar">⭐</span><span class="mtitle">Основные</span><span class="mchevron">▼</span></div>';
-  html += '<div class="market-body-closed" id="body-main">';
-  if (m.sport === 'football' || m.sport === 'hockey') {
-    html += renderTotalSelector(m, m.sport);
-    html += renderHandicapSelector(m, m.sport);
-  }
-  html += '</div>';
-
-  // Тотал голов
-  html += '<div class="market-row" data-toggle-market="tot"><span class="mstar">⭐</span><span class="mtitle">Тотал голов</span><span class="mchevron">▼</span></div>';
-  html += '<div class="market-body-closed" id="body-tot">' + renderTotalSelector(m, m.sport) + '</div>';
-
-  // Фора
-  html += '<div class="market-row" data-toggle-market="hcp"><span class="mstar">⭐</span><span class="mtitle">Исход с учетом форы</span><span class="mchevron">▼</span></div>';
-  html += '<div class="market-body-closed" id="body-hcp">' + renderHandicapSelector(m, m.sport) + '</div>';
-
-  // Обе забьют (футбол/хоккей)
-  if (m.sport === 'football' || m.sport === 'hockey') {
-    if (extras['Обе · Да']) {
-      html += '<div class="market-row" data-toggle-market="btts"><span class="mstar">⭐</span><span class="mtitle">Обе забьют</span><span class="mchevron">▼</span></div>';
-      html += '<div class="market-body-closed" id="body-btts"><div class="odds-grid-2">' + renderExtras('Обе · Да', extras) + renderExtras('Обе · Нет', extras) + '</div></div>';
-    }
-  }
-
-  // Двойной шанс
-  if ((m.sport === 'football' || m.sport === 'hockey') && extras['1X']) {
-    html += '<div class="market-row" data-toggle-market="dc"><span class="mstar">⭐</span><span class="mtitle">Двойной шанс</span><span class="mchevron">▼</span></div>';
-    html += '<div class="market-body-closed" id="body-dc"><div class="odds-grid-3">' + renderExtras('1X', extras) + renderExtras('12', extras) + renderExtras('X2', extras) + '</div></div>';
-  }
-
-  // Точный счёт
-  var scoreKeys = Object.keys(extras).filter(function(k) { return k.indexOf('Счёт ') === 0; });
-  if (scoreKeys.length) {
-    html += '<div class="market-row" data-toggle-market="sc"><span class="mstar">⭐</span><span class="mtitle">Точный счет</span><span class="mchevron">▼</span></div>';
-    var sh = '';
-    scoreKeys.forEach(function(k) { sh += renderExtras(k, extras); });
-    html += '<div class="market-body-closed" id="body-sc"><div class="odds-grid-3">' + sh + '</div></div>';
-  }
-
-  // UFC
-  if (m.sport === 'ufc') {
-    html += '<div class="market-row" data-toggle-market="ufc1"><span class="mstar">⭐</span><span class="mtitle">Метод победы</span><span class="mchevron">▼</span></div>';
-    html += '<div class="market-body-closed" id="body-ufc1"><div class="odds-grid-3">' + renderExtras('KO/TKO', extras) + renderExtras('Сабмишн', extras) + renderExtras('Решение', extras) + '</div></div>';
-    html += '<div class="market-row" data-toggle-market="ufc2"><span class="mstar">⭐</span><span class="mtitle">Тотал раундов</span><span class="mchevron">▼</span></div>';
-    var totR = '';
-    ['ТБ 1.5 раундов', 'ТБ 2.5 раундов', 'ТБ 3.5 раундов', 'ТБ 4.5 раундов'].forEach(function(l) {
-      if (extras[l]) totR += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">' + renderExtras(l, extras) + renderExtras(l.replace('ТБ','ТМ'), extras) + '</div>';
-    });
-    html += '<div class="market-body-closed" id="body-ufc2">' + (totR || '<div style="padding:8px;color:var(--muted)">Нет доступных линий</div>') + '</div>';
-  }
-
-  // Волейбол
-  if (m.sport === 'volleyball') {
-    if (extras['Победа в сете · П1']) {
-      html += '<div class="market-row" data-toggle-market="vb1"><span class="mstar">⭐</span><span class="mtitle">Победа в текущем сете</span><span class="mchevron">▼</span></div>';
-      html += '<div class="market-body-closed" id="body-vb1"><div class="odds-grid-2">' + renderExtras('Победа в сете · П1', extras) + renderExtras('Победа в сете · П2', extras) + '</div></div>';
-    }
-    if (extras['ТБ 3.5 сетов']) {
-      html += '<div class="market-row" data-toggle-market="vb2"><span class="mstar">⭐</span><span class="mtitle">Тотал сетов</span><span class="mchevron">▼</span></div>';
-      html += '<div class="market-body-closed" id="body-vb2"><div class="odds-grid-2">' + renderExtras('ТБ 3.5 сетов', extras) + renderExtras('ТМ 3.5 сетов', extras) + renderExtras('ТБ 4.5 сетов', extras) + renderExtras('ТМ 4.5 сетов', extras) + '</div></div>';
-    }
-    if (extras['Счёт 3:0']) {
-      html += '<div class="market-row" data-toggle-market="vb3"><span class="mstar">⭐</span><span class="mtitle">Точный счет</span><span class="mchevron">▼</span></div>';
-      html += '<div class="market-body-closed" id="body-vb3"><div class="odds-grid-3">' +
-        renderExtras('Счёт 3:0', extras) + renderExtras('Счёт 3:1', extras) + renderExtras('Счёт 3:2', extras) +
-        renderExtras('Счёт 0:3', extras) + renderExtras('Счёт 1:3', extras) + renderExtras('Счёт 2:3', extras) +
-      '</div></div>';
-    }
-  }
-
+  if (m.sport === 'football') html += renderFootballMarkets(m);
+  else if (m.sport === 'hockey') html += renderHockeyMarkets(m);
+  else if (m.sport === 'volleyball') html += renderVolleyballMarkets(m);
+  else if (m.sport === 'ufc') html += renderUFCMarkets(m);
   html += '</div>';
   return html;
 }
 
-function renderTotalSelector(m, sport) {
-  var lines = sport === 'football' ? [1.5, 2, 2.5, 3, 3.5, 4] : (sport === 'hockey' ? [3.5, 4, 4.5, 5, 5.5, 6] : [1.5, 2, 2.5]);
-  var curLine = STATE.currentLine[m.id + '_tot'] || lines[2];
-  if (lines.indexOf(curLine) < 0) curLine = lines[2];
-  var extras = computeExtras(m);
+function sectionWrap(key, title, body) {
+  var isOpen = STATE.openSections[key] !== false;
+  var cls = isOpen ? 'market-body-open' : 'market-body-closed';
+  var chev = isOpen ? '▲' : '▼';
+  return '<div class="market-row" data-toggle-section="' + key + '">' +
+    '<span class="mstar' + (STATE.favorites[key] ? ' active' : '') + '">⭐</span>' +
+    '<span class="mtitle">' + escapeHtml(title) + '</span>' +
+    '<span class="mchevron">' + chev + '</span>' +
+  '</div>' +
+  '<div class="' + cls + '" id="sec-' + key + '">' + body + '</div>';
+}
+
+/* ФУТБОЛ — свои рынки */
+function renderFootballMarkets(m) {
+  var extras = computeFootballExtras(m);
+  var odds = computeOdds(m);
+  var html = '';
+
+  html += sectionWrap('iss', 'Исход матча',
+    '<div class="odds-grid-3">' +
+      renderOdd(m, 'home', '1', odds.home) +
+      renderOdd(m, 'draw', 'X', odds.draw) +
+      renderOdd(m, 'away', '2', odds.away) +
+    '</div>');
+
+  if (extras['1X']) {
+    html += sectionWrap('dc', 'Двойной шанс',
+      '<div class="odds-grid-3">' + renderExtras('1X', extras) + renderExtras('12', extras) + renderExtras('X2', extras) + '</div>');
+  }
+
+  html += sectionWrap('tot', 'Тотал голов', renderTotalSelectorFootball(m));
+
+  html += sectionWrap('hcp', 'Фора', renderHandicapSelectorFootball(m));
+
+  if (extras['Обе · Да']) {
+    html += sectionWrap('btts', 'Обе забьют',
+      '<div class="odds-grid-2">' + renderExtras('Обе · Да', extras) + renderExtras('Обе · Нет', extras) + '</div>');
+  }
+
+  if (extras['1-й тайм · П1']) {
+    html += sectionWrap('h1', '1-й тайм',
+      '<div class="odds-grid-3">' + renderExtras('1-й тайм · П1', extras) + renderExtras('1-й тайм · X', extras) + renderExtras('1-й тайм · П2', extras) + '</div>');
+  }
+
+  var intervals = ['0-15', '15-30', '30-45', '45-60', '60-75', '75-90'];
+  var haveInt = intervals.some(function(iv) { return extras['Гол ' + iv + ' мин']; });
+  if (haveInt) {
+    var ih = '';
+    intervals.forEach(function(iv) { if (extras['Гол ' + iv + ' мин']) ih += renderExtras('Гол ' + iv + ' мин', extras); });
+    html += sectionWrap('int', 'Гол в интервале', '<div class="odds-grid-3">' + ih + '</div>');
+  }
+
+  var scoreKeys = Object.keys(extras).filter(function(k) { return k.indexOf('Счёт ') === 0; });
+  if (scoreKeys.length) {
+    var sh = '';
+    scoreKeys.forEach(function(k) { sh += renderExtras(k, extras); });
+    html += sectionWrap('sc', 'Точный счёт', '<div class="odds-grid-3">' + sh + '</div>');
+  }
+
+  return html;
+}
+
+/* ХОККЕЙ — свои рынки, БЕЗ Тотал голов 2.5 */
+function renderHockeyMarkets(m) {
+  var extras = computeHockeyExtras(m);
+  var odds = computeOdds(m);
+  var html = '';
+
+  html += sectionWrap('iss', 'Исход матча',
+    '<div class="odds-grid-3">' +
+      renderOdd(m, 'home', '1', odds.home) +
+      renderOdd(m, 'draw', 'X', odds.draw) +
+      renderOdd(m, 'away', '2', odds.away) +
+    '</div>');
+
+  if (extras['1X']) {
+    html += sectionWrap('dc', 'Двойной шанс',
+      '<div class="odds-grid-3">' + renderExtras('1X', extras) + renderExtras('12', extras) + renderExtras('X2', extras) + '</div>');
+  }
+
+  // Тотал — хоккейные линии 3.5-8.5
+  html += sectionWrap('tot', 'Тотал голов', renderTotalSelectorHockey(m));
+
+  // Фора — хоккейная (от 1.5)
+  html += sectionWrap('hcp', 'Фора', renderHandicapSelectorHockey(m));
+
+  if (extras['Обе · Да']) {
+    html += sectionWrap('btts', 'Обе забьют',
+      '<div class="odds-grid-2">' + renderExtras('Обе · Да', extras) + renderExtras('Обе · Нет', extras) + '</div>');
+  }
+
+  var majH = extras[m.home + ' в большинстве'];
+  var majA = extras[m.away + ' в большинстве'];
+  if (majH || majA) {
+    var mh = '';
+    if (majH) mh += renderExtras(m.home + ' в большинстве', extras);
+    if (majA) mh += renderExtras(m.away + ' в большинстве', extras);
+    html += sectionWrap('maj', 'Большинство', '<div class="odds-grid-2">' + mh + '</div>');
+  }
+
+  return html;
+}
+
+/* ВОЛЕЙБОЛ — только свои рынки, БЕЗ футбольных */
+function renderVolleyballMarkets(m) {
+  var extras = computeVolleyballExtras(m);
+  var odds = computeOdds(m);
+  var html = '';
+
+  html += sectionWrap('iss', 'Победа в матче',
+    '<div class="odds-grid-2">' +
+      renderOdd(m, 'home', 'П1', odds.home) +
+      renderOdd(m, 'away', 'П2', odds.away) +
+    '</div>');
+
+  if (extras['Победа в сете · П1']) {
+    html += sectionWrap('vbs', 'Победа в сете',
+      '<div class="odds-grid-2">' + renderExtras('Победа в сете · П1', extras) + renderExtras('Победа в сете · П2', extras) + '</div>');
+  }
+
+  var tSet = '';
+  ['ТБ 3.5 сетов', 'ТМ 3.5 сетов', 'ТБ 4.5 сетов', 'ТМ 4.5 сетов'].forEach(function(l) {
+    if (extras[l]) tSet += renderExtras(l, extras);
+  });
+  if (tSet) {
+    html += sectionWrap('vbt', 'Тотал сетов', '<div class="odds-grid-2">' + tSet + '</div>');
+  }
+
+  if (extras['Счёт 3:0']) {
+    html += sectionWrap('vbc', 'Точный счёт',
+      '<div class="odds-grid-3">' +
+        renderExtras('Счёт 3:0', extras) + renderExtras('Счёт 3:1', extras) + renderExtras('Счёт 3:2', extras) +
+        renderExtras('Счёт 0:3', extras) + renderExtras('Счёт 1:3', extras) + renderExtras('Счёт 2:3', extras) +
+      '</div>');
+  }
+
+  return html;
+}
+
+/* UFC — только свои рынки, БЕЗ футбольных */
+function renderUFCMarkets(m) {
+  var extras = computeUFCExtras(m);
+  var odds = computeOdds(m);
+  var html = '';
+
+  html += sectionWrap('iss', 'Победа в бою',
+    '<div class="odds-grid-2">' +
+      renderOdd(m, 'home', 'П1', odds.home) +
+      renderOdd(m, 'away', 'П2', odds.away) +
+    '</div>');
+
+  if (extras['KO/TKO']) {
+    html += sectionWrap('ufcm', 'Метод победы',
+      '<div class="odds-grid-3">' + renderExtras('KO/TKO', extras) + renderExtras('Сабмишн', extras) + renderExtras('Решение', extras) + '</div>' +
+      '<div class="odds-grid-2" style="margin-top:6px">' + renderExtras('Бой досрочно', extras) + renderExtras('Вся дистанция', extras) + '</div>');
+  }
+
+  var totR = '';
+  ['ТБ 1.5 раундов', 'ТБ 2.5 раундов', 'ТБ 3.5 раундов', 'ТБ 4.5 раундов'].forEach(function(l) {
+    if (extras[l]) {
+      totR += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">' +
+        renderExtras(l, extras) + renderExtras(l.replace('ТБ','ТМ'), extras) + '</div>';
+    }
+  });
+  if (totR) html += sectionWrap('ufct', 'Тотал раундов', totR);
+
+  var pm = '';
+  pm += '<div class="odds-labeled">' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.home)) + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        (extras[m.home + ' KO/TKO'] ? renderExtras(m.home + ' KO/TKO', extras) : '') +
+        (extras[m.home + ' Сабмишн'] ? renderExtras(m.home + ' Сабмишн', extras) : '') +
+        (extras[m.home + ' Решение'] ? renderExtras(m.home + ' Решение', extras) : '') +
+      '</div></div>' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.away)) + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        (extras[m.away + ' KO/TKO'] ? renderExtras(m.away + ' KO/TKO', extras) : '') +
+        (extras[m.away + ' Сабмишн'] ? renderExtras(m.away + ' Сабмишн', extras) : '') +
+        (extras[m.away + ' Решение'] ? renderExtras(m.away + ' Решение', extras) : '') +
+      '</div></div>' +
+  '</div>';
+  html += sectionWrap('ufcpm', 'Победа и метод', pm);
+
+  return html;
+}
+
+/* ФУТБОЛ селекторы */
+function renderTotalSelectorFootball(m) {
+  var lines = [1.5, 2, 2.5, 3, 3.5, 4];
+  var curLine = STATE.currentLine[m.id + '_tot'] || 2.5;
+  if (lines.indexOf(curLine) < 0) curLine = 2.5;
+  var extras = computeFootballExtras(m);
   var html = '<div class="line-selector">';
   lines.forEach(function(l) {
     var active = Math.abs(l - curLine) < 0.01 ? ' active' : '';
@@ -2046,11 +2566,10 @@ function renderTotalSelector(m, sport) {
   '</div>';
   return html;
 }
-
-function renderHandicapSelector(m, sport) {
+function renderHandicapSelectorFootball(m) {
   var lines = [0.5, 1, 1.5, 2, 2.5];
   var curLine = STATE.currentLine[m.id + '_hcp'] || 1.5;
-  var extras = computeExtras(m);
+  var extras = computeFootballExtras(m);
   var html = '<div class="line-selector">';
   lines.forEach(function(l) {
     var active = Math.abs(l - curLine) < 0.01 ? ' active' : '';
@@ -2058,12 +2577,52 @@ function renderHandicapSelector(m, sport) {
   });
   html += '</div>';
   html += '<div class="odds-labeled">' +
-    '<div><div class="col-head">' + escapeHtml(rusName(m.home)) + '</div>' + renderExtras('Ф1 −' + curLine, extras) + '</div>' +
-    '<div><div class="col-head">' + escapeHtml(rusName(m.away)) + '</div>' + renderExtras('Ф2 +' + curLine, extras) + '</div>' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.home)) + ' Ф1 −' + curLine + '</div>' +
+      (extras['Ф1 −' + curLine] ? renderExtras('Ф1 −' + curLine, extras) : '<div class="odd-btn disabled"><span class="lbl">Ф1 −' + curLine + '</span><span class="val">—</span></div>') + '</div>' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.away)) + ' Ф2 −' + curLine + '</div>' +
+      (extras['Ф2 −' + curLine] ? renderExtras('Ф2 −' + curLine, extras) : '<div class="odd-btn disabled"><span class="lbl">Ф2 −' + curLine + '</span><span class="val">—</span></div>') + '</div>' +
   '</div>';
   return html;
 }
 
+/* ХОККЕЙ селекторы — другие линии */
+function renderTotalSelectorHockey(m) {
+  var lines = [3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
+  var curLine = STATE.currentLine[m.id + '_tot'] || 4.5;
+  if (lines.indexOf(curLine) < 0) curLine = 4.5;
+  var extras = computeHockeyExtras(m);
+  var html = '<div class="line-selector">';
+  lines.forEach(function(l) {
+    var active = Math.abs(l - curLine) < 0.01 ? ' active' : '';
+    html += '<div class="line-opt' + active + '" data-total-line="' + l + '">' + l + '</div>';
+  });
+  html += '</div>';
+  html += '<div class="odds-grid-2">' +
+    renderExtras('ТБ ' + curLine, extras) +
+    renderExtras('ТМ ' + curLine, extras) +
+  '</div>';
+  return html;
+}
+function renderHandicapSelectorHockey(m) {
+  var lines = [1.5, 2.5];
+  var curLine = STATE.currentLine[m.id + '_hcp'] || 1.5;
+  var extras = computeHockeyExtras(m);
+  var html = '<div class="line-selector">';
+  lines.forEach(function(l) {
+    var active = Math.abs(l - curLine) < 0.01 ? ' active' : '';
+    html += '<div class="line-opt' + active + '" data-hcp-line="' + l + '">' + l + '</div>';
+  });
+  html += '</div>';
+  html += '<div class="odds-labeled">' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.home)) + ' Ф1 −' + curLine + '</div>' +
+      (extras['Ф1 −' + curLine] ? renderExtras('Ф1 −' + curLine, extras) : '<div class="odd-btn disabled"><span class="lbl">—</span></div>') + '</div>' +
+    '<div><div class="col-head">' + escapeHtml(rusName(m.away)) + ' Ф2 −' + curLine + '</div>' +
+      (extras['Ф2 −' + curLine] ? renderExtras('Ф2 −' + curLine, extras) : '<div class="odd-btn disabled"><span class="lbl">—</span></div>') + '</div>' +
+  '</div>';
+  return html;
+}
+
+/* STATS */
 function renderStatsTab(m) {
   if (m.sport !== 'football') {
     return '<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Показатели только для футбола</div></div>';
@@ -2105,7 +2664,7 @@ function renderStatsTab(m) {
   html += '</div>';
   var total = cntH + cntA;
   if (total >= curLine) {
-    html += '<div class="odd-btn disabled" style="justify-content:center"><span class="lbl">Линия пройдена</span></div>';
+    html += '<div class="odd-btn disabled" style="justify-content:center;width:100%"><span class="lbl">Линия пройдена (' + total + ' > ' + curLine + ')</span></div>';
   } else {
     var pO = footballStatOverProb(m, STATE.currentStatParam, curLine);
     html += '<div class="odds-grid-2">' +
@@ -2127,6 +2686,7 @@ function getStatLines(param) {
   return [1.5, 2.5, 3.5];
 }
 
+/* КОЭФ-КНОПКИ */
 function renderOdd(m, pick, label, odd) {
   if (!isValid(odd)) return '<div class="odd-btn disabled"><span class="lbl">' + escapeHtml(label) + '</span><span class="val">—</span></div>';
   var isSel = isInCoupon(m.id, pick);
@@ -2135,7 +2695,6 @@ function renderOdd(m, pick, label, odd) {
     '<span class="val">' + odd.toFixed(2) + '</span>' +
   '</button>';
 }
-
 function renderExtras(label, extras) {
   var o = extras[label];
   if (!isValid(o)) return '<div class="odd-btn disabled"><span class="lbl">' + escapeHtml(label) + '</span><span class="val">—</span></div>';
@@ -2145,7 +2704,6 @@ function renderExtras(label, extras) {
     '<span class="val">' + o.toFixed(2) + '</span>' +
   '</button>';
 }
-
 function renderOddBtnRaw(pick, label, odd, m) {
   if (!isValid(odd)) return '<div class="odd-btn disabled"><span class="lbl">' + escapeHtml(label) + '</span><span class="val">—</span></div>';
   var isSel = isInCoupon(m.id, pick);
@@ -2155,7 +2713,169 @@ function renderOddBtnRaw(pick, label, odd, m) {
   '</button>';
 }
 
-/* PROFILE */
+/* ============================================================
+   РАСШИРЕННЫЕ РЫНКИ
+   ============================================================ */
+function computeFootballExtras(m) {
+  if (m.status === 'finished') return {};
+  var out = {};
+  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
+  var odds = computeFootballOdds(m);
+  if (odds._pH && odds._pD) add('1X', odds._pH + odds._pD, 0.04);
+  if (odds._pH && odds._pA) add('12', odds._pH + odds._pA, 0.04);
+  if (odds._pD && odds._pA) add('X2', odds._pD + odds._pA, 0.04);
+  var totalCur = m.scoreHome + m.scoreAway;
+  [0.5, 1.5, 2.5, 3.5, 4.5, 5.5].forEach(function(line) {
+    if (line > totalCur) {
+      var pO = footballTotalOverProb(m, line);
+      if (pO > 0.02 && pO < 0.98) { add('ТБ ' + line, pO, 0.05); add('ТМ ' + line, 1 - pO, 0.05); }
+    }
+  });
+  [0.5, 1.5, 2.5].forEach(function(line) {
+    var pF1m = footballHandicapProb(m, -line, 'home');
+    var pF2m = footballHandicapProb(m, -line, 'away');
+    if (pF1m > 0.02 && pF1m < 0.98) add('Ф1 −' + line, pF1m, 0.05);
+    if (pF2m > 0.02 && pF2m < 0.98) add('Ф2 −' + line, pF2m, 0.05);
+  });
+  var pB = footballBtts(m);
+  if (pB > 0.02 && pB < 0.98) { add('Обе · Да', pB, 0.05); add('Обе · Нет', 1 - pB, 0.05); }
+  if (m.minute < 45) {
+    var fh = footballFirstHalfOdds(m);
+    if (fh.home) add('1-й тайм · П1', 1 / fh.home, 0.06);
+    if (fh.draw) add('1-й тайм · X', 1 / fh.draw, 0.06);
+    if (fh.away) add('1-й тайм · П2', 1 / fh.away, 0.06);
+  }
+  [[0,15,'0-15'], [15,30,'15-30'], [30,45,'30-45'], [45,60,'45-60'], [60,75,'60-75'], [75,90,'75-90']].forEach(function(iv) {
+    var p = footballGoalInInterval(m, iv[0], iv[1]);
+    if (p !== null && p > 0.02 && p < 0.98) add('Гол ' + iv[2] + ' мин', p, 0.06);
+  });
+  footballExactScores(m).forEach(function(s) {
+    if (s.prob > 0.02) add('Счёт ' + s.score, s.prob * 1.02, 0.06);
+  });
+  var statCfg = {
+    fouls: { lines: [20.5, 24.5, 28.5], label: 'фолов' },
+    corners: { lines: [7.5, 9.5, 11.5], label: 'угловых' },
+    cards: { lines: [2.5, 3.5, 4.5], label: 'жёлтых' },
+    shots: { lines: [18.5, 22.5, 26.5], label: 'ударов' },
+    ontarget: { lines: [6.5, 8.5, 10.5], label: 'в створ' },
+    offsides: { lines: [2.5, 3.5, 4.5], label: 'офсайдов' }
+  };
+  Object.keys(statCfg).forEach(function(key) {
+    var cfg = statCfg[key];
+    cfg.lines.forEach(function(line) {
+      var p = footballStatOverProb(m, key, line);
+      if (p > 0.02 && p < 0.98) {
+        add('ТБ ' + line + ' ' + cfg.label, p, 0.07);
+        add('ТМ ' + line + ' ' + cfg.label, 1 - p, 0.07);
+      }
+    });
+  });
+  return out;
+}
+
+function computeHockeyExtras(m) {
+  if (m.status === 'finished') return {};
+  var out = {};
+  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
+  var odds = computeHockeyOdds(m);
+  if (odds._pH && odds._pD) add('1X', odds._pH + odds._pD, 0.04);
+  if (odds._pH && odds._pA) add('12', odds._pH + odds._pA, 0.04);
+  if (odds._pD && odds._pA) add('X2', odds._pD + odds._pA, 0.04);
+  var totalCur = m.scoreHome + m.scoreAway;
+  [3.5, 4.5, 5.5, 6.5, 7.5, 8.5].forEach(function(line) {
+    if (line > totalCur) {
+      var pO = hockeyTotalOverProb(m, line);
+      if (pO > 0.02 && pO < 0.98) { add('ТБ ' + line, pO, 0.05); add('ТМ ' + line, 1 - pO, 0.05); }
+    }
+  });
+  [1.5, 2.5].forEach(function(line) {
+    var pF1m = hockeyHandicapProb(m, -line, 'home');
+    var pF2m = hockeyHandicapProb(m, -line, 'away');
+    if (pF1m > 0.02 && pF1m < 0.98) add('Ф1 −' + line, pF1m, 0.05);
+    if (pF2m > 0.02 && pF2m < 0.98) add('Ф2 −' + line, pF2m, 0.05);
+  });
+  var lh = hockeyLambda(m, 'home'), la = hockeyLambda(m, 'away');
+  var pH0 = m.scoreHome > 0 ? 1 : (1 - Math.exp(-lh));
+  var pA0 = m.scoreAway > 0 ? 1 : (1 - Math.exp(-la));
+  var pB = pH0 * pA0;
+  if (pB > 0.02 && pB < 0.98) { add('Обе · Да', pB, 0.05); add('Обе · Нет', 1 - pB, 0.05); }
+  if (m.penaltyHome > 0) add(m.away + ' в большинстве', 0.42, 0.08);
+  if (m.penaltyAway > 0) add(m.home + ' в большинстве', 0.42, 0.08);
+  return out;
+}
+
+function computeUFCExtras(m) {
+  if (m.status === 'finished' || m.status === 'countdown') return {};
+  var out = {};
+  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
+  var pH = ufcProbHome(m);
+  var pA = 1 - pH;
+  var pFin = ufcFinishProb(m);
+  var pDec = 1 - pFin;
+  var pKO = pFin * 0.62, pSub = pFin * 0.38;
+  add('KO/TKO', pKO, 0.06);
+  add('Сабмишн', pSub, 0.06);
+  add('Решение', pDec, 0.05);
+  add('Бой досрочно', pFin, 0.05);
+  add('Вся дистанция', pDec, 0.05);
+  var roundsPlayed = (m.round - 1) + (m.roundSec / 300);
+  if (m.phase === 'break') roundsPlayed = m.round;
+  [[1.5,'ТБ 1.5 раундов'], [2.5,'ТБ 2.5 раундов'], [3.5,'ТБ 3.5 раундов'], [4.5,'ТБ 4.5 раундов']].forEach(function(pair) {
+    var line = pair[0];
+    if (roundsPlayed < line) {
+      var need = line - roundsPlayed;
+      var perRound = 0.26;
+      if (m.homeHP < 30 || m.awayHP < 30) perRound *= 1.7;
+      var pReach = Math.pow(1 - perRound, need);
+      pReach = clamp(pReach, 0.02, 0.98);
+      add(pair[1], pReach, 0.05);
+      add(pair[1].replace('ТБ', 'ТМ'), 1 - pReach, 0.05);
+    }
+  });
+  add(m.home + ' KO/TKO', pH * pKO * 0.95, 0.07);
+  add(m.home + ' Сабмишн', pH * pSub * 0.95, 0.07);
+  add(m.home + ' Решение', pH * pDec * 0.95, 0.07);
+  add(m.away + ' KO/TKO', pA * pKO * 0.95, 0.07);
+  add(m.away + ' Сабмишн', pA * pSub * 0.95, 0.07);
+  add(m.away + ' Решение', pA * pDec * 0.95, 0.07);
+  return out;
+}
+
+function computeVolleyballExtras(m) {
+  if (m.status === 'finished' || m.status === 'countdown') return {};
+  var out = {};
+  function add(l, p, mar) { var o = toOdd(p, mar || 0.05); if (o !== null) out[l] = o; }
+  var pH = volleyProbHome(m);
+  var pA = 1 - pH;
+  var setsPlayed = m.setsHome + m.setsAway;
+  if (setsPlayed < 5) {
+    var cnt3 = 0, cnt4 = 0, cnt5 = 0;
+    for (var t = 0; t < 300; t++) {
+      var sh = m.setsHome, sa = m.setsAway, g = 0;
+      while (sh < 3 && sa < 3 && g++ < 10) { if (Math.random() < pH) sh++; else sa++; }
+      var tot = sh + sa;
+      if (tot <= 3) cnt3++;
+      else if (tot === 4) cnt4++;
+      else cnt5++;
+    }
+    var p3 = cnt3 / 300, p4 = cnt4 / 300, p5 = cnt5 / 300;
+    if (p3 > 0.02) { add('ТМ 3.5 сетов', p3, 0.06); add('ТБ 3.5 сетов', p4 + p5, 0.06); }
+    if (p5 > 0.02) { add('ТБ 4.5 сетов', p5, 0.06); add('ТМ 4.5 сетов', p3 + p4, 0.06); }
+  }
+  add('Победа в сете · П1', pH, 0.06);
+  add('Победа в сете · П2', pA, 0.06);
+  add('Счёт 3:0', Math.pow(pH, 3) * 0.55, 0.10);
+  add('Счёт 3:1', pH * pH * (1 - pH) * 1.15, 0.10);
+  add('Счёт 3:2', pH * (1 - pH) * (1 - pH) * 0.85, 0.10);
+  add('Счёт 0:3', Math.pow(1 - pH, 3) * 0.55, 0.10);
+  add('Счёт 1:3', (1 - pH) * (1 - pH) * pH * 1.15, 0.10);
+  add('Счёт 2:3', (1 - pH) * pH * pH * 0.85, 0.10);
+  return out;
+}
+
+/* ============================================================
+   ПРОФИЛЬ
+   ============================================================ */
 function renderProfileScreen() {
   var html = renderTopHeader({title: 'Профиль', back: true});
   var won = W.bets.filter(function(b) { return b.status === 'won'; }).length;
@@ -2172,7 +2892,7 @@ function renderProfileScreen() {
   '</div>' +
   '<div class="profile-stats">' +
     '<div class="profile-stat"><div class="ps-label">Ставок</div><div class="ps-value">' + W.bets.length + '</div></div>' +
-    '<div class="profile-stat"><div class="ps-label">Винрейт</div><div class="ps-value">' + wr + '</div></div>' +
+    '<div class="profile-stat"><div class="ps-label">Винрейт</div><div class="ps-value gold">' + wr + '</div></div>' +
     '<div class="profile-stat"><div class="ps-label">Профит</div><div class="ps-value ' + (prof >= 0 ? 'green' : 'red') + '">' + (prof >= 0 ? '+' : '') + fmt(prof) + '</div></div>' +
   '</div>' +
   '<div style="background:#fff">' +
@@ -2246,7 +2966,9 @@ function claimBonus() {
   renderBalance();
 }
 
-/* HISTORY */
+/* ============================================================
+   ИСТОРИЯ
+   ============================================================ */
 function renderHistoryScreen() {
   var html = renderTopHeader({title: 'История ставок', back: true});
   html += '<div class="main" style="padding-top:8px">';
@@ -2317,7 +3039,9 @@ function doCashout(id) {
   renderHistoryScreen();
 }
 
-/* BIND */
+/* ============================================================
+   BIND
+   ============================================================ */
 function bindMainScreen() {
   document.querySelectorAll('.match-row').forEach(function(row) {
     row.addEventListener('click', function(e) {
@@ -2350,16 +3074,19 @@ function bindMatchScreen() {
   document.querySelectorAll('.stat-param').forEach(function(p) {
     p.addEventListener('click', function() { STATE.currentStatParam = this.dataset.statParam; renderMatchScreen(); });
   });
-  document.querySelectorAll('.market-row[data-toggle-market]').forEach(function(row) {
+  // Тоггл секций — БЕЗ перерисовки экрана
+  document.querySelectorAll('[data-toggle-section]').forEach(function(row) {
     row.addEventListener('click', function() {
-      var key = this.dataset.toggleMarket;
-      var body = $('body-' + key);
-      if (!body) return;
-      var isOpen = body.classList.contains('market-body-open');
-      body.classList.toggle('market-body-open', !isOpen);
-      body.classList.toggle('market-body-closed', isOpen);
+      var key = this.dataset.toggleSection;
+      STATE.openSections[key] = !(STATE.openSections[key] !== false);
+      var isOpen = STATE.openSections[key] !== false;
+      var body = $('sec-' + key);
+      if (body) {
+        body.classList.toggle('market-body-open', isOpen);
+        body.classList.toggle('market-body-closed', !isOpen);
+      }
       var chev = this.querySelector('.mchevron');
-      if (chev) chev.textContent = isOpen ? '▼' : '▲';
+      if (chev) chev.textContent = isOpen ? '▲' : '▼';
     });
   });
   document.querySelectorAll('[data-total-line]').forEach(function(li) {
@@ -2407,7 +3134,9 @@ function openMatch(id) {
   window.scrollTo(0, 0);
 }
 
-/* TAB BAR */
+/* ============================================================
+   TAB BAR
+   ============================================================ */
 function renderTabBar() {
   var tabs = [
     {key:'main', icon:'🏠', label:'Главная'},
@@ -2417,7 +3146,9 @@ function renderTabBar() {
   ];
   var html = '<div class="tab-bar" id="tabBar">';
   tabs.forEach(function(t) {
-    var active = ((t.key === 'main' && STATE.screen === 'main') || (t.key === 'menu' && (STATE.screen === 'menu' || STATE.screen === 'profile')) || (t.key === 'history' && STATE.screen === 'history')) ? ' active' : '';
+    var active = ((t.key === 'main' && STATE.screen === 'main') ||
+                  (t.key === 'menu' && (STATE.screen === 'menu' || STATE.screen === 'profile')) ||
+                  (t.key === 'history' && STATE.screen === 'history')) ? ' active' : '';
     html += '<button class="tab-bar-item' + active + '" data-tab-key="' + t.key + '">' +
       '<span class="tab-icon">' + t.icon + '</span>' +
       '<span>' + t.label + '</span>' +
@@ -2439,7 +3170,9 @@ function renderTabBar() {
   });
 }
 
-/* FLOATING COUPON */
+/* ============================================================
+   FLOATING COUPON
+   ============================================================ */
 function renderFloatingCoupon() {
   var existing = $('floatingCoupon');
   if (existing) existing.remove();
@@ -2459,7 +3192,9 @@ function renderFloatingCoupon() {
   if (w) w.addEventListener('click', openCoupon);
 }
 
-/* COUPON */
+/* ============================================================
+   КУПОН
+   ============================================================ */
 function openCoupon() {
   $('couponPanel').classList.add('active');
   $('couponOverlay').classList.add('active');
@@ -2482,14 +3217,14 @@ function renderCouponBody() {
   c.forEach(function(item, idx) {
     html += '<div class="coupon-item">' +
       '<div class="ci-head">' +
-        '<span class="ci-score">' + escapeHtml(item.score || '') + '</span>' +
         '<span class="ci-league">' + escapeHtml(item.matchName) + '</span>' +
         '<button class="ci-remove" data-remove-coupon="' + idx + '">×</button>' +
       '</div>' +
       '<div class="ci-pick"><span>' + escapeHtml(item.pickLabel) + '</span><span class="ci-odd">' + item.odd.toFixed(2) + '</span></div>' +
     '</div>';
   });
-  html += '<div class="coupon-type"><button class="ct-btn active">' + (c.length > 1 ? 'Экспресс' : 'Одинар') + '</button></div>';
+  var typeLabel = c.length > 1 ? 'Экспресс · ' + c.length : 'Одинар';
+  html += '<div class="coupon-type"><button class="ct-btn active">' + typeLabel + '</button></div>';
   html += '<div class="coupon-stake">' +
     '<input type="number" class="stake-input" id="couponStakeInput" placeholder="Введите сумму">' +
     '<div class="stake-right"><div class="balance-label">Баланс</div><div class="balance-val">' + fmt(W.balance) + ' ₽</div><div class="add-btn" id="couponAddFunds">+</div></div>' +
@@ -2499,6 +3234,7 @@ function renderCouponBody() {
     '<div class="lmt" data-set-stake="max">max <b>' + fmt(W.balance) + '</b></div>' +
     '<div class="lmt" data-set-stake="500">500</div>' +
     '<div class="lmt" data-set-stake="1000">1K</div>' +
+    '<div class="lmt" data-set-stake="5000">5K</div>' +
   '</div>';
   html += '<div class="coupon-actions"><div class="potential">Возможный выигрыш <b id="couponPotential">—</b></div></div>';
   html += '<button class="coupon-place" id="couponPlace">Поставить</button>';
@@ -2728,11 +3464,11 @@ function startApp() {
 
 document.addEventListener('DOMContentLoaded', function() {
   initAuthUI();
-  var userId = getCurrentUser();
+  var userId = getCurrentUserId();
   if (userId) {
     var u = loadUserState(userId);
     if (u) { startApp(); return; }
-    else setCurrentUser(null);
+    else setCurrentUserId(null);
   }
 });
 </script>
