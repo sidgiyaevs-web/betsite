@@ -1,1193 +1,2644 @@
-Сохрани код в файл index.html и открой его в браузере. Это полноценный мобильный демопрототип BETZONE: события, рынки, коэффициенты, купон, расчёт потенциального выигрыша, виртуальный баланс, история и сохранение данных. Коэффициенты демонстрационные, ставки работают только на виртуальные рубли.
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#10182b">
-<title>BETZONE — спортивная платформа</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>OpenBet — спорт</title>
+
 <style>
-:root{
-  --bg:#0b1120;
-  --panel:#121c30;
-  --panel2:#18253c;
-  --panel3:#202f49;
-  --line:#293953;
-  --text:#f4f7fc;
-  --muted:#91a1ba;
-  --blue:#4388ff;
-  --blue2:#2467ed;
-  --green:#36d69a;
-  --red:#ff647b;
-  --yellow:#ffc857;
-  --radius:15px;
-  --shadow:0 10px 30px rgba(0,0,0,.18);
+:root {
+  --green: #087f5b;
+  --green-dark: #056849;
+  --green-light: #e7f6ef;
+  --background: #f3f5f7;
+  --white: #fff;
+  --text: #222832;
+  --muted: #7d8794;
+  --border: #e5e9ed;
+  --red: #e34d5b;
+  --radius: 12px;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  font-size:14px;
-  -webkit-tap-highlight-color:transparent;
+
+* {
+  box-sizing: border-box;
 }
-button,input,select{font:inherit}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible{outline:2px solid var(--blue)}
-button:disabled{opacity:.45;cursor:not-allowed}
-a{color:inherit;text-decoration:none}
-.app{min-height:100vh;padding-bottom:86px}
-.topbar{
-  position:sticky;top:0;z-index:30;
-  display:flex;align-items:center;gap:12px;
-  padding:12px 15px;
-  background:rgba(16,24,43,.96);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  color: var(--text);
+  font-size: 14px;
 }
-.brand{display:flex;align-items:center;gap:9px;min-width:0}
-.brand-mark{
-  width:39px;height:39px;border-radius:13px;
-  display:grid;place-items:center;
-  background:linear-gradient(140deg,#65a7ff,#2463ee);
-  box-shadow:0 5px 17px rgba(51,124,255,.3);
-  font-size:20px;font-weight:1000;font-style:italic;
+
+button, input, select {
+  font: inherit;
 }
-.brand-name{font-weight:950;letter-spacing:1px;font-size:18px}
-.brand-sub{font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:2px}
-.top-spacer{flex:1}
-.balance{
-  border:1px solid #345176;background:#172640;
-  padding:9px 11px;border-radius:12px;text-align:right;
-  min-width:105px;
+
+button {
+  cursor: pointer;
 }
-.balance-label{color:var(--muted);font-size:10px}
-.balance-value{font-weight:900;font-size:14px;color:var(--green);margin-top:3px}
-.icon-btn{
-  width:39px;height:39px;border-radius:12px;
-  border:1px solid var(--line);background:var(--panel);
-  color:var(--text);font-size:18px;
+
+button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
-.demo-banner{
-  margin:12px 14px 0;padding:10px 12px;border-radius:11px;
-  background:#2b261b;border:1px solid #5a4928;color:#ffe0a0;
-  font-size:11px;line-height:1.5;
+
+.hidden {
+  display: none !important;
 }
-.demo-banner b{color:#ffd166}
-.page{max-width:1100px;margin:auto;padding:14px}
-.hero{
-  position:relative;overflow:hidden;border-radius:21px;
-  min-height:175px;padding:23px 21px;
-  background:
-    radial-gradient(ellipse at 90% 0%,rgba(78,154,255,.55),transparent 40%),
-    radial-gradient(ellipse at 100% 100%,rgba(40,92,211,.45),transparent 45%),
-    linear-gradient(120deg,#152c51,#173d77 60%,#142849);
-  border:1px solid #31578b;
+
+.muted {
+  color: var(--muted);
 }
-.hero:after{
-  content:"BZ";position:absolute;right:-3px;bottom:-43px;
-  font-size:150px;font-weight:1000;font-style:italic;
-  color:rgba(255,255,255,.045);pointer-events:none;
+
+.small {
+  font-size: 12px;
 }
-.hero-kicker{font-size:10px;letter-spacing:2px;color:#a9ceff;font-weight:900}
-.hero h1{font-size:28px;line-height:1.12;margin:11px 0 8px;max-width:390px}
-.hero p{color:#c0d4f2;line-height:1.5;max-width:350px;margin:0 0 17px;font-size:12px}
-.hero-button{
-  position:relative;z-index:1;border:0;border-radius:10px;
-  padding:11px 15px;background:white;color:#17396d;font-weight:900;
+
+.green {
+  color: var(--green);
 }
-.section-heading{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;margin:24px 0 12px;
+
+.btn {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
 }
-.section-heading h2{font-size:18px;margin:0;font-weight:900}
-.section-heading small{color:var(--muted)}
-.search-wrap{margin-top:16px;position:relative}
-.search-wrap input{
-  width:100%;padding:13px 14px 13px 41px;
-  background:var(--panel);border:1px solid var(--line);
-  color:var(--text);border-radius:12px;outline:none;
+
+.btn-primary {
+  background: var(--green);
+  color: white;
 }
-.search-wrap span{position:absolute;left:14px;top:12px;color:var(--muted)}
-.sports-strip{
-  display:flex;gap:8px;overflow-x:auto;padding:14px 0 3px;
-  scrollbar-width:none;
+
+.btn-primary:hover {
+  background: var(--green-dark);
 }
-.sports-strip::-webkit-scrollbar{display:none}
-.sport-pill{
-  flex-shrink:0;display:flex;align-items:center;gap:7px;
-  padding:10px 13px;border-radius:12px;
-  background:var(--panel);border:1px solid var(--line);
-  color:#b8c6db;font-weight:700;
+
+.btn-light {
+  background: #f0f2f5;
+  color: var(--text);
 }
-.sport-pill.active{background:#234a85;border-color:#448bff;color:white}
-.filters{display:flex;gap:7px;overflow-x:auto;margin:13px 0}
-.filter-btn{
-  border:1px solid var(--line);border-radius:9px;
-  background:var(--panel);color:var(--muted);
-  padding:8px 12px;white-space:nowrap;font-size:12px;
+
+.btn-outline {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text);
 }
-.filter-btn.active{background:var(--panel3);color:white;border-color:#4a75b2}
-.live-dot{
-  display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:var(--red);margin-right:5px;box-shadow:0 0 8px var(--red);
+
+/* ШАПКА */
+
+.header {
+  height: 66px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-.event-list{display:grid;gap:12px}
-.event-card{
-  background:var(--panel);border:1px solid var(--line);
-  border-radius:16px;overflow:hidden;
+
+.header-inner {
+  max-width: 1440px;
+  height: 100%;
+  padding: 0 18px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
-.event-top{
-  padding:13px 13px 10px;display:flex;align-items:center;gap:9px;
+
+.logo {
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--green);
+  border: 0;
+  background: transparent;
 }
-.league-icon{
-  width:31px;height:31px;display:grid;place-items:center;
-  border-radius:10px;background:var(--panel3);font-size:16px;flex-shrink:0;
+
+.logo span {
+  color: var(--text);
 }
-.league-info{min-width:0;flex:1}
-.league-name{font-size:11px;color:var(--muted)}
-.event-time{font-size:11px;margin-top:4px;font-weight:700}
-.live-label{color:var(--red)}
-.star{
-  border:0;background:transparent;color:#63748f;
-  font-size:22px;padding:2px 5px;
+
+.search {
+  flex: 1;
+  max-width: 430px;
+  padding: 11px 13px;
+  background: #f7f8fa;
+  border: 1px solid var(--border);
+  border-radius: 9px;
 }
-.star.active{color:var(--yellow)}
-.event-score{
-  padding:8px 14px 13px;
-  display:grid;grid-template-columns:1fr auto;gap:14px;
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
 }
-.teams{display:grid;gap:9px;align-content:center;font-weight:750}
-.team-line{display:flex;align-items:center;gap:8px}
-.team-emoji{width:22px;text-align:center;font-size:17px}
-.score-column{display:grid;gap:7px;align-content:center;text-align:right;font-size:15px;font-weight:900}
-.event-markets{
-  padding:0 12px 12px;display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+
+.balance {
+  background: var(--green-light);
+  color: var(--green);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 800;
+  white-space: nowrap;
 }
-.odds-btn{
-  min-width:0;background:#1a2941;border:1px solid #2a3b58;
-  color:var(--text);border-radius:9px;padding:10px 5px;
-  display:flex;flex-direction:column;gap:6px;align-items:center;
-  transition:.15s;
+
+/* РАСКЛАДКА */
+
+.layout {
+  max-width: 1440px;
+  margin: 18px auto;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 290px;
+  gap: 15px;
+  align-items: start;
 }
-.odds-btn .odd-name{font-size:10px;color:#a9bad2;white-space:nowrap}
-.odds-btn .odd-value{font-size:14px;font-weight:900;color:#83b5ff}
-.odds-btn:hover{border-color:var(--blue)}
-.odds-btn.selected{background:#234c86;border-color:#66a2ff;box-shadow:inset 0 0 0 1px #66a2ff}
-.more-markets{
-  display:block;width:calc(100% - 24px);margin:0 12px 12px;
-  background:transparent;color:#9fc4ff;border:1px solid #2b4162;
-  border-radius:9px;padding:9px;font-size:11px;font-weight:800;
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
-.empty-state{
-  text-align:center;padding:45px 20px;background:var(--panel);
-  border:1px solid var(--line);border-radius:15px;color:var(--muted);
+
+.card + .card {
+  margin-top: 12px;
 }
-.empty-state strong{display:block;color:white;font-size:17px;margin-bottom:8px}
-.content-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-.panel{
-  background:var(--panel);border:1px solid var(--line);
-  border-radius:16px;padding:16px;margin-bottom:14px;
+
+.card-title {
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
-.panel h3{margin:0 0 14px;font-size:16px}
-.muted{color:var(--muted)}
-.small{font-size:11px}
-.profile-row{
-  display:flex;align-items:center;gap:12px;padding:13px 0;
-  border-bottom:1px solid var(--line);
+
+.card-title h2,
+.card-title h3 {
+  margin: 0;
+  font-size: 16px;
 }
-.profile-row:last-child{border-bottom:0}
-.avatar{
-  width:47px;height:47px;border-radius:15px;
-  background:linear-gradient(145deg,#5e9dff,#244fd2);
-  display:grid;place-items:center;font-size:23px;font-weight:900;
+
+/* ЛЕВОЕ МЕНЮ */
+
+.nav {
+  padding: 7px;
 }
-.primary-btn,.secondary-btn,.danger-btn{
-  border:0;border-radius:11px;padding:12px 14px;font-weight:850;
+
+.nav-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 12px 10px;
+  color: #414955;
+  font-weight: 700;
 }
-.primary-btn{background:linear-gradient(135deg,#4d9aff,#2768ed);color:white}
-.secondary-btn{background:#22334e;color:#d9e8ff;border:1px solid #344c70}
-.danger-btn{background:#422331;color:#ffb0bd;border:1px solid #70404c}
-.full{width:100%}
-.input{
-  width:100%;border:1px solid var(--line);border-radius:10px;
-  background:#0e1728;color:white;padding:12px;outline:none;
+
+.nav-button:hover,
+.nav-button.active {
+  background: var(--green-light);
+  color: var(--green);
 }
-.field-label{display:block;color:var(--muted);font-size:11px;margin:13px 0 7px}
-.presets{display:flex;gap:7px;margin:9px 0 13px}
-.preset{
-  flex:1;background:#202e46;color:#d5e4fb;
-  border:1px solid #34445f;border-radius:8px;padding:8px 2px;font-size:11px;
+
+.nav-icon {
+  width: 22px;
+  text-align: center;
+  font-size: 17px;
 }
-.coupon-item{
-  border:1px solid var(--line);border-radius:11px;
-  background:#17243a;padding:11px;margin:9px 0;
+
+.nav-caption {
+  padding: 13px 12px 4px;
+  font-size: 11px;
+  color: #9aa1aa;
+  font-weight: 800;
+  letter-spacing: .6px;
 }
-.coupon-item-top{display:flex;gap:10px;align-items:start}
-.coupon-item-name{flex:1;font-weight:800;font-size:12px;line-height:1.45}
-.remove-pick{border:0;background:transparent;color:#ff9aa8;font-size:17px}
-.coupon-market{font-size:11px;color:var(--muted);margin-top:5px}
-.coupon-bottom{display:flex;justify-content:space-between;margin-top:9px}
-.coupon-odd{font-weight:950;color:#86b7ff}
-.calc-line{display:flex;justify-content:space-between;gap:10px;margin:10px 0;font-size:12px}
-.calc-line strong{font-size:13px}
-.calc-total{
-  padding:12px;border-radius:11px;background:#142d2b;
-  border:1px solid #285c50;margin-top:12px;
+
+.sidebar-note {
+  margin: 12px;
+  padding: 11px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
-.calc-total .calc-line strong{color:var(--green);font-size:16px}
-.disclaimer{font-size:10px;color:var(--muted);line-height:1.6;margin-top:12px}
-.history-item{
-  padding:12px 0;border-bottom:1px solid var(--line);
+
+/* ЦЕНТР */
+
+.hero {
+  padding: 22px;
+  background: linear-gradient(115deg, #087f5b, #0d9b70);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  min-height: 132px;
 }
-.history-item:last-child{border-bottom:0}
-.history-top{display:flex;justify-content:space-between;gap:10px}
-.history-status{color:var(--yellow);font-size:10px;font-weight:900}
-.history-details{color:var(--muted);font-size:11px;line-height:1.6;margin-top:6px}
-.history-sum{font-weight:900;margin-top:6px}
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:40;
-  display:grid;grid-template-columns:repeat(5,1fr);
-  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
-  background:rgba(16,24,43,.97);backdrop-filter:blur(16px);
-  border-top:1px solid var(--line);
+
+.hero h1 {
+  margin: 0 0 9px;
+  font-size: 25px;
 }
-.nav-item{
-  position:relative;display:flex;flex-direction:column;align-items:center;
-  gap:4px;background:transparent;border:0;color:#8191ab;
-  padding:5px 2px;font-size:10px;
+
+.hero p {
+  margin: 0;
+  color: #d7f3e7;
+  line-height: 1.5;
 }
-.nav-item .nav-icon{font-size:20px}
-.nav-item.active{color:#79afff}
-.nav-badge{
-  position:absolute;top:0;left:calc(50% + 5px);
-  background:var(--red);color:white;border-radius:50%;
-  min-width:16px;height:16px;padding:0 4px;
-  display:grid;place-items:center;font-size:9px;font-weight:900;
+
+.hero-label {
+  font-size: 34px;
+  font-weight: 900;
+  opacity: .9;
 }
-.page-view{display:none}
-.page-view.active{display:block}
-.modal-backdrop{
-  display:none;position:fixed;inset:0;z-index:100;
-  background:rgba(0,0,0,.7);padding:18px;
-  align-items:center;justify-content:center;
+
+.sports-tabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
 }
-.modal-backdrop.open{display:flex}
-.modal{
-  width:min(100%,420px);max-height:85vh;overflow:auto;
-  background:#142037;border:1px solid #344b6e;border-radius:18px;
-  padding:18px;box-shadow:var(--shadow);
+
+.sport-tab {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  background: #f3f5f7;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #626b76;
 }
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
-.modal-header h3{margin:0;font-size:18px}
-.close-modal{background:transparent;color:white;border:0;font-size:24px}
-.toast{
-  position:fixed;left:50%;bottom:98px;z-index:120;
-  transform:translate(-50%,20px);opacity:0;pointer-events:none;
-  width:max-content;max-width:90vw;padding:12px 16px;
-  background:#243650;border:1px solid #47658c;color:white;
-  border-radius:11px;box-shadow:var(--shadow);transition:.22s;
-  font-size:12px;text-align:center;
+
+.sport-tab.active {
+  color: var(--green);
+  background: var(--green-light);
+  border-color: #c9ead9;
 }
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.footer-note{
-  text-align:center;color:#687b98;font-size:10px;line-height:1.6;
-  padding:18px 10px 6px;
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
 }
-.market-tabs{display:flex;gap:7px;overflow:auto;margin:10px 0 14px}
-.market-tab{
-  flex-shrink:0;padding:9px 12px;border-radius:9px;
-  background:#1b2940;border:1px solid var(--line);color:#9bacc5;font-size:11px;
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.market-tab.active{background:#244c84;border-color:#4c8ef1;color:white}
-@media(min-width:760px){
-  .page{padding:20px}
-  .hero{padding:30px;min-height:205px}
-  .hero h1{font-size:35px}
-  .event-list{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .content-grid{grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr)}
-  .bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(100%,760px);border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:16px 16px 0 0}
+
+.filter-button {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: white;
+  color: #626b76;
+  font-size: 12px;
+  font-weight: 700;
 }
-@media(max-width:360px){
-  .brand-name{font-size:15px}
-  .balance{min-width:90px;padding:8px}
-  .event-markets{gap:5px;padding-left:8px;padding-right:8px}
-  .odds-btn .odd-name{font-size:9px}
-  .odds-btn .odd-value{font-size:13px}
+
+.filter-button.active {
+  color: var(--green);
+  background: var(--green-light);
+  border-color: var(--green);
+}
+
+.league-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--border);
+  font-weight: 800;
+}
+
+.league-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.match {
+  padding: 14px 12px;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.match:last-child {
+  border-bottom: 0;
+}
+
+.match-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.match-time {
+  margin-left: auto;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  display: inline-block;
+}
+
+.live-label {
+  color: var(--red);
+  font-weight: 800;
+}
+
+.match-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .9fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.team-icon {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f0f2f5;
+  flex-shrink: 0;
+}
+
+.team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  margin-left: auto;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.odds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.odd {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: #f7f8fa;
+  border-radius: 7px;
+  padding: 10px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  color: #505965;
+}
+
+.odd strong {
+  color: var(--green);
+}
+
+.odd:hover {
+  background: var(--green-light);
+  border-color: var(--green);
+}
+
+.odd.selected {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.odd.selected strong {
+  color: white;
+}
+
+.match-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--green);
+  font-weight: 800;
+  padding: 5px;
+}
+
+/* ПРАВАЯ КОЛОНКА */
+
+.right-column {
+  position: sticky;
+  top: 80px;
+}
+
+.coupon-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 11px;
+}
+
+.coupon-tab {
+  flex: 1;
+  padding: 9px;
+  border: 0;
+  border-radius: 7px;
+  background: #f0f2f5;
+  color: #5d6671;
+  font-weight: 800;
+}
+
+.coupon-tab.active {
+  background: var(--green);
+  color: white;
+}
+
+.coupon-body {
+  padding: 12px;
+}
+
+.empty {
+  padding: 23px 8px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.coupon-item {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.coupon-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.remove-pick {
+  border: 0;
+  border-radius: 5px;
+  background: #f0f2f5;
+  padding: 3px 7px;
+}
+
+.coupon-item-market {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coupon-item-odd {
+  margin-top: 7px;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.coupon-total {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 9px 0;
+  color: #65707c;
+}
+
+.total-row b {
+  color: var(--text);
+}
+
+.stake-input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 7px;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.demo-note {
+  margin-top: 12px;
+  background: #f7f8fa;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 13px;
+}
+
+.promo {
+  background: #eff8f3;
+  border: 1px solid #d8eee2;
+  border-radius: 10px;
+  padding: 15px;
+  min-height: 105px;
+}
+
+.promo strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.promo p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.page-content {
+  padding: 15px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stat {
+  background: #f7f8fa;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 13px;
+}
+
+.stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+.stat b {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 7px;
+  background: #fff3d6;
+  color: #946800;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* МОДАЛЬНОЕ ОКНО */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #111b2a80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.modal {
+  background: white;
+  width: min(650px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 14px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.modal-close {
+  border: 0;
+  background: #f0f2f5;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 20px;
+}
+
+.modal-body {
+  padding: 15px;
+}
+
+.detail-score {
+  text-align: center;
+  padding: 18px;
+  border-radius: 9px;
+  background: #f7f8fa;
+  margin-bottom: 12px;
+}
+
+.detail-score h3 {
+  font-size: 17px;
+  margin: 10px 0;
+}
+
+.detail-score .score-big {
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.market-group {
+  margin-top: 15px;
+}
+
+.market-title {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.market-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+/* АВТОРИЗАЦИЯ */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #f3f5f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 27px;
+  box-shadow: 0 15px 50px #0000000c;
+}
+
+.auth-logo {
+  text-align: center;
+  color: var(--green);
+  font-size: 31px;
+  font-weight: 900;
+}
+
+.auth-logo span {
+  color: var(--text);
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin: 7px 0 22px;
+  font-size: 13px;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.auth-tab {
+  border: 0;
+  background: #f0f2f5;
+  padding: 12px;
+  border-radius: 8px;
+  color: #626b76;
+  font-weight: 800;
+}
+
+.auth-tab.active {
+  color: white;
+  background: var(--green);
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  margin: 13px 0 7px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #dce1e7;
+  border-radius: 8px;
+  background: white;
+}
+
+.auth-input:focus {
+  outline: 2px solid #b7e5d0;
+  border-color: var(--green);
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 19px;
+  padding: 13px;
+}
+
+.auth-message {
+  display: none;
+  margin-top: 12px;
+  padding: 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.auth-message.error {
+  display: block;
+  color: #b42318;
+  background: #fff0f0;
+}
+
+.auth-message.success {
+  display: block;
+  color: #087443;
+  background: #e8f8ef;
+}
+
+.auth-note {
+  text-align: center;
+  color: #9299a4;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 16px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 2000;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: #202631;
+  color: white;
+  padding: 12px 17px;
+  border-radius: 9px;
+  max-width: calc(100vw - 24px);
+  text-align: center;
+  box-shadow: 0 8px 25px #0002;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 11px;
+  color: #9aa1aa;
+}
+
+@media(max-width:1150px) {
+  .layout {
+    grid-template-columns: 185px minmax(0, 1fr);
+  }
+
+  .right-column {
+    position: static;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media(max-width:720px) {
+  .header {
+    height: 58px;
+  }
+
+  .header-inner {
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .logo {
+    font-size: 23px;
+  }
+
+  .search {
+    display: none;
+  }
+
+  .header-right {
+    gap: 5px;
+  }
+
+  .balance {
+    font-size: 11px;
+    padding: 9px 7px;
+  }
+
+  .header-right .btn {
+    padding: 9px;
+    font-size: 12px;
+  }
+
+  .layout {
+    display: flex;
+    flex-direction: column;
+    padding: 0 8px;
+    margin: 9px auto;
+    gap: 10px;
+  }
+
+  .sidebar,
+  .main-column,
+  .right-column {
+    width: 100%;
+  }
+
+  .sidebar .nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+  }
+
+  .sidebar .nav-button {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .sidebar .nav-caption,
+  .sidebar-note {
+    display: none;
+  }
+
+  .hero {
+    padding: 17px;
+    min-height: 115px;
+  }
+
+  .hero h1 {
+    font-size: 21px;
+  }
+
+  .hero-label {
+    font-size: 22px;
+  }
+
+  .match-content {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .right-column {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media(max-width:390px) {
+  .hero-label {
+    display: none;
+  }
+
+  .odd {
+    font-size: 11px;
+    padding: 9px 3px;
+  }
+
+  .team-name {
+    font-size: 12px;
+  }
+
+  .auth-card {
+    padding: 21px;
+  }
 }
 </style>
 </head>
+
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brand" role="button" onclick="navigate('home')">
-      <div class="brand-mark">BZ</div>
-      <div>
-        <div class="brand-name">BETZONE</div>
-        <div class="brand-sub">SPORTS ARENA</div>
-      </div>
+
+<header class="header">
+  <div class="header-inner">
+    <button class="logo" id="homeButton">Open<span>Bet</span></button>
+
+    <input class="search" id="searchInput"
+           placeholder="Поиск команд и турниров..."
+           aria-label="Поиск событий">
+
+    <div class="header-right">
+      <div class="balance" id="headerBalance">10 000 🪙</div>
+      <button class="btn btn-light" id="profileButton">Профиль</button>
+      <button class="btn btn-primary" id="authButton">Войти</button>
     </div>
-    <div class="top-spacer"></div>
-    <button class="icon-btn" aria-label="Поиск" onclick="focusSearch()">⌕</button>
-    <div class="balance">
-      <div class="balance-label">Виртуальный баланс</div>
-      <div class="balance-value" id="headerBalance">10 000 ₽</div>
-    </div>
-  </header>
-  <div class="demo-banner">
-    <b>ДЕМО-РЕЖИМ</b> · Только виртуальные рубли. Коэффициенты вымышлены и не являются актуальными котировками. Реальных денежных операций нет.
   </div>
-  <main class="page">
-    <section id="view-home" class="page-view active">
-      <div class="hero">
-        <div class="hero-kicker">BETZONE · MATCH CENTER</div>
-        <h1>Спорт. Эмоции.<br>Твоя аналитика.</h1>
-        <p>Изучай события, сравнивай условные коэффициенты и проверяй расчёты в безопасном деморежиме.</p>
-        <button class="hero-button" onclick="scrollToEvents()">Открыть матчи ↓</button>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar card">
+    <div class="nav">
+      <button class="nav-button active" data-page="home">
+        <span class="nav-icon">⌂</span> Главная
+      </button>
+      <button class="nav-button" data-page="live">
+        <span class="nav-icon">🔴</span> Live
+      </button>
+      <button class="nav-button" data-page="prematch">
+        <span class="nav-icon">▦</span> Линия
+      </button>
+      <button class="nav-button" data-page="promos">
+        <span class="nav-icon">✦</span> Предложения
+      </button>
+    </div>
+
+    <div class="nav-caption">ЛИЧНЫЙ КАБИНЕТ</div>
+
+    <div class="nav">
+      <button class="nav-button" data-page="history">
+        <span class="nav-icon">◷</span> История
+      </button>
+      <button class="nav-button" data-page="profile">
+        <span class="nav-icon">♙</span> Профиль
+      </button>
+    </div>
+
+    <div class="nav-caption">ВИДЫ СПОРТА</div>
+
+    <div class="nav">
+      <button class="nav-button" data-sport="football">⚽ Футбол</button>
+      <button class="nav-button" data-sport="hockey">🏒 Хоккей</button>
+      <button class="nav-button" data-sport="basketball">🏀 Баскетбол</button>
+      <button class="nav-button" data-sport="tennis">🎾 Теннис</button>
+      <button class="nav-button" data-sport="ufc">🥊 MMA / UFC</button>
+      <button class="nav-button" data-sport="volleyball">🏐 Волейбол</button>
+    </div>
+
+    <div class="sidebar-note">
+      OpenBet Demo. Все события и коэффициенты условные. Используются только виртуальные жетоны.
+    </div>
+  </aside>
+
+  <main class="main-column">
+
+    <section class="card hero" id="hero">
+      <div>
+        <h1 id="heroTitle">Спорт начинается здесь</h1>
+        <p id="heroDescription">
+          Матчи, результаты и спортивная статистика в одном месте.
+        </p>
       </div>
-      <div class="search-wrap">
-        <span>⌕</span>
-        <input id="searchInput" placeholder="Найти команду, матч или турнир…" autocomplete="off">
+      <div class="hero-label">SPORT</div>
+    </section>
+
+    <section class="card" id="eventsPanel" style="margin-top:12px">
+      <div class="sports-tabs" id="sportsTabs">
+        <button class="sport-tab active" data-sport="all">Все события</button>
+        <button class="sport-tab" data-sport="football">⚽ Футбол</button>
+        <button class="sport-tab" data-sport="hockey">🏒 Хоккей</button>
+        <button class="sport-tab" data-sport="basketball">🏀 Баскетбол</button>
+        <button class="sport-tab" data-sport="tennis">🎾 Теннис</button>
+        <button class="sport-tab" data-sport="ufc">🥊 MMA</button>
+        <button class="sport-tab" data-sport="volleyball">🏐 Волейбол</button>
       </div>
-      <div class="sports-strip" id="sportsStrip">
-        <button class="sport-pill active" data-sport="all">🔥 Все</button>
-        <button class="sport-pill" data-sport="football">⚽ Футбол</button>
-        <button class="sport-pill" data-sport="hockey">🏒 Хоккей</button>
-        <button class="sport-pill" data-sport="mma">🥊 MMA</button>
-        <button class="sport-pill" data-sport="basketball">🏀 Баскетбол</button>
-        <button class="sport-pill" data-sport="tennis">🎾 Теннис</button>
-        <button class="sport-pill" data-sport="volleyball">🏐 Волейбол</button>
+
+      <div class="toolbar">
+        <div class="filters">
+          <button class="filter-button active" data-filter="all">Все</button>
+          <button class="filter-button" data-filter="live">🔴 LIVE</button>
+          <button class="filter-button" data-filter="prematch">Скоро</button>
+        </div>
+        <span class="small muted" id="eventCount">10 событий</span>
       </div>
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">Все события</button>
-        <button class="filter-btn" data-filter="live"><span class="live-dot"></span>LIVE</button>
-        <button class="filter-btn" data-filter="soon">Скоро</button>
-        <button class="filter-btn" data-filter="favorites">★ Избранное</button>
+
+      <div id="eventsList"></div>
+    </section>
+
+    <section class="card" id="promosPanel" style="margin-top:12px">
+      <div class="card-title">
+        <h2>В центре внимания</h2>
+        <span class="small muted">Демо-раздел</span>
       </div>
-      <div class="section-heading" id="eventsHeading">
-        <h2>Матчи и события</h2>
-        <small id="eventCount">0 событий</small>
-      </div>
-      <div class="event-list" id="eventList"></div>
-      <div class="footer-note">
-        BETZONE — независимый демонстрационный проект.<br>
-        Все команды, события, счёты и коэффициенты в примере используются для демонстрации интерфейса.
+
+      <div class="promo-grid">
+        <div class="promo">
+          <strong>⚡ Быстрый купон</strong>
+          <p>Выбирай исходы из разных событий и изучай расчёт общего коэффициента.</p>
+        </div>
+        <div class="promo">
+          <strong>📊 Спортивная статистика</strong>
+          <p>Счёт, игровое время и демонстрационные котировки.</p>
+        </div>
       </div>
     </section>
-    <section id="view-live" class="page-view">
-      <div class="section-heading">
-        <h2>🔴 LIVE-центр</h2>
-        <small>Демо-данные</small>
+
+    <section class="card hidden" id="pagePanel" style="margin-top:12px"></section>
+
+  </main>
+
+  <aside class="right-column">
+
+    <section class="card">
+      <div class="card-title">
+        <h3>Купон</h3>
+        <button class="text-button" id="clearCoupon">Очистить</button>
       </div>
-      <p class="muted">События, помеченные как LIVE, являются демонстрационными. Реальной трансляции и обновления счёта нет.</p>
-      <div class="event-list" id="liveList"></div>
+
+      <div class="coupon-tabs">
+        <button class="coupon-tab active" data-coupon-mode="single">Одинар</button>
+        <button class="coupon-tab" data-coupon-mode="express">Экспресс</button>
+      </div>
+
+      <div class="coupon-body">
+        <div id="couponItems">
+          <div class="empty">
+            <div style="font-size:28px">▤</div>
+            <b>Купон пуст</b>
+            <p class="small">Выбери коэффициент в карточке матча.</p>
+          </div>
+        </div>
+
+        <div id="couponCalculator" class="hidden">
+          <div class="coupon-total">
+            <div class="total-row">
+              <span>Общий коэффициент</span>
+              <b id="couponOdds">—</b>
+            </div>
+
+            <label class="small muted" for="stakeInput">
+              Виртуальная сумма
+            </label>
+
+            <input class="stake-input" id="stakeInput"
+                   type="number" min="1" max="1000000"
+                   step="1" value="100">
+
+            <div class="total-row">
+              <span>Потенциальный результат</span>
+              <b id="potentialResult">—</b>
+            </div>
+
+            <button class="btn btn-primary full-width" id="submitCoupon">
+              Создать демо-запись
+            </button>
+          </div>
+        </div>
+
+        <div class="demo-note">
+          🪙 Только виртуальные жетоны. Нет депозитов, вывода денег или реальных ставок.
+        </div>
+      </div>
     </section>
-    <section id="view-coupon" class="page-view">
-      <div class="section-heading">
-        <h2>🎟 Мой купон</h2>
-        <small id="couponCount">0 выборов</small>
+
+    <section class="card">
+      <div class="card-title">
+        <h3>Обзор событий</h3>
       </div>
-      <div class="content-grid">
-        <div class="panel">
-          <h3>Выбранные исходы</h3>
-          <div id="couponItems"></div>
-          <button class="secondary-btn full" onclick="clearCoupon()">Очистить купон</button>
+      <div class="page-content">
+        <div class="total-row">
+          <span>Всего событий</span><b id="totalEvents">10</b>
         </div>
-        <div class="panel">
-          <h3>Расчёт</h3>
-          <label class="field-label" for="stakeInput">Виртуальная сумма, ₽</label>
-          <input class="input" id="stakeInput" type="number" min="1" max="1000000" step="1" value="100">
-          <div class="presets">
-            <button class="preset" data-amount="100">100 ₽</button>
-            <button class="preset" data-amount="500">500 ₽</button>
-            <button class="preset" data-amount="1000">1 000 ₽</button>
-            <button class="preset" data-amount="5000">5 000 ₽</button>
-          </div>
-          <div class="calc-line"><span class="muted">Комбинированный коэффициент</span><strong id="totalOdds">—</strong></div>
-          <div class="calc-line"><span class="muted">Сумма</span><strong id="shownStake">100 ₽</strong></div>
-          <div class="calc-total">
-            <div class="calc-line"><span>Условный возврат</span><strong id="potentialReturn">—</strong></div>
-            <div class="calc-line"><span>Условная прибыль</span><strong id="potentialProfit">—</strong></div>
-          </div>
-          <button class="primary-btn full" style="margin-top:14px" id="placeDemoButton" onclick="placeDemoPrediction()">Подтвердить демопрогноз</button>
-          <p class="disclaimer">Это учебная симуляция математических расчётов. Результат события не определяется и виртуальные единицы не имеют денежной стоимости.</p>
+        <div class="total-row">
+          <span>В LIVE</span><b id="liveEvents">3</b>
         </div>
-      </div>
-    </section>
-    <section id="view-history" class="page-view">
-      <div class="section-heading">
-        <h2>📋 История демопрогнозов</h2>
-      </div>
-      <div class="panel">
-        <div id="historyList"></div>
-        <button class="secondary-btn full" onclick="clearHistory()">Очистить историю</button>
-      </div>
-    </section>
-    <section id="view-profile" class="page-view">
-      <div class="section-heading"><h2>👤 Профиль</h2></div>
-      <div class="panel">
-        <div class="profile-row">
-          <div class="avatar">BZ</div>
-          <div>
-            <strong>Игрок BETZONE</strong>
-            <div class="muted small" style="margin-top:5px">Демо-профиль · без регистрации</div>
-          </div>
+        <div class="total-row">
+          <span>Коэффициенты</span><b class="green">Демо</b>
         </div>
-        <div class="profile-row">
-          <div style="font-size:22px">🪙</div>
-          <div style="flex:1">
-            <strong>Виртуальный баланс</strong>
-            <div class="muted small" style="margin-top:5px">Текущий учебный счёт</div>
-          </div>
-          <strong id="profileBalance">10 000 ₽</strong>
-        </div>
-        <label class="field-label" for="topupInput">Добавить виртуальные единицы</label>
-        <input class="input" id="topupInput" type="number" min="1" max="1000000" value="1000">
-        <button class="primary-btn full" style="margin-top:10px" onclick="topUpDemo()">Добавить демобаланс</button>
-        <button class="secondary-btn full" style="margin-top:9px" onclick="resetDemo()">Сбросить демоданные</button>
-      </div>
-      <div class="panel">
-        <h3>О проекте</h3>
-        <p class="muted" style="line-height:1.7">
-          BETZONE — демонстрационный спортивный интерфейс. Это не официальный сайт букмекерской компании. Котировки и результаты вымышлены. Пополнение, вывод денег и реальные ставки отсутствуют.
+        <p class="small muted">
+          Результаты и котировки вымышлены и не являются актуальными спортивными данными.
         </p>
       </div>
     </section>
-  </main>
+
+  </aside>
 </div>
-<nav class="bottom-nav" aria-label="Основная навигация">
-  <button class="nav-item active" data-page="home"><span class="nav-icon">⌂</span><span>Главная</span></button>
-  <button class="nav-item" data-page="live"><span class="nav-icon">◉</span><span>LIVE</span></button>
-  <button class="nav-item" data-page="coupon"><span class="nav-icon">🎟</span><span>Купон</span><span class="nav-badge" id="navCouponBadge" hidden>0</span></button>
-  <button class="nav-item" data-page="history"><span class="nav-icon">▤</span><span>История</span></button>
-  <button class="nav-item" data-page="profile"><span class="nav-icon">♙</span><span>Профиль</span></button>
-</nav>
-<div class="modal-backdrop" id="modalBackdrop" onclick="backdropClose(event)">
+
+<footer class="footer">
+  OpenBet Demo · Самостоятельный проект · Все операции виртуальные
+</footer>
+
+<!-- ДЕТАЛЬНАЯ СТРАНИЦА МАТЧА -->
+
+<div class="modal-overlay hidden" id="matchModal"
+     role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="modalTitle">Рынки события</h3>
-      <button class="close-modal" onclick="closeModal()">×</button>
+      <h2 id="modalTitle">Событие</h2>
+      <button class="modal-close" id="closeModal">×</button>
     </div>
-    <div id="modalContent"></div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<div class="toast hidden" id="toast" role="status"></div>
+
+<!-- АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ -->
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">Open<span>Bet</span></div>
+    <div class="auth-subtitle">Твой центр спортивных событий</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab" type="button">Вход</button>
+      <button class="auth-tab" id="registerTab" type="button">Регистрация</button>
+    </div>
+
+    <form id="authForm" novalidate>
+      <label class="field-label" for="username">Логин</label>
+      <input class="auth-input" id="username"
+             type="text" minlength="3" maxlength="24"
+             autocomplete="username"
+             placeholder="От 3 до 24 символов" required>
+
+      <label class="field-label" for="password">Пароль</label>
+      <input class="auth-input" id="password"
+             type="password" minlength="6" maxlength="128"
+             autocomplete="current-password"
+             placeholder="Минимум 6 символов" required>
+
+      <div id="confirmWrap" class="hidden">
+        <label class="field-label" for="confirmPassword">Повтори пароль</label>
+        <input class="auth-input" id="confirmPassword"
+               type="password" minlength="6" maxlength="128"
+               autocomplete="new-password"
+               placeholder="Повтори пароль">
+      </div>
+
+      <button class="btn btn-primary auth-submit" id="authSubmit" type="submit">
+        Войти
+      </button>
+
+      <div class="auth-message" id="authMessage" role="status"></div>
+    </form>
+
+    <div class="auth-note">
+      Демо-аккаунт сохраняется в текущем браузере. Не используй пароль от других сервисов. Данные не отправляются на сервер.
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
-/* ==========================================================
-   BETZONE DEMO ENGINE
-   Все котировки ниже вымышлены. Внешнего API нет.
-   ========================================================== */
-const DEMO_START_BALANCE = 10000;
-const STORAGE_KEY = "betzone_demo_v1";
-const initialEvents = [
+
+/* =========================================================
+   1. ДАННЫЕ И СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+   ========================================================= */
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+
+const STORAGE_USERS = "openbet_users_v1";
+const STORAGE_SESSION = "openbet_session_v1";
+const STORAGE_DATA = "openbet_account_data_v1";
+
+const sportInfo = {
+  football: {name:"Футбол", icon:"⚽"},
+  hockey: {name:"Хоккей", icon:"🏒"},
+  basketball: {name:"Баскетбол", icon:"🏀"},
+  tennis: {name:"Теннис", icon:"🎾"},
+  ufc: {name:"MMA / UFC", icon:"🥊"},
+  volleyball: {name:"Волейбол", icon:"🏐"}
+};
+
+/*
+  Все матчи ниже вымышлены. Это демонстрационные события,
+  а не реальное расписание спортивных соревнований.
+*/
+
+const matches = [
   {
-    id:"f101",sport:"football",league:"Европейский кубок · демо",
-    icon:"⚽",home:"Манчестер Сити",away:"Боруссия Дортмунд",
-    homeIcon:"🔵",awayIcon:"🟡",time:"Сегодня, 20:00",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:1.72},{name:"X",odd:4.10},{name:"П2",odd:4.65}
-      ],
-      totals:[
-        {name:"ТБ 2.5",odd:1.76},{name:"ТМ 2.5",odd:2.02},
-        {name:"ТБ 3.5",odd:2.55},{name:"ТМ 3.5",odd:1.47}
-      ],
-      handicap:[
-        {name:"Ф1 (−1)",odd:2.20},{name:"Ф2 (+1)",odd:1.67}
-      ],
-      special:[
-        {name:"Обе забьют — Да",odd:1.61},
-        {name:"Обе забьют — Нет",odd:2.20}
-      ]
-    }
+    id:"f1", sport:"football",
+    league:"Англия · Премьер-лига",
+    home:"Манчестер Сити", away:"Ливерпуль",
+    status:"live", minute:63, homeScore:2, awayScore:1,
+    odds:[1.85,3.65,4.10]
   },
   {
-    id:"f102",sport:"football",league:"Национальный чемпионат · демо",
-    icon:"⚽",home:"Реал Мадрид",away:"Атлетико Мадрид",
-    homeIcon:"⚪",awayIcon:"🔴",time:"Сегодня, 21:30",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:2.05},{name:"X",odd:3.25},{name:"П2",odd:3.65}
-      ],
-      totals:[
-        {name:"ТБ 2.5",odd:1.91},{name:"ТМ 2.5",odd:1.84},
-        {name:"ТБ 1.5",odd:1.32},{name:"ТМ 1.5",odd:3.15}
-      ],
-      handicap:[
-        {name:"Ф1 (0)",odd:1.47},{name:"Ф2 (0)",odd:2.62}
-      ],
-      special:[
-        {name:"Обе забьют — Да",odd:1.78},
-        {name:"Обе забьют — Нет",odd:1.95}
-      ]
-    }
+    id:"f2", sport:"football",
+    league:"Испания · Ла Лига",
+    home:"Реал Мадрид", away:"Барселона",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[2.35,3.50,2.85]
   },
   {
-    id:"f103",sport:"football",league:"Премьер-лига · демо",
-    icon:"⚽",home:"Ливерпуль",away:"Арсенал",
-    homeIcon:"🔴",awayIcon:"🔴",time:"Завтра, 18:00",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:2.38},{name:"X",odd:3.55},{name:"П2",odd:2.80}
-      ],
-      totals:[
-        {name:"ТБ 2.5",odd:1.68},{name:"ТМ 2.5",odd:2.12},
-        {name:"ТБ 3.5",odd:2.30},{name:"ТМ 3.5",odd:1.58}
-      ],
-      handicap:[
-        {name:"Ф1 (0)",odd:1.75},{name:"Ф2 (0)",odd:2.05}
-      ],
-      special:[
-        {name:"Обе забьют — Да",odd:1.53},
-        {name:"Обе забьют — Нет",odd:2.38}
-      ]
-    }
+    id:"f3", sport:"football",
+    league:"Италия · Серия А",
+    home:"Интер", away:"Милан",
+    status:"live", minute:28, homeScore:0, awayScore:0,
+    odds:[2.05,3.20,3.55]
   },
   {
-    id:"h201",sport:"hockey",league:"Хоккейная лига · демо",
-    icon:"🏒",home:"Миннесота",away:"Баффало",
-    homeIcon:"🟢",awayIcon:"🔵",time:"LIVE · 2-й период",
-    status:"live",scoreHome:2,scoreAway:1,
-    markets:{
-      result:[
-        {name:"П1",odd:1.82},{name:"X",odd:4.20},{name:"П2",odd:3.55}
-      ],
-      totals:[
-        {name:"ТБ 5.5",odd:1.87},{name:"ТМ 5.5",odd:1.93},
-        {name:"ТБ 6.5",odd:2.36},{name:"ТМ 6.5",odd:1.54}
-      ],
-      handicap:[
-        {name:"Ф1 (−1.5)",odd:2.55},{name:"Ф2 (+1.5)",odd:1.52}
-      ],
-      special:[
-        {name:"Следующий гол: П1",odd:1.95},
-        {name:"Следующий гол: П2",odd:2.15}
-      ]
-    }
+    id:"h1", sport:"hockey",
+    league:"КХЛ · Регулярный чемпионат",
+    home:"ЦСКА", away:"СКА",
+    status:"live", minute:34, homeScore:2, awayScore:2,
+    odds:[2.30,3.90,2.55]
   },
   {
-    id:"h202",sport:"hockey",league:"Хоккейная лига · демо",
-    icon:"🏒",home:"Локомотив",away:"Северсталь",
-    homeIcon:"🚂",awayIcon:"⚙️",time:"Завтра, 19:30",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:1.91},{name:"X",odd:4.05},{name:"П2",odd:3.45}
-      ],
-      totals:[
-        {name:"ТБ 4.5",odd:1.78},{name:"ТМ 4.5",odd:2.02},
-        {name:"ТБ 5.5",odd:2.35},{name:"ТМ 5.5",odd:1.55}
-      ],
-      handicap:[
-        {name:"Ф1 (−1.5)",odd:2.75},{name:"Ф2 (+1.5)",odd:1.45}
-      ],
-      special:[
-        {name:"Овертайм — Да",odd:4.10},
-        {name:"Овертайм — Нет",odd:1.20}
-      ]
-    }
+    id:"h2", sport:"hockey",
+    league:"НХЛ · Регулярный чемпионат",
+    home:"Эдмонтон", away:"Торонто",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[2.20,4.00,2.70]
   },
   {
-    id:"h203",sport:"hockey",league:"Хоккейная лига · демо",
-    icon:"🏒",home:"Металлург",away:"Адмирал",
-    homeIcon:"⚒️",awayIcon:"⚓",time:"LIVE · 2-й период",
-    status:"live",scoreHome:2,scoreAway:0,
-    markets:{
-      result:[
-        {name:"П1",odd:1.25},{name:"X",odd:6.50},{name:"П2",odd:9.00}
-      ],
-      totals:[
-        {name:"ТБ 4.5",odd:1.92},{name:"ТМ 4.5",odd:1.82},
-        {name:"ТБ 5.5",odd:2.60},{name:"ТМ 5.5",odd:1.43}
-      ],
-      handicap:[
-        {name:"Ф1 (−1.5)",odd:1.75},{name:"Ф2 (+1.5)",odd:2.00}
-      ],
-      special:[
-        {name:"П1 в основное время",odd:1.48},
-        {name:"Будет буллитная серия",odd:8.00}
-      ]
-    }
+    id:"h3", sport:"hockey",
+    league:"КХЛ · Регулярный чемпионат",
+    home:"Металлург", away:"Авангард",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[1.95,3.85,3.25]
   },
   {
-    id:"m301",sport:"mma",league:"MMA · выставочная карточка",
-    icon:"🥊",home:"Боец А",away:"Боец Б",
-    homeIcon:"🥊",awayIcon:"🥋",time:"Суббота, 22:00",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"Победа А",odd:1.85},{name:"Победа Б",odd:2.05}
-      ],
-      totals:[
-        {name:"Больше 1.5 раундов",odd:1.72},
-        {name:"Меньше 1.5 раундов",odd:2.02}
-      ],
-      handicap:[
-        {name:"Решение судей — Да",odd:2.25},
-        {name:"Досрочная победа — Да",odd:1.72}
-      ],
-      special:[
-        {name:"Бой пройдёт всю дистанцию",odd:2.35},
-        {name:"Бой закончится досрочно",odd:1.60}
-      ]
-    }
+    id:"b1", sport:"basketball",
+    league:"NBA · Регулярный сезон",
+    home:"Бостон Селтикс", away:"Лос-Анджелес Лейкерс",
+    status:"live", minute:22, homeScore:58, awayScore:51,
+    odds:[1.65,0,2.25]
   },
   {
-    id:"b401",sport:"basketball",league:"Баскетбольная лига · демо",
-    icon:"🏀",home:"Бостон",away:"Майами",
-    homeIcon:"☘️",awayIcon:"🔥",time:"Завтра, 02:30",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:1.62},{name:"П2",odd:2.30}
-      ],
-      totals:[
-        {name:"ТБ 215.5",odd:1.90},{name:"ТМ 215.5",odd:1.90},
-        {name:"ТБ 225.5",odd:2.12},{name:"ТМ 225.5",odd:1.68}
-      ],
-      handicap:[
-        {name:"Ф1 (−4.5)",odd:1.91},{name:"Ф2 (+4.5)",odd:1.91}
-      ],
-      special:[
-        {name:"ОТ — Да",odd:8.00},{name:"ОТ — Нет",odd:1.05}
-      ]
-    }
+    id:"t1", sport:"tennis",
+    league:"Теннис · Мужчины",
+    home:"Александр Зверев", away:"Даниил Медведев",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[1.90,0,1.90]
   },
   {
-    id:"t501",sport:"tennis",league:"Теннис · демо",
-    icon:"🎾",home:"Игрок А",away:"Игрок Б",
-    homeIcon:"🟡",awayIcon:"🟢",time:"Сегодня, 17:00",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:1.70},{name:"П2",odd:2.15}
-      ],
-      totals:[
-        {name:"ТБ 22.5 гейма",odd:1.88},
-        {name:"ТМ 22.5 гейма",odd:1.92}
-      ],
-      handicap:[
-        {name:"Ф1 (−2.5)",odd:2.05},{name:"Ф2 (+2.5)",odd:1.75}
-      ],
-      special:[
-        {name:"Будет 3-й сет — Да",odd:2.10},
-        {name:"Будет 3-й сет — Нет",odd:1.68}
-      ]
-    }
+    id:"u1", sport:"ufc",
+    league:"MMA · Главный кард",
+    home:"Боец A", away:"Боец B",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[1.80,0,2.05]
   },
   {
-    id:"v601",sport:"volleyball",league:"Волейбол · демо",
-    icon:"🏐",home:"Команда А",away:"Команда Б",
-    homeIcon:"🔵",awayIcon:"🔴",time:"Завтра, 16:00",
-    status:"soon",scoreHome:null,scoreAway:null,
-    markets:{
-      result:[
-        {name:"П1",odd:1.80},{name:"П2",odd:2.00}
-      ],
-      totals:[
-        {name:"ТБ 3.5 сета",odd:1.72},
-        {name:"ТМ 3.5 сета",odd:2.04}
-      ],
-      handicap:[
-        {name:"Ф1 (−1.5)",odd:2.35},{name:"Ф2 (+1.5)",odd:1.55}
-      ],
-      special:[
-        {name:"5-й сет — Да",odd:2.65},{name:"5-й сет — Нет",odd:1.43}
-      ]
-    }
+    id:"v1", sport:"volleyball",
+    league:"Волейбол · Мужчины",
+    home:"Зенит-Казань", away:"Динамо Москва",
+    status:"prematch", minute:0, homeScore:0, awayScore:0,
+    odds:[1.75,0,2.10]
   }
 ];
-function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
-    if(saved && typeof saved.balance==="number"){
-      return {
-        balance:saved.balance,
-        coupon:Array.isArray(saved.coupon)?saved.coupon:[],
-        history:Array.isArray(saved.history)?saved.history:[],
-        favorites:Array.isArray(saved.favorites)?saved.favorites:[]
-      };
-    }
-  }catch(e){}
-  return {balance:DEMO_START_BALANCE,coupon:[],history:[],favorites:[]};
+
+let currentUser = null;
+let selectedSport = "all";
+let selectedFilter = "all";
+let currentPage = "home";
+let couponMode = "single";
+let coupon = [];
+let openedMatchId = null;
+let toastTimeout = null;
+
+/* =========================================================
+   2. ХРАНИЛИЩЕ
+   ========================================================= */
+
+function readStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
 }
-const state=loadState();
-const events=initialEvents;
-let selectedSport="all";
-let selectedFilter="all";
-let activeMarket="result";
-let toastTimer=null;
-function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  }catch(e){}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    showToast("Не удалось сохранить данные. Проверь настройки браузера.");
+    return false;
+  }
 }
-function money(value){
-  return new Intl.NumberFormat("ru-RU",{
-    maximumFractionDigits:2,
-    minimumFractionDigits:0
-  }).format(Number(value)||0)+" ₽";
+
+function getUsers() {
+  return readStorage(STORAGE_USERS, {});
 }
-function number(value){
-  return new Intl.NumberFormat("ru-RU",{
+
+function getAccountData() {
+  if (!currentUser) {
+    return {balance:10000, history:[]};
+  }
+
+  const all = readStorage(STORAGE_DATA, {});
+  return all[currentUser.key] || {balance:10000, history:[]};
+}
+
+function saveAccountData(data) {
+  if (!currentUser) return false;
+
+  const all = readStorage(STORAGE_DATA, {});
+  all[currentUser.key] = data;
+
+  const saved = writeStorage(STORAGE_DATA, all);
+  updateBalance();
+  return saved;
+}
+
+function money(value) {
+  return Number(value).toLocaleString("ru-RU", {
     maximumFractionDigits:2
-  }).format(Number(value)||0);
+  }) + " 🪙";
 }
-function escapeHtml(value){
-  return String(value).replace(/[&<>"']/g,char=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[char]));
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
 }
-function getEvent(id){
-  return events.find(event=>event.id===id);
+
+function showToast(message) {
+  const element = $("#toast");
+  element.textContent = message;
+  element.classList.remove("hidden");
+
+  clearTimeout(toastTimeout);
+
+  toastTimeout = setTimeout(() => {
+    element.classList.add("hidden");
+  }, 2800);
 }
-function findMarket(event,marketName,selectionName){
-  if(!event || !event.markets[marketName])return null;
-  return event.markets[marketName].find(item=>item.name===selectionName)||null;
+
+/* =========================================================
+   3. РЕГИСТРАЦИЯ И АВТОРИЗАЦИЯ
+   ========================================================= */
+
+let authMode = "login";
+
+function showAuthMessage(text, type="error") {
+  const element = $("#authMessage");
+  element.textContent = text;
+  element.className = "auth-message " + type;
 }
-function getPickKey(pick){
-  return pick.eventId+"|"+pick.market+"|"+pick.selection;
+
+function clearAuthMessage() {
+  const element = $("#authMessage");
+  element.textContent = "";
+  element.className = "auth-message";
 }
-function isPicked(eventId,market,selection){
-  return state.coupon.some(pick=>
-    pick.eventId===eventId &&
-    pick.market===market &&
-    pick.selection===selection
-  );
+
+function setAuthMode(mode) {
+  authMode = mode;
+  clearAuthMessage();
+
+  $("#loginTab").classList.toggle("active", mode === "login");
+  $("#registerTab").classList.toggle("active", mode === "register");
+  $("#confirmWrap").classList.toggle("hidden", mode !== "register");
+
+  $("#confirmPassword").required = mode === "register";
+
+  $("#password").autocomplete =
+    mode === "register" ? "new-password" : "current-password";
+
+  $("#authSubmit").textContent =
+    mode === "register" ? "Создать аккаунт" : "Войти";
 }
-function currentBalance(){
-  return Math.max(0,Number(state.balance)||0);
-}
-function updateBalances(){
-  document.getElementById("headerBalance").textContent=money(currentBalance());
-  document.getElementById("profileBalance").textContent=money(currentBalance());
-}
-function showToast(message){
-  const element=document.getElementById("toast");
-  element.textContent=message;
-  element.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>element.classList.remove("show"),2500);
-}
-function marketLabel(key){
-  const labels={
-    result:"Исход",
-    totals:"Тоталы",
-    handicap:"Форы",
-    special:"Дополнительно"
-  };
-  return labels[key]||key;
-}
-function eventMatches(event){
-  if(selectedSport!=="all" && event.sport!==selectedSport)return false;
-  if(selectedFilter==="live" && event.status!=="live")return false;
-  if(selectedFilter==="soon" && event.status!=="soon")return false;
-  if(selectedFilter==="favorites" && !state.favorites.includes(event.id))return false;
-  const query=(document.getElementById("searchInput").value||"").trim().toLowerCase();
-  if(query){
-    const haystack=[
-      event.home,event.away,event.league,event.time,event.sport
-    ].join(" ").toLowerCase();
-    if(!haystack.includes(query))return false;
+
+$("#loginTab").addEventListener("click", () => setAuthMode("login"));
+$("#registerTab").addEventListener("click", () => setAuthMode("register"));
+
+async function hashPassword(password) {
+  /*
+    В демоверсии используем Web Crypto, если браузер его поддерживает.
+    Важно: localStorage не является серверной системой безопасности.
+  */
+
+  if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+    const buffer = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(password)
+    );
+
+    return [...new Uint8Array(buffer)]
+      .map(byte => byte.toString(16).padStart(2,"0"))
+      .join("");
   }
-  return true;
-}
-function eventCard(event){
-  const market=event.markets.result;
-  const shownMarkets=market.slice(0,3);
-  const isLive=event.status==="live";
-  const favorite=state.favorites.includes(event.id);
-  const scoreHTML=isLive
-    ? `<div>${event.scoreHome}</div><div>${event.scoreAway}</div>`
-    : `<div>—</div><div>—</div>`;
-  const oddsHTML=shownMarkets.map(item=>{
-    const picked=isPicked(event.id,"result",item.name);
-    return `
-      <button class="odds-btn ${picked?"selected":""}"
-        onclick="togglePick('${event.id}','result','${escapeHtml(item.name)}')">
-        <span class="odd-name">${escapeHtml(item.name)}</span>
-        <span class="odd-value">${Number(item.odd).toFixed(2)}</span>
-      </button>`;
-  }).join("");
-  return `
-    <article class="event-card">
-      <div class="event-top">
-        <div class="league-icon">${event.icon}</div>
-        <div class="league-info">
-          <div class="league-name">${escapeHtml(event.league)}</div>
-          <div class="event-time ${isLive?"live-label":""}">
-            ${isLive?'<span class="live-dot"></span>':""}${escapeHtml(event.time)}
-          </div>
-        </div>
-        <button class="star ${favorite?"active":""}"
-          aria-label="Избранное"
-          onclick="toggleFavorite('${event.id}')">${favorite?"★":"☆"}</button>
-      </div>
-      <div class="event-score">
-        <div class="teams">
-          <div class="team-line"><span class="team-emoji">${event.homeIcon}</span><span>${escapeHtml(event.home)}</span></div>
-          <div class="team-line"><span class="team-emoji">${event.awayIcon}</span><span>${escapeHtml(event.away)}</span></div>
-        </div>
-        <div class="score-column">${scoreHTML}</div>
-      </div>
-      <div class="event-markets">${oddsHTML}</div>
-      <button class="more-markets" onclick="openMarkets('${event.id}')">
-        Все рынки · ${Object.values(event.markets).reduce((sum,list)=>sum+list.length,0)} вариантов　＋
-      </button>
-    </article>`;
-}
-function renderEvents(){
-  const filtered=events.filter(eventMatches);
-  const list=document.getElementById("eventList");
-  document.getElementById("eventCount").textContent=filtered.length+" событий";
-  if(!filtered.length){
-    list.innerHTML='<div class="empty-state"><strong>Ничего не найдено</strong>Измени фильтр или поисковый запрос.</div>';
-  }else{
-    list.innerHTML=filtered.map(eventCard).join("");
+
+  /*
+    Fallback для локального файла в браузере без Web Crypto.
+    Подходит только для демоверсии, не для настоящего сервиса.
+  */
+
+  let hash = 2166136261;
+
+  for (let i=0; i<password.length; i++) {
+    hash ^= password.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
-  document.getElementById("liveList").innerHTML=events
-    .filter(event=>event.status==="live")
-    .map(eventCard).join("") ||
-    '<div class="empty-state"><strong>Нет событий</strong></div>';
+
+  return "demo-" + (hash >>> 0).toString(16) + "-" + password.length;
 }
-function toggleFavorite(eventId){
-  const index=state.favorites.indexOf(eventId);
-  if(index>=0)state.favorites.splice(index,1);
-  else state.favorites.push(eventId);
-  saveState();
-  renderEvents();
-  showToast(index>=0?"Удалено из избранного":"Добавлено в избранное");
-}
-function togglePick(eventId,market,selection){
-  const event=getEvent(eventId);
-  if(!event)return;
-  const option=findMarket(event,market,selection);
-  if(!option)return;
-  const index=state.coupon.findIndex(pick=>
-    pick.eventId===eventId &&
-    pick.market===market &&
-    pick.selection===selection
-  );
-  if(index>=0){
-    state.coupon.splice(index,1);
-    showToast("Выбор удалён");
-  }else{
-    // Для одного события оставляем только один исход.
-    state.coupon=state.coupon.filter(pick=>pick.eventId!==eventId);
-    state.coupon.push({
-      eventId,
-      market,
-      selection,
-      odd:Number(option.odd)
+
+$("#authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearAuthMessage();
+
+  const username = $("#username").value.trim();
+  const password = $("#password").value;
+  const confirmPassword = $("#confirmPassword").value;
+  const key = username.toLowerCase();
+
+  if (!/^[\p{L}\p{N}_-]{3,24}$/u.test(username)) {
+    showAuthMessage(
+      "Логин должен содержать от 3 до 24 символов: буквы, цифры, _ или -."
+    );
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthMessage("Пароль должен содержать минимум 6 символов.");
+    return;
+  }
+
+  const users = getUsers();
+  const button = $("#authSubmit");
+
+  button.disabled = true;
+
+  try {
+    if (authMode === "register") {
+      if (password !== confirmPassword) {
+        showAuthMessage("Пароли не совпадают.");
+        return;
+      }
+
+      if (users[key]) {
+        showAuthMessage("Этот логин уже занят. Выбери другой или войди.");
+        return;
+      }
+
+      const user = {
+        username:username,
+        passwordHash:await hashPassword(password),
+        createdAt:Date.now()
+      };
+
+      users[key] = user;
+
+      if (!writeStorage(STORAGE_USERS, users)) {
+        showAuthMessage("Не удалось сохранить аккаунт в браузере.");
+        return;
+      }
+
+      const allData = readStorage(STORAGE_DATA, {});
+      allData[key] = {
+        balance:10000,
+        history:[],
+        createdAt:Date.now()
+      };
+
+      if (!writeStorage(STORAGE_DATA, allData)) {
+        showAuthMessage("Аккаунт создан, но данные не удалось сохранить.");
+        return;
+      }
+
+      currentUser = {
+        key:key,
+        username:user.username,
+        createdAt:user.createdAt
+      };
+
+      writeStorage(STORAGE_SESSION, {
+        key:key,
+        username:user.username
+      });
+
+      showAuthMessage("Аккаунт создан. Входим…", "success");
+
+      setTimeout(enterApp, 250);
+      return;
+    }
+
+    const user = users[key];
+
+    if (!user) {
+      showAuthMessage("Аккаунт не найден. Проверь логин или зарегистрируйся.");
+      return;
+    }
+
+    const hash = await hashPassword(password);
+
+    if (hash !== user.passwordHash) {
+      showAuthMessage("Неверный логин или пароль.");
+      return;
+    }
+
+    currentUser = {
+      key:key,
+      username:user.username,
+      createdAt:user.createdAt
+    };
+
+    writeStorage(STORAGE_SESSION, {
+      key:key,
+      username:user.username
     });
-    showToast("Добавлено в демокупон");
+
+    showAuthMessage("Вход выполнен. Загружаем приложение…", "success");
+
+    setTimeout(enterApp, 200);
+
+  } catch (error) {
+    showAuthMessage("Ошибка авторизации. Попробуй ещё раз.");
+  } finally {
+    button.disabled = false;
   }
-  saveState();
-  renderEvents();
+});
+
+function enterApp() {
+  $("#authOverlay").classList.add("hidden");
+  $("#authButton").textContent = "Выйти";
+
+  updateBalance();
+  renderPage();
+  renderCoupon();
+
+  showToast("Добро пожаловать, " + currentUser.username + "!");
+}
+
+function logout() {
+  localStorage.removeItem(STORAGE_SESSION);
+
+  currentUser = null;
+  coupon = [];
+  currentPage = "home";
+
+  $("#authOverlay").classList.remove("hidden");
+  $("#authButton").textContent = "Войти";
+
+  $("#username").value = "";
+  $("#password").value = "";
+  $("#confirmPassword").value = "";
+
+  setAuthMode("login");
   renderCoupon();
 }
-function openMarkets(eventId){
-  const event=getEvent(eventId);
-  if(!event)return;
-  activeMarket="result";
-  document.getElementById("modalTitle").textContent=event.home+" — "+event.away;
-  renderMarketModal(event);
-  document.getElementById("modalBackdrop").classList.add("open");
+
+function restoreSession() {
+  const session = readStorage(STORAGE_SESSION, null);
+
+  if (session && session.key) {
+    const user = getUsers()[session.key];
+
+    if (user && user.username === session.username) {
+      currentUser = {
+        key:session.key,
+        username:user.username,
+        createdAt:user.createdAt
+      };
+
+      enterApp();
+      return;
+    }
+  }
+
+  $("#authOverlay").classList.remove("hidden");
 }
-function renderMarketModal(event){
-  const tabs=Object.keys(event.markets);
-  const tabsHTML=tabs.map(key=>`
-    <button class="market-tab ${activeMarket===key?"active":""}"
-      onclick="setModalMarket('${event.id}','${key}')">${marketLabel(key)}</button>
-  `).join("");
-  const options=event.markets[activeMarket]||[];
-  const optionsHTML=options.map(option=>{
-    const picked=isPicked(event.id,activeMarket,option.name);
-    return `
-      <button class="odds-btn ${picked?"selected":""}"
-        style="margin-bottom:7px;width:100%;flex-direction:row;justify-content:space-between;padding:13px"
-        onclick="togglePick('${event.id}','${activeMarket}','${escapeHtml(option.name)}');renderMarketModal(getEvent('${event.id}'))">
-        <span class="odd-name" style="font-size:12px;color:#d4e1f5">${escapeHtml(option.name)}</span>
-        <span class="odd-value">${Number(option.odd).toFixed(2)}</span>
-      </button>`;
-  }).join("");
-  document.getElementById("modalContent").innerHTML=`
-    <div class="market-tabs">${tabsHTML}</div>
-    <div>${optionsHTML}</div>
-    <p class="disclaimer">Демонстрационные значения. Это не актуальные коэффициенты.</p>
+
+$("#authButton").addEventListener("click", () => {
+  if (currentUser) {
+    logout();
+  } else {
+    $("#authOverlay").classList.remove("hidden");
+  }
+});
+
+$("#profileButton").addEventListener("click", () => {
+  if (!currentUser) {
+    $("#authOverlay").classList.remove("hidden");
+    return;
+  }
+
+  currentPage = "profile";
+  renderPage();
+});
+
+$("#homeButton").addEventListener("click", () => {
+  currentPage = "home";
+  selectedSport = "all";
+  selectedFilter = "all";
+  renderPage();
+});
+
+/* =========================================================
+   4. БАЛАНС
+   ========================================================= */
+
+function updateBalance() {
+  $("#headerBalance").textContent = money(getAccountData().balance);
+}
+
+/* =========================================================
+   5. СПОРТИВНЫЕ СОБЫТИЯ
+   ========================================================= */
+
+function findMatch(id) {
+  return matches.find(match => match.id === id);
+}
+
+function isLive(match) {
+  return match.status === "live";
+}
+
+function getMatchClock(match) {
+  if (!isLive(match)) return "Предстоящее событие";
+
+  if (match.sport === "football") {
+    return match.minute + "′";
+  }
+
+  if (match.sport === "hockey") {
+    return Math.min(3, Math.floor(match.minute / 20) + 1) +
+      "-й период";
+  }
+
+  if (match.sport === "basketball") {
+    return Math.min(4, Math.floor(match.minute / 10) + 1) +
+      "-я четверть";
+  }
+
+  if (match.sport === "tennis") return "Матч идёт";
+  if (match.sport === "ufc") return "Раунд " + Math.min(3, Math.floor(match.minute / 5) + 1);
+
+  return "Сет идёт";
+}
+
+/*
+  Небольшая демонстрационная вариация котировок.
+  Она не использует реальные результаты или данные букмекеров.
+*/
+
+function getOdds(match) {
+  const variation = Math.sin(Date.now()/45000 + match.id.length) * 0.025;
+  const odds = match.odds;
+
+  if (["basketball","tennis","ufc","volleyball"].includes(match.sport)) {
+    return [
+      {key:"home",label:match.home,odd:Math.max(1.1,odds[0]+variation)},
+      {key:"away",label:match.away,odd:Math.max(1.1,odds[2]-variation)}
+    ];
+  }
+
+  return [
+    {key:"home",label:"П1",odd:Math.max(1.1,odds[0]+variation)},
+    {key:"draw",label:"X",odd:Math.max(1.1,odds[1]-variation)},
+    {key:"away",label:"П2",odd:Math.max(1.1,odds[2]+variation)}
+  ];
+}
+
+function isSelected(matchId, key) {
+  return coupon.some(pick =>
+    pick.matchId === matchId && pick.key === key
+  );
+}
+
+function makeOddButton(match, option) {
+  const selected = isSelected(match.id, option.key);
+
+  return `
+    <button class="odd ${selected ? "selected" : ""}"
+      data-pick="${escapeHTML(match.id)}"
+      data-key="${escapeHTML(option.key)}">
+      <span>${escapeHTML(option.label)}</span>
+      <strong>${Number(option.odd).toFixed(2)}</strong>
+    </button>
   `;
 }
-function setModalMarket(eventId,market){
-  const event=getEvent(eventId);
-  if(!event || !event.markets[market])return;
-  activeMarket=market;
-  renderMarketModal(event);
-}
-function closeModal(){
-  document.getElementById("modalBackdrop").classList.remove("open");
-}
-function backdropClose(event){
-  if(event.target.id==="modalBackdrop")closeModal();
-}
-function couponOdds(){
-  return state.coupon.reduce((product,pick)=>product*Number(pick.odd),1);
-}
-function validStake(){
-  const input=document.getElementById("stakeInput");
-  const stake=Number(input.value);
-  if(!Number.isFinite(stake)||stake<1||stake>1000000)return null;
-  return Math.floor(stake);
-}
-function renderCoupon(){
-  const container=document.getElementById("couponItems");
-  document.getElementById("couponCount").textContent=
-    state.coupon.length+" "+pluralPicks(state.coupon.length);
-  document.getElementById("navCouponBadge").textContent=state.coupon.length;
-  document.getElementById("navCouponBadge").hidden=state.coupon.length===0;
-  if(!state.coupon.length){
-    container.innerHTML=`
-      <div class="empty-state" style="padding:30px 12px;margin-bottom:12px">
-        <strong>Купон пока пуст</strong>
-        Выбери коэффициент в разделе матчей.
-      </div>`;
-  }else{
-    container.innerHTML=state.coupon.map((pick,index)=>{
-      const event=getEvent(pick.eventId);
-      if(!event)return "";
-      return `
-        <div class="coupon-item">
-          <div class="coupon-item-top">
-            <div class="coupon-item-name">
-              ${escapeHtml(event.home)} — ${escapeHtml(event.away)}
-            </div>
-            <button class="remove-pick" onclick="removePick(${index})" aria-label="Удалить">×</button>
+
+function makeMatchCard(match) {
+  const info = sportInfo[match.sport];
+  const odds = getOdds(match);
+
+  return `
+    <div class="match">
+      <div class="match-meta">
+        <span>${info.icon}</span>
+        <span>${escapeHTML(info.name)}</span>
+
+        ${isLive(match) ? `
+          <span class="live-dot"></span>
+          <span class="live-label">LIVE</span>
+        ` : ""}
+
+        <span class="match-time">${escapeHTML(getMatchClock(match))}</span>
+      </div>
+
+      <div class="match-content">
+        <div>
+          <div class="team">
+            <span class="team-icon">${info.icon}</span>
+            <span class="team-name">${escapeHTML(match.home)}</span>
+            <span class="score">${isLive(match) ? match.homeScore : ""}</span>
           </div>
-          <div class="coupon-market">${escapeHtml(marketLabel(pick.market))}: ${escapeHtml(pick.selection)}</div>
-          <div class="coupon-bottom">
-            <span class="muted small">Демо-коэффициент</span>
-            <span class="coupon-odd">${Number(pick.odd).toFixed(2)}</span>
+
+          <div class="team">
+            <span class="team-icon">${info.icon}</span>
+            <span class="team-name">${escapeHTML(match.away)}</span>
+            <span class="score">${isLive(match) ? match.awayScore : ""}</span>
           </div>
-        </div>`;
-    }).join("");
-  }
-  const stake=validStake();
-  const odds=couponOdds();
-  const returned=stake===null?0:stake*odds;
-  const profit=returned-(stake||0);
-  document.getElementById("totalOdds").textContent=
-    state.coupon.length?odds.toFixed(2):"—";
-  document.getElementById("shownStake").textContent=
-    stake===null?"Проверь сумму":money(stake);
-  document.getElementById("potentialReturn").textContent=
-    state.coupon.length&&stake!==null?money(returned):"—";
-  document.getElementById("potentialProfit").textContent=
-    state.coupon.length&&stake!==null?money(profit):"—";
-  document.getElementById("placeDemoButton").disabled=
-    !state.coupon.length||stake===null||stake>currentBalance();
-  updateBalances();
-}
-function pluralPicks(count){
-  if(count===1)return "выбор";
-  if(count>=2&&count<=4)return "выбора";
-  return "выборов";
-}
-function removePick(index){
-  if(index<0||index>=state.coupon.length)return;
-  state.coupon.splice(index,1);
-  saveState();
-  renderCoupon();
-  renderEvents();
-}
-function clearCoupon(){
-  if(!state.coupon.length){
-    showToast("Купон уже пуст");
-    return;
-  }
-  state.coupon=[];
-  saveState();
-  renderCoupon();
-  renderEvents();
-  showToast("Купон очищен");
-}
-function placeDemoPrediction(){
-  const stake=validStake();
-  if(!state.coupon.length){
-    showToast("Сначала выбери исход");
-    return;
-  }
-  if(stake===null){
-    showToast("Введи корректную виртуальную сумму");
-    return;
-  }
-  if(stake>currentBalance()){
-    showToast("Недостаточно виртуальных единиц");
-    return;
-  }
-  const picks=state.coupon.map(pick=>({...pick}));
-  const odds=couponOdds();
-  const possibleReturn=stake*odds;
-  const record={
-    id:Date.now(),
-    createdAt:new Date().toISOString(),
-    picks,
-    stake,
-    odds,
-    possibleReturn,
-    status:"ДЕМО · НЕ РАССЧИТАНО"
-  };
-  state.balance-=stake;
-  state.history.unshift(record);
-  state.coupon=[];
-  saveState();
-  renderCoupon();
-  renderHistory();
-  renderEvents();
-  updateBalances();
-  showToast("Демопрогноз сохранён в истории");
-  navigate("history");
-}
-function renderHistory(){
-  const container=document.getElementById("historyList");
-  if(!state.history.length){
-    container.innerHTML=`
-      <div class="empty-state">
-        <strong>История пуста</strong>
-        Подтверждённые демопрогнозы появятся здесь.
-      </div>`;
-    return;
-  }
-  container.innerHTML=state.history.map(record=>{
-    const date=new Date(record.createdAt);
-    const dateText=Number.isNaN(date.getTime())
-      ?"Дата неизвестна"
-      :date.toLocaleString("ru-RU",{dateStyle:"short",timeStyle:"short"});
-    const descriptions=record.picks.map(pick=>{
-      const event=getEvent(pick.eventId);
-      return event
-        ?escapeHtml(event.home+" — "+event.away)+": "+escapeHtml(pick.selection)
-        :escapeHtml(pick.selection);
-    }).join("<br>");
-    return `
-      <div class="history-item">
-        <div class="history-top">
-          <strong>Демопрогноз №${String(record.id).slice(-6)}</strong>
-          <span class="history-status">${escapeHtml(record.status)}</span>
         </div>
-        <div class="history-details">${dateText}<br>${descriptions}</div>
-        <div class="history-sum">Сумма: ${money(record.stake)}</div>
-        <div class="history-details">
-          Коэффициент: ${Number(record.odds).toFixed(2)} ·
-          Возможный возврат: ${money(record.possibleReturn)}
+
+        <div class="odds">
+          ${odds.map(option => makeOddButton(match, option)).join("")}
         </div>
-      </div>`;
-  }).join("");
+      </div>
+
+      <div class="match-footer">
+        <span>${escapeHTML(match.league)}</span>
+        <button class="text-button" data-details="${match.id}">
+          Все рынки ›
+        </button>
+      </div>
+    </div>
+  `;
 }
-function clearHistory(){
-  if(!state.history.length){
-    showToast("История уже пуста");
+
+function getFilteredMatches() {
+  const query = ($("#searchInput").value || "").trim().toLowerCase();
+
+  return matches.filter(match => {
+    const sportMatches =
+      selectedSport === "all" || match.sport === selectedSport;
+
+    const filterMatches =
+      selectedFilter === "all" ||
+      (selectedFilter === "live" && isLive(match)) ||
+      (selectedFilter === "prematch" && !isLive(match));
+
+    const searchable = [
+      match.home,
+      match.away,
+      match.league,
+      sportInfo[match.sport].name
+    ].join(" ").toLowerCase();
+
+    return sportMatches && filterMatches && (!query || searchable.includes(query));
+  });
+}
+
+function renderEvents() {
+  const filtered = getFilteredMatches();
+  $("#eventCount").textContent = filtered.length + " событий";
+
+  $("#totalEvents").textContent = matches.length;
+  $("#liveEvents").textContent = matches.filter(isLive).length;
+
+  if (!filtered.length) {
+    $("#eventsList").innerHTML = `
+      <div class="empty">
+        <b>События не найдены</b>
+        <p class="small">Измени фильтр или поисковый запрос.</p>
+      </div>
+    `;
     return;
   }
-  state.history=[];
-  saveState();
-  renderHistory();
-  showToast("История очищена");
+
+  const groups = new Map();
+
+  filtered.forEach(match => {
+    if (!groups.has(match.league)) groups.set(match.league, []);
+    groups.get(match.league).push(match);
+  });
+
+  $("#eventsList").innerHTML = [...groups.entries()].map(([league, group]) => `
+    <div>
+      <div class="league-header">
+        <span>${sportInfo[group[0].sport].icon}</span>
+        <span>${escapeHTML(league)}</span>
+        <span class="league-count">${group.length} события</span>
+      </div>
+      ${group.map(makeMatchCard).join("")}
+    </div>
+  `).join("");
 }
-function topUpDemo(){
-  const input=document.getElementById("topupInput");
-  const amount=Number(input.value);
-  if(!Number.isFinite(amount)||amount<1||amount>1000000){
-    showToast("Введи число от 1 до 1 000 000");
-    return;
+
+/* =========================================================
+   6. РЫНКИ МАТЧЕЙ
+   ========================================================= */
+
+function getExtraMarkets(match) {
+  if (match.sport === "football") {
+    return [
+      {
+        title:"Исход матча",
+        options:[
+          {key:"home",label:"П1",odd:match.odds[0]},
+          {key:"draw",label:"X",odd:match.odds[1]},
+          {key:"away",label:"П2",odd:match.odds[2]}
+        ]
+      },
+      {
+        title:"Двойной шанс",
+        options:[
+          {key:"1x",label:"1X",odd:1.32},
+          {key:"12",label:"12",odd:1.30},
+          {key:"x2",label:"X2",odd:1.70}
+        ]
+      },
+      {
+        title:"Тотал голов",
+        options:[
+          {key:"over15",label:"Больше 1.5",odd:1.30},
+          {key:"over25",label:"Больше 2.5",odd:1.85},
+          {key:"under25",label:"Меньше 2.5",odd:1.95},
+          {key:"over35",label:"Больше 3.5",odd:2.30},
+          {key:"under35",label:"Меньше 3.5",odd:1.55}
+        ]
+      },
+      {
+        title:"Обе команды забьют",
+        options:[
+          {key:"bttsYes",label:"Да",odd:1.65},
+          {key:"bttsNo",label:"Нет",odd:2.10}
+        ]
+      },
+      {
+        title:"Индивидуальный тотал",
+        options:[
+          {key:"homeOver05",label:"Хозяева больше 0.5",odd:1.28},
+          {key:"awayOver05",label:"Гости больше 0.5",odd:1.35}
+        ]
+      }
+    ];
   }
-  state.balance+=Math.floor(amount);
-  saveState();
-  updateBalances();
-  showToast("Виртуальные единицы добавлены");
+
+  if (match.sport === "hockey") {
+    return [
+      {
+        title:"Исход матча",
+        options:[
+          {key:"home",label:"П1",odd:match.odds[0]},
+          {key:"draw",label:"Ничья",odd:match.odds[1]},
+          {key:"away",label:"П2",odd:match.odds[2]}
+        ]
+      },
+      {
+        title:"Тотал шайб",
+        options:[
+          {key:"over35",label:"Больше 3.5",odd:1.38},
+          {key:"over45",label:"Больше 4.5",odd:1.60},
+          {key:"over55",label:"Больше 5.5",odd:1.90},
+          {key:"under55",label:"Меньше 5.5",odd:1.90}
+        ]
+      },
+      {
+        title:"Фора",
+        options:[
+          {key:"homeMinus15",label:"Хозяева −1.5",odd:2.40},
+          {key:"awayPlus15",label:"Гости +1.5",odd:1.45}
+        ]
+      },
+      {
+        title:"Обе команды забьют",
+        options:[
+          {key:"bothYes",label:"Да",odd:1.35},
+          {key:"bothNo",label:"Нет",odd:2.80}
+        ]
+      }
+    ];
+  }
+
+  if (match.sport === "basketball") {
+    return [
+      {
+        title:"Победитель",
+        options:[
+          {key:"home",label:match.home,odd:match.odds[0]},
+          {key:"away",label:match.away,odd:match.odds[2]}
+        ]
+      },
+      {
+        title:"Тотал очков",
+        options:[
+          {key:"over215",label:"Больше 215.5",odd:1.90},
+          {key:"under215",label:"Меньше 215.5",odd:1.90},
+          {key:"over225",label:"Больше 225.5",odd:1.95},
+          {key:"under225",label:"Меньше 225.5",odd:1.85}
+        ]
+      },
+      {
+        title:"Фора",
+        options:[
+          {key:"homeMinus45",label:"Хозяева −4.5",odd:1.90},
+          {key:"awayPlus45",label:"Гости +4.5",odd:1.90}
+        ]
+      }
+    ];
+  }
+
+  if (match.sport === "tennis") {
+    return [
+      {
+        title:"Победитель матча",
+        options:[
+          {key:"home",label:match.home,odd:match.odds[0]},
+          {key:"away",label:match.away,odd:match.odds[2]}
+        ]
+      },
+      {
+        title:"Тотал геймов",
+        options:[
+          {key:"over225",label:"Больше 22.5",odd:1.90},
+          {key:"under225",label:"Меньше 22.5",odd:1.90}
+        ]
+      },
+      {
+        title:"Тай-брейк",
+        options:[
+          {key:"tbYes",label:"Будет",odd:2.20},
+          {key:"tbNo",label:"Не будет",odd:1.60}
+        ]
+      }
+    ];
+  }
+
+  if (match.sport === "ufc") {
+    return [
+      {
+        title:"Победитель",
+        options:[
+          {key:"home",label:match.home,odd:match.odds[0]},
+          {key:"away",label:match.away,odd:match.odds[2]}
+        ]
+      },
+      {
+        title:"Способ победы",
+        options:[
+          {key:"ko",label:"Нокаут / TKO",odd:2.30},
+          {key:"sub",label:"Сабмишен",odd:3.40},
+          {key:"decision",label:"Решение судей",odd:2.10}
+        ]
+      },
+      {
+        title:"Продолжительность",
+        options:[
+          {key:"over15",label:"Больше 1.5 раунда",odd:1.80},
+          {key:"under15",label:"Меньше 1.5 раунда",odd:2.00}
+        ]
+      }
+    ];
+  }
+
+  return [
+    {
+      title:"Победитель",
+      options:[
+        {key:"home",label:match.home,odd:match.odds[0]},
+        {key:"away",label:match.away,odd:match.odds[2]}
+      ]
+    },
+    {
+      title:"Тотал сетов",
+      options:[
+        {key:"over35",label:"Больше 3.5",odd:1.80},
+        {key:"under35",label:"Меньше 3.5",odd:2.00}
+      ]
+    },
+    {
+      title:"Фора по очкам",
+      options:[
+        {key:"homeMinus",label:"Хозяева −1.5",odd:1.90},
+        {key:"awayPlus",label:"Гости +1.5",odd:1.90}
+      ]
+    }
+  ];
 }
-function resetDemo(){
-  const confirmed=window.confirm(
-    "Сбросить виртуальный баланс, купон, избранное и историю?"
-  );
-  if(!confirmed)return;
-  state.balance=DEMO_START_BALANCE;
-  state.coupon=[];
-  state.history=[];
-  state.favorites=[];
-  saveState();
-  renderAll();
-  showToast("Демоданные сброшены");
+
+function openMatchDetails(id) {
+  const match = findMatch(id);
+  if (!match) return;
+
+  openedMatchId = id;
+
+  $("#modalTitle").textContent = match.home + " — " + match.away;
+
+  const markets = getExtraMarkets(match);
+
+  $("#modalBody").innerHTML = `
+    <div class="detail-score">
+      <div class="small muted">
+        ${escapeHTML(match.league)} · ${sportInfo[match.sport].name}
+      </div>
+
+      <h3>${escapeHTML(match.home)} — ${escapeHTML(match.away)}</h3>
+
+      <div class="score-big">
+        ${isLive(match) ? match.homeScore + " : " + match.awayScore : "VS"}
+      </div>
+
+      <div class="small ${isLive(match) ? "live-label" : "muted"}">
+        ${isLive(match) ? "● LIVE · " + escapeHTML(getMatchClock(match)) : "Предстоящее событие"}
+      </div>
+    </div>
+
+    ${markets.map(market => `
+      <div class="market-group">
+        <div class="market-title">${escapeHTML(market.title)}</div>
+        <div class="market-options">
+          ${market.options.map(option => `
+            <button class="odd ${isSelected(match.id, option.key) ? "selected" : ""}"
+              data-pick="${escapeHTML(match.id)}"
+              data-key="${escapeHTML(option.key)}">
+              <span>${escapeHTML(option.label)}</span>
+              <strong>${Number(option.odd).toFixed(2)}</strong>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `).join("")}
+
+    <p class="small muted" style="margin-top:16px">
+      Все рынки и коэффициенты демонстрационные.
+    </p>
+  `;
+
+  $("#matchModal").classList.remove("hidden");
 }
-function navigate(page){
-  const pages=["home","live","coupon","history","profile"];
-  if(!pages.includes(page))return;
-  document.querySelectorAll(".page-view").forEach(element=>{
-    element.classList.toggle("active",element.id==="view-"+page);
-  });
-  document.querySelectorAll(".nav-item").forEach(element=>{
-    element.classList.toggle("active",element.dataset.page===page);
-  });
-  if(page==="coupon")renderCoupon();
-  if(page==="history")renderHistory();
-  if(page==="live")renderEvents();
-  window.scrollTo({top:0,behavior:"smooth"});
+
+function closeMatchDetails() {
+  $("#matchModal").classList.add("hidden");
+  openedMatchId = null;
 }
-function scrollToEvents(){
-  document.getElementById("eventsHeading").scrollIntoView({behavior:"smooth"});
-}
-function focusSearch(){
-  navigate("home");
-  setTimeout(()=>{
-    document.getElementById("searchInput").focus();
-    document.getElementById("searchInput").scrollIntoView({behavior:"smooth",block:"center"});
-  },100);
-}
-function renderAll(){
-  renderEvents();
+
+$("#closeModal").addEventListener("click", closeMatchDetails);
+
+$("#matchModal").addEventListener("click", event => {
+  if (event.target === $("#matchModal")) closeMatchDetails();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeMatchDetails();
+});
+
+/* =========================================================
+   7. КУПОН И РАСЧЁТ
+   ========================================================= */
+
+function addPick(matchId, key) {
+  const match = findMatch(matchId);
+  if (!match) return;
+
+  let option = getOdds(match).find(item => item.key === key);
+
+  if (!option) {
+    for (const market of getExtraMarkets(match)) {
+      option = market.options.find(item => item.key === key);
+      if (option) break;
+    }
+  }
+
+  if (!option) return;
+
+  const existingIndex = coupon.findIndex(pick => pick.matchId === matchId);
+
+  if (existingIndex >= 0 && coupon[existingIndex].key === key) {
+    coupon.splice(existingIndex, 1);
+  } else {
+    if (existingIndex >= 0) coupon.splice(existingIndex, 1);
+
+    coupon.push({
+      matchId:match.id,
+      key:key,
+      label:option.label,
+      odd:Number(option.odd),
+      home:match.home,
+      away:match.away,
+      league:match.league,
+      sport:match.sport
+    });
+  }
+
   renderCoupon();
-  renderHistory();
-  updateBalances();
+  renderEvents();
+
+  if (openedMatchId) openMatchDetails(openedMatchId);
 }
-document.querySelectorAll(".nav-item").forEach(button=>{
-  button.addEventListener("click",()=>navigate(button.dataset.page));
-});
-document.querySelectorAll(".sport-pill").forEach(button=>{
-  button.addEventListener("click",()=>{
-    selectedSport=button.dataset.sport;
-    document.querySelectorAll(".sport-pill").forEach(item=>
-      item.classList.toggle("active",item===button)
+
+function calculateOdds() {
+  if (!coupon.length) return 0;
+
+  if (couponMode === "single") {
+    return coupon[coupon.length - 1].odd;
+  }
+
+  return coupon.reduce((result, pick) => result * pick.odd, 1);
+}
+
+function renderCoupon() {
+  $$(".coupon-tab").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.couponMode === couponMode
     );
-    renderEvents();
   });
-});
-document.querySelectorAll(".filter-btn").forEach(button=>{
-  button.addEventListener("click",()=>{
-    selectedFilter=button.dataset.filter;
-    document.querySelectorAll(".filter-btn").forEach(item=>
-      item.classList.toggle("active",item===button)
-    );
-    renderEvents();
-  });
-});
-document.getElementById("searchInput").addEventListener("input",renderEvents);
-document.getElementById("stakeInput").addEventListener("input",renderCoupon);
-document.querySelectorAll(".preset").forEach(button=>{
-  button.addEventListener("click",()=>{
-    document.getElementById("stakeInput").value=button.dataset.amount;
+
+  if (!coupon.length) {
+    $("#couponItems").innerHTML = `
+      <div class="empty">
+        <div style="font-size:28px">▤</div>
+        <b>Купон пуст</b>
+        <p class="small">Выбери коэффициент в карточке матча.</p>
+      </div>
+    `;
+
+    $("#couponCalculator").classList.add("hidden");
+    return;
+  }
+
+  $("#couponItems").innerHTML = coupon.map((pick, index) => `
+    <div class="coupon-item">
+      <div class="coupon-item-top">
+        <span>${escapeHTML(pick.home)} — ${escapeHTML(pick.away)}</span>
+        <button class="remove-pick" data-remove="${index}">×</button>
+      </div>
+
+      <div class="coupon-item-market">
+        ${escapeHTML(pick.league)} · ${escapeHTML(pick.label)}
+      </div>
+
+      <div class="coupon-item-odd">
+        Коэффициент ${pick.odd.toFixed(2)}
+      </div>
+    </div>
+  `).join("");
+
+  $("#couponCalculator").classList.remove("hidden");
+  $("#couponOdds").textContent = calculateOdds().toFixed(2);
+
+  updatePotentialResult();
+}
+
+function updatePotentialResult() {
+  const stake = Math.max(0, Number($("#stakeInput").value) || 0);
+  $("#potentialResult").textContent = money(stake * calculateOdds());
+}
+
+$("#stakeInput").addEventListener("input", updatePotentialResult);
+
+$$(".coupon-tab").forEach(button => {
+  button.addEventListener("click", () => {
+    couponMode = button.dataset.couponMode;
+
+    if (couponMode === "single" && coupon.length > 1) {
+      showToast("В режиме «Одинар» используется последний выбранный исход.");
+    }
+
     renderCoupon();
   });
 });
-document.addEventListener("keydown",event=>{
-  if(event.key==="Escape")closeModal();
+
+$("#clearCoupon").addEventListener("click", () => {
+  coupon = [];
+  renderCoupon();
+  renderEvents();
 });
-renderAll();
+
+$("#submitCoupon").addEventListener("click", () => {
+  if (!currentUser) {
+    showToast("Сначала войди в демо-аккаунт.");
+    return;
+  }
+
+  if (!coupon.length) {
+    showToast("Сначала добавь исход в купон.");
+    return;
+  }
+
+  if (couponMode === "express" && coupon.length < 2) {
+    showToast("Для экспресса выбери минимум два разных события.");
+    return;
+  }
+
+  const stake = Number($("#stakeInput").value);
+  const account = getAccountData();
+
+  if (!Number.isFinite(stake) || stake < 1 || stake > 1000000) {
+    showToast("Введи сумму от 1 до 1 000 000 виртуальных жетонов.");
+    return;
+  }
+
+  if (stake > account.balance) {
+    showToast("Недостаточно виртуальных жетонов.");
+    return;
+  }
+
+  const odds = calculateOdds();
+
+  account.balance -= stake;
+
+  account.history.push({
+    id:"demo-" + Date.now(),
+    label:couponMode === "express"
+      ? "Экспресс"
+      : "Одинар: " + coupon[coupon.length - 1].home + " — " + coupon[coupon.length - 1].away,
+    date:new Date().toLocaleString("ru-RU"),
+    items:couponMode === "single" ? 1 : coupon.length,
+    odds:odds,
+    stake:stake,
+    potential:stake * odds,
+    status:"pending"
+  });
+
+  saveAccountData(account);
+
+  coupon = [];
+  renderCoupon();
+  renderEvents();
+
+  showToast("Демо-запись создана. Открой историю.");
+});
+
+/* =========================================================
+   8. СТРАНИЦЫ ПРИЛОЖЕНИЯ
+   ========================================================= */
+
+function renderPage() {
+  $$(".nav-button[data-page]").forEach(button => {
+    button.classList.toggle("active", button.dataset.page === currentPage);
+  });
+
+  $("#hero").classList.toggle(
+    "hidden",
+    !["home","live","prematch"].includes(currentPage)
+  );
+
+  $("#eventsPanel").classList.toggle(
+    "hidden",
+    !["home","live","prematch"].includes(currentPage)
+  );
+
+  $("#promosPanel").classList.toggle(
+    "hidden",
+    !["home","promos"].includes(currentPage)
+  );
+
+  $("#pagePanel").classList.add("hidden");
+
+  if (currentPage === "home") {
+    selectedFilter = "all";
+    $("#heroTitle").textContent = "Спорт начинается здесь";
+    $("#heroDescription").textContent =
+      "Матчи, результаты и спортивная статистика в одном месте.";
+  }
+
+  if (currentPage === "live") {
+    selectedFilter = "live";
+    $("#heroTitle").textContent = "Матчи в LIVE";
+    $("#heroDescription").textContent =
+      "Демонстрационные события с текущим счётом и игровым временем.";
+  }
+
+  if (currentPage === "prematch") {
+    selectedFilter = "prematch";
+    $("#heroTitle").textContent = "Предстоящие события";
+    $("#heroDescription").textContent =
+      "Открой матч и изучи доступные демонстрационные рынки.";
+  }
+
+  $$(".filter-button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.filter === selectedFilter
+    );
+  });
+
+  if (["home","live","prematch"].includes(currentPage)) {
+    renderEvents();
+    return;
+  }
+
+  const panel = $("#pagePanel");
+  panel.classList.remove("hidden");
+
+  if (currentPage === "promos") {
+    panel.innerHTML = `
+      <div class="card-title"><h2>Предложения</h2></div>
+      <div class="page-content">
+        <div class="promo-grid">
+          <div class="promo">
+            <strong>🎯 Спортивные рынки</strong>
+            <p>Изучай исходы, тоталы и форы в карточках событий.</p>
+          </div>
+          <div class="promo">
+            <strong>🧮 Калькулятор</strong>
+            <p>Сравнивай коэффициенты и расчёты виртуального купона.</p>
+          </div>
+        </div>
+        <p class="small muted">Все материалы предназначены для демонстрации интерфейса.</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (currentPage === "profile") {
+    const account = getAccountData();
+
+    panel.innerHTML = `
+      <div class="card-title"><h2>Профиль пользователя</h2></div>
+      <div class="page-content">
+        <div class="stat-grid">
+          <div class="stat">
+            <span>Логин</span>
+            <b>${escapeHTML(currentUser.username)}</b>
+          </div>
+          <div class="stat">
+            <span>Виртуальный баланс</span>
+            <b>${Number(account.balance).toLocaleString("ru-RU")}</b>
+          </div>
+          <div class="stat">
+            <span>Записи истории</span>
+            <b>${account.history.length}</b>
+          </div>
+        </div>
+
+        <p class="muted">
+          Демо-профиль хранится в браузере. Данные не синхронизируются с другими устройствами.
+        </p>
+
+        <div class="profile-actions">
+          <button class="btn btn-outline" id="resetAccount">Сбросить демо-данные</button>
+          <button class="btn btn-light" id="profileLogout">Выйти</button>
+        </div>
+      </div>
+    `;
+
+    $("#resetAccount").addEventListener("click", () => {
+      if (!confirm("Сбросить баланс и историю этого демо-аккаунта?")) return;
+
+      saveAccountData({balance:10000,history:[]});
+      renderPage();
+      showToast("Демо-данные сброшены.");
+    });
+
+    $("#profileLogout").addEventListener("click", logout);
+    return;
+  }
+
+  if (currentPage === "history") {
+    const history = getAccountData().history;
+
+    panel.innerHTML = `
+      <div class="card-title">
+        <h2>История</h2>
+        <span class="small muted">${history.length} записей</span>
+      </div>
+
+      <div class="page-content">
+        ${history.length ? history.slice().reverse().map(item => `
+          <div class="history-item">
+            <div>
+              <b>${escapeHTML(item.label)}</b>
+              <div class="small muted">${escapeHTML(item.date)}</div>
+              <div class="small muted">
+                Коэффициент: ${Number(item.odds).toFixed(2)}
+                · Сумма: ${money(item.stake)}
+              </div>
+            </div>
+
+            <div style="text-align:right">
+              <b>${money(item.potential)}</b><br>
+              <span class="status">Демо</span>
+            </div>
+          </div>
+        `).join("") : `
+          <div class="empty">
+            <b>История пока пуста</b>
+            <p class="small">Создай виртуальную запись через купон.</p>
+          </div>
+        `}
+      </div>
+    `;
+  }
+}
+
+/* =========================================================
+   9. НАВИГАЦИЯ, ПОИСК И КЛИКИ
+   ========================================================= */
+
+document.addEventListener("click", event => {
+  const pick = event.target.closest("[data-pick]");
+
+  if (pick) {
+    addPick(pick.dataset.pick, pick.dataset.key);
+    return;
+  }
+
+  const details = event.target.closest("[data-details]");
+
+  if (details) {
+    openMatchDetails(details.dataset.details);
+    return;
+  }
+
+  const remove = event.target.closest("[data-remove]");
+
+  if (remove) {
+    coupon.splice(Number(remove.dataset.remove), 1);
+    renderCoupon();
+    renderEvents();
+    return;
+  }
+
+  const nav = event.target.closest("[data-page]");
+
+  if (nav) {
+    currentPage = nav.dataset.page;
+    selectedSport = "all";
+    $$(".sport-tab").forEach(button => {
+      button.classList.toggle("active", button.dataset.sport === "all");
+    });
+    renderPage();
+    return;
+  }
+
+  const sportButton = event.target.closest("[data-sport]");
+
+  if (sportButton) {
+    selectedSport = sportButton.dataset.sport;
+    currentPage = "home";
+
+    $$(".sport-tab").forEach(button => {
+      button.classList.toggle("active", button.dataset.sport === selectedSport);
+    });
+
+    renderPage();
+    return;
+  }
+
+  const filterButton = event.target.closest("[data-filter]");
+
+  if (filterButton) {
+    selectedFilter = filterButton.dataset.filter;
+    currentPage = "home";
+
+    $$(".filter-button").forEach(button => {
+      button.classList.toggle("active", button === filterButton);
+    });
+
+    renderEvents();
+  }
+});
+
+$("#searchInput").addEventListener("input", renderEvents);
+
+/* =========================================================
+   10. СИМУЛЯЦИЯ LIVE
+   ========================================================= */
+
+function updateLiveSimulation() {
+  matches.forEach(match => {
+    if (!isLive(match)) return;
+
+    match.minute++;
+
+    if (match.sport === "football" && match.minute > 90) {
+      match.status = "prematch";
+      match.minute = 0;
+      match.homeScore = 0;
+      match.awayScore = 0;
+    }
+
+    if (match.sport === "hockey" && match.minute > 60) {
+      match.status = "prematch";
+      match.minute = 0;
+      match.homeScore = 0;
+      match.awayScore = 0;
+    }
+
+    if (match.sport === "basketball" && match.minute > 40) {
+      match.status = "prematch";
+      match.minute = 0;
+      match.homeScore = 0;
+      match.awayScore = 0;
+    }
+
+    /*
+      Счёт не генерируется случайным образом.
+      Таймер — демонстрация обновления LIVE-интерфейса.
+    */
+  });
+
+  if (["home","live","prematch"].includes(currentPage)) {
+    renderEvents();
+  }
+
+  if (openedMatchId) {
+    openMatchDetails(openedMatchId);
+  }
+}
+
+/* =========================================================
+   11. ЗАПУСК ПРИЛОЖЕНИЯ
+   ========================================================= */
+
+function init() {
+  renderEvents();
+  renderCoupon();
+  restoreSession();
+
+  setInterval(() => {
+    updateLiveSimulation();
+  }, 60000);
+}
+
+init();
+
 </script>
 </body>
 </html>
