@@ -2,2121 +2,1661 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffffff">
-<title>OpenBet — Букмекерская контора</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b10">
+<title>BETZONE — Sports Arena</title>
+
 <style>
-:root{--bg:#f2f3f5;--white:#fff;--text:#1a1a1a;--text2:#6b7280;--text3:#9ca3af;--blue:#0a4b8c;--blue-light:#e8f0f9;--blue-hover:#083a6e;--green:#2e7d32;--green-light:#e8f5e9;--green-live:#4caf50;--red:#d32f2f;--border:#e5e7eb;--border-light:#f0f1f3;--shadow:0 2px 8px rgba(0,0,0,.06);--shadow-lg:0 8px 24px rgba(0,0,0,.12);--radius-sm:6px;--radius:8px;--radius-lg:12px;--radius-xl:16px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{font-family:var(--font);font-size:14px;line-height:1.4;background:var(--bg);color:var(--text);overflow-x:hidden;padding-bottom:68px;user-select:none;-webkit-font-smoothing:antialiased}
-button,.odd-btn,.nav-item,.filter-btn,.sport-tab{transition:background-color .15s,color .15s,opacity .15s;cursor:pointer;border:none;outline:none;background:none;font-family:inherit;font-size:inherit;color:inherit}
-button:active,.odd-btn:active{opacity:.85}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.hidden{display:none!important}
-.header{background:var(--white);padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border-light)}
-.header-title{font-size:22px;font-weight:700;letter-spacing:-.3px}
-.header-actions{display:flex;gap:18px;font-size:20px}
-.header-actions span{cursor:pointer;display:flex;align-items:center;justify-content:center;width:24px;height:24px}
-.promo-scroll{display:flex;overflow-x:auto;padding:12px 16px;gap:12px;scrollbar-width:none}
-.promo-scroll::-webkit-scrollbar{display:none}
-.promo-card{min-width:320px;max-width:320px;border-radius:var(--radius-lg);padding:16px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;min-height:140px;flex-shrink:0}
-.promo-card.blue{background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)}
-.promo-card.red{background:linear-gradient(135deg,#b71c1c 0%,#d32f2f 100%)}
-.promo-card.dark{background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%)}
-.promo-card h3{font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3;padding-right:40px}
-.promo-card p{font-size:12px;opacity:.85;line-height:1.3;padding-right:40px}
-.promo-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.22);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
-.promo-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.45);color:#fff;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;align-self:flex-start;margin-top:10px}
-.sport-tabs{display:flex;overflow-x:auto;padding:10px 8px 8px;gap:4px;background:var(--white);border-bottom:1px solid var(--border-light);scrollbar-width:none}
-.sport-tabs::-webkit-scrollbar{display:none}
-.sport-tab{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;padding:4px 8px;color:var(--text2);font-size:11px;border-radius:var(--radius-sm);flex-shrink:0}
-.sport-tab.active{color:var(--blue);font-weight:600}
-.sport-tab .icon{font-size:26px;line-height:1}
-.market-filters{display:flex;overflow-x:auto;padding:10px 16px;gap:8px;background:var(--white);border-bottom:1px solid var(--border-light);scrollbar-width:none}
-.market-filters::-webkit-scrollbar{display:none}
-.filter-btn{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;background:var(--bg);color:var(--text2);white-space:nowrap;border:1px solid transparent}
-.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.league-group{background:var(--white);margin-bottom:8px}
-.league-header{padding:10px 16px;font-size:13px;font-weight:600;color:var(--text);background:var(--white);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border-light)}
-.match-row{background:var(--white);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light);cursor:pointer}
-.match-row:last-child{border-bottom:none}
-.match-row:active{background:#fafafa}
-.match-info{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;padding-right:8px}
-.match-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);line-height:1}
-.match-time.live{color:var(--green-live);font-weight:600}
-.match-time.prematch{color:var(--text2)}
-.live-dot{width:6px;height:6px;background:var(--green-live);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.video-icon{font-size:14px;cursor:pointer;padding:2px}
-.match-teams{display:flex;flex-direction:column;gap:4px}
-.team-line{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;line-height:1.3}
-.team-line .flag{font-size:14px;flex-shrink:0}
-.team-line .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.team-line .score{font-weight:700;color:var(--text);margin-left:auto;font-size:15px;min-width:14px;text-align:right}
-.team-line .score.win{color:var(--green)}
-.match-odds{display:flex;gap:4px;margin-left:8px;flex-shrink:0}
-.odd-btn{background:var(--bg);padding:10px 0;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--blue);min-width:50px;text-align:center;border:1px solid transparent;line-height:1}
-.odd-btn:active{background:var(--blue-light)}
-.match-detail-header{padding:20px 16px 0;color:#fff}
-.match-detail-header.football,.match-detail-header.hockey,.match-detail-header.volleyball{background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)}
-.match-detail-header.ufc{background:linear-gradient(135deg,#b71c1c 0%,#d32f2f 100%)}
-.match-detail-teams{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px}
-.match-detail-team{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
-.match-detail-team .logo{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:24px}
-.match-detail-team .name{font-size:14px;font-weight:700;text-align:center;line-height:1.2}
-.match-detail-score{font-size:34px;font-weight:800;margin:0 12px;line-height:1;letter-spacing:1px}
-.match-detail-time{text-align:center;font-size:12px;opacity:.8;margin-bottom:16px}
-.match-detail-tabs{display:flex;gap:4px;overflow-x:auto;padding:0 16px;margin:0 -16px;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.15)}
-.match-detail-tabs::-webkit-scrollbar{display:none}
-.match-detail-tab{padding:12px 16px;font-size:13px;color:rgba(255,255,255,.7);white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
-.match-detail-tab.active{color:#fff;border-bottom-color:#fff;font-weight:600}
-.market-group{background:var(--white);margin:8px 0;overflow:hidden}
-.market-group-header{padding:14px 16px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;background:var(--white);border-bottom:1px solid var(--border-light)}
-.market-group-header .star{color:var(--text3);font-size:16px}
-.market-row{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-light);font-size:14px;align-items:center}
-.market-row:last-child{border-bottom:none}
-.market-row .label{color:var(--text)}
-.market-row .value{font-weight:600;color:var(--blue);background:var(--bg);padding:8px 16px;border-radius:var(--radius-sm);min-width:60px;text-align:center;cursor:pointer}
-.back-bar{padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:50}
-.back-btn{color:var(--blue);font-size:15px;font-weight:600}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);display:flex;justify-content:space-around;padding:8px 0 10px;border-top:1px solid var(--border);z-index:200;box-shadow:0 -2px 8px rgba(0,0,0,.04)}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--text2);flex:1;padding:4px 0;position:relative}
-.nav-item.active{color:var(--blue)}
-.nav-item .icon{font-size:22px;line-height:1}
-.nav-item .badge{position:absolute;top:2px;right:50%;transform:translateX(14px);background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
-.coupon-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;opacity:0;transition:opacity .25s}
-.coupon-overlay.open{display:block;opacity:1}
-.coupon-panel{position:fixed;left:0;right:0;bottom:0;background:var(--white);border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:400;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
-.coupon-panel.open{transform:translateY(0)}
-.coupon-header{padding:16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light)}
-.coupon-header h3{font-size:17px;font-weight:700}
-.coupon-close{font-size:22px;color:var(--text2);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%}
-.coupon-body{padding:12px 16px;overflow-y:auto;flex:1;min-height:100px}
-.coupon-empty{text-align:center;color:var(--text3);padding:40px 20px;font-size:14px}
-.coupon-item{background:var(--blue-light);padding:12px 14px;border-radius:var(--radius);margin-bottom:8px;border-left:3px solid var(--blue);position:relative;padding-right:36px}
-.coupon-item .remove-btn{position:absolute;top:8px;right:8px;color:var(--text2);font-size:16px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%}
-.coupon-item .match-name{font-size:12px;color:var(--text2);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.coupon-item .bet-name{font-size:14px;font-weight:600;margin-bottom:4px}
-.coupon-item .bet-odd{font-size:14px;color:var(--blue);font-weight:700}
-.coupon-footer{padding:14px 16px 18px;border-top:1px solid var(--border-light);display:flex;flex-direction:column;gap:12px}
-.coupon-total{display:flex;justify-content:space-between;font-size:16px;font-weight:700}
-.coupon-total .label{color:var(--text2);font-weight:500}
-.coupon-total .value{color:var(--blue)}
-.bet-input-row{display:flex;gap:8px}
-.bet-input-row input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:15px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;min-width:0}
-.bet-input-row input:focus{border-color:var(--blue);background:var(--white)}
-.place-bet-btn{background:var(--blue);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:15px;font-weight:700;white-space:nowrap}
-.place-bet-btn:active{background:var(--blue-hover)}
-.coupon-type-tabs{display:flex;gap:6px;padding:0 16px 8px}
-.coupon-type-tab{padding:6px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;background:var(--bg);color:var(--text2)}
-.coupon-type-tab.active{background:var(--blue);color:#fff}
-.auth-screen{position:fixed;inset:0;background:var(--white);z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 24px}
-.auth-logo{font-size:34px;font-weight:800;color:var(--blue);margin-bottom:6px;letter-spacing:-.5px}
-.auth-subtitle{color:var(--text2);margin-bottom:36px;font-size:14px;text-align:center}
-.auth-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
-.auth-input{padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);font-size:16px;font-family:inherit;background:var(--bg);color:var(--text);outline:none}
-.auth-input:focus{border-color:var(--blue);background:var(--white)}
-.auth-btn{background:var(--blue);color:#fff;padding:16px;border-radius:var(--radius);font-size:16px;font-weight:700;margin-top:6px}
-.auth-switch{margin-top:14px;color:var(--blue);font-size:14px;text-align:center;cursor:pointer;font-weight:500}
-.auth-error{color:var(--red);font-size:13px;text-align:center;min-height:18px}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;justify-content:center;align-items:center;padding:20px}
-.modal-overlay.open{display:flex}
-.modal-content{background:var(--white);border-radius:var(--radius-lg);padding:20px;max-width:420px;width:100%;text-align:center}
-.modal-content h3{margin-bottom:14px;font-size:17px}
-.video-placeholder{background:#000;height:200px;border-radius:var(--radius);display:flex;justify-content:center;align-items:center;color:#fff;font-size:48px;margin-bottom:14px}
-.video-desc{color:var(--text2);font-size:14px;margin-bottom:14px;white-space:pre-line}
-.modal-close-btn{background:var(--blue);color:#fff;padding:12px 24px;border-radius:var(--radius);font-size:15px;font-weight:600;width:100%}
-.profile-header{background:var(--white);padding:24px 16px 20px;text-align:center;margin-bottom:8px}
-.profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--blue-light);display:flex;justify-content:center;align-items:center;margin:0 auto 12px;font-size:32px;color:var(--blue)}
-.profile-name{color:var(--text2);font-size:14px;margin-bottom:8px}
-.profile-balance{font-size:32px;font-weight:800;color:var(--text);margin-bottom:4px;letter-spacing:-.5px}
-.profile-balance-label{font-size:12px;color:var(--text3);margin-bottom:16px}
-.profile-stats{display:flex;justify-content:center;gap:32px;padding:16px 0;border-top:1px solid var(--border-light);margin-top:8px}
-.profile-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
-.profile-stat .value{font-size:18px;font-weight:700}
-.profile-stat .value.green{color:var(--green)}
-.profile-stat .value.red{color:var(--red)}
-.profile-stat .label{font-size:12px;color:var(--text2)}
-.logout-btn{margin-top:20px;color:var(--red);font-size:14px;font-weight:600;padding:10px 20px}
-.history-filters{display:flex;gap:6px;padding:12px 16px;background:var(--white);overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border-light)}
-.history-filters::-webkit-scrollbar{display:none}
-.history-filter{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;background:var(--bg);color:var(--text2);white-space:nowrap}
-.history-filter.active{background:var(--blue);color:#fff}
-.history-item{background:var(--white);margin-bottom:8px;padding:14px 16px;border-radius:var(--radius)}
-.history-item .row-top{display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--text2)}
-.history-item .status{font-weight:700;font-size:13px}
-.history-item .status.win{color:var(--green)}
-.history-item .status.lose{color:var(--red)}
-.history-item .status.pending{color:var(--blue)}
-.history-item .match{font-size:14px;font-weight:600;margin-bottom:4px}
-.history-item .bet{font-size:13px;color:var(--text2);margin-bottom:8px}
-.history-item .amounts{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px;border-top:1px solid var(--border-light)}
-.history-item .amounts .bet-amount{color:var(--text)}
-.history-item .amounts .win-amount{color:var(--green)}
-.history-item .amounts .lose-amount{color:var(--text3)}
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;font-weight:500;z-index:1100;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.2)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{background:var(--green)}
-.toast.error{background:var(--red)}
-.goal-banner{position:fixed;top:100px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:16px 28px;border-radius:var(--radius-lg);font-size:17px;font-weight:700;z-index:1000;box-shadow:0 8px 24px rgba(46,125,50,.4);animation:slideDown .4s cubic-bezier(.4,0,.2,1);max-width:90vw;text-align:center}
-@keyframes slideDown{from{top:40px;opacity:0}to{top:100px;opacity:1}}
-.loading{display:flex;justify-content:center;align-items:center;padding:60px 20px;color:var(--text3);font-size:14px}
-.empty-state{text-align:center;padding:60px 20px;color:var(--text3);font-size:14px}
+:root {
+  --bg: #080b10;
+  --panel: #111720;
+  --panel2: #171f2b;
+  --border: #263241;
+  --green: #b6ff45;
+  --green2: #8edb24;
+  --text: #f5f7fa;
+  --muted: #8995a5;
+  --red: #ff626e;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+}
+
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+.topbar {
+  height: 70px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 26px;
+  background: rgba(8,11,16,.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: -1.4px;
+  white-space: nowrap;
+}
+
+.logo span { color: var(--green); }
+
+.demo-label {
+  color: var(--green);
+  font-size: 10px;
+  border: 1px solid #42582b;
+  background: #192416;
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-weight: 800;
+}
+
+.search {
+  flex: 1;
+  max-width: 480px;
+}
+
+.search input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 9px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: white;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.balance {
+  color: var(--green);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--panel2);
+  border-radius: 9px;
+  padding: 10px 13px;
+  font-weight: 750;
+}
+
+.btn-primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: #10160b;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 205px minmax(0,1fr) 320px;
+  gap: 20px;
+  max-width: 1700px;
+  margin: auto;
+  padding: 22px;
+}
+
+.sidebar, .coupon-column { min-width: 0; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.side-title {
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1.3px;
+  font-weight: 850;
+  padding: 17px 14px 9px;
+}
+
+.nav-item {
+  width: calc(100% - 12px);
+  margin: 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #b9c3d0;
+  padding: 12px 11px;
+  text-align: left;
+}
+
+.nav-item:hover, .nav-item.active {
+  background: #202a35;
+  color: var(--green);
+}
+
+.nav-icon { font-size: 18px; width: 23px; text-align: center; }
+
+.sidebar-note {
+  margin: 14px 10px;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 190px;
+  padding: 27px;
+  margin-bottom: 20px;
+  border: 1px solid #35422b;
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 85% 20%, #334a24 0, transparent 38%),
+    linear-gradient(125deg,#18221a,#111720 65%);
+}
+
+.hero::after {
+  content: "BZ";
+  position: absolute;
+  right: 25px;
+  top: -20px;
+  font-size: 155px;
+  line-height: 1;
+  font-weight: 1000;
+  color: rgba(182,255,69,.07);
+  pointer-events: none;
+}
+
+.hero-kicker {
+  color: var(--green);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+
+.hero h1 {
+  font-size: clamp(25px,3vw,39px);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 12px 0;
+  max-width: 540px;
+}
+
+.hero p {
+  color: #aeb8c5;
+  max-width: 470px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 25px 0 13px;
+}
+
+.section-head h2 {
+  font-size: 18px;
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.muted { color: var(--muted); }
+
+.tabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: #aeb8c5;
+}
+
+.tab.active {
+  background: #26351c;
+  border-color: #4b682c;
+  color: var(--green);
+}
+
+.league {
+  margin-bottom: 13px;
+  overflow: hidden;
+}
+
+.league-head {
+  padding: 13px 15px;
+  display: flex;
+  justify-content: space-between;
+  background: #171f29;
+  border-bottom: 1px solid var(--border);
+  color: #dce3eb;
+  font-weight: 750;
+}
+
+.match {
+  padding: 15px;
+  border-bottom: 1px solid #222c38;
+}
+
+.match:last-child { border-bottom: 0; }
+
+.match-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.teams { flex: 1; min-width: 0; }
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+  font-weight: 650;
+}
+
+.team-icon { width: 23px; text-align: center; font-size: 17px; }
+
+.match-meta {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.odds {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(48px,1fr));
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.odd {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: #1b2531;
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 4px;
+  text-align: center;
+  transition: .15s;
+}
+
+.odd:hover { border-color: #668a3b; }
+
+.odd.selected {
+  background: #2c421e;
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.odd-label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+.odd-value { font-weight: 850; }
+
+.market-title {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 13px 0 6px;
+}
+
+.market-row {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+}
+
+.market-row .odd { padding: 9px 4px; }
+
+.empty {
+  padding: 30px 15px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.coupon {
+  position: sticky;
+  top: 88px;
+  overflow: hidden;
+}
+
+.coupon-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 17px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coupon-head h2 { margin: 0; font-size: 17px; }
+
+.count {
+  background: #29391e;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-weight: 800;
+}
+
+.coupon-body { padding: 14px; }
+
+.selection {
+  background: #18212c;
+  border: 1px solid #2a3645;
+  border-radius: 9px;
+  padding: 12px;
+  margin-bottom: 9px;
+}
+
+.selection-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.selection-title { font-weight: 750; }
+
+.remove {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.selection-sub {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.selection-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 11px;
+}
+
+.selection-odd { color: var(--green); font-weight: 900; }
+
+.coupon-field { margin: 16px 0; }
+
+.coupon-field label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.coupon-field input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0b1017;
+  color: white;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  color: #b9c3d0;
+}
+
+.calc-row strong { color: white; }
+
+.calc-row.total {
+  border-top: 1px solid var(--border);
+  margin-top: 7px;
+  padding-top: 15px;
+  font-size: 15px;
+}
+
+.calc-row.total strong { color: var(--green); }
+
+.full { width: 100%; }
+
+.disclaimer {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.stat-card { padding: 18px; }
+.stat-number { font-size: 25px; font-weight: 900; margin: 10px 0; }
+.stat-caption { color: var(--muted); font-size: 12px; }
+
+.form-panel { padding: 20px; max-width: 500px; }
+.form-panel h2 { margin-top: 0; }
+.form-panel input {
+  width: 100%;
+  padding: 12px;
+  margin: 7px 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b1017;
+  color: white;
+}
+
+.form-panel label { color: var(--muted); font-size: 12px; }
+.form-message { color: var(--green); line-height: 1.6; margin-top: 12px; }
+
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.75);
+}
+
+.modal-backdrop.open { display: grid; }
+
+.modal {
+  width: min(100%,430px);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #111720;
+}
+
+.modal h2 { margin-top: 0; }
+.modal p { color: var(--muted); line-height: 1.6; }
+
+.toast {
+  position: fixed;
+  z-index: 150;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  padding: 13px 18px;
+  background: #24321b;
+  border: 1px solid #4e6b30;
+  color: var(--green);
+  border-radius: 10px;
+  transition: .2s;
+  max-width: calc(100% - 30px);
+  text-align: center;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.mobile-nav { display: none; }
+
+@media(max-width:1150px) {
+  .layout { grid-template-columns: 180px minmax(0,1fr); }
+  .coupon-column { grid-column: 2; }
+  .coupon { position: static; }
+}
+
+@media(max-width:720px) {
+  .topbar { height: 60px; padding: 0 12px; gap: 10px; }
+  .logo { font-size: 21px; }
+  .demo-label { display: none; }
+  .search { display: none; }
+  .top-actions { gap: 6px; }
+  .top-actions .btn { padding: 9px; font-size: 11px; }
+  .balance { font-size: 11px; }
+  .layout { display: block; padding: 12px; }
+  .sidebar { display: none; }
+  .main-column { min-width: 0; }
+  .hero { min-height: 180px; padding: 21px; }
+  .hero::after { right: 8px; font-size: 100px; top: 15px; }
+  .hero p { font-size: 12px; max-width: 75%; }
+  .coupon-column { margin-top: 20px; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .mobile-nav {
+    position: fixed;
+    z-index: 30;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: #0d1219;
+    border-top: 1px solid var(--border);
+    padding: 8px 3px calc(8px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav button {
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .mobile-nav button.active { color: var(--green); }
+  body { padding-bottom: 65px; }
+}
 </style>
 </head>
+
 <body>
+<header class="topbar">
+  <div class="logo">BET<span>ZONE</span></div>
+  <span class="demo-label">DEMO</span>
 
-<!-- ============================================================
-     ЭКРАН АВТОРИЗАЦИИ
-     ============================================================ -->
-<div id="authScreen" class="auth-screen">
-  <div class="auth-logo">OpenBet</div>
-  <div class="auth-subtitle">Лучшие коэффициенты на спорт</div>
-  <div class="auth-form">
-    <input type="text" id="authLogin" class="auth-input" placeholder="Логин" autocomplete="off">
-    <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
-    <div id="authError" class="auth-error"></div>
-    <button id="authBtn" class="auth-btn">Войти</button>
-    <div id="authSwitch" class="auth-switch">Нет аккаунта? Зарегистрироваться</div>
+  <div class="search">
+    <input id="search" type="search"
+      placeholder="Поиск команд, лиг..."
+      aria-label="Поиск матчей">
+  </div>
+
+  <div class="top-actions">
+    <span class="balance" id="headerBalance">100 000 ₽</span>
+    <button class="btn btn-primary" id="profileButton">Войти</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar panel">
+    <div class="side-title">Спорт</div>
+    <button class="nav-item active" data-page="home">
+      <span class="nav-icon">⌂</span> Главная
+    </button>
+    <button class="nav-item" data-sport="football">
+      <span class="nav-icon">⚽</span> Футбол
+    </button>
+    <button class="nav-item" data-sport="hockey">
+      <span class="nav-icon">🏒</span> Хоккей
+    </button>
+    <button class="nav-item" data-sport="ufc">
+      <span class="nav-icon">🥊</span> UFC
+    </button>
+
+    <div class="side-title">Профиль</div>
+    <button class="nav-item" data-page="account">
+      <span class="nav-icon">◉</span> Аккаунт
+    </button>
+    <button class="nav-item" data-page="history">
+      <span class="nav-icon">▤</span> История
+    </button>
+    <button class="nav-item" data-page="stats">
+      <span class="nav-icon">↗</span> Аналитика
+    </button>
+
+    <div class="sidebar-note">
+      BETZONE DEMO<br>
+      Только виртуальные средства.<br>
+      Нет реальных ставок и вывода.
+    </div>
+  </aside>
+
+  <main class="main-column">
+    <section class="page active" id="page-home">
+      <div class="hero">
+        <div class="hero-kicker">BETZONE / SPORTS LAB</div>
+        <h1>Спорт. Статистика.<br>Новые возможности.</h1>
+        <p>Изучай матчи, сравнивай вероятности и проверяй математические модели на виртуальных данных.</p>
+        <button class="btn btn-primary" id="exploreButton">Изучить матчи ↓</button>
+      </div>
+
+      <div class="section-head">
+        <h2>Спортивная арена</h2>
+        <span class="muted" id="matchCount">0 событий</span>
+      </div>
+
+      <div class="tabs" id="sportTabs">
+        <button class="tab active" data-sport="all">Все</button>
+        <button class="tab" data-sport="football">⚽ Футбол</button>
+        <button class="tab" data-sport="hockey">🏒 Хоккей</button>
+        <button class="tab" data-sport="ufc">🥊 UFC</button>
+      </div>
+
+      <div id="matches" style="margin-top:15px"></div>
+    </section>
+
+    <section class="page" id="page-account">
+      <div class="section-head"><h2>Личный кабинет</h2></div>
+      <div class="panel form-panel">
+        <h2 id="accountHeading">Добро пожаловать</h2>
+        <p class="muted">Демо-аккаунт хранится только в этом браузере. Не используй настоящий пароль.</p>
+        <form id="authForm">
+          <label for="username">Имя пользователя</label>
+          <input id="username" minlength="3" maxlength="24"
+            autocomplete="username" required>
+
+          <label for="password">Демо-пароль</label>
+          <input id="password" type="password" minlength="6"
+            maxlength="64" autocomplete="current-password" required>
+
+          <button class="btn btn-primary full" id="authSubmit">Создать демо-аккаунт</button>
+        </form>
+
+        <button class="btn full" id="toggleAuth" style="margin-top:10px">
+          Уже есть демо-аккаунт? Войти
+        </button>
+
+        <div id="authMessage" class="form-message"></div>
+        <div id="accountInfo"></div>
+      </div>
+
+      <div class="section-head"><h2>Виртуальный баланс</h2></div>
+      <div class="panel form-panel">
+        <div class="stat-caption">Текущий баланс</div>
+        <div class="stat-number" id="accountBalance">100 000 ₽</div>
+        <p class="muted">В деморежиме можно начислить виртуальные средства. Они не имеют денежной стоимости.</p>
+        <button class="btn btn-primary full" id="topupButton">
+          Начислить виртуальные 10 000 ₽
+        </button>
+        <p class="disclaimer">Дневной лимит демонстрационного начисления — 100 000 ₽. Средства нельзя вывести или обменять на деньги.</p>
+      </div>
+    </section>
+
+    <section class="page" id="page-history">
+      <div class="section-head"><h2>История операций</h2></div>
+      <div class="panel" id="historyList">
+        <div class="empty">Операций пока нет.</div>
+      </div>
+      <div class="section-head"><h2>История купонов</h2></div>
+      <div class="panel" id="couponHistory">
+        <div class="empty">Купонов пока нет.</div>
+      </div>
+    </section>
+
+    <section class="page" id="page-stats">
+      <div class="section-head"><h2>Математическая лаборатория</h2></div>
+      <div class="stat-grid">
+        <div class="panel stat-card">
+          <div class="stat-caption">Матчей в демобазе</div>
+          <div class="stat-number" id="statMatches">0</div>
+          <div class="stat-caption">Тестовые события</div>
+        </div>
+        <div class="panel stat-card">
+          <div class="stat-caption">Выбранных исходов</div>
+          <div class="stat-number" id="statSelections">0</div>
+          <div class="stat-caption">Текущий купон</div>
+        </div>
+        <div class="panel stat-card">
+          <div class="stat-caption">Модель</div>
+          <div class="stat-number">Poisson</div>
+          <div class="stat-caption">Для счёта в футболе</div>
+        </div>
+      </div>
+
+      <div class="panel form-panel" style="max-width:none">
+        <h2>Расчёт вероятностей футбольного матча</h2>
+        <p class="muted">Введи ожидаемое количество голов. Это параметры учебной модели, а не реальные прогнозы.</p>
+
+        <label for="lambdaHome">Ожидаемые голы первой команды (λ₁)</label>
+        <input id="lambdaHome" type="number" min="0.1" max="6"
+          step="0.1" value="1.6">
+
+        <label for="lambdaAway">Ожидаемые голы второй команды (λ₂)</label>
+        <input id="lambdaAway" type="number" min="0.1" max="6"
+          step="0.1" value="1.1">
+
+        <button class="btn btn-primary full" id="calculatePoisson">
+          Рассчитать вероятности
+        </button>
+
+        <div id="poissonResult" style="margin-top:15px"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="coupon-column">
+    <div class="panel coupon">
+      <div class="coupon-head">
+        <h2>Мой купон</h2>
+        <span class="count" id="couponCount">0</span>
+      </div>
+
+      <div class="coupon-body">
+        <div id="couponSelections">
+          <div class="empty">Выбери исход матча, чтобы добавить его сюда.</div>
+        </div>
+
+        <div class="coupon-field">
+          <label for="stake">Виртуальная сумма, ₽</label>
+          <input id="stake" type="number" min="1"
+            max="100000" step="1" value="100">
+        </div>
+
+        <div class="calc-row">
+          <span>Общий коэффициент</span>
+          <strong id="totalOdds">1.00</strong>
+        </div>
+
+        <div class="calc-row">
+          <span>Вероятность модели</span>
+          <strong id="combinedProbability">—</strong>
+        </div>
+
+        <div class="calc-row total">
+          <span>Расчётная выплата</span>
+          <strong id="potentialReturn">100 ₽</strong>
+        </div>
+
+        <button class="btn btn-primary full" id="demoSubmit">
+          Сохранить демо-купон
+        </button>
+
+        <button class="btn full" id="clearCoupon" style="margin-top:8px">
+          Очистить купон
+        </button>
+
+        <div class="disclaimer">
+          Все коэффициенты и матчи здесь демонстрационные. Купон только сохраняет учебный расчёт: реальные деньги не принимаются.
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<nav class="mobile-nav">
+  <button class="active" data-page="home"><span>⌂</span>Главная</button>
+  <button data-sport="football"><span>⚽</span>Футбол</button>
+  <button data-sport="hockey"><span>🏒</span>Хоккей</button>
+  <button data-sport="ufc"><span>🥊</span>UFC</button>
+  <button data-page="account"><span>◉</span>Профиль</button>
+</nav>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle">BETZONE</h2>
+    <p id="modalText"></p>
+    <button class="btn btn-primary full" id="modalClose">Понятно</button>
   </div>
 </div>
 
-<!-- ============================================================
-     ОСНОВНОЕ ПРИЛОЖЕНИЕ
-     ============================================================ -->
-<div id="app" class="hidden">
-
-  <!-- Шапка -->
-  <div class="header">
-    <div class="header-title" id="headerTitle">Топ</div>
-    <div class="header-actions">
-      <span>🔍</span>
-      <span>⚙️</span>
-    </div>
-  </div>
-
-  <!-- Промо-карусель -->
-  <div class="promo-scroll" id="promoScroll">
-    <div class="promo-card blue">
-      <div>
-        <h3>Новое приложение 🚀</h3>
-        <p>Быстрее, удобнее, функциональнее</p>
-      </div>
-      <div class="promo-arrow">→</div>
-    </div>
-    <div class="promo-card dark">
-      <div>
-        <h3>10 ЛЕТ НА ОДНОЙ ЛИНИИ</h3>
-        <p>Поздравляем! Все задания выполнены</p>
-      </div>
-      <div class="promo-arrow">→</div>
-    </div>
-    <div class="promo-card red">
-      <div>
-        <h3>FONPASS: СЕЗОН 23</h3>
-        <p>Получай редкие скины и бонусы до 100 000</p>
-      </div>
-      <button class="promo-btn">Подробнее</button>
-    </div>
-    <div class="promo-card dark">
-      <div>
-        <h3>VIP-CASHBACK</h3>
-        <p>Кешбэк до 20% каждый понедельник и фрибеты по пятницам</p>
-      </div>
-      <button class="promo-btn">Подробнее</button>
-    </div>
-  </div>
-
-  <!-- Табы спорта -->
-  <div class="sport-tabs" id="sportTabs">
-    <div class="sport-tab active" data-sport="top"><span class="icon">⚡</span><span>Топ</span></div>
-    <div class="sport-tab" data-sport="football"><span class="icon">⚽</span><span>Футбол</span></div>
-    <div class="sport-tab" data-sport="hockey"><span class="icon">🏒</span><span>Хоккей</span></div>
-    <div class="sport-tab" data-sport="tennis"><span class="icon">🎾</span><span>Теннис</span></div>
-    <div class="sport-tab" data-sport="basketball"><span class="icon">🏀</span><span>Баскетбол</span></div>
-    <div class="sport-tab" data-sport="volleyball"><span class="icon">🏐</span><span>Волейбол</span></div>
-    <div class="sport-tab" data-sport="ufc"><span class="icon">🥊</span><span>UFC</span></div>
-    <div class="sport-tab" data-sport="cybersport"><span class="icon">🎮</span><span>Киберспорт</span></div>
-  </div>
-
-  <!-- Фильтры рынков -->
-  <div class="market-filters" id="marketFilters">
-    <div class="filter-btn active" data-filter="1x2">Исходы</div>
-    <div class="filter-btn" data-filter="totals">Тоталы</div>
-    <div class="filter-btn" data-filter="handicap">Форы</div>
-    <div class="filter-btn" data-filter="btts">Обе забьют</div>
-  </div>
-
-  <!-- Контейнер контента -->
-  <div id="mainContent">
-    <div class="loading">Загрузка матчей...</div>
-  </div>
-
-  <!-- Нижний таб-бар -->
-  <div class="bottom-nav" id="bottomNav">
-    <div class="nav-item active" data-page="top">
-      <span class="icon">🔥</span>
-      <span>Топ</span>
-    </div>
-    <div class="nav-item" data-page="sport">
-      <span class="icon">⚽</span>
-      <span>Спорт</span>
-    </div>
-    <div class="nav-item" data-page="coupon">
-      <span class="icon">📋</span>
-      <span>Купон</span>
-      <span class="badge hidden" id="couponBadge">0</span>
-    </div>
-    <div class="nav-item" data-page="history">
-      <span class="icon">📜</span>
-      <span>История</span>
-    </div>
-    <div class="nav-item" data-page="profile">
-      <span class="icon">👤</span>
-      <span>Профиль</span>
-    </div>
-  </div>
-
-  <!-- Купон: затемнение + панель -->
-  <div class="coupon-overlay" id="couponOverlay"></div>
-  <div class="coupon-panel" id="couponPanel">
-    <div class="coupon-header">
-      <h3>Купон</h3>
-      <div class="coupon-close" id="couponClose">✕</div>
-    </div>
-    <div class="coupon-type-tabs">
-      <div class="coupon-type-tab active" data-type="single">Одинар</div>
-      <div class="coupon-type-tab" data-type="express">Экспресс</div>
-    </div>
-    <div class="coupon-body" id="couponBody">
-      <div class="coupon-empty">Купон пуст</div>
-    </div>
-    <div class="coupon-footer">
-      <div class="coupon-total">
-        <span class="label">Итоговый кэф:</span>
-        <span class="value" id="couponTotalOdd">1.00</span>
-      </div>
-      <div class="bet-input-row">
-        <input type="number" id="betAmount" placeholder="Сумма" min="10" step="10" value="100">
-        <button class="place-bet-btn" id="placeBetBtn">Сделать ставку</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модалка видео -->
-  <div class="modal-overlay" id="videoModal">
-    <div class="modal-content">
-      <h3>🎥 Видео-повтор момента</h3>
-      <div class="video-placeholder">▶</div>
-      <div class="video-desc" id="videoDescription">Описание момента</div>
-      <button class="modal-close-btn" id="closeVideoModal">Закрыть</button>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ============================================================
-   ЧАСТЬ 3: JAVASCRIPT — СОСТОЯНИЕ, УТИЛИТЫ, АВТОРИЗАЦИЯ, МАТЕМАТИКА
-   ============================================================ */
-/* 
-  ВСТАВЬ СЮДА КОД ИЗ ЧАСТИ 3.
-  Он начинается с "const AppState = {" и заканчивается "};" 
-  (закрытие MathEngine).
-*/
-  /* ============================================================
-   СОСТОЯНИЕ ПРИЛОЖЕНИЯ
-   ============================================================ */
-const AppState = {
-  user: null,
-  balance: 0,
-  bets: [],
-  coupon: [],
-  matches: [],
-  currentPage: 'top',
-  currentSport: 'top',
-  currentFilter: '1x2',
-  couponType: 'single'
-};
+"use strict";
 
-/* ============================================================
-   УТИЛИТЫ
-   ============================================================ */
-const Utils = {
-  save(key, data) {
-    try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+/*
+ * BETZONE DEMO
+ * Один HTML-файл.
+ * Виртуальные средства, тестовые матчи, локальное хранилище.
+ * Не является букмекерской платформой.
+ */
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+
+const DEMO_START_BALANCE = 100000;
+const DAILY_TOPUP_LIMIT = 100000;
+const TOPUP_AMOUNT = 10000;
+const STORAGE_KEY = "betzone_demo_v1";
+
+const MATCHES = [
+  {
+    id:"f101", sport:"football", league:"Европа · Демолiga",
+    home:"Northbridge FC", away:"Royal Athletic",
+    homeIcon:"🟢", awayIcon:"🔵", time:"19:00",
+    status:"Предстоящий", lambdaHome:1.65, lambdaAway:1.05,
+    markets:[
+      {id:"1x2",name:"Результат матча",outcomes:[
+        {id:"1",label:"П1",odd:2.05},
+        {id:"X",label:"X",odd:3.30},
+        {id:"2",label:"П2",odd:3.65}
+      ]},
+      {id:"total",name:"Тотал 2.5",outcomes:[
+        {id:"over",label:"Больше 2.5",odd:1.88},
+        {id:"under",label:"Меньше 2.5",odd:1.92}
+      ]},
+      {id:"btts",name:"Обе забьют",outcomes:[
+        {id:"yes",label:"Да",odd:1.78},
+        {id:"no",label:"Нет",odd:2.02}
+      ]}
+    ]
   },
-  load(key) {
-    try {
-      const d = localStorage.getItem(key);
-      return d ? JSON.parse(d) : null;
-    } catch(e) { return null; }
+  {
+    id:"f102", sport:"football", league:"Европа · Demo Cup",
+    home:"Metro United",away:"Coastal City",
+    homeIcon:"⚫",awayIcon:"🟡",time:"20:30",
+    status:"Предстоящий",lambdaHome:1.25,lambdaAway:1.30,
+    markets:[
+      {id:"1x2",name:"Результат матча",outcomes:[
+        {id:"1",label:"П1",odd:2.75},
+        {id:"X",label:"X",odd:3.10},
+        {id:"2",label:"П2",odd:2.60}
+      ]},
+      {id:"total",name:"Тотал 2.5",outcomes:[
+        {id:"over",label:"Больше 2.5",odd:1.95},
+        {id:"under",label:"Меньше 2.5",odd:1.85}
+      ]}
+    ]
   },
-  formatTime(date) {
-    const now = new Date();
-    const d = new Date(date);
-    const isToday = d.toDateString() === now.toDateString();
-    const tom = new Date(now);
-    tom.setDate(tom.getDate() + 1);
-    const isTom = d.toDateString() === tom.toDateString();
-    const h = String(d.getHours()).padStart(2, '0');
-    const m = String(d.getMinutes()).padStart(2, '0');
-    if (isToday) return `Сегодня ${h}:${m}`;
-    if (isTom) return `Завтра ${h}:${m}`;
-    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')} ${h}:${m}`;
+  {
+    id:"f103",sport:"football",league:"Международная · Demo Series",
+    home:"Capital Stars",away:"Lakeside FC",
+    homeIcon:"⭐",awayIcon:"🔷",time:"21:00",
+    status:"Предстоящий",lambdaHome:1.90,lambdaAway:0.80,
+    markets:[
+      {id:"1x2",name:"Результат матча",outcomes:[
+        {id:"1",label:"П1",odd:1.72},
+        {id:"X",label:"X",odd:3.55},
+        {id:"2",label:"П2",odd:4.80}
+      ]},
+      {id:"total",name:"Тотал 2.5",outcomes:[
+        {id:"over",label:"Больше 2.5",odd:1.80},
+        {id:"under",label:"Меньше 2.5",odd:2.00}
+      ]}
+    ]
   },
-  rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; },
-  choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
-  uid(prefix = 'id') {
-    return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  {
+    id:"h201",sport:"hockey",league:"Хоккей · Demo League",
+    home:"Polar Wolves",away:"Ice Rangers",
+    homeIcon:"🐺",awayIcon:"🧊",time:"18:30",
+    status:"Предстоящий",lambdaHome:3.1,lambdaAway:2.5,
+    markets:[
+      {id:"winner",name:"Победитель основного времени",outcomes:[
+        {id:"1",label:"П1",odd:2.30},
+        {id:"X",label:"X",odd:4.10},
+        {id:"2",label:"П2",odd:2.55}
+      ]},
+      {id:"total",name:"Тотал 5.5",outcomes:[
+        {id:"over",label:"Больше 5.5",odd:1.90},
+        {id:"under",label:"Меньше 5.5",odd:1.90}
+      ]}
+    ]
+  },
+  {
+    id:"h202",sport:"hockey",league:"Хоккей · Winter Demo",
+    home:"Northern Foxes",away:"Storm Penguins",
+    homeIcon:"🦊",awayIcon:"🐧",time:"20:00",
+    status:"Предстоящий",lambdaHome:2.7,lambdaAway:2.9,
+    markets:[
+      {id:"winner",name:"Победитель основного времени",outcomes:[
+        {id:"1",label:"П1",odd:2.65},
+        {id:"X",label:"X",odd:4.00},
+        {id:"2",label:"П2",odd:2.25}
+      ]},
+      {id:"total",name:"Тотал 5.5",outcomes:[
+        {id:"over",label:"Больше 5.5",odd:1.85},
+        {id:"under",label:"Меньше 5.5",odd:1.95}
+      ]}
+    ]
+  },
+  {
+    id:"u301",sport:"ufc",league:"MMA · Fictional Fight Night",
+    home:"Alex Stone",away:"Marcus Steel",
+    homeIcon:"🥊",awayIcon:"🦅",time:"23:00",
+    status:"Предстоящий",lambdaHome:0,lambdaAway:0,
+    markets:[
+      {id:"winner",name:"Победитель боя",outcomes:[
+        {id:"1",label:"Stone",odd:1.85},
+        {id:"2",label:"Steel",odd:1.95}
+      ]},
+      {id:"method",name:"Способ победы",outcomes:[
+        {id:"ko",label:"Нокаут / TKO",odd:2.20},
+        {id:"decision",label:"Решение судей",odd:2.10}
+      ]}
+    ]
+  },
+  {
+    id:"u302",sport:"ufc",league:"MMA · Demo Championship",
+    home:"Victor Blaze",away:"Daniel Frost",
+    homeIcon:"🔥",awayIcon:"❄️",time:"00:30",
+    status:"Предстоящий",lambdaHome:0,lambdaAway:0,
+    markets:[
+      {id:"winner",name:"Победитель боя",outcomes:[
+        {id:"1",label:"Blaze",odd:2.10},
+        {id:"2",label:"Frost",odd:1.75}
+      ]},
+      {id:"method",name:"Способ победы",outcomes:[
+        {id:"ko",label:"Нокаут / TKO",odd:2.45},
+        {id:"decision",label:"Решение судей",odd:1.95}
+      ]}
+    ]
   }
-};
+];
 
-/* ============================================================
-   АВТОРИЗАЦИЯ
-   ============================================================ */
-const Auth = {
-  init() {
-    const savedUser = Utils.load('openbet_user');
-    if (savedUser && savedUser.login) {
-      AppState.user = savedUser.login;
-      AppState.balance = savedUser.balance || 1000;
-      Auth.showApp();
-    } else {
-      Auth.showAuth();
-    }
-  },
-  showAuth() {
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('app').classList.add('hidden');
-  },
-  showApp() {
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
+function initialState() {
+  return {
+    balance:DEMO_START_BALANCE,
+    dailyTopup:0,
+    topupDate:new Date().toISOString().slice(0,10),
+    user:null,
+    selections:[],
+    transactions:[],
+    couponHistory:[]
+  };
+}
 
-    // Загрузка сохранённого состояния
-    const savedBets = Utils.load('openbet_bets');
-    if (savedBets) AppState.bets = savedBets;
-    const savedCoupon = Utils.load('openbet_coupon');
-    if (savedCoupon) AppState.coupon = savedCoupon;
-
-    // КРИТИЧНО: всегда генерируем матчи при старте, чтобы не было "Нет матчей"
-    Sim.generateAll();
-
-    // Первый рендер
-    Render.renderAll();
-    Render.updateCouponBadge();
-    Coupon.render();
-
-    // Запуск симуляции
-    Sim.start();
-  },
-  login() {
-    const login = document.getElementById('authLogin').value.trim();
-    const password = document.getElementById('authPassword').value.trim();
-    const errorEl = document.getElementById('authError');
-    errorEl.textContent = '';
-
-    if (!login || !password) {
-      errorEl.textContent = 'Заполните все поля';
-      return;
-    }
-    if (login.length < 3) {
-      errorEl.textContent = 'Логин минимум 3 символа';
-      return;
-    }
-
-    const users = Utils.load('openbet_users') || {};
-    if (users[login]) {
-      if (users[login].password !== password) {
-        errorEl.textContent = 'Неверный пароль';
-        return;
-      }
-      AppState.user = login;
-      AppState.balance = users[login].balance || 1000;
-    } else {
-      users[login] = { password, balance: 1000 };
-      Utils.save('openbet_users', users);
-      AppState.user = login;
-      AppState.balance = 1000;
-    }
-
-    Utils.save('openbet_user', { login: AppState.user, balance: AppState.balance });
-    Auth.showApp();
-  },
-  logout() {
-    AppState.user = null;
-    AppState.balance = 0;
-    AppState.coupon = [];
-    Utils.save('openbet_user', null);
-    Utils.save('openbet_coupon', []);
-    Auth.showAuth();
-  }
-};
-
-/* ============================================================
-   МАТЕМАТИКА КОЭФФИЦИЕНТОВ
-   ============================================================ */
-const MathEngine = {
-  margin: 0.045,
-
-  probToOdd(prob) {
-    if (prob <= 0.001) return 999.00;
-    if (prob >= 0.999) return 1.01;
-    const odd = (1 / prob) * (1 - MathEngine.margin);
-    return Math.max(1.01, Math.round(odd * 100) / 100);
-  },
-
-  poisson(lambda, k) {
-    if (lambda <= 0) return k === 0 ? 1 : 0;
-    let fact = 1;
-    for (let i = 2; i <= k; i++) fact *= i;
-    return Math.pow(lambda, k) * Math.exp(-lambda) / fact;
-  },
-
-  totalProb(lambdaHome, lambdaAway, line, ch, ca, min) {
-    const rem = Math.max(1, 90 - min) / 90;
-    const rh = lambdaHome * rem;
-    const ra = lambdaAway * rem;
-    let over = 0, under = 0;
-    for (let h = 0; h <= 12; h++) {
-      for (let a = 0; a <= 12; a++) {
-        const p = MathEngine.poisson(rh, h) * MathEngine.poisson(ra, a);
-        if (ch + ca + h + a > line) over += p;
-        else under += p;
-      }
-    }
-    return { over, under };
-  },
-
-  matchResultProbs(lh, la, ch = 0, ca = 0, min = 0) {
-    const rem = Math.max(1, 90 - min) / 90;
-    const rh = lh * rem;
-    const ra = la * rem;
-    let ph = 0, pd = 0, pa = 0;
-    for (let h = 0; h <= 8; h++) {
-      for (let a = 0; a <= 8; a++) {
-        const p = MathEngine.poisson(rh, h) * MathEngine.poisson(ra, a);
-        const fh = ch + h, fa = ca + a;
-        if (fh > fa) ph += p;
-        else if (fh === fa) pd += p;
-        else pa += p;
-      }
-    }
-    return { home: ph, draw: pd, away: pa };
-  },
-
-  bothScoreProbs(lh, la, ch, ca, min) {
-    const rem = Math.max(1, 90 - min) / 90;
-    const rh = lh * rem;
-    const ra = la * rem;
-    let yes = 0;
-    for (let h = 0; h <= 8; h++) {
-      for (let a = 0; a <= 8; a++) {
-        if (ch + h > 0 && ca + a > 0) {
-          yes += MathEngine.poisson(rh, h) * MathEngine.poisson(ra, a);
-        }
-      }
-    }
-    return { yes, no: 1 - yes };
-  },
-
-  handicapProbs(lh, la, hc, ch, ca, min) {
-    const rem = Math.max(1, 90 - min) / 90;
-    const rh = lh * rem;
-    const ra = la * rem;
-    let ph = 0, pp = 0, pa = 0;
-    for (let h = 0; h <= 8; h++) {
-      for (let a = 0; a <= 8; a++) {
-        const p = MathEngine.poisson(rh, h) * MathEngine.poisson(ra, a);
-        const d = (ch + h) - (ca + a) + hc;
-        if (d > 0.01) ph += p;
-        else if (Math.abs(d) < 0.01) pp += p;
-        else pa += p;
-      }
-    }
-    return { home: ph, push: pp, away: pa };
-  },
-
-  correctScoreProbs(lh, la, ch, ca, min) {
-    const rem = Math.max(1, 90 - min) / 90;
-    const rh = lh * rem;
-    const ra = la * rem;
-    const s = {};
-    for (let h = 0; h <= 5; h++) {
-      for (let a = 0; a <= 5; a++) {
-        const p = MathEngine.poisson(rh, h) * MathEngine.poisson(ra, a);
-        if (p > 0.005) {
-          const k = `${ch + h}:${ca + a}`;
-          s[k] = (s[k] || 0) + p;
-        }
-      }
-    }
-    return Object.entries(s).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  },
-
-  goalInInterval(lh, la, s, e, ch, ca, min) {
-    if (min >= e) return 0;
-    const eff = Math.max(s, min);
-    const len = e - eff;
-    if (len <= 0) return 0;
-    const lambda = (lh + la) * (len / 90);
-    return 1 - Math.exp(-lambda);
-  }
-};
-  /* ============================================================
-   БАЗА ДАННЫХ КОМАНД
-   ============================================================ */
-const Data = {
-  footballTeams: [
-    { name:'Манчестер Сити', attack:2.1, defense:0.8, flag:'🏴' },
-    { name:'Арсенал', attack:1.9, defense:0.9, flag:'🏴' },
-    { name:'Ливерпуль', attack:2.0, defense:1.0, flag:'🏴' },
-    { name:'Челси', attack:1.7, defense:1.1, flag:'🏴' },
-    { name:'Манчестер Юнайтед', attack:1.5, defense:1.2, flag:'🏴' },
-    { name:'Тоттенхэм', attack:1.8, defense:1.1, flag:'🏴' },
-    { name:'Ньюкасл', attack:1.6, defense:1.0, flag:'🏴' },
-    { name:'Астон Вилла', attack:1.7, defense:1.1, flag:'🏴' },
-    { name:'Вест Хэм', attack:1.4, defense:1.3, flag:'🏴' },
-    { name:'Брайтон', attack:1.5, defense:1.2, flag:'🏴' },
-    { name:'Эвертон', attack:1.1, defense:1.4, flag:'🏴' },
-    { name:'Кристал Пэлас', attack:1.2, defense:1.3, flag:'🏴' },
-    { name:'Фулхэм', attack:1.3, defense:1.2, flag:'🏴' },
-    { name:'Брентфорд', attack:1.4, defense:1.2, flag:'🏴' },
-    { name:'Вулверхэмптон', attack:1.2, defense:1.4, flag:'🏴' },
-    { name:'Ноттингем Форест', attack:1.1, defense:1.5, flag:'🏴' },
-    { name:'Лестер', attack:1.3, defense:1.3, flag:'🏴' },
-    { name:'Саутгемптон', attack:1.0, defense:1.6, flag:'🏴' },
-    { name:'Ипсвич', attack:1.1, defense:1.5, flag:'🏴' },
-    { name:'Борнмут', attack:1.3, defense:1.2, flag:'🏴' },
-    { name:'Реал Мадрид', attack:2.2, defense:0.7, flag:'🇪🇸' },
-    { name:'Барселона', attack:2.0, defense:0.9, flag:'🇪🇸' },
-    { name:'Атлетико Мадрид', attack:1.6, defense:0.8, flag:'🇪🇸' },
-    { name:'Севилья', attack:1.3, defense:1.2, flag:'🇪🇸' },
-    { name:'Валенсия', attack:1.2, defense:1.3, flag:'🇪🇸' },
-    { name:'Вильярреал', attack:1.4, defense:1.1, flag:'🇪🇸' },
-    { name:'Реал Сосьедад', attack:1.3, defense:1.1, flag:'🇪🇸' },
-    { name:'Атлетик Бильбао', attack:1.4, defense:1.0, flag:'🇪🇸' },
-    { name:'Бетис', attack:1.2, defense:1.2, flag:'🇪🇸' },
-    { name:'Жирона', attack:1.5, defense:1.1, flag:'🇪🇸' },
-    { name:'Осасуна', attack:1.1, defense:1.3, flag:'🇪🇸' },
-    { name:'Сельта', attack:1.2, defense:1.3, flag:'🇪🇸' },
-    { name:'Мальорка', attack:1.0, defense:1.2, flag:'🇪🇸' },
-    { name:'Лас-Пальмас', attack:1.1, defense:1.3, flag:'🇪🇸' },
-    { name:'Хетафе', attack:1.0, defense:1.3, flag:'🇪🇸' },
-    { name:'Алавес', attack:1.1, defense:1.2, flag:'🇪🇸' },
-    { name:'Райо Вальекано', attack:1.1, defense:1.2, flag:'🇪🇸' },
-    { name:'Эспаньол', attack:1.0, defense:1.4, flag:'🇪🇸' },
-    { name:'Леганес', attack:0.9, defense:1.4, flag:'🇪🇸' },
-    { name:'Вальядолид', attack:0.9, defense:1.5, flag:'🇪🇸' },
-    { name:'Интер', attack:2.0, defense:0.8, flag:'🇮🇹' },
-    { name:'Милан', attack:1.7, defense:1.0, flag:'🇮🇹' },
-    { name:'Ювентус', attack:1.5, defense:0.9, flag:'🇮🇹' },
-    { name:'Наполи', attack:1.6, defense:1.0, flag:'🇮🇹' },
-    { name:'Рома', attack:1.5, defense:1.1, flag:'🇮🇹' },
-    { name:'Лацио', attack:1.4, defense:1.1, flag:'🇮🇹' },
-    { name:'Аталанта', attack:1.8, defense:1.0, flag:'🇮🇹' },
-    { name:'Фиорентина', attack:1.4, defense:1.2, flag:'🇮🇹' },
-    { name:'Болонья', attack:1.2, defense:1.1, flag:'🇮🇹' },
-    { name:'Торино', attack:1.1, defense:1.2, flag:'🇮🇹' },
-    { name:'Удинезе', attack:1.1, defense:1.3, flag:'🇮🇹' },
-    { name:'Дженоа', attack:1.1, defense:1.2, flag:'🇮🇹' },
-    { name:'Кальяри', attack:1.0, defense:1.3, flag:'🇮🇹' },
-    { name:'Лечче', attack:1.0, defense:1.3, flag:'🇮🇹' },
-    { name:'Верона', attack:1.1, defense:1.3, flag:'🇮🇹' },
-    { name:'Эмполи', attack:0.9, defense:1.4, flag:'🇮🇹' },
-    { name:'Парма', attack:1.1, defense:1.2, flag:'🇮🇹' },
-    { name:'Комо', attack:1.0, defense:1.3, flag:'🇮🇹' },
-    { name:'Монца', attack:1.0, defense:1.3, flag:'🇮🇹' },
-    { name:'Венеция', attack:0.9, defense:1.4, flag:'🇮🇹' },
-    { name:'Бавария', attack:2.3, defense:0.9, flag:'🇩🇪' },
-    { name:'Боруссия Дортмунд', attack:1.8, defense:1.1, flag:'🇩🇪' },
-    { name:'РБ Лейпциг', attack:1.7, defense:1.0, flag:'🇩🇪' },
-    { name:'Байер Леверкузен', attack:1.9, defense:0.9, flag:'🇩🇪' },
-    { name:'Айнтрахт Франкфурт', attack:1.5, defense:1.2, flag:'🇩🇪' },
-    { name:'Штутгарт', attack:1.6, defense:1.1, flag:'🇩🇪' },
-    { name:'Фрайбург', attack:1.3, defense:1.2, flag:'🇩🇪' },
-    { name:'Хоффенхайм', attack:1.4, defense:1.3, flag:'🇩🇪' },
-    { name:'Вольфсбург', attack:1.3, defense:1.2, flag:'🇩🇪' },
-    { name:'Вердер Бремен', attack:1.3, defense:1.4, flag:'🇩🇪' },
-    { name:'Боруссия Мёнхенгладбах', attack:1.3, defense:1.3, flag:'🇩🇪' },
-    { name:'Аугсбург', attack:1.1, defense:1.4, flag:'🇩🇪' },
-    { name:'Унион Берлин', attack:1.0, defense:1.3, flag:'🇩🇪' },
-    { name:'Майнц', attack:1.1, defense:1.4, flag:'🇩🇪' },
-    { name:'Бохум', attack:1.0, defense:1.5, flag:'🇩🇪' },
-    { name:'Санкт-Паули', attack:1.0, defense:1.4, flag:'🇩🇪' },
-    { name:'Хайденхайм', attack:1.1, defense:1.3, flag:'🇩🇪' },
-    { name:'Хольштайн Киль', attack:0.9, defense:1.5, flag:'🇩🇪' },
-    { name:'ПСЖ', attack:2.1, defense:0.8, flag:'🇫🇷' },
-    { name:'Марсель', attack:1.5, defense:1.1, flag:'🇫🇷' },
-    { name:'Монако', attack:1.6, defense:1.2, flag:'🇫🇷' },
-    { name:'Лион', attack:1.4, defense:1.1, flag:'🇫🇷' },
-    { name:'Лилль', attack:1.5, defense:1.0, flag:'🇫🇷' },
-    { name:'Ницца', attack:1.2, defense:1.1, flag:'🇫🇷' },
-    { name:'Ренн', attack:1.3, defense:1.2, flag:'🇫🇷' },
-    { name:'Ланс', attack:1.3, defense:1.0, flag:'🇫🇷' },
-    { name:'Страсбург', attack:1.2, defense:1.2, flag:'🇫🇷' },
-    { name:'Нант', attack:1.1, defense:1.3, flag:'🇫🇷' },
-    { name:'Реймс', attack:1.1, defense:1.2, flag:'🇫🇷' },
-    { name:'Тулуза', attack:1.2, defense:1.3, flag:'🇫🇷' },
-    { name:'Брест', attack:1.2, defense:1.2, flag:'🇫🇷' },
-    { name:'Гавр', attack:1.0, defense:1.3, flag:'🇫🇷' },
-    { name:'Осер', attack:1.1, defense:1.3, flag:'🇫🇷' },
-    { name:'Анже', attack:1.0, defense:1.4, flag:'🇫🇷' },
-    { name:'Сент-Этьен', attack:1.0, defense:1.4, flag:'🇫🇷' },
-    { name:'Монпелье', attack:1.0, defense:1.4, flag:'🇫🇷' },
-    { name:'Зенит', attack:1.9, defense:0.9, flag:'🇷🇺' },
-    { name:'Краснодар', attack:1.7, defense:1.0, flag:'🇷🇺' },
-    { name:'Спартак Москва', attack:1.6, defense:1.1, flag:'🇷🇺' },
-    { name:'ЦСКА Москва', attack:1.5, defense:1.0, flag:'🇷🇺' },
-    { name:'Динамо Москва', attack:1.5, defense:1.1, flag:'🇷🇺' },
-    { name:'Локомотив Москва', attack:1.4, defense:1.1, flag:'🇷🇺' },
-    { name:'Рубин', attack:1.2, defense:1.2, flag:'🇷🇺' },
-    { name:'Ростов', attack:1.2, defense:1.2, flag:'🇷🇺' },
-    { name:'Крылья Советов', attack:1.1, defense:1.3, flag:'🇷🇺' },
-    { name:'Ахмат', attack:1.0, defense:1.3, flag:'🇷🇺' },
-    { name:'Урал', attack:1.0, defense:1.4, flag:'🇷🇺' },
-    { name:'Оренбург', attack:1.1, defense:1.3, flag:'🇷🇺' },
-    { name:'Балтика', attack:1.0, defense:1.4, flag:'🇷🇺' },
-    { name:'Факел', attack:0.9, defense:1.4, flag:'🇷🇺' },
-    { name:'Пари НН', attack:0.9, defense:1.4, flag:'🇷🇺' },
-    { name:'Динамо Махачкала', attack:0.9, defense:1.5, flag:'🇷🇺' },
-    { name:'Галатасарай', attack:1.9, defense:1.0, flag:'🇹🇷' },
-    { name:'Фенербахче', attack:1.8, defense:1.0, flag:'🇹🇷' },
-    { name:'Бешикташ', attack:1.5, defense:1.1, flag:'🇹🇷' },
-    { name:'Трабзонспор', attack:1.4, defense:1.2, flag:'🇹🇷' },
-    { name:'Башакшехир', attack:1.3, defense:1.2, flag:'🇹🇷' },
-    { name:'Адана Демирспор', attack:1.2, defense:1.3, flag:'🇹🇷' },
-    { name:'Коньяспор', attack:1.1, defense:1.3, flag:'🇹🇷' },
-    { name:'Аланьяспор', attack:1.1, defense:1.3, flag:'🇹🇷' },
-    { name:'Кайсериспор', attack:1.0, defense:1.4, flag:'🇹🇷' },
-    { name:'Самсунспор', attack:1.0, defense:1.4, flag:'🇹🇷' },
-    { name:'Бенфика', attack:1.8, defense:0.9, flag:'🇵🇹' },
-    { name:'Порту', attack:1.7, defense:0.9, flag:'🇵🇹' },
-    { name:'Спортинг', attack:1.8, defense:0.8, flag:'🇵🇹' },
-    { name:'Брага', attack:1.5, defense:1.0, flag:'🇵🇹' },
-    { name:'Витория Гимарайнш', attack:1.3, defense:1.1, flag:'🇵🇹' },
-    { name:'Боавишта', attack:1.1, defense:1.3, flag:'🇵🇹' },
-    { name:'Фамаликан', attack:1.1, defense:1.2, flag:'🇵🇹' },
-    { name:'Морейренсе', attack:1.0, defense:1.3, flag:'🇵🇹' },
-    { name:'Эшторил', attack:1.0, defense:1.3, flag:'🇵🇹' },
-    { name:'Риу Аве', attack:1.0, defense:1.3, flag:'🇵🇹' },
-    { name:'Аякс', attack:1.8, defense:1.1, flag:'🇳🇱' },
-    { name:'ПСВ', attack:1.9, defense:1.0, flag:'🇳🇱' },
-    { name:'Фейеноорд', attack:1.7, defense:1.0, flag:'🇳🇱' },
-    { name:'АЗ Алкмаар', attack:1.5, defense:1.1, flag:'🇳🇱' },
-    { name:'Утрехт', attack:1.3, defense:1.2, flag:'🇳🇱' },
-    { name:'Твенте', attack:1.4, defense:1.1, flag:'🇳🇱' },
-    { name:'Херенвен', attack:1.2, defense:1.3, flag:'🇳🇱' },
-    { name:'Гронинген', attack:1.1, defense:1.3, flag:'🇳🇱' },
-    { name:'Неймеген', attack:1.1, defense:1.3, flag:'🇳🇱' },
-    { name:'Спарта Роттердам', attack:1.1, defense:1.3, flag:'🇳🇱' },
-    { name:'Ривер Плейт', attack:1.6, defense:0.9, flag:'🇦🇷' },
-    { name:'Бока Хуниорс', attack:1.5, defense:1.0, flag:'🇦🇷' },
-    { name:'Расинг Клуб', attack:1.4, defense:1.0, flag:'🇦🇷' },
-    { name:'Индепендьенте', attack:1.3, defense:1.0, flag:'🇦🇷' },
-    { name:'Сан-Лоренсо', attack:1.2, defense:1.1, flag:'🇦🇷' },
-    { name:'Велес Сарсфилд', attack:1.3, defense:1.0, flag:'🇦🇷' },
-    { name:'Эстудиантес', attack:1.3, defense:1.1, flag:'🇦🇷' },
-    { name:'Тигре', attack:1.2, defense:1.2, flag:'🇦🇷' },
-    { name:'Банфилд', attack:1.1, defense:1.1, flag:'🇦🇷' },
-    { name:'Ланус', attack:1.2, defense:1.1, flag:'🇦🇷' },
-    { name:'Архентинос Хуниорс', attack:1.1, defense:1.2, flag:'🇦🇷' },
-    { name:'Росарио Сентраль', attack:1.1, defense:1.2, flag:'🇦🇷' },
-    { name:'Фламенго', attack:1.8, defense:0.9, flag:'🇧🇷' },
-    { name:'Палмейрас', attack:1.7, defense:0.9, flag:'🇧🇷' },
-    { name:'Коринтианс', attack:1.4, defense:1.1, flag:'🇧🇷' },
-    { name:'Сан-Паулу', attack:1.5, defense:1.0, flag:'🇧🇷' },
-    { name:'Флуминенсе', attack:1.5, defense:1.0, flag:'🇧🇷' },
-    { name:'Ботафого', attack:1.4, defense:1.0, flag:'🇧🇷' },
-    { name:'Васко да Гама', attack:1.3, defense:1.1, flag:'🇧🇷' },
-    { name:'Ремо', attack:1.0, defense:1.4, flag:'🇧🇷' },
-    { name:'Крузейро', attack:1.3, defense:1.1, flag:'🇧🇷' },
-    { name:'Атлетико Минейро', attack:1.4, defense:1.0, flag:'🇧🇷' },
-    { name:'Интернасьонал', attack:1.3, defense:1.1, flag:'🇧🇷' },
-    { name:'Гремио', attack:1.3, defense:1.1, flag:'🇧🇷' }
-  ],
-  hockeyTeams: [
-    { name:'Сан-Хосе', attack:2.8, defense:3.2, flag:'🇺🇸' },
-    { name:'Эдмонтон', attack:3.5, defense:2.8, flag:'🇨🇦' },
-    { name:'Флорида', attack:3.2, defense:2.5, flag:'🇺🇸' },
-    { name:'Миннесота', attack:3.0, defense:2.6, flag:'🇺🇸' },
-    { name:'Монреаль', attack:2.8, defense:2.9, flag:'🇨🇦' },
-    { name:'Детройт', attack:3.0, defense:2.7, flag:'🇺🇸' },
-    { name:'Торонто', attack:3.4, defense:2.8, flag:'🇨🇦' },
-    { name:'Бостон', attack:3.3, defense:2.4, flag:'🇺🇸' },
-    { name:'Тампа-Бэй', attack:3.2, defense:2.6, flag:'🇺🇸' },
-    { name:'Колорадо', attack:3.5, defense:2.7, flag:'🇺🇸' },
-    { name:'Вегас', attack:3.1, defense:2.5, flag:'🇺🇸' },
-    { name:'Нью-Йорк Рейнджерс', attack:3.2, defense:2.5, flag:'🇺🇸' },
-    { name:'Питтсбург', attack:3.0, defense:2.8, flag:'🇺🇸' },
-    { name:'Вашингтон', attack:2.9, defense:2.9, flag:'🇺🇸' },
-    { name:'Каролина', attack:3.1, defense:2.6, flag:'🇺🇸' },
-    { name:'Нью-Джерси', attack:3.0, defense:2.7, flag:'🇺🇸' },
-    { name:'Оттава', attack:2.8, defense:3.0, flag:'🇨🇦' },
-    { name:'Виннипег', attack:2.9, defense:2.8, flag:'🇨🇦' },
-    { name:'Калгари', attack:2.8, defense:2.9, flag:'🇨🇦' },
-    { name:'Ванкувер', attack:3.0, defense:2.7, flag:'🇨🇦' },
-    { name:'Сиэтл', attack:2.7, defense:2.8, flag:'🇺🇸' },
-    { name:'Лос-Анджелес', attack:2.9, defense:2.7, flag:'🇺🇸' },
-    { name:'Анахайм', attack:2.6, defense:3.1, flag:'🇺🇸' },
-    { name:'Чикаго', attack:2.5, defense:3.2, flag:'🇺🇸' },
-    { name:'Сент-Луис', attack:2.8, defense:2.9, flag:'🇺🇸' },
-    { name:'Даллас', attack:3.0, defense:2.7, flag:'🇺🇸' },
-    { name:'Нэшвилл', attack:2.9, defense:2.8, flag:'🇺🇸' },
-    { name:'Юта', attack:2.7, defense:2.9, flag:'🇺🇸' },
-    { name:'Коламбус', attack:2.7, defense:3.0, flag:'🇺🇸' },
-    { name:'Баффало', attack:2.6, defense:3.1, flag:'🇺🇸' },
-    { name:'Филадельфия', attack:2.8, defense:2.8, flag:'🇺🇸' },
-    { name:'Айлендерс', attack:2.7, defense:2.7, flag:'🇺🇸' },
-    { name:'ЦСКА Москва', attack:3.2, defense:2.4, flag:'🇷🇺' },
-    { name:'СКА Санкт-Петербург', attack:3.4, defense:2.5, flag:'🇷🇺' },
-    { name:'Ак Барс', attack:3.0, defense:2.5, flag:'🇷🇺' },
-    { name:'Металлург Магнитогорск', attack:3.1, defense:2.6, flag:'🇷🇺' },
-    { name:'Динамо Москва', attack:3.0, defense:2.6, flag:'🇷🇺' },
-    { name:'Локомотив Ярославль', attack:2.9, defense:2.5, flag:'🇷🇺' },
-    { name:'Трактор', attack:2.8, defense:2.7, flag:'🇷🇺' },
-    { name:'Салават Юлаев', attack:2.9, defense:2.8, flag:'🇷🇺' },
-    { name:'Авангард', attack:3.0, defense:2.7, flag:'🇷🇺' },
-    { name:'Спартак Москва', attack:2.7, defense:2.8, flag:'🇷🇺' },
-    { name:'Торпедо', attack:2.6, defense:2.9, flag:'🇷🇺' },
-    { name:'Северсталь', attack:2.5, defense:2.9, flag:'🇷🇺' },
-    { name:'Адмирал', attack:2.4, defense:3.0, flag:'🇷🇺' },
-    { name:'Амур', attack:2.3, defense:3.1, flag:'🇷🇺' },
-    { name:'Сибирь', attack:2.4, defense:3.0, flag:'🇷🇺' },
-    { name:'Барыс', attack:2.5, defense:3.0, flag:'🇰🇿' },
-    { name:'Автомобилист', attack:2.8, defense:2.7, flag:'🇷🇺' },
-    { name:'Нефтехимик', attack:2.4, defense:3.0, flag:'🇷🇺' },
-    { name:'Лада', attack:2.3, defense:3.1, flag:'🇷🇺' },
-    { name:'Витязь', attack:2.3, defense:3.1, flag:'🇷🇺' },
-    { name:'Динамо Минск', attack:2.5, defense:2.9, flag:'🇧🇾' },
-    { name:'Куньлунь', attack:2.2, defense:3.2, flag:'🇨🇳' },
-    { name:'Сочи', attack:2.4, defense:3.0, flag:'🇷🇺' }
-  ],
-  volleyballTeams: [
-    { name:'Зенит Казань', attack:2.5, defense:1.8, flag:'🇷🇺' },
-    { name:'Динамо Москва', attack:2.4, defense:1.9, flag:'🇷🇺' },
-    { name:'Локомотив Новосибирск', attack:2.3, defense:2.0, flag:'🇷🇺' },
-    { name:'Белогорье', attack:2.3, defense:1.9, flag:'🇷🇺' },
-    { name:'Кузбасс', attack:2.2, defense:2.0, flag:'🇷🇺' },
-    { name:'Факел', attack:2.1, defense:2.1, flag:'🇷🇺' },
-    { name:'Урал', attack:2.0, defense:2.1, flag:'🇷🇺' },
-    { name:'Газпром-Югра', attack:2.1, defense:2.0, flag:'🇷🇺' },
-    { name:'Динамо Ленинградская', attack:2.0, defense:2.0, flag:'🇷🇺' },
-    { name:'АСК', attack:1.9, defense:2.2, flag:'🇷🇺' },
-    { name:'Перуджа', attack:2.5, defense:1.7, flag:'🇮🇹' },
-    { name:'Трентино', attack:2.4, defense:1.8, flag:'🇮🇹' },
-    { name:'Модена', attack:2.2, defense:1.9, flag:'🇮🇹' },
-    { name:'Милан', attack:2.2, defense:1.9, flag:'🇮🇹' },
-    { name:'Чивитанова', attack:2.3, defense:1.8, flag:'🇮🇹' },
-    { name:'Пьяченца', attack:2.1, defense:2.0, flag:'🇮🇹' },
-    { name:'Верона', attack:2.1, defense:2.0, flag:'🇮🇹' },
-    { name:'Закса', attack:2.2, defense:1.9, flag:'🇵🇱' },
-    { name:'Скра', attack:2.3, defense:1.8, flag:'🇵🇱' },
-    { name:'Ресовия', attack:2.2, defense:1.9, flag:'🇵🇱' },
-    { name:'Ястшембски', attack:2.1, defense:2.0, flag:'🇵🇱' },
-    { name:'Халкбанк', attack:2.3, defense:1.8, flag:'🇹🇷' },
-    { name:'Зираат', attack:2.2, defense:1.9, flag:'🇹🇷' },
-    { name:'Фенербахче', attack:2.2, defense:1.9, flag:'🇹🇷' },
-    { name:'Галатасарай', attack:2.1, defense:2.0, flag:'🇹🇷' },
-    { name:'Аркас', attack:2.0, defense:2.1, flag:'🇹🇷' },
-    { name:'Спортлис', attack:2.0, defense:2.1, flag:'🇹🇷' },
-    { name:'Тур', attack:1.9, defense:2.2, flag:'🇫🇷' },
-    { name:'Монпелье', attack:2.0, defense:2.1, flag:'🇫🇷' },
-    { name:'Париж', attack:2.1, defense:2.0, flag:'🇫🇷' },
-    { name:'Шомон', attack:1.9, defense:2.2, flag:'🇫🇷' },
-    { name:'Берлин', attack:2.1, defense:2.0, flag:'🇩🇪' },
-    { name:'Франкфурт', attack:2.0, defense:2.1, flag:'🇩🇪' },
-    { name:'Люнебург', attack:1.9, defense:2.2, flag:'🇩🇪' },
-    { name:'Хипо Тироль', attack:2.0, defense:2.1, flag:'🇦🇹' },
-    { name:'Любляна', attack:2.1, defense:2.0, flag:'🇸🇮' },
-    { name:'Брно', attack:1.9, defense:2.2, flag:'🇨🇿' },
-    { name:'Прага', attack:2.0, defense:2.1, flag:'🇨🇿' },
-    { name:'Злин', attack:1.8, defense:2.3, flag:'🇨🇿' },
-    { name:'Будапешт', attack:1.9, defense:2.2, flag:'🇭🇺' }
-  ],
-  ufcFighters: [
-    { name:'Брендэн Аллен', attack:85, defense:80, flag:'🇺🇸' },
-    { name:'Кристиан Лерой Данкан', attack:80, defense:85, flag:'🇺🇸' },
-    { name:'Франсиско Прадо', attack:78, defense:82, flag:'🇧🇷' },
-    { name:'Исмаэл Бонфим', attack:82, defense:78, flag:'🇧🇷' },
-    { name:'Джулиус Уокер', attack:85, defense:75, flag:'🇺🇸' },
-    { name:'Джеральд Миршерт', attack:80, defense:82, flag:'🇺🇸' },
-    { name:'Малькольм Уэллмейкер', attack:82, defense:80, flag:'🇺🇸' },
-    { name:'Отар Танзилов', attack:79, defense:81, flag:'🇬🇪' },
-    { name:'Филипе Лима', attack:84, defense:78, flag:'🇧🇷' },
-    { name:'Мака III', attack:81, defense:79, flag:'🇺🇸' },
-    { name:'Джон Джонс', attack:95, defense:92, flag:'🇺🇸' },
-    { name:'Стипе Миочич', attack:90, defense:88, flag:'🇺🇸' },
-    { name:'Исраэль Адесанья', attack:92, defense:85, flag:'🇳🇬' },
-    { name:'Алекс Перейра', attack:94, defense:80, flag:'🇧🇷' },
-    { name:'Шон О\'Мэлли', attack:88, defense:82, flag:'🇺🇸' },
-    { name:'Мераб Двалишвили', attack:85, defense:88, flag:'🇬🇪' },
-    { name:'Ислам Махачев', attack:90, defense:92, flag:'🇷🇺' },
-    { name:'Чарльз Оливейра', attack:88, defense:82, flag:'🇧🇷' },
-    { name:'Камару Усман', attack:88, defense:90, flag:'🇳🇬' },
-    { name:'Леон Эдвардс', attack:87, defense:88, flag:'🏴' },
-    { name:'Белал Мухаммад', attack:85, defense:87, flag:'🇺🇸' },
-    { name:'Конор Макгрегор', attack:92, defense:78, flag:'🇮🇪' },
-    { name:'Дастин Порье', attack:88, defense:82, flag:'🇺🇸' },
-    { name:'Джастин Гэтжи', attack:90, defense:78, flag:'🇺🇸' },
-    { name:'Нейт Диас', attack:82, defense:80, flag:'🇺🇸' },
-    { name:'Хорхе Масвидаль', attack:84, defense:78, flag:'🇺🇸' },
-    { name:'Колби Ковингтон', attack:85, defense:84, flag:'🇺🇸' },
-    { name:'Тайрон Вудли', attack:83, defense:82, flag:'🇺🇸' },
-    { name:'Роберт Уиттакер', attack:88, defense:85, flag:'🇦🇺' },
-    { name:'Пауло Коста', attack:87, defense:80, flag:'🇧🇷' },
-    { name:'Марвин Веттори', attack:82, defense:84, flag:'🇮🇹' },
-    { name:'Джаред Каннонье', attack:85, defense:82, flag:'🇺🇸' },
-    { name:'Дерек Брансон', attack:84, defense:83, flag:'🇺🇸' },
-    { name:'Даррен Тилл', attack:85, defense:80, flag:'🏴' },
-    { name:'Келвин Гастелум', attack:83, defense:82, flag:'🇺🇸' },
-    { name:'Юрая Холл', attack:86, defense:82, flag:'🇺🇸' },
-    { name:'Тиаго Сантос', attack:86, defense:80, flag:'🇧🇷' },
-    { name:'Энтони Смит', attack:85, defense:79, flag:'🇺🇸' },
-    { name:'Александр Ракич', attack:86, defense:81, flag:'🇦🇹' },
-    { name:'Волкан Оздемир', attack:84, defense:80, flag:'🇨🇭' },
-    { name:'Доминик Рейес', attack:85, defense:80, flag:'🇺🇸' }
-  ],
-  footballLeagues: [
-    'Англия. Премьер-лига','Испания. Ла Лига','Италия. Серия А',
-    'Германия. Бундеслига','Франция. Лига 1','Россия. Премьер-лига',
-    'Турция. Суперлига','Португалия. Примейра','Нидерланды. Эредивизи',
-    'Аргентина. Премьер-лига','Бразилия. Серия А'
-  ],
-  hockeyLeagues: ['НХЛ. Регулярный сезон','НХЛ. Плей-офф','КХЛ. Регулярный сезон'],
-  volleyballLeagues: ['Россия. Суперлига','Италия. Серия А','Польша. Плюс Лига','Турция. Суперлига'],
-  ufcEvents: ['UFC Fight Night 290. Лас-Вегас','UFC 300. Лас-Вегас','UFC Fight Night 291. Лондон','UFC 301. Рио-де-Жанейро']
-};
-
-/* ============================================================
-   ГЕНЕРАТОР МАТЧЕЙ
-   ============================================================ */
-const MatchGenerator = {
-  generateGoals(lambda) {
-    if (lambda <= 0) return 0;
-    let p = Math.random(), cum = 0;
-    for (let k = 0; k <= 8; k++) {
-      cum += MathEngine.poisson(lambda, k);
-      if (p <= cum) return k;
-    }
-    return 0;
-  },
-  footballOdds(match) {
-    const { lambdaHome, lambdaAway, homeScore, awayScore, minute } = match;
-    const r = MathEngine.matchResultProbs(lambdaHome, lambdaAway, homeScore, awayScore, minute);
+function loadState() {
+  try {
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return initialState();
+    const saved=JSON.parse(raw);
+    const base=initialState();
     return {
-      home: MathEngine.probToOdd(r.home),
-      draw: MathEngine.probToOdd(r.draw),
-      away: MathEngine.probToOdd(r.away)
+      ...base,...saved,
+      balance:Number.isFinite(saved.balance)?saved.balance:base.balance,
+      selections:Array.isArray(saved.selections)?saved.selections:[],
+      transactions:Array.isArray(saved.transactions)?saved.transactions:[],
+      couponHistory:Array.isArray(saved.couponHistory)?saved.couponHistory:[]
     };
-  },
-  football(league, t1, t2, isLive = false) {
-    const lambdaHome = (t1.attack * t2.defense) / 1.5;
-    const lambdaAway = (t2.attack * t1.defense) / 1.5;
-    let ch = 0, ca = 0, min = 0;
-    if (isLive) {
-      min = Utils.rand(1, 89);
-      ch = MatchGenerator.generateGoals(lambdaHome * (min / 90));
-      ca = MatchGenerator.generateGoals(lambdaAway * (min / 90));
-    }
-    const m = {
-      id: Utils.uid('fb'), sport: 'football', league,
-      home: t1, away: t2,
-      homeScore: ch, awayScore: ca,
-      minute: min, isLive,
-      startTime: new Date(Date.now() + Utils.rand(1, 1440) * 60000),
-      lambdaHome, lambdaAway,
-      events: [],
-      status: isLive ? 'live' : 'prematch',
-      odds: null, markets: {},
-      videoMoments: [], hasVideo: false, completed: false
-    };
-    m.odds = MatchGenerator.footballOdds(m);
-    return m;
-  },
-  hockey(league, t1, t2, isLive = false) {
-    const lambdaHome = (t1.attack * t2.defense) / 2.5;
-    const lambdaAway = (t2.attack * t1.defense) / 2.5;
-    let ch = 0, ca = 0, period = 1, min = 0;
-    if (isLive) {
-      period = Utils.rand(1, 3);
-      min = Utils.rand(0, 20);
-      const totalMin = (period - 1) * 20 + min;
-      ch = MatchGenerator.generateGoals(lambdaHome * (totalMin / 60));
-      ca = MatchGenerator.generateGoals(lambdaAway * (totalMin / 60));
-    }
-    return {
-      id: Utils.uid('hk'), sport: 'hockey', league,
-      home: t1, away: t2,
-      homeScore: ch, awayScore: ca,
-      minute: min, period, isLive,
-      startTime: new Date(Date.now() + Utils.rand(1, 1440) * 60000),
-      lambdaHome, lambdaAway,
-      status: isLive ? 'live' : 'prematch',
-      odds: {
-        home: MathEngine.probToOdd(0.45),
-        draw: MathEngine.probToOdd(0.25),
-        away: MathEngine.probToOdd(0.30)
-      },
-      markets: {}, videoMoments: [], hasVideo: false, completed: false
-    };
-  },
-  ufc(event, f1, f2) {
-    return {
-      id: Utils.uid('ufc'), sport: 'ufc', league: event,
-      home: f1, away: f2,
-      homeScore: 0, awayScore: 0,
-      round: 1, timeInRound: 0, isLive: false,
-      startTime: new Date(Date.now() + Utils.rand(1, 1440) * 60000),
-      status: 'prematch',
-      odds: {
-        home: MathEngine.probToOdd(0.55),
-        draw: 51.00,
-        away: MathEngine.probToOdd(0.45)
-      },
-      markets: {}, videoMoments: [], hasVideo: false, completed: false
-    };
-  },
-  volleyball(league, t1, t2, isLive = false) {
-    return {
-      id: Utils.uid('vb'), sport: 'volleyball', league,
-      home: t1, away: t2,
-      homeScore: 0, awayScore: 0, set: 1, isLive,
-      startTime: new Date(Date.now() + Utils.rand(1, 1440) * 60000),
-      status: isLive ? 'live' : 'prematch',
-      odds: {
-        home: MathEngine.probToOdd(0.55),
-        draw: 15.00,
-        away: MathEngine.probToOdd(0.45)
-      },
-      markets: {}, videoMoments: [], hasVideo: false, completed: false
-    };
+  } catch {
+    return initialState();
   }
-};
+}
 
-/* ============================================================
-   СИМУЛЯЦИЯ
-   ============================================================ */
-const Sim = {
-  _interval: null,
+let state=loadState();
+let activeSport="all";
+let authMode="register";
+let toastTimer;
 
-  start() {
-    if (Sim._interval) clearInterval(Sim._interval);
-    Sim._interval = setInterval(Sim.tick, 1000);
-  },
-
-  generateAll() {
-    const arr = [];
-    const used = new Set();
-
-    const pair = (pool) => {
-      let t1, t2, n = 0;
-      do {
-        t1 = Utils.choice(pool);
-        t2 = Utils.choice(pool);
-        n++;
-      } while ((t2.name === t1.name || used.has(t1.name + '-' + t2.name)) && n < 100);
-      used.add(t1.name + '-' + t2.name);
-      return [t1, t2];
-    };
-
-    // 20 футбольных матчей, 8 из них live
-    for (let i = 0; i < 20; i++) {
-      const [a, b] = pair(Data.footballTeams);
-      arr.push(MatchGenerator.football(Utils.choice(Data.footballLeagues), a, b, i < 8));
-    }
-
-    // 10 хоккейных, 4 live
-    for (let i = 0; i < 10; i++) {
-      const [a, b] = pair(Data.hockeyTeams);
-      arr.push(MatchGenerator.hockey(Utils.choice(Data.hockeyLeagues), a, b, i < 4));
-    }
-
-    // 5 UFC боёв
-    for (let i = 0; i < 5; i++) {
-      const [a, b] = pair(Data.ufcFighters);
-      arr.push(MatchGenerator.ufc(Utils.choice(Data.ufcEvents), a, b));
-    }
-
-    // 6 волейбольных, 2 live
-    for (let i = 0; i < 6; i++) {
-      const [a, b] = pair(Data.volleyballTeams);
-      arr.push(MatchGenerator.volleyball(Utils.choice(Data.volleyballLeagues), a, b, i < 2));
-    }
-
-    AppState.matches = arr;
-    Utils.save('openbet_matches', arr);
-  },
-
-  tick() {
-    let changed = false;
-
-    AppState.matches.forEach(m => {
-      if (m.completed) return;
-
-      if (m.status === 'prematch') {
-        if (new Date(m.startTime) <= new Date()) {
-          m.status = 'live';
-          m.isLive = true;
-          if (m.sport === 'football') m.minute = 0;
-          if (m.sport === 'hockey') { m.period = 1; m.minute = 0; }
-          changed = true;
-        }
-      } else if (m.status === 'live') {
-        if (m.sport === 'football') {
-          const prev = m.minute;
-          m.minute += 0.15;
-          if (Math.floor(m.minute) > Math.floor(prev)) {
-            if (Math.random() < 0.03) {
-              if (Math.random() < 0.5) {
-                m.homeScore++;
-                Sim.addEvent(m, 'goal', m.home.name);
-              } else {
-                m.awayScore++;
-                Sim.addEvent(m, 'goal', m.away.name);
-              }
-              m.hasVideo = true;
-              changed = true;
-              Render.showGoalBanner(m);
-            }
-            if (Math.random() < 0.005) {
-              Sim.addEvent(m, 'red_card', Utils.choice([m.home.name, m.away.name]));
-              m.hasVideo = true;
-              changed = true;
-            }
-          }
-          if (m.minute >= 90) {
-            m.minute = 90;
-            m.status = 'completed';
-            m.completed = true;
-            Sim.settleBets(m);
-            changed = true;
-          }
-          m.odds = MatchGenerator.footballOdds(m);
-        } else if (m.sport === 'hockey') {
-          m.minute += 1;
-          if (m.minute >= 20) {
-            m.minute = 0;
-            m.period++;
-            if (m.period > 3) {
-              m.status = 'completed';
-              m.completed = true;
-              Sim.settleBets(m);
-              changed = true;
-            }
-          }
-          if (Math.random() < 0.04) {
-            if (Math.random() < 0.5) {
-              m.homeScore++;
-              Sim.addEvent(m, 'goal', m.home.name);
-            } else {
-              m.awayScore++;
-              Sim.addEvent(m, 'goal', m.away.name);
-            }
-            m.hasVideo = true;
-            changed = true;
-          }
-        } else if (m.sport === 'ufc') {
-          m.timeInRound += 1;
-          if (m.timeInRound >= 30) {
-            m.timeInRound = 0;
-            m.round++;
-            if (m.round > 5) {
-              m.status = 'completed';
-              m.completed = true;
-              Sim.settleBets(m);
-              changed = true;
-            }
-          }
-          if (Math.random() < 0.02) {
-            m.status = 'completed';
-            m.completed = true;
-            Sim.settleBets(m);
-            changed = true;
-          }
-        } else if (m.sport === 'volleyball') {
-          if (Math.random() < 0.03) {
-            if (Math.random() < 0.5) m.homeScore++;
-            else m.awayScore++;
-            changed = true;
-          }
-          if (m.homeScore >= 3 || m.awayScore >= 3) {
-            m.status = 'completed';
-            m.completed = true;
-            Sim.settleBets(m);
-            changed = true;
-          }
-        }
-      }
-    });
-
-    if (changed) {
-      Utils.save('openbet_matches', AppState.matches);
-      if (AppState.currentPage === 'top' || AppState.currentPage === 'sport') {
-        Render.renderMatches();
-      }
-    }
-  },
-
-  addEvent(match, type, teamName) {
-    const ev = {
-      type,
-      team: teamName,
-      minute: Math.floor(match.minute || 0),
-      timestamp: Date.now()
-    };
-    match.events.push(ev);
-    match.videoMoments.push(ev);
-  },
-
-  settleBets(match) {
-    AppState.bets.forEach(bet => {
-      if (bet.status !== 'pending') return;
-
-      if (bet.isExpress) {
-        const allDone = bet.selections.every(sel => {
-          const mm = AppState.matches.find(x => x.id === sel.matchId);
-          return mm && mm.completed;
-        });
-        if (!allDone) return;
-
-        let won = true, totalOdd = 1;
-        bet.selections.forEach(sel => {
-          const mm = AppState.matches.find(x => x.id === sel.matchId);
-          totalOdd *= sel.odd;
-          if (!Sim.checkBet(sel, mm)) won = false;
-        });
-
-        if (won) {
-          AppState.balance += bet.amount * totalOdd;
-          bet.status = 'win';
-          bet.winAmount = bet.amount * totalOdd;
-        } else {
-          bet.status = 'lose';
-        }
-      } else {
-        if (bet.matchId !== match.id) return;
-        if (Sim.checkBet(bet, match)) {
-          AppState.balance += bet.amount * bet.odd;
-          bet.status = 'win';
-          bet.winAmount = bet.amount * bet.odd;
-        } else {
-          bet.status = 'lose';
-        }
-      }
-    });
-
-    Utils.save('openbet_bets', AppState.bets);
-    Utils.save('openbet_user', { login: AppState.user, balance: AppState.balance });
-  },
-
-  checkBet(bet, match) {
-    const t = bet.betType, v = bet.betValue;
-
-    if (t === '1x2') {
-      if (v === 'home') return match.homeScore > match.awayScore;
-      if (v === 'draw') return match.homeScore === match.awayScore;
-      if (v === 'away') return match.homeScore < match.awayScore;
-    }
-
-    if (t === 'total') {
-      const total = match.homeScore + match.awayScore;
-      const line = bet.line !== undefined ? bet.line : 2.5;
-      if (v === 'over') return total > line;
-      if (v === 'under') return total < line;
-    }
-
-    return false;
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  } catch {
+    notify("Не удалось сохранить данные в браузере.");
   }
-};
-
-/* ============================================================
-   ГЕНЕРАЦИЯ РЫНКОВ
-   ============================================================ */
-const MarketGenerator = {
-  footballMarkets(m) {
-    const { lambdaHome, lambdaAway, homeScore, awayScore, minute } = m;
-    const r = MathEngine.matchResultProbs(lambdaHome, lambdaAway, homeScore, awayScore, minute);
-    const out = {};
-
-    out['1x2'] = {
-      name: 'Исход матча (основное время)',
-      odds: {
-        home: MathEngine.probToOdd(r.home),
-        draw: MathEngine.probToOdd(r.draw),
-        away: MathEngine.probToOdd(r.away)
-      }
-    };
-
-    out['double_chance'] = {
-      name: 'Двойной шанс',
-      odds: {
-        home_draw: MathEngine.probToOdd(r.home + r.draw),
-        home_away: MathEngine.probToOdd(r.home + r.away),
-        draw_away: MathEngine.probToOdd(r.draw + r.away)
-      }
-    };
-
-    [0.5, 1.5, 2.5, 3.5, 4.5, 5.5].forEach(l => {
-      const p = MathEngine.totalProb(lambdaHome, lambdaAway, l, homeScore, awayScore, minute);
-      out['total_' + l] = {
-        name: 'Тотал ' + l,
-        odds: {
-          over: MathEngine.probToOdd(p.over),
-          under: MathEngine.probToOdd(p.under)
-        }
-      };
-    });
-
-    [-2.5, -1.5, -1, -0.5, 0.5, 1, 1.5, 2.5].forEach(h => {
-      const p = MathEngine.handicapProbs(lambdaHome, lambdaAway, h, homeScore, awayScore, minute);
-      out['handicap_' + h] = {
-        name: 'Фора ' + (h > 0 ? '+' : '') + h,
-        odds: {
-          home: MathEngine.probToOdd(p.home),
-          away: MathEngine.probToOdd(p.away)
-        }
-      };
-    });
-
-    const b = MathEngine.bothScoreProbs(lambdaHome, lambdaAway, homeScore, awayScore, minute);
-    out['btts'] = {
-      name: 'Обе забьют',
-      odds: {
-        yes: MathEngine.probToOdd(b.yes),
-        no: MathEngine.probToOdd(b.no)
-      }
-    };
-
-    const cs = MathEngine.correctScoreProbs(lambdaHome, lambdaAway, homeScore, awayScore, minute);
-    out['correct_score'] = { name: 'Точный счёт', odds: {} };
-    cs.forEach(([s, p]) => {
-      out['correct_score'].odds[s] = MathEngine.probToOdd(p);
-    });
-
-    [
-      { s: 0, e: 15, n: '0-15 мин' },
-      { s: 15, e: 30, n: '15-30 мин' },
-      { s: 30, e: 45, n: '30-45 мин' },
-      { s: 45, e: 60, n: '45-60 мин' },
-      { s: 60, e: 75, n: '60-75 мин' },
-      { s: 75, e: 90, n: '75-90 мин' }
-    ].forEach(it => {
-      const p = MathEngine.goalInInterval(lambdaHome, lambdaAway, it.s, it.e, homeScore, awayScore, minute);
-      out['interval_' + it.s] = {
-        name: 'Гол в интервале ' + it.n,
-        odds: {
-          yes: MathEngine.probToOdd(p),
-          no: MathEngine.probToOdd(1 - p)
-        }
-      };
-    });
-
-    return out;
-  },
-
-  hockeyMarkets(m) {
-    const totalMin = (m.period - 1) * 20 + m.minute;
-    const r = MathEngine.matchResultProbs(m.lambdaHome, m.lambdaAway, m.homeScore, m.awayScore, totalMin);
-    const out = {};
-
-    out['1x2'] = {
-      name: 'Исход матча',
-      odds: {
-        home: MathEngine.probToOdd(r.home),
-        draw: MathEngine.probToOdd(r.draw),
-        away: MathEngine.probToOdd(r.away)
-      }
-    };
-
-    [3.5, 4.5, 5.5, 6.5, 7.5, 8.5].forEach(l => {
-      const p = MathEngine.totalProb(m.lambdaHome, m.lambdaAway, l, m.homeScore, m.awayScore, totalMin);
-      out['total_' + l] = {
-        name: 'Тотал ' + l,
-        odds: {
-          over: MathEngine.probToOdd(p.over),
-          under: MathEngine.probToOdd(p.under)
-        }
-      };
-    });
-
-    [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5].forEach(h => {
-      const p = MathEngine.handicapProbs(m.lambdaHome, m.lambdaAway, h, m.homeScore, m.awayScore, totalMin);
-      out['handicap_' + h] = {
-        name: 'Фора ' + (h > 0 ? '+' : '') + h,
-        odds: {
-          home: MathEngine.probToOdd(p.home),
-          away: MathEngine.probToOdd(p.away)
-        }
-      };
-    });
-
-    const b = MathEngine.bothScoreProbs(m.lambdaHome, m.lambdaAway, m.homeScore, m.awayScore, totalMin);
-    out['btts'] = {
-      name: 'Обе забьют',
-      odds: {
-        yes: MathEngine.probToOdd(b.yes),
-        no: MathEngine.probToOdd(b.no)
-      }
-    };
-
-    out['powerplay'] = {
-      name: 'Гол в большинстве',
-      odds: {
-        yes: MathEngine.probToOdd(0.45),
-        no: MathEngine.probToOdd(0.55)
-      }
-    };
-
-    out['period_total'] = {
-      name: 'Тотал ' + m.period + '-го периода',
-      odds: {
-        over_1_5: MathEngine.probToOdd(0.6),
-        under_1_5: MathEngine.probToOdd(0.4)
-      }
-    };
-
-    return out;
-  },
-
-  ufcMarkets(m) {
-    return {
-      '1x2': {
-        name: 'Победитель боя',
-        odds: { home: m.odds.home, draw: 51.00, away: m.odds.away }
-      },
-      'method': {
-        name: 'Метод победы',
-        odds: {
-          ko_tko: MathEngine.probToOdd(0.45),
-          submission: MathEngine.probToOdd(0.25),
-          decision: MathEngine.probToOdd(0.30)
-        }
-      },
-      'distance': {
-        name: 'Бой досрочно / Вся дистанция',
-        odds: {
-          early: MathEngine.probToOdd(0.55),
-          full: MathEngine.probToOdd(0.45)
-        }
-      },
-      'total_rounds': {
-        name: 'Тотал раундов',
-        odds: {
-          over_1_5: MathEngine.probToOdd(0.7),
-          under_1_5: MathEngine.probToOdd(0.3),
-          over_2_5: MathEngine.probToOdd(0.5),
-          under_2_5: MathEngine.probToOdd(0.5),
-          over_3_5: MathEngine.probToOdd(0.35),
-          under_3_5: MathEngine.probToOdd(0.65),
-          over_4_5: MathEngine.probToOdd(0.2),
-          under_4_5: MathEngine.probToOdd(0.8)
-        }
-      },
-      'win_round': {
-        name: 'Победа в раунде',
-        odds: {
-          home_1: MathEngine.probToOdd(0.15),
-          home_2: MathEngine.probToOdd(0.12),
-          home_3: MathEngine.probToOdd(0.10),
-          home_4: MathEngine.probToOdd(0.08),
-          home_5: MathEngine.probToOdd(0.05),
-          away_1: MathEngine.probToOdd(0.12),
-          away_2: MathEngine.probToOdd(0.10),
-          away_3: MathEngine.probToOdd(0.08),
-          away_4: MathEngine.probToOdd(0.06),
-          away_5: MathEngine.probToOdd(0.04)
-        }
-      }
-    };
-  },
-
-  volleyballMarkets(m) {
-    return {
-      '1x2': {
-        name: 'Победитель матча',
-        odds: { home: m.odds.home, away: m.odds.away }
-      },
-      'set_winner': {
-        name: 'Победитель сета',
-        odds: {
-          home: MathEngine.probToOdd(0.5),
-          away: MathEngine.probToOdd(0.5)
-        }
-      },
-      'total_sets': {
-        name: 'Тотал сетов',
-        odds: {
-          over_3_5: MathEngine.probToOdd(0.6),
-          under_3_5: MathEngine.probToOdd(0.4),
-          over_4_5: MathEngine.probToOdd(0.35),
-          under_4_5: MathEngine.probToOdd(0.65)
-        }
-      },
-      'correct_score': {
-        name: 'Точный счёт по сетам',
-        odds: {
-          '3:0': MathEngine.probToOdd(0.15),
-          '3:1': MathEngine.probToOdd(0.20),
-          '3:2': MathEngine.probToOdd(0.15),
-          '0:3': MathEngine.probToOdd(0.15),
-          '1:3': MathEngine.probToOdd(0.20),
-          '2:3': MathEngine.probToOdd(0.15)
-        }
-      }
-    };
-  }
-};
-  /* ============================================================
-   РЕНДЕР
-   ============================================================ */
-const Render = {
-  _toastTimer: null,
-
-  renderAll() {
-    Render.renderMatches();
-    Render.updateCouponBadge();
-  },
-
-  renderMatches() {
-    const c = document.getElementById('mainContent');
-    if (!c) return;
-
-    let list = AppState.matches.slice();
-    if (AppState.currentSport !== 'top') {
-      list = list.filter(m => m.sport === AppState.currentSport);
-    }
-
-    list.sort((a, b) => {
-      const al = a.status === 'live' ? 0 : 1;
-      const bl = b.status === 'live' ? 0 : 1;
-      if (al !== bl) return al - bl;
-      return new Date(a.startTime) - new Date(b.startTime);
-    });
-
-    if (list.length === 0) {
-      c.innerHTML = '<div class="empty-state">Нет матчей</div>';
-      return;
-    }
-
-    const grouped = {};
-    list.forEach(m => {
-      if (!grouped[m.league]) grouped[m.league] = [];
-      grouped[m.league].push(m);
-    });
-
-    let html = '';
-    Object.keys(grouped).forEach(lg => {
-      html += `<div class="league-group"><div class="league-header">${lg}</div>`;
-      grouped[lg].forEach(m => { html += Render.matchRow(m); });
-      html += '</div>';
-    });
-    c.innerHTML = html;
-
-    c.querySelectorAll('.odd-btn').forEach(b => {
-      b.addEventListener('click', e => {
-        e.stopPropagation();
-        Coupon.add({
-          matchId: b.dataset.matchId,
-          betType: b.dataset.betType,
-          betValue: b.dataset.betValue,
-          odd: parseFloat(b.dataset.odd),
-          matchName: b.dataset.matchName,
-          betName: b.dataset.betName,
-          line: b.dataset.line ? parseFloat(b.dataset.line) : undefined
-        });
-      });
-    });
-
-    c.querySelectorAll('.match-row').forEach(r => {
-      r.addEventListener('click', e => {
-        if (e.target.closest('.odd-btn') || e.target.closest('.video-icon')) return;
-        const m = AppState.matches.find(x => x.id === r.dataset.matchId);
-        if (m) Render.renderMatchDetail(m);
-      });
-    });
-
-    c.querySelectorAll('.video-icon').forEach(ic => {
-      ic.addEventListener('click', e => {
-        e.stopPropagation();
-        const m = AppState.matches.find(x => x.id === ic.dataset.matchId);
-        if (m) Video.show(m);
-      });
-    });
-  },
-
-  matchRow(m) {
-    const isLive = m.status === 'live';
-    let timeDisplay;
-
-    if (isLive) {
-      if (m.sport === 'football') timeDisplay = `${Math.floor(m.minute)}'`;
-      else if (m.sport === 'hockey') timeDisplay = `${m.period}-й период`;
-      else if (m.sport === 'ufc') timeDisplay = `${m.round}-й раунд`;
-      else timeDisplay = `${m.set}-й сет`;
-    } else {
-      timeDisplay = Utils.formatTime(m.startTime);
-    }
-
-    const videoIcon = m.hasVideo
-      ? `<span class="video-icon" data-match-id="${m.id}" title="Видео-повтор">🎥</span>`
-      : '';
-
-    let oddsHtml = '';
-    if (m.sport === 'football' || m.sport === 'hockey') {
-      oddsHtml = `
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="home" data-odd="${m.odds.home}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П1">${m.odds.home.toFixed(2)}</div>
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="draw" data-odd="${m.odds.draw}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="Х">${m.odds.draw.toFixed(2)}</div>
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="away" data-odd="${m.odds.away}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П2">${m.odds.away.toFixed(2)}</div>
-      `;
-    } else if (m.sport === 'ufc') {
-      oddsHtml = `
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="home" data-odd="${m.odds.home}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П1">${m.odds.home.toFixed(2)}</div>
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="away" data-odd="${m.odds.away}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П2">${m.odds.away.toFixed(2)}</div>
-      `;
-    } else {
-      oddsHtml = `
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="home" data-odd="${m.odds.home}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П1">${m.odds.home.toFixed(2)}</div>
-        <div class="odd-btn" data-match-id="${m.id}" data-bet-type="1x2" data-bet-value="away" data-odd="${m.odds.away}" data-match-name="${m.home.name} - ${m.away.name}" data-bet-name="П2">${m.odds.away.toFixed(2)}</div>
-      `;
-    }
-
-    const hs = isLive ? `<span class="score ${m.homeScore > m.awayScore ? 'win' : ''}">${m.homeScore}</span>` : '';
-    const as = isLive ? `<span class="score ${m.awayScore > m.homeScore ? 'win' : ''}">${m.awayScore}</span>` : '';
-
-    return `
-      <div class="match-row" data-match-id="${m.id}">
-        <div class="match-info">
-          <div class="match-meta">
-            ${isLive ? '<span class="live-dot"></span>' : ''}
-            <span class="match-time ${isLive ? 'live' : 'prematch'}">${timeDisplay}</span>
-            ${videoIcon}
-          </div>
-          <div class="match-teams">
-            <div class="team-line">
-              <span class="flag">${m.home.flag || ''}</span>
-              <span class="name">${m.home.name}</span>
-              ${hs}
-            </div>
-            <div class="team-line">
-              <span class="flag">${m.away.flag || ''}</span>
-              <span class="name">${m.away.name}</span>
-              ${as}
-            </div>
-          </div>
-        </div>
-        <div class="match-odds">${oddsHtml}</div>
-      </div>
-    `;
-  },
-
-  renderMatchDetail(m) {
-    let markets = {};
-    if (m.sport === 'football') markets = MarketGenerator.footballMarkets(m);
-    else if (m.sport === 'hockey') markets = MarketGenerator.hockeyMarkets(m);
-    else if (m.sport === 'ufc') markets = MarketGenerator.ufcMarkets(m);
-    else if (m.sport === 'volleyball') markets = MarketGenerator.volleyballMarkets(m);
-
-    const isLive = m.status === 'live';
-    const timeDisplay = isLive
-      ? (m.sport === 'football' ? `${Math.floor(m.minute)}'`
-        : m.sport === 'hockey' ? `${m.period}-й период`
-        : m.sport === 'ufc' ? `${m.round}-й раунд`
-        : `${m.set}-й сет`)
-      : Utils.formatTime(m.startTime);
-
-    const headerClass = 'match-detail-header ' + m.sport;
-    const scoreHtml = isLive ? `${m.homeScore} : ${m.awayScore}` : 'vs';
-
-    let html = `
-      <div class="back-bar"><button class="back-btn" id="backFromDetail">← Назад</button></div>
-      <div class="${headerClass}">
-        <div class="match-detail-teams">
-          <div class="match-detail-team">
-            <div class="logo">${m.home.flag || '⚽'}</div>
-            <div class="name">${m.home.name}</div>
-          </div>
-          <div class="match-detail-score">${scoreHtml}</div>
-          <div class="match-detail-team">
-            <div class="logo">${m.away.flag || '⚽'}</div>
-            <div class="name">${m.away.name}</div>
-          </div>
-        </div>
-        <div class="match-detail-time">${timeDisplay}</div>
-        <div class="match-detail-tabs">
-          <div class="match-detail-tab active">Все</div>
-          <div class="match-detail-tab">Матч</div>
-          <div class="match-detail-tab">1-й тайм</div>
-          <div class="match-detail-tab">2-й тайм</div>
-          <div class="match-detail-tab">Показатели</div>
-        </div>
-      </div>
-      <div style="padding: 8px 0;">
-    `;
-
-    Object.keys(markets).forEach(key => {
-      const mk = markets[key];
-      html += `<div class="market-group">
-        <div class="market-group-header">
-          <span>⭐ ${mk.name}</span>
-          <span class="star">☆</span>
-        </div>`;
-
-      if (key === '1x2') {
-        html += Render.marketRow('П1', mk.odds.home, m, 'home', 'П1', '1x2');
-        html += Render.marketRow('Х', mk.odds.draw, m, 'draw', 'Х', '1x2');
-        html += Render.marketRow('П2', mk.odds.away, m, 'away', 'П2', '1x2');
-      } else if (key.startsWith('total_')) {
-        const line = key.replace('total_', '');
-        html += Render.marketRow('Больше ' + line, mk.odds.over, m, 'over', 'ТБ ' + line, 'total', parseFloat(line));
-        html += Render.marketRow('Меньше ' + line, mk.odds.under, m, 'under', 'ТМ ' + line, 'total', parseFloat(line));
-      } else if (key.startsWith('handicap_')) {
-        const h = key.replace('handicap_', '');
-        html += Render.marketRow('Хозяева ' + h, mk.odds.home, m, 'home', 'Ф1 ' + h, '1x2');
-        html += Render.marketRow('Гости ' + h, mk.odds.away, m, 'away', 'Ф2 ' + h, '1x2');
-      } else if (key === 'btts') {
-        html += Render.marketRow('Да', mk.odds.yes, m, 'yes', 'Обе забьют — Да', '1x2');
-        html += Render.marketRow('Нет', mk.odds.no, m, 'no', 'Обе забьют — Нет', '1x2');
-      } else if (key === 'double_chance') {
-        html += Render.marketRow('1X', mk.odds.home_draw, m, 'home_draw', '1X', '1x2');
-        html += Render.marketRow('12', mk.odds.home_away, m, 'home_away', '12', '1x2');
-        html += Render.marketRow('X2', mk.odds.draw_away, m, 'draw_away', 'X2', '1x2');
-      } else if (key === 'correct_score') {
-        Object.keys(mk.odds).forEach(sc => {
-          html += Render.marketRow(sc, mk.odds[sc], m, 'cs_' + sc, 'ТС ' + sc, '1x2');
-        });
-      } else {
-        Object.keys(mk.odds).forEach(k => {
-          if (typeof mk.odds[k] === 'number') {
-            html += Render.marketRow(k, mk.odds[k], m, k, k, '1x2');
-          }
-        });
-      }
-      html += '</div>';
-    });
-    html += '</div>';
-
-    document.getElementById('mainContent').innerHTML = html;
-    document.getElementById('backFromDetail').addEventListener('click', () => Render.renderMatches());
-
-    document.querySelectorAll('.match-detail-tab').forEach(t => {
-      t.addEventListener('click', () => {
-        document.querySelectorAll('.match-detail-tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-      });
-    });
-
-    document.querySelectorAll('.market-row .value').forEach(v => {
-      v.addEventListener('click', () => {
-        const d = v.dataset;
-        if (!d.odd) return;
-        Coupon.add({
-          matchId: d.matchId,
-          betType: d.betType,
-          betValue: d.betValue,
-          odd: parseFloat(d.odd),
-          matchName: d.matchName,
-          betName: d.betName,
-          line: d.line ? parseFloat(d.line) : undefined
-        });
-      });
-    });
-  },
-
-  marketRow(label, odd, m, betValue, betName, betType, line) {
-    if (odd === undefined || odd === null) return '';
-    return `<div class="market-row">
-      <span class="label">${label}</span>
-      <span class="value"
-        data-match-id="${m.id}"
-        data-bet-type="${betType || '1x2'}"
-        data-bet-value="${betValue}"
-        data-odd="${odd}"
-        data-line="${line || ''}"
-        data-match-name="${m.home.name} - ${m.away.name}"
-        data-bet-name="${betName}">${odd.toFixed(2)}</span>
-    </div>`;
-  },
-
-  renderProfile() {
-    const bets = AppState.bets;
-    const total = bets.length;
-    const wins = bets.filter(b => b.status === 'win').length;
-    const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-    const profit = bets.reduce((s, b) => {
-      if (b.status === 'win') return s + (b.winAmount - b.amount);
-      if (b.status === 'lose') return s - b.amount;
-      return s;
-    }, 0);
-    const pc = profit >= 0 ? 'green' : 'red';
-    const ps = profit >= 0 ? '+' : '';
-
-    document.getElementById('mainContent').innerHTML = `
-      <div class="profile-header">
-        <div class="profile-avatar">👤</div>
-        <div class="profile-name">${AppState.user || 'Гость'}</div>
-        <div class="profile-balance">${AppState.balance.toFixed(2)} ₽</div>
-        <div class="profile-balance-label">Текущий баланс</div>
-        <div class="profile-stats">
-          <div class="profile-stat"><span class="value">${total}</span><span class="label">Ставок</span></div>
-          <div class="profile-stat"><span class="value">${winRate}%</span><span class="label">Винрейт</span></div>
-          <div class="profile-stat"><span class="value ${pc}">${ps}${profit.toFixed(2)}</span><span class="label">Профит</span></div>
-        </div>
-        <button class="logout-btn" id="logoutBtn">Выйти из аккаунта</button>
-      </div>`;
-    document.getElementById('logoutBtn').addEventListener('click', Auth.logout);
-  },
-
-  renderHistory() {
-    const bets = AppState.bets.slice().reverse();
-    let html = `<div class="history-filters">
-      <div class="history-filter active" data-f="all">Все</div>
-      <div class="history-filter" data-f="pending">В ожидании</div>
-      <div class="history-filter" data-f="win">Выигрыш</div>
-      <div class="history-filter" data-f="lose">Проигрыш</div>
-    </div><div id="historyList">`;
-
-    if (bets.length === 0) {
-      html += '<div class="empty-state">История ставок пуста</div>';
-    } else {
-      bets.forEach(b => { html += Render.historyItem(b); });
-    }
-    html += '</div>';
-    document.getElementById('mainContent').innerHTML = html;
-
-    document.querySelectorAll('.history-filter').forEach(f => {
-      f.addEventListener('click', () => {
-        document.querySelectorAll('.history-filter').forEach(x => x.classList.remove('active'));
-        f.classList.add('active');
-        const filter = f.dataset.f;
-        const list = document.getElementById('historyList');
-        const filtered = filter === 'all' ? bets : bets.filter(b => b.status === filter);
-        list.innerHTML = filtered.length === 0
-          ? '<div class="empty-state">Нет ставок</div>'
-          : filtered.map(b => Render.historyItem(b)).join('');
-      });
-    });
-  },
-
-  historyItem(bet) {
-    const cls = bet.status === 'win' ? 'win' : bet.status === 'lose' ? 'lose' : 'pending';
-    const txt = bet.status === 'win' ? 'Выигрыш' : bet.status === 'lose' ? 'Проигрыш' : 'В ожидании';
-    const amt = bet.status === 'win'
-      ? `<span class="win-amount">+${bet.winAmount.toFixed(2)} ₽</span>`
-      : bet.status === 'lose'
-        ? `<span class="lose-amount">—</span>`
-        : `<span class="bet-amount">${bet.amount.toFixed(2)} ₽</span>`;
-
-    return `
-      <div class="history-item">
-        <div class="row-top">
-          <span>${new Date(bet.timestamp).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-          <span class="status ${cls}">${txt}</span>
-        </div>
-        <div class="match">${bet.matchName || (bet.selections && bet.selections[0]?.matchName) || 'Ставка'}</div>
-        <div class="bet">${bet.betName || ''}</div>
-        <div class="amounts">
-          <span class="bet-amount">${bet.amount.toFixed(2)} ₽ × ${bet.odd.toFixed(2)}</span>
-          ${amt}
-        </div>
-      </div>`;
-  },
-
-  updateCouponBadge() {
-    const b = document.getElementById('couponBadge');
-    if (!b) return;
-    const n = AppState.coupon.length;
-    if (n > 0) {
-      b.textContent = n;
-      b.classList.remove('hidden');
-    } else {
-      b.classList.add('hidden');
-    }
-  },
-
-  showGoalBanner(m) {
-    const b = document.createElement('div');
-    b.className = 'goal-banner';
-    b.textContent = `⚽ ГОЛ! ${m.homeScore > m.awayScore ? m.home.name : m.away.name}`;
-    document.body.appendChild(b);
-
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.connect(g);
-      g.connect(ctx.destination);
-      osc.frequency.value = 880;
-      g.gain.value = 0.08;
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch(e) {}
-
-    setTimeout(() => {
-      b.style.transition = 'opacity .4s, top .4s';
-      b.style.opacity = '0';
-      b.style.top = '60px';
-      setTimeout(() => b.remove(), 400);
-    }, 2200);
-  },
-
-  toast(msg, type = '') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    clearTimeout(Render._toastTimer);
-    Render._toastTimer = setTimeout(() => t.className = 'toast ' + type, 2000);
-  }
-};
-
-/* ============================================================
-   КУПОН
-   ============================================================ */
-const Coupon = {
-  add(item) {
-    const exists = AppState.coupon.find(c =>
-      c.matchId === item.matchId && c.betType === item.betType && c.betValue === item.betValue
-    );
-    if (exists) {
-      AppState.coupon = AppState.coupon.filter(c => c !== exists);
-      Render.toast('Ставка удалена');
-    } else {
-      AppState.coupon.push(item);
-      Render.toast('Добавлено в купон', 'success');
-    }
-    Utils.save('openbet_coupon', AppState.coupon);
-    Coupon.render();
-    Render.updateCouponBadge();
-  },
-
-  remove(i) {
-    AppState.coupon.splice(i, 1);
-    Utils.save('openbet_coupon', AppState.coupon);
-    Coupon.render();
-    Render.updateCouponBadge();
-  },
-
-  render() {
-    const body = document.getElementById('couponBody');
-    const totalEl = document.getElementById('couponTotalOdd');
-    if (!body || !totalEl) return;
-
-    if (AppState.coupon.length === 0) {
-      body.innerHTML = '<div class="coupon-empty">Купон пуст</div>';
-      totalEl.textContent = '1.00';
-      return;
-    }
-
-    let total = 1, html = '';
-    AppState.coupon.forEach((it, i) => {
-      total *= it.odd;
-      html += `<div class="coupon-item">
-        <span class="remove-btn" data-index="${i}">✕</span>
-        <div class="match-name">${it.matchName}</div>
-        <div class="bet-name">${it.betName}</div>
-        <div class="bet-odd">Кэф: ${it.odd.toFixed(2)}</div>
-      </div>`;
-    });
-    body.innerHTML = html;
-    totalEl.textContent = total.toFixed(2);
-
-    body.querySelectorAll('.remove-btn').forEach(b => {
-      b.addEventListener('click', e => {
-        e.stopPropagation();
-        Coupon.remove(parseInt(b.dataset.index));
-      });
-    });
-  },
-
-  open() {
-    document.getElementById('couponPanel').classList.add('open');
-    document.getElementById('couponOverlay').classList.add('open');
-    Coupon.render();
-  },
-
-  close() {
-    document.getElementById('couponPanel').classList.remove('open');
-    document.getElementById('couponOverlay').classList.remove('open');
-  },
-
-  place() {
-    if (AppState.coupon.length === 0) {
-      Render.toast('Купон пуст', 'error');
-      return;
-    }
-    const amount = parseFloat(document.getElementById('betAmount').value);
-    if (!amount || amount < 10) {
-      Render.toast('Минимальная ставка 10 ₽', 'error');
-      return;
-    }
-    if (amount > AppState.balance) {
-      Render.toast('Недостаточно средств', 'error');
-      return;
-    }
-
-    const isExpress = AppState.coupon.length > 1;
-    let totalOdd = 1;
-    AppState.coupon.forEach(c => totalOdd *= c.odd);
-
-    const bet = {
-      id: Utils.uid('bet'),
-      timestamp: Date.now(),
-      amount,
-      odd: totalOdd,
-      status: 'pending',
-      isExpress,
-      selections: isExpress ? [...AppState.coupon] : null,
-      matchId: AppState.coupon[0].matchId,
-      matchName: AppState.coupon[0].matchName,
-      betName: isExpress ? `Экспресс (${AppState.coupon.length})` : AppState.coupon[0].betName,
-      betType: AppState.coupon[0].betType,
-      betValue: AppState.coupon[0].betValue,
-      line: AppState.coupon[0].line
-    };
-
-    AppState.balance -= amount;
-    AppState.bets.push(bet);
-    AppState.coupon = [];
-
-    Utils.save('openbet_bets', AppState.bets);
-    Utils.save('openbet_coupon', AppState.coupon);
-    Utils.save('openbet_user', { login: AppState.user, balance: AppState.balance });
-
-    Coupon.render();
-    Render.updateCouponBadge();
-    Render.toast('Ставка принята!', 'success');
-    Coupon.close();
-  }
-};
-
-/* ============================================================
-   ВИДЕО-МОДАЛКА
-   ============================================================ */
-const Video = {
-  show(m) {
-    const modal = document.getElementById('videoModal');
-    const desc = document.getElementById('videoDescription');
-    const last = m.videoMoments[m.videoMoments.length - 1];
-    let text = `Матч: ${m.home.name} — ${m.away.name}`;
-    if (last) {
-      if (last.type === 'goal') text += `\n⚽ Гол на ${last.minute}′ (${last.team})`;
-      else if (last.type === 'red_card') text += `\n🟥 Красная карточка на ${last.minute}′ (${last.team})`;
-      else text += `\nМомент: ${last.type}`;
-    }
-    desc.textContent = text;
-    modal.classList.add('open');
-  },
-  close() {
-    document.getElementById('videoModal').classList.remove('open');
-  }
-};
-
-/* ============================================================
-   UI-ОБРАБОТЧИКИ
-   ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  // AUTH
-  document.getElementById('authBtn').addEventListener('click', Auth.login);
-  document.getElementById('authSwitch').addEventListener('click', () => {
-    const b = document.getElementById('authBtn');
-    const s = document.getElementById('authSwitch');
-    document.getElementById('authError').textContent = '';
-    if (b.textContent === 'Войти') {
-      b.textContent = 'Зарегистрироваться';
-      s.textContent = 'Уже есть аккаунт? Войти';
-    } else {
-      b.textContent = 'Войти';
-      s.textContent = 'Нет аккаунта? Зарегистрироваться';
-    }
-  });
-  document.getElementById('authPassword').addEventListener('keypress', e => {
-    if (e.key === 'Enter') Auth.login();
-  });
-  document.getElementById('authLogin').addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('authPassword').focus();
-  });
-
-  // SPORT TABS
-  document.querySelectorAll('.sport-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.sport-tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      AppState.currentSport = t.dataset.sport;
-      const h = document.getElementById('headerTitle');
-      if (h) h.textContent = t.querySelector('span:last-child').textContent;
-      Render.renderMatches();
-    });
-  });
-
-  // FILTERS
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      AppState.currentFilter = b.dataset.filter;
-      Render.renderMatches();
-    });
-  });
-
-  // BOTTOM NAV
-  document.querySelectorAll('.nav-item').forEach(it => {
-    it.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-      it.classList.add('active');
-      const p = it.dataset.page;
-      AppState.currentPage = p;
-      const h = document.getElementById('headerTitle');
-
-      if (p === 'top') {
-        if (h) h.textContent = 'Топ';
-        Render.renderMatches();
-      } else if (p === 'sport') {
-        if (h) h.textContent = 'Спорт';
-        Render.renderMatches();
-      } else if (p === 'coupon') {
-        if (h) h.textContent = 'Купон';
-        Coupon.open();
-      } else if (p === 'history') {
-        if (h) h.textContent = 'История';
-        Render.renderHistory();
-      } else if (p === 'profile') {
-        if (h) h.textContent = 'Профиль';
-        Render.renderProfile();
-      }
-    });
-  });
-
-  // COUPON
-  document.getElementById('couponClose').addEventListener('click', Coupon.close);
-  document.getElementById('couponOverlay').addEventListener('click', Coupon.close);
-  document.getElementById('placeBetBtn').addEventListener('click', Coupon.place);
-  document.querySelectorAll('.coupon-type-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.coupon-type-tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      AppState.couponType = t.dataset.type;
-    });
-  });
-
-  // VIDEO
-  document.getElementById('closeVideoModal').addEventListener('click', Video.close);
-  document.getElementById('videoModal').addEventListener('click', e => {
-    if (e.target.id === 'videoModal') Video.close();
-  });
-
-  // СТАРТ
-  Auth.init();
+}
+
+function money(value) {
+  return new Intl.NumberFormat("ru-RU",{
+    maximumFractionDigits:2
+  }).format(value)+" ₽";
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g,char=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  })[char]);
+}
+
+function notify(message) {
+  const el=$("#toast");
+  el.textContent=message;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove("show"),2600);
+}
+
+function showModal(title,text) {
+  $("#modalTitle").textContent=title;
+  $("#modalText").textContent=text;
+  $("#modal").classList.add("open");
+}
+
+function closeModal() {
+  $("#modal").classList.remove("open");
+}
+
+$("#modalClose").addEventListener("click",closeModal);
+$("#modal").addEventListener("click",event=>{
+  if(event.target===$("#modal")) closeModal();
 });
-</script>
-</body>
-</html>
+
+function goPage(page) {
+  $$(".page").forEach(el=>el.classList.remove("active"));
+  const target=$("#page-"+page);
+  if(target) target.classList.add("active");
+
+  $$(".nav-item[data-page],.mobile-nav [data-page]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.page===page);
+  });
+
+  if(page==="account") renderAccount();
+  if(page==="history") renderHistory();
+  if(page==="stats") renderStats();
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function chooseSport(sport) {
+  activeSport=sport;
+
+  $$("#sportTabs .tab").forEach(button=>{
+    button.classList.toggle("active",button.dataset.sport===sport);
+  });
+
+  goPage("home");
+  renderMatches();
+}
+
+$$("[data-page]").forEach(button=>{
+  button.addEventListener("click",()=>goPage(button.dataset.page));
+});
+
+$$("[data-sport]").forEach(button=>{
+  button.addEventListener("click",()=>chooseSport(button.dataset.sport));
+});
+
+$("#exploreButton").addEventListener("click",()=>{
+  $("#matches").scrollIntoView({behavior:"smooth"});
+});
+
+function selectionKey(matchId,marketId,outcomeId) {
+  return `${matchId}:${marketId}:${outcomeId}`;
+}
+
+function getSelection(matchId,marketId,outcomeId) {
+  return state.selections.find(item=>
+    item.key===selectionKey(matchId,marketId,outcomeId)
+  );
+}
+
+function toggleSelection(match,market,outcome) {
+  const key=selectionKey(match.id,market.id,outcome.id);
+  const existing=state.selections.findIndex(item=>item.key===key);
+
+  if(existing>=0) {
+    state.selections.splice(existing,1);
+  } else {
+    // Для одного матча разрешён один исход одного рынка.
+    state.selections=state.selections.filter(item=>
+      !(item.matchId===match.id && item.marketId===market.id)
+    );
+
+    state.selections.push({
+      key,
+      matchId:match.id,
+      marketId:market.id,
+      outcomeId:outcome.id,
+      sport:match.sport,
+      event:`${match.home} — ${match.away}`,
+      market:market.name,
+      label:outcome.label,
+      odd:outcome.odd,
+      probability:1/outcome.odd
+    });
+  }
+
+  saveState();
+  renderMatches();
+  renderCoupon();
+  renderStats();
+}
+
+function renderMatches() {
+  const search=$("#search").value.trim().toLowerCase();
+
+  const filtered=MATCHES.filter(match=>{
+    const sportOK=activeSport==="all"||match.sport===activeSport;
+    const text=(match.home+" "+match.away+" "+match.league).toLowerCase();
+    return sportOK&&text.includes(search);
+  });
+
+  $("#matchCount").textContent=filtered.length+" событий";
+  $("#statMatches").textContent=MATCHES.length;
+
+  const container=$("#matches");
+
+  if(!filtered.length) {
+    container.innerHTML='<div class="panel empty">Ничего не найдено. Попробуй изменить поиск.</div>';
+    return;
+  }
+
+  const groups=new Map();
+
+  filtered.forEach(match=>{
+    if(!groups.has(match.league)) groups.set(match.league,[]);
+    groups.get(match.league).push(match);
+  });
+
+  container.innerHTML=[...groups.entries()].map(([league,matches])=>`
+    <div class="panel league">
+      <div class="league-head">
+        <span>✦ ${escapeHTML(league)}</span>
+        <span class="muted">${matches.length} матча</span>
+      </div>
+      ${matches.map(renderMatch).join("")}
+    </div>
+  `).join("");
+}
+
+function renderMatch(match) {
+  const icon=match.sport==="football"?"⚽":
+             match.sport==="hockey"?"🏒":"🥊";
+
+  const markets=match.markets.map(market=>{
+    const cols=market.outcomes.length===3?3:2;
+
+    return `
+      <div class="market-title">${escapeHTML(market.name)}</div>
+      <div class="${cols===3?"odds":"market-row"}">
+        ${market.outcomes.map(outcome=>{
+          const selected=!!getSelection(match.id,market.id,outcome.id);
+
+          return `
+            <button class="odd ${selected?"selected":""}"
+              data-match="${match.id}"
+              data-market="${market.id}"
+              data-outcome="${outcome.id}"
+              aria-pressed="${selected}">
+              <span class="odd-label">${escapeHTML(outcome.label)}</span>
+              <span class="odd-value">${outcome.odd.toFixed(2)}</span>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <article class="match">
+      <div class="match-meta">${icon} ${escapeHTML(match.time)} · ${escapeHTML(match.status)}</div>
+      <div class="match-main">
+        <div class="teams">
+          <div class="team"><span class="team-icon">${match.homeIcon}</span>${escapeHTML(match.home)}</div>
+          <div class="team"><span class="team-icon">${match.awayIcon}</span>${escapeHTML(match.away)}</div>
+        </div>
+      </div>
+      ${markets}
+    </article>
+  `;
+}
+
+$("#matches").addEventListener("click",event=>{
+  const button=event.target.closest("[data-match]");
+  if(!button) return;
+
+  const match=MATCHES.find(item=>item.id===button.dataset.match);
+  const market=match?.markets.find(item=>item.id===button.dataset.market);
+  const outcome=market?.outcomes.find(item=>item.id===button.dataset.outcome);
+
+  if(match&&market&&outcome) toggleSelection(match,market,outcome);
+});
+
+$("#search").addEventListener("input",renderMatches);
+
+function getTotalOdds() {
+  return state.selections.reduce((total,item)=>total*item.odd,1);
+}
+
+function getCombinedProbability() {
+  return state.selections.reduce((total,item)=>total*item.probability,1);
+}
+
+function renderCoupon() {
+  $("#couponCount").textContent=state.selections.length;
+  $("#statSelections").textContent=state.selections.length;
+
+  const container=$("#couponSelections");
+
+  if(!state.selections.length) {
+    container.innerHTML='<div class="empty">Выбери исход матча, чтобы добавить его сюда.</div>';
+  } else {
+    container.innerHTML=state.selections.map(item=>`
+      <div class="selection">
+        <div class="selection-top">
+          <div class="selection-title">${escapeHTML(item.event)}</div>
+          <button class="remove" data-remove="${escapeHTML(item.key)}"
+            aria-label="Удалить исход">×</button>
+        </div>
+        <div class="selection-sub">${escapeHTML(item.market)} · ${escapeHTML(item.label)}</div>
+        <div class="selection-bottom">
+          <span class="muted">Демо-коэффициент</span>
+          <span class="selection-odd">${item.odd.toFixed(2)}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  updateCouponCalculation();
+}
+
+function updateCouponCalculation() {
+  const odds=getTotalOdds();
+  const probability=getCombinedProbability();
+  const stake=Number($("#stake").value);
+  const validStake=Number.isFinite(stake)&&stake>=1&&stake<=100000;
+
+  $("#totalOdds").textContent=state.selections.length?odds.toFixed(2):"1.00";
+  $("#combinedProbability").textContent=state.selections.length?
+    (probability*100).toFixed(2)+"%":"—";
+
+  $("#potentialReturn").textContent=money(
+    validStake&&state.selections.length?stake*odds:0
+  );
+
+  $("#demoSubmit").disabled=
+    !state.selections.length||!validStake;
+}
+
+$("#couponSelections").addEventListener("click",event=>{
+  const button=event.target.closest("[data-remove]");
+  if(!button) return;
+
+  state.selections=state.selections.filter(item=>
+    item.key!==button.dataset.remove
+  );
+
+  saveState();
+  renderMatches();
+  renderCoupon();
+  renderStats();
+});
+
+$("#stake").addEventListener("input",updateCouponCalculation);
+
+$("#clearCoupon").addEventListener("click",()=>{
+  state.selections=[];
+  saveState();
+  renderMatches();
+  renderCoupon();
+  renderStats();
+  notify("Купон очищен.");
+});
+
+$("#demoSubmit").addEventListener("click",()=>{
+  if(!state.selections.length) {
+    notify("Сначала выбери исход.");
+    return;
+  }
+
+  const stake=Number($("#stake").value);
+
+  if(!Number.isFinite(stake)||stake<1||stake>100000) {
+    notify("Введи виртуальную сумму от 1 до 100 000 ₽.");
+    return;
+  }
+
+  const snapshot=state.selections.map(item=>({...item}));
+  const odds=getTotalOdds();
+  const probability=getCombinedProbability();
+
+  state.couponHistory.unshift({
+    id:"C"+Date.now(),
+    date:new Date().toLocaleString("ru-RU"),
+    selections:snapshot,
+    odds,
+    probability,
+    stake,
+    potentialReturn:stake*odds,
+    type:"DEMO"
+  });
+
+  state.couponHistory=state.couponHistory.slice(0,100);
+
+  state.transactions.unshift({
+    date:new Date().toLocaleString("ru-RU"),
+    type:"Создание демонстрационного купона",
+    amount:0
+  });
+
+  state.selections=[];
+  saveState();
+  renderMatches();
+  renderCoupon();
+  renderHistory();
+  renderStats();
+
+  showModal(
+    "Демо-купон сохранён",
+    `Событий: ${snapshot.length}. Общий коэффициент: ${odds.toFixed(2)}. Расчётная сумма: ${money(stake*odds)}. Виртуальный баланс не изменён. Это не реальная ставка.`
+  );
+});
+
+function renderBalance() {
+  $("#headerBalance").textContent=money(state.balance);
+  $("#accountBalance").textContent=money(state.balance);
+}
+
+function renderAccount() {
+  renderBalance();
+
+  if(state.user) {
+    $("#accountHeading").textContent="Привет, "+state.user.username+"!";
+    $("#authForm").style.display="none";
+    $("#toggleAuth").style.display="none";
+
+    $("#accountInfo").innerHTML=`
+      <div class="panel" style="padding:14px;margin-top:15px">
+        <div>Пользователь: <strong>${escapeHTML(state.user.username)}</strong></div>
+        <div class="muted" style="margin-top:8px">Демо-профиль</div>
+        <button class="btn full" id="logoutButton" style="margin-top:12px">Выйти из профиля</button>
+      </div>
+    `;
+
+    $("#logoutButton").addEventListener("click",()=>{
+      state.user=null;
+      saveState();
+      renderAccount();
+      renderHeaderAuth();
+      notify("Вы вышли из демо-профиля.");
+    });
+  } else {
+    $("#accountHeading").textContent="Добро пожаловать";
+    $("#authForm").style.display="block";
+    $("#toggleAuth").style.display="block";
+    $("#accountInfo").innerHTML="";
+    $("#authMessage").textContent="";
+  }
+
+  renderHeaderAuth();
+}
+
+function renderHeaderAuth() {
+  $("#profileButton").textContent=state.user?
+    state.user.username:"Войти";
+}
+
+$("#profileButton").addEventListener("click",()=>goPage("account"));
+
+$("#toggleAuth").addEventListener("click",()=>{
+  authMode=authMode==="register"?"login":"register";
+
+  $("#authSubmit").textContent=authMode==="register"?
+    "Создать демо-аккаунт":"Войти в демо-аккаунт";
+
+  $("#toggleAuth").textContent=authMode==="register"?
+    "Уже есть демо-аккаунт? Войти":"Нет демо-аккаунта? Создать";
+});
+
+$("#authForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+
+  const username=$("#username").value.trim();
+  const password=$("#password").value;
+
+  if(username.length<3||password.length<6) {
+    $("#authMessage").textContent="Имя должно содержать не менее 3 символов, пароль — не менее 6.";
+    return;
+  }
+
+  /*
+   * ВНИМАНИЕ:
+   * Это локальная демоверсия, не безопасная серверная авторизация.
+   * Пароль не сохраняется. Аккаунт нельзя восстановить после очистки
+   * браузерных данных. Не используй настоящие пароли.
+   */
+  const accountKey="betzone_demo_account_"+username.toLowerCase();
+  let account;
+
+  try {
+    account=JSON.parse(localStorage.getItem(accountKey)||"null");
+  } catch {
+    account=null;
+  }
+
+  const passwordDigest=await digestPassword(password);
+
+  if(authMode==="register") {
+    if(account) {
+      $("#authMessage").textContent="Такой демо-пользователь уже существует. Попробуй войти.";
+      return;
+    }
+
+    account={username,passwordDigest};
+    localStorage.setItem(accountKey,JSON.stringify(account));
+  } else {
+    if(!account||account.passwordDigest!==passwordDigest) {
+      $("#authMessage").textContent="Неверное имя пользователя или демо-пароль.";
+      return;
+    }
+  }
+
+  state.user={username};
+  saveState();
+  renderAccount();
+  renderHeaderAuth();
+  notify(authMode==="register"?"Демо-аккаунт создан.":"Вход выполнен.");
+});
+
+async function digestPassword(password) {
+  if(globalThis.crypto?.subtle) {
+    const bytes=new TextEncoder().encode(password);
+    const digest=await crypto.subtle.digest("SHA-256",bytes);
+    return [...new Uint8Array(digest)]
+      .map(byte=>byte.toString(16).padStart(2,"0")).join("");
+  }
+
+  // Fallback для локальных сред без Web Crypto.
+  // Это только идентификатор демопароля, не средство защиты.
+  let hash=2166136261;
+  for(let i=0;i<password.length;i++) {
+    hash^=password.charCodeAt(i);
+    hash=Math.imul(hash,16777619);
+  }
+  return "demo-"+(hash>>>0).toString(16);
+}
+
+function renderHistory() {
+  const history=$("#historyList");
+  const coupons=$("#couponHistory");
+
+  if(!state.transactions.length) {
+    history.innerHTML='<div class="empty">Операций пока нет.</div>';
+  } else {
+    history.innerHTML=state.transactions.map(item=>`
+      <div class="history-row">
+        <div>
+          <div>${escapeHTML(item.type)}</div>
+          <div class="muted" style="margin-top:5px">${escapeHTML(item.date)}</div>
+        </div>
+        <strong>${money(item.amount)}</strong>
+      </div>
+    `).join("");
+  }
+
+  if(!state.couponHistory.length) {
+    coupons.innerHTML='<div class="empty">Купонов пока нет.</div>';
+  } else {
+    coupons.innerHTML=state.couponHistory.map(item=>`
+      <div class="history-row">
+        <div>
+          <div>${item.selections.length} событий · ${item.odds.toFixed(2)}</div>
+          <div class="muted" style="margin-top:5px">${escapeHTML(item.date)}</div>
+          <div class="muted" style="margin-top:5px">Демо · не рассчитан</div>
+        </div>
+        <strong>${money(item.potentialReturn)}</strong>
+      </div>
+    `).join("");
+  }
+}
+
+$("#topupButton").addEventListener("click",()=>{
+  const today=new Date().toISOString().slice(0,10);
+
+  if(state.topupDate!==today) {
+    state.topupDate=today;
+    state.dailyTopup=0;
+  }
+
+  if(state.dailyTopup+TOPUP_AMOUNT>DAILY_TOPUP_LIMIT) {
+    notify("Дневной лимит виртуального начисления достигнут.");
+    return;
+  }
+
+  state.balance+=TOPUP_AMOUNT;
+  state.dailyTopup+=TOPUP_AMOUNT;
+
+  state.transactions.unshift({
+    date:new Date().toLocaleString("ru-RU"),
+    type:"Виртуальное начисление",
+    amount:TOPUP_AMOUNT
+  });
+
+  state.transactions=state.transactions.slice(0,100);
+
+  saveState();
+  renderBalance();
+  renderHistory();
+  notify("Начислено "+money(TOPUP_AMOUNT)+" виртуальных средств.");
+});
+
+function renderStats() {
+  $("#statMatches").textContent=MATCHES.length;
+  $("#statSelections").textContent=state.selections.length;
+}
+
+function factorial(n) {
+  let result=1;
+  for(let i=2;i<=n;i++) result*=i;
+  return result;
+}
+
+function poisson(lambda,k) {
+  return Math.exp(-lambda)*Math.pow(lambda,k)/factorial(k);
+}
+
+function calculateFootball(lambdaHome,lambdaAway,maxGoals=12) {
+  const homeScores=Array.from({length:maxGoals+1},(_,k)=>
+    poisson(lambdaHome,k)
+  );
+
+  const awayScores=Array.from({length:maxGoals+1},(_,k)=>
+    poisson(lambdaAway,k)
+  );
+
+  let homeWin=0,draw=0,awayWin=0;
+  let over25=0,btts=0;
+  const scorelines=[];
+
+  for(let h=0;h<=maxGoals;h++) {
+    for(let a=0;a<=maxGoals;a++) {
+      const p=homeScores[h]*awayScores[a];
+
+      if(h>a) homeWin+=p;
+      else if(h===a) draw+=p;
+      else awayWin+=p;
+
+      if(h+a>=3) over25+=p;
+      if(h>0&&a>0) btts+=p;
+
+      scorelines.push({home:h,away:a,p});
+    }
+  }
+
+  scorelines.sort((a,b)=>b.p-a.p);
+
+  return {
+    homeWin,draw,awayWin,over25,under25:1-over25,
+    btts,bttsNo:1-btts,
+    topScores:scorelines.slice(0,5),
+    truncatedMass:Math.max(0,1-
+      homeScores.reduce((a,b)=>a+b,0)*
+      awayScores.reduce((a,b)=>a+b,0))
+  };
+}
+
+function pct(value) {
+  return (value*100).toFixed(2)+"%";
+}
+
+$("#calculatePoisson").addEventListener("click",()=>{
+  const home=Number($("#lambdaHome").value);
+  const away=Number($("#lambdaAway").value);
+
+  if(!Number.isFinite(home)||!Number.isFinite(away)||
+     home<0.1||away<0.1||home>6||away>6) {
+    notify("Введи ожидаемые голы от 0,1 до 6.");
+    return;
+  }
+
+  const result=calculateFootball(home,away);
+
+  $("#poissonResult").innerHTML=`
+    <div class="calc-row"><span>Победа первой команды</span><strong>${pct(result.homeWin)}</strong></div>
+    <div class="calc-row"><span>Ничья</span><strong>${pct(result.draw)}</strong></div>
+    <div class="calc-row"><span>Победа второй команды</span><strong>${pct(result.awayWin)}</strong></div>
+    <div class="calc-row"><span>Тотал больше 2,5</span><strong>${pct(result.over25)}</strong></div>
+    <div class="calc-row"><span>Тотал меньше 2,5</span><strong>${pct(result.under25)}</strong></div>
+    <div class="calc-row"><span>Обе команды забьют</span><strong>${pct(result.btts)}</strong></div>
+    <div class="section-head"><h2>Наиболее вероятные счета</h2></div>
+    ${result.topScores.map(score=>`
+      <div class="calc-row">
+        <span>${score.home} : ${score.away}</span>
+        <strong>${pct(score.p)}</strong>
+      </div>
+    `).join("")}
+    <p class="disclaimer">
+      Расчёт предполагает независимые распределения Пуассона.
+      Погрешность усечения хвоста: ${(result.truncatedMass*100).toFixed(5)}%.
+      Результат зависит от введённых λ и не гарантирует исход матча.
+    </p>
+  `;
+});
+
+function init() {
+  renderMatches();
+  renderCoupon();
+  renderAccount();
+  renderHistory();
+  renderStats();
+  renderHeaderAuth();
+
+  $("#poissonResult").innerHTML=
+    '<p class="muted">Введи параметры и нажми «Рассчитать вероятности».</p>';
+}
+
+init();
 </script>
 </body>
 </html>
