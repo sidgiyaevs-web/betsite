@@ -2,2190 +2,1000 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0a1a">
-<title>RubWin — Игры</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080A12">
+<title>ROCKET PLAY — Arcade</title>
 <style>
 :root{
-  --bg:#0a0a1a;--bg2:#12122a;--card:#1a1a35;--card2:#252547;--card3:#2f3060;
-  --text:#fff;--text2:#8a8ab8;--text3:#4a4a7a;
-  --blue:#4f6bff;--purple:#8b5cf6;--pink:#ec4899;--green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--gold:#f59e0b;
-  --border:#2a2a4a;--border2:#3a3a6a;
-  --grad:linear-gradient(135deg,#4f6bff 0%,#8b5cf6 100%);
-  --grad-green:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
-  --grad-red:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);
-  --grad-gold:linear-gradient(135deg,#f59e0b 0%,#ef4444 100%);
-  --radius-sm:8px;--radius:12px;--radius-lg:16px;--radius-xl:20px;--radius-2xl:24px;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ --bg:#080A12;--bg2:#101522;--card:#151C2B;--card2:#1B2235;
+ --text:#F6F7FF;--muted:#929CB4;--purple:#8855FF;--blue:#25D9FF;
+ --green:#35E6A2;--red:#FF4F70;--gold:#FFC857;
+ --border:#222B42;--border2:#2E3954;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow-x:hidden}
-body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.4;user-select:none;-webkit-font-smoothing:antialiased;padding-bottom:80px;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 10%,rgba(79,107,255,.15) 0%,transparent 40%),radial-gradient(circle at 80% 90%,rgba(139,92,246,.12) 0%,transparent 40%);z-index:-1;pointer-events:none}
-button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;outline:none;background:none;transition:transform .1s,opacity .15s,background-color .15s}
-button:active{opacity:.85;transform:scale(.98)}
-button:disabled{opacity:.5;cursor:not-allowed}
-input{font-family:inherit;outline:none}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer;color:var(--text);border:0;transition:transform .16s,filter .16s,opacity .16s}
+button:active{transform:scale(.98)}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select{background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:10px;padding:12px;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--purple)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 .hidden{display:none!important}
-
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:.9}}
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
-@keyframes dealCard{from{transform:translate(-200px,-200px) rotate(-45deg);opacity:0}to{transform:translate(0,0) rotate(0);opacity:1}}
-@keyframes cloudMove{from{transform:translateX(100vw)}to{transform:translateX(-300px)}}
-@keyframes waveShift{from{background-position-x:0}to{background-position-x:200px}}
-
-/* AUTH */
-.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 24px;overflow-y:auto}
-.auth-logo{font-size:42px;font-weight:900;letter-spacing:-1.5px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
-.auth-subtitle{color:var(--text2);margin-bottom:32px;font-size:14px;text-align:center;max-width:300px}
-.auth-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
-.auth-avatar-selector{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px}
-.auth-avatar-option{width:52px;height:52px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid transparent;cursor:pointer;transition:all .15s}
-.auth-avatar-option.active{border-color:var(--blue);background:var(--card3);transform:scale(1.05)}
-.auth-input{padding:16px 18px;border:1px solid var(--border2);border-radius:var(--radius);font-size:16px;background:var(--card);color:var(--text)}
-.auth-input:focus{border-color:var(--blue);background:var(--card2)}
-.auth-input::placeholder{color:var(--text3)}
-.auth-btn{background:var(--grad);color:#fff;padding:16px;border-radius:var(--radius);font-size:16px;font-weight:800;margin-top:8px;box-shadow:0 8px 24px rgba(79,107,255,.4)}
-.auth-switch{margin-top:12px;color:var(--text2);font-size:14px;text-align:center;cursor:pointer;padding:10px}
-.auth-switch span{color:var(--blue);font-weight:700}
-.auth-error{color:var(--red);font-size:13px;text-align:center;min-height:18px}
-
-/* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,26,.92);backdrop-filter:blur(20px);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-.logo{font-size:24px;font-weight:900;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.topbar-right{display:flex;gap:8px;align-items:center}
-.balance-pill{background:var(--card);padding:7px 14px;border-radius:24px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;border:1px solid var(--border2)}
-.balance-pill .coin{width:20px;height:20px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
-.balance-pill.bump{animation:bounce .5s}
-.topup-btn{background:var(--grad);color:#fff;padding:9px 16px;border-radius:24px;font-weight:700;font-size:13px}
-.topup-btn:disabled{background:var(--card2);color:var(--text3)}
-.avatar-btn{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--border2)}
-
-/* MAIN */
-.main-screen{padding-bottom:20px}
-.promo{margin:16px;border-radius:var(--radius-xl);background:linear-gradient(135deg,#5b3df5 0%,#7c3aed 50%,#a855f7 100%);padding:22px;position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 32px rgba(91,61,245,.35)}
-.promo::before{content:'';position:absolute;top:-50%;right:-30%;width:300px;height:300px;background:radial-gradient(circle,rgba(255,255,255,.18) 0%,transparent 70%)}
-.promo h2{font-size:26px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;position:relative;z-index:1;line-height:1.1}
-.promo p{font-size:14px;opacity:.9;margin-bottom:18px;position:relative;z-index:1}
-.promo-btn{background:rgba(255,255,255,.2);color:#fff;padding:12px 24px;border-radius:24px;font-weight:700;font-size:14px;align-self:flex-start;position:relative;z-index:1;border:1px solid rgba(255,255,255,.3)}
-.promo-emoji{position:absolute;right:-15px;bottom:-15px;font-size:140px;opacity:.22;z-index:0;pointer-events:none}
-.live-section{padding:0 16px;margin-bottom:8px}
-.live-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--red);margin-bottom:10px;letter-spacing:1.5px}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite}
-.live-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.live-scroll::-webkit-scrollbar{display:none}
-.live-card{min-width:160px;background:var(--card);border-radius:var(--radius);padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border2);flex-shrink:0}
-.live-avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.live-info{flex:1;min-width:0}
-.live-name{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.live-amount{font-size:14px;font-weight:800;color:var(--green)}
-.section-title{font-size:20px;font-weight:800;padding:0 16px;margin:20px 0 12px;letter-spacing:-.3px}
-.games-grid{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.game-card{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border2);cursor:pointer;position:relative;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;transition:transform .15s}
-.game-card:active{transform:scale(.97)}
-.game-card.wide{grid-column:1 / -1;min-height:150px}
-.game-card-bg{position:absolute;inset:0;z-index:0}
-.game-card.rocket .game-card-bg{background:linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)}
-.game-card.cow .game-card-bg{background:linear-gradient(135deg,#4f6bff 0%,#8b5cf6 100%)}
-.game-card.race .game-card-bg{background:linear-gradient(135deg,#06b6d4 0%,#3b82f6 100%)}
-.game-card.mines .game-card-bg{background:linear-gradient(135deg,#1e3a8a 0%,#312e81 100%)}
-.game-card.plinko .game-card-bg{background:linear-gradient(135deg,#06b6d4 0%,#3b82f6 100%)}
-.game-card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.55) 100%);z-index:1}
-.game-emoji{position:absolute;top:10px;right:12px;font-size:56px;z-index:2;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
-.game-players{position:relative;z-index:3;font-size:11px;opacity:.9;margin-bottom:4px;display:flex;align-items:center;gap:4px}
-.game-players .dot{width:6px;height:6px;border-radius:50%;background:#4ade80}
-.game-name{position:relative;z-index:3;font-size:17px;font-weight:800}
-
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(18,18,42,.95);backdrop-filter:blur(20px);display:flex;justify-content:space-around;padding:10px 0 14px;border-top:1px solid var(--border2);z-index:200}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);flex:1;padding:4px 0;position:relative;transition:color .15s;cursor:pointer}
-.nav-item.active{color:var(--text)}
-.nav-item .icon{font-size:22px;line-height:1}
-.nav-item .free-tag{position:absolute;top:-4px;right:50%;transform:translateX(14px);background:var(--yellow);color:#000;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px}
-
-/* GAME SCREEN */
-.game-screen{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;overflow-y:auto;padding-bottom:100px}
-.game-screen.open{display:flex;animation:slideUp .25s ease}
-.game-header{position:sticky;top:0;background:rgba(10,10,26,.95);backdrop-filter:blur(20px);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);z-index:10}
-.back-btn{font-size:20px;color:var(--text);padding:4px 8px;font-weight:600}
-.game-title{font-size:18px;font-weight:800;flex:1}
-.game-header-icons{display:flex;gap:12px;font-size:18px}
-.game-content{padding:16px;flex:1;display:flex;flex-direction:column}
-.round-indicator{padding:6px 12px;border-radius:20px;background:var(--card);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text2)}
-.timer-pill{padding:6px 12px;border-radius:20px;background:rgba(79,107,255,.2);border:1px solid rgba(79,107,255,.4);font-size:13px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
-.timer-pill.warn{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:var(--red);animation:pulse 1s infinite}
-
-/* ARENA */
-.arena{flex:1;min-height:300px;border-radius:var(--radius-lg);position:relative;overflow:hidden;border:1px solid var(--border);margin-bottom:16px}
-.multiplier{position:absolute;top:12%;left:50%;transform:translateX(-50%);font-size:60px;font-weight:900;letter-spacing:-3px;z-index:4;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 0 40px rgba(79,107,255,.6);font-variant-numeric:tabular-nums}
-.multiplier.crashed{background:none;-webkit-text-fill-color:var(--red);color:var(--red)}
-.crash-history{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:3;max-width:80%}
-.crash-history-pill{background:rgba(255,255,255,.08);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
-.crash-history-pill.low{color:var(--red)}
-.crash-history-pill.mid{color:var(--yellow)}
-.crash-history-pill.high{color:var(--green)}
-
-/* CONTROL PANEL */
-.controls{background:var(--card);border-radius:var(--radius-lg);padding:14px;border:1px solid var(--border2);margin-top:auto}
-.controls-row{display:flex;gap:8px;margin-bottom:10px;align-items:stretch}
-.bet-group{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius);padding:4px;display:flex;align-items:center;gap:6px}
-.bet-group input{flex:1;background:none;border:none;color:var(--text);font-size:16px;font-weight:800;padding:8px 10px;min-width:0;font-variant-numeric:tabular-nums}
-.bet-btn{width:34px;height:34px;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer}
-.bet-quick{display:flex;gap:4px}
-.bet-quick button{padding:8px 10px;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);font-size:11px;font-weight:800;cursor:pointer;color:var(--text2)}
-.info-group{display:flex;flex-direction:column;gap:4px;flex-shrink:0;min-width:120px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;text-align:right}
-.info-label{font-size:10px;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;font-weight:700}
-.info-value{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
-.info-value.purple{color:var(--purple)}
-.info-value.green{color:var(--green)}
-.info-value.gold{color:var(--gold)}
-.play-btn{width:100%;background:var(--grad);color:#fff;padding:16px;border-radius:var(--radius);font-size:17px;font-weight:800;margin-top:12px;box-shadow:0 8px 24px rgba(79,107,255,.4);cursor:pointer}
-.play-btn.cashout{background:var(--grad-green);box-shadow:0 8px 24px rgba(34,197,94,.4)}
-.play-btn.danger{background:var(--grad-red);box-shadow:0 8px 24px rgba(239,68,68,.4)}
-.play-btn.wait{background:var(--card2);color:var(--text2);box-shadow:none}
-
-/* PROFIL */
-.profile-header{background:var(--grad);padding:32px 16px 24px;text-align:center;border-radius:0 0 24px 24px;margin-bottom:16px;position:relative;overflow:hidden}
-.profile-header::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15) 0%,transparent 50%)}
-.profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px;position:relative;z-index:1;cursor:pointer}
-.profile-name{font-size:20px;font-weight:800;margin-bottom:4px;position:relative;z-index:1}
-.profile-balance{font-size:32px;font-weight:900;letter-spacing:-1px;position:relative;z-index:1}
-.profile-balance-label{font-size:12px;opacity:.8;margin-bottom:16px;position:relative;z-index:1}
-.stat-row{display:flex;gap:12px;padding:0 16px;margin-bottom:16px}
-.stat-card{flex:1;background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border2);text-align:center}
-.stat-value{font-size:18px;font-weight:800;margin-bottom:2px}
-.stat-value.green{color:var(--green)}
-.stat-value.red{color:var(--red)}
-.stat-value.gold{color:var(--gold)}
-.stat-value.purple{color:var(--purple)}
-.stat-label{font-size:11px;color:var(--text2)}
-.logout-btn{display:block;margin:0 auto 16px;padding:12px 32px;background:var(--card);color:var(--red);border-radius:var(--radius);font-weight:700;font-size:14px;border:1px solid var(--border2)}
-
-/* HISTORY */
-.history-filters{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none}
-.history-filters::-webkit-scrollbar{display:none}
-.history-filter{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card2);color:var(--text2);white-space:nowrap;border:1px solid var(--border2);cursor:pointer}
-.history-filter.active{background:var(--grad);color:#fff;border-color:transparent}
-.history-item{background:var(--card);border-radius:var(--radius);padding:14px;margin:8px 16px;border:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;gap:12px}
-.history-item-left{flex:1;min-width:0}
-.history-item-game{font-size:13px;font-weight:700;margin-bottom:2px}
-.history-item-info{font-size:11px;color:var(--text2)}
-.history-item-amount{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
-.history-item-amount.win{color:var(--green)}
-.history-item-amount.lose{color:var(--red)}
-
-/* ACHIEVEMENTS */
-.achievements-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:0 16px}
-.achievement{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;text-align:center;transition:all .2s;position:relative;overflow:hidden}
-.achievement.locked{opacity:.4;filter:grayscale(.8)}
-.achievement.unlocked{border-color:var(--gold)}
-.achievement.unlocked::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-gold)}
-.achievement-icon{font-size:32px;margin-bottom:6px;display:block}
-.achievement-title{font-size:13px;font-weight:800;margin-bottom:4px}
-.achievement-desc{font-size:11px;color:var(--text2);line-height:1.3}
-
-/* SETTINGS */
-.settings-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
-.settings-item{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.settings-item-label{font-size:14px;font-weight:700}
-.settings-item-desc{font-size:11px;color:var(--text2);margin-top:2px}
-.switch{width:48px;height:28px;border-radius:14px;background:var(--card2);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background-color .2s;flex-shrink:0}
-.switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
-.switch.on{background:var(--grad);border-color:transparent}
-.switch.on::after{transform:translateX(20px)}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.open{display:flex;animation:fadeIn .2s}
-.modal{background:var(--card);border-radius:var(--radius-2xl);padding:26px;max-width:420px;width:100%;border:1px solid var(--border2);animation:slideUp .25s}
-.modal-title{font-size:20px;font-weight:900;margin-bottom:8px}
-.modal-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
-.modal-actions{display:flex;gap:10px;margin-top:20px}
-.modal-actions .btn{flex:1}
-.btn{padding:13px 26px;border-radius:var(--radius);font-size:14px;font-weight:800;cursor:pointer;text-align:center}
-.btn-primary{background:var(--grad);color:#fff}
-.btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border2)}
-.modal-input{width:100%;padding:14px 16px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:16px;margin-bottom:12px}
-
-/* TOAST */
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--card3);color:#fff;padding:14px 24px;border-radius:var(--radius);font-size:13px;font-weight:700;z-index:1000;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;border:1px solid var(--border2);max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{background:var(--green);border-color:transparent}
-.toast.error{background:var(--red);border-color:transparent}
-
-/* EMPTY */
-.empty{text-align:center;padding:80px 20px;color:var(--text2)}
-.empty-icon{font-size:60px;margin-bottom:16px;opacity:.4}
-.empty-title{font-size:18px;font-weight:800;margin-bottom:6px;color:var(--text)}
-.empty-desc{font-size:13px}
-
-/* ПРОЧЕЕ */
-.rocket-stars{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.rocket-star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 2s infinite}
-.race-cloud{position:absolute;background:#fff;border-radius:50%;opacity:.85}
-.race-cloud::before,.race-cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
-.cow-cloud{position:absolute;background:#fff;border-radius:50%;opacity:.9}
-.cow-cloud::before,.cow-cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
-
-@media(max-width:400px){
-  .multiplier{font-size:44px}
-  .game-name{font-size:15px}
-  .game-emoji{font-size:44px}
-  .info-group{min-width:90px;padding:6px 10px}
-  .info-value{font-size:14px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.gradient{background:linear-gradient(120deg,var(--purple),#536CFF,var(--blue))}
+.gradient-text{background:linear-gradient(90deg,#B69AFF,var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn{padding:12px 17px;border-radius:11px;font-weight:750;background:linear-gradient(110deg,var(--purple),#5868FF);box-shadow:0 4px 20px #8855ff20}
+.btn:hover{filter:brightness(1.13)}
+.btn-secondary{background:var(--card2);border:1px solid var(--border2)}
+.btn-green{background:linear-gradient(110deg,#20BD84,var(--green));color:#071810}
+.btn-red{background:linear-gradient(110deg,#E73558,var(--red))}
+.btn-gold{background:linear-gradient(110deg,#F4A929,var(--gold));color:#211700}
+header{height:68px;position:sticky;top:0;z-index:50;background:#080a12ed;backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 max(16px,calc((100vw - 1200px)/2));gap:24px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:950;letter-spacing:1px;white-space:nowrap;font-size:17px}
+.logo svg{width:35px;height:35px}
+nav{display:flex;align-items:center;gap:5px;flex:1}
+nav button{background:transparent;color:var(--muted);padding:10px 12px;border-radius:9px}
+nav button.active,nav button:hover{background:var(--card);color:var(--text)}
+.head-right{display:flex;align-items:center;gap:10px}
+.balance{border:1px solid var(--border2);background:var(--card);border-radius:11px;padding:10px 12px;font-weight:800;white-space:nowrap}
+.balance span{color:var(--gold)}
+main{max-width:1200px;margin:auto;padding:25px 20px 90px}
+.hero{min-height:285px;position:relative;overflow:hidden;border:1px solid #493875;border-radius:24px;padding:35px;display:flex;align-items:center;background:radial-gradient(ellipse at 80% 40%,#49308080,transparent 44%),linear-gradient(115deg,#15142a,#111a2d 75%);margin-bottom:25px}
+.hero h1{font-size:clamp(30px,5vw,53px);line-height:1.04;margin:0 0 15px;font-weight:950;letter-spacing:-1.8px}
+.hero p{color:var(--muted);max-width:490px;line-height:1.65;margin-bottom:22px}
+.hero-copy{position:relative;z-index:2;max-width:590px}
+.hero-art{position:absolute;width:310px;height:310px;right:35px;top:0;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 0 35px #8855ff55)}
+@keyframes float{50%{transform:translateY(-13px) rotate(2deg)}}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;gap:12px}
+.section-title h2{margin:0;font-size:22px}
+.games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.game-card{position:relative;min-height:225px;overflow:hidden;border:1px solid var(--border);border-radius:18px;background:var(--card);padding:20px;transition:transform .2s,border-color .2s}
+.game-card:hover{transform:translateY(-4px);border-color:#6550a0}
+.game-art{height:98px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden}
+.game-art svg{width:100%;height:100%;max-width:190px}
+.game-card h3{font-size:18px;margin:0 0 7px}
+.game-card p{color:var(--muted);font-size:13px;line-height:1.5;min-height:39px;margin:0 0 15px}
+.game-card .btn{width:100%}
+.art-rocket{background:radial-gradient(ellipse,#443080,#15172d)}
+.art-plane{background:linear-gradient(#193d65,#1e7b9b)}
+.art-cow{background:linear-gradient(#3b7b54,#172e30)}
+.art-mines{background:linear-gradient(135deg,#282153,#14172e)}
+.art-plinko{background:linear-gradient(135deg,#1b3655,#312052)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--bg2);padding:17px;border-radius:12px;border:1px solid var(--border)}
+.stat strong{display:block;font-size:22px;margin-top:7px}
+.list{display:flex;flex-direction:column;gap:8px}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;background:var(--bg2);border-radius:11px;border:1px solid var(--border)}
+.positive{color:var(--green)}.negative{color:var(--red)}
+.page{display:none}.page.active{display:block}
+.game-screen{position:fixed;inset:0;z-index:300;background:var(--bg);overflow:auto;display:none}
+.game-screen.active{display:block}
+.game-top{height:62px;position:sticky;top:0;z-index:5;background:#080a12ed;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 16px}
+.game-top h2{font-size:17px;margin:0;flex:1}
+.round-label{font-size:12px;color:var(--muted)}
+.game-content{max-width:1000px;margin:auto;padding:17px 16px 35px}
+.stage{height:350px;position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--border2);background:#111629}
+.stage.crash-bg{background:radial-gradient(ellipse at 50% 100%,#4c286b 0,transparent 48%),radial-gradient(ellipse at 80% 20%,#242b58,transparent 50%),#090d1d}
+.stage.sky-bg{background:linear-gradient(#61b9ed 0%,#b2e5f7 56%,#157fa7 57%,#09516c 100%)}
+.stage.grass-bg{background:linear-gradient(#72c9f5 0%,#b7e6ff 28%,#72b96c 29%,#327e49 46%,#292e3c 47%,#343b4d 86%,#327e49 87%)}
+.stage.plinko-bg{background:radial-gradient(ellipse at center,#25204c,#0c1020 78%)}
+.stage.mines-bg{background:radial-gradient(ellipse at center,#24234a,#0d1120)}
+.stage canvas{width:100%;height:100%;display:block}
+.big-multiplier{position:absolute;top:20px;left:0;right:0;text-align:center;font-size:clamp(37px,8vw,65px);font-weight:950;text-shadow:0 0 28px #8855ff80;pointer-events:none}
+.stage-message{position:absolute;bottom:20px;left:10px;right:10px;text-align:center;font-size:13px;color:#e6eaff;pointer-events:none}
+.crash-history{display:flex;gap:7px;overflow:auto;margin:12px 0}
+.crash-pill{padding:7px 10px;border-radius:8px;background:var(--card2);font-size:12px;font-weight:800;white-space:nowrap}
+.controls{margin-top:15px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px}
+.control-box{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:15px}
+.control-box label{display:block;color:var(--muted);font-size:12px;margin-bottom:9px}
+.bet-row{display:flex;gap:6px}
+.bet-row input{text-align:center;font-weight:800;min-width:0}
+.bet-row button{padding:0 11px;border-radius:9px;background:var(--card2);border:1px solid var(--border2)}
+.quick-bets{display:flex;gap:6px;margin-top:8px}
+.quick-bets button{flex:1;padding:8px 3px;border-radius:8px;background:var(--bg2);font-size:12px}
+.action{width:100%;margin-top:11px;min-height:48px;font-size:15px}
+.potential{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin-top:10px}
+.potential strong{color:var(--green);font-size:16px}
+.mines-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;width:min(100%,390px);margin:100px auto 0;padding:12px}
+.mine-cell{aspect-ratio:1;border-radius:9px;background:linear-gradient(145deg,#29284e,#171a31);border:1px solid #45416c;box-shadow:inset 0 -4px #080a1270;font-size:clamp(17px,4vw,27px)}
+.mine-cell.opened{background:#193c43;border-color:var(--green)}
+.mine-cell.bomb{background:#501e31;border-color:var(--red)}
+.mines-info{position:absolute;top:17px;left:0;right:0;text-align:center;font-weight:800}
+.mine-select{width:auto;padding:8px;margin-bottom:8px}
+.plinko-info{position:absolute;top:10px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted)}
+.road-note{position:absolute;top:10px;left:0;right:0;text-align:center;color:white;font-weight:800;text-shadow:0 1px 5px #000}
+.login-overlay{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at 50% 25%,#342052,#080A12 65%);display:flex;align-items:center;justify-content:center;padding:18px}
+.login-card{width:min(100%,410px);padding:27px;background:#121827;border:1px solid var(--border2);border-radius:21px;box-shadow:0 20px 80px #0007}
+.login-card h1{margin:10px 0;font-size:28px}
+.field{margin:14px 0}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:7px}
+.avatars{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.avatar-choice{width:42px;height:42px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;font-size:23px}
+.avatar-choice.selected{border-color:var(--blue);box-shadow:0 0 15px #25d9ff30}
+.error{color:var(--red);font-size:12px;min-height:18px}
+.mobile-tabs{display:none}
+.toast{position:fixed;z-index:1500;left:50%;bottom:25px;transform:translateX(-50%);background:#202a3f;border:1px solid var(--border2);border-radius:12px;padding:12px 17px;box-shadow:0 8px 35px #0008;max-width:90vw;text-align:center;font-size:13px}
+.achievements{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.achievement{padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+.achievement.done{border-color:var(--gold);box-shadow:0 0 18px #ffc85715}
+.achievement .emoji{font-size:25px}.achievement strong{display:block;margin:8px 0 5px}
+.profile-head{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.profile-avatar{width:70px;height:70px;border-radius:20px;background:var(--card2);display:grid;place-items:center;font-size:40px}
+@media(max-width:760px){
+ header{height:59px;padding:0 12px;gap:10px}
+ nav{display:none}.logo{font-size:14px;flex:1}.logo svg{width:30px;height:30px}
+ .head-right{gap:6px}.balance{padding:9px;font-size:12px}.head-right .btn{padding:9px;font-size:12px}
+ main{padding:15px 12px 95px}
+ .hero{padding:23px 20px;min-height:260px}.hero-art{width:155px;height:155px;right:-22px;top:5px;opacity:.85}
+ .hero-copy{max-width:100%}.hero h1{font-size:35px;max-width:290px}.hero p{max-width:330px;font-size:13px}
+ .games{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .game-card{padding:12px;min-height:215px}.game-art{height:83px}.game-card h3{font-size:15px}.game-card p{font-size:12px}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .controls{grid-template-columns:1fr}.stage{height:320px}
+ .game-content{padding:12px 10px 25px}
+ .achievements{grid-template-columns:repeat(2,1fr)}
+ .mobile-tabs{position:fixed;bottom:0;left:0;right:0;z-index:60;display:flex;justify-content:space-around;background:#101522f5;backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:7px 3px calc(7px + env(safe-area-inset-bottom))}
+ .mobile-tabs button{flex:1;background:transparent;color:var(--muted);font-size:11px;padding:5px 0}
+ .mobile-tabs button span{display:block;font-size:19px;margin-bottom:3px}
+ .section-title{margin-top:23px}
 }
+@media(max-width:390px){.games{grid-template-columns:1fr}.game-card{min-height:0}.game-art{height:90px}.hero-art{opacity:.35}.hero h1{font-size:31px}}
 </style>
 </head>
 <body>
 
-<!-- АВТОРИЗАЦИЯ -->
-<div id="authScreen" class="auth-screen">
-  <div class="auth-logo">RubWin</div>
-  <div class="auth-subtitle">Игры, множители, победы</div>
-  <div class="auth-form">
-    <div class="auth-avatar-selector" id="avatarSelector">
-      <div class="auth-avatar-option active" data-avatar="🐮">🐮</div>
-      <div class="auth-avatar-option" data-avatar="🚀">🚀</div>
-      <div class="auth-avatar-option" data-avatar="💎">💎</div>
-      <div class="auth-avatar-option" data-avatar="🔥">🔥</div>
-      <div class="auth-avatar-option" data-avatar="👑">👑</div>
-      <div class="auth-avatar-option" data-avatar="🎯">🎯</div>
-    </div>
-    <input type="text" id="authLogin" class="auth-input" placeholder="Логин" autocomplete="off">
-    <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
-    <div id="authError" class="auth-error"></div>
-    <button id="authBtn" class="auth-btn">Войти</button>
-    <div id="authSwitch" class="auth-switch">Нет аккаунта? <span>Зарегистрироваться</span></div>
+<header>
+ <div class="logo" onclick="showPage('home')">
+  <svg viewBox="0 0 60 60" aria-hidden="true">
+   <defs><linearGradient id="lg"><stop stop-color="#8855FF"/><stop offset="1" stop-color="#25D9FF"/></linearGradient></defs>
+   <path d="M30 3C19 14 15 25 17 39l13 13 13-13C45 25 41 14 30 3Z" fill="url(#lg)"/>
+   <circle cx="30" cy="27" r="6" fill="#101522" stroke="#fff" stroke-width="2"/>
+   <path d="M17 34 5 42l12 2M43 34l12 8-12 2M24 46l6 11 6-11" fill="#25D9FF"/>
+  </svg>
+  <span class="gradient-text">ROCKET PLAY</span>
+ </div>
+ <nav>
+  <button class="active" data-page="home" onclick="showPage('home')">Главная</button>
+  <button data-page="games" onclick="showPage('games')">Игры</button>
+  <button data-page="history" onclick="showPage('history')">История</button>
+  <button data-page="achievements" onclick="showPage('achievements')">Достижения</button>
+ </nav>
+ <div class="head-right">
+  <div class="balance">🪙 <span id="headerBalance">10 000 ₽</span></div>
+  <button class="btn btn-secondary" onclick="showPage('profile')" id="headerAvatar">👾</button>
+ </div>
+</header>
+
+<main>
+ <section class="page active" id="page-home">
+  <div class="hero">
+   <div class="hero-copy">
+    <div class="small gradient-text" style="font-weight:900;letter-spacing:2px;margin-bottom:12px">ТВОЯ ИГРОВАЯ ВСЕЛЕННАЯ</div>
+    <h1>Играй на максимум.<br><span class="gradient-text">Лови момент.</span></h1>
+    <p>Пять уникальных мини-игр, неоновые миры и твои личные рекорды. Только виртуальные игровые рубли.</p>
+    <button class="btn" onclick="showPage('games')">Выбрать игру →</button>
+    <button class="btn btn-secondary" onclick="showPage('achievements')">Достижения</button>
+   </div>
+   <svg class="hero-art" viewBox="0 0 300 300" aria-label="Ракета">
+    <defs><linearGradient id="rocketBody" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".5" stop-color="#a6a1ff"/><stop offset="1" stop-color="#8855FF"/></linearGradient></defs>
+    <g fill="#25D9FF"><circle cx="52" cy="55" r="2"/><circle cx="237" cy="57" r="3"/><circle cx="230" cy="208" r="2"/><circle cx="72" cy="223" r="3"/><circle cx="184" cy="30" r="2"/></g>
+    <circle cx="150" cy="150" r="105" fill="#8855FF" opacity=".08"/>
+    <g transform="translate(150 145) rotate(35)">
+     <path d="M-21 36Q-33 3-23-39Q-10-75 0-87Q10-75 23-39Q33 3 21 36Z" fill="url(#rocketBody)" stroke="#fff" stroke-width="2"/>
+     <path d="M-20 18-48 46-22 41M20 18 48 46 22 41" fill="#8855FF" stroke="#b6a3ff" stroke-width="2"/>
+     <circle cy="-34" r="10" fill="#14263c" stroke="#25D9FF" stroke-width="4"/>
+     <path d="M-11 40 0 68 11 40Z" fill="#25D9FF"/>
+     <path d="M-6 47 0 79 6 47Z" fill="#FFC857"/>
+    </g>
+   </svg>
   </div>
+
+  <div class="section-title"><h2>Популярные игры</h2><button class="btn btn-secondary" onclick="showPage('games')">Все игры →</button></div>
+  <div class="games" id="homeGames"></div>
+  <div class="section-title"><h2>Твоя статистика</h2><button class="btn btn-secondary" onclick="showPage('profile')">Профиль →</button></div>
+  <div class="stats" id="homeStats"></div>
+ </section>
+
+ <section class="page" id="page-games">
+  <div class="section-title"><h2>Все мини-игры</h2><span class="muted small">5 игровых режимов</span></div>
+  <div class="games" id="allGames"></div>
+ </section>
+
+ <section class="page" id="page-history">
+  <div class="section-title"><h2>История раундов</h2><button class="btn btn-secondary" onclick="exportData()">Экспорт JSON</button></div>
+  <div class="panel">
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
+    <select id="historyFilter" style="width:auto" onchange="renderHistory()">
+     <option value="all">Все результаты</option><option value="win">Победы</option><option value="lose">Поражения</option>
+    </select>
+    <select id="historyGame" style="width:auto" onchange="renderHistory()">
+     <option value="all">Все игры</option><option value="rocket">Ракетка</option><option value="flight">Рейс</option><option value="cow">Коровка</option><option value="mines">Мины</option><option value="plinko">Плинко</option>
+    </select>
+   </div>
+   <div class="list" id="historyList"></div>
+  </div>
+ </section>
+
+ <section class="page" id="page-achievements">
+  <div class="section-title"><h2>Достижения</h2><span class="muted small" id="achievementCount">0 / 11</span></div>
+  <div class="achievements" id="achievementList"></div>
+ </section>
+
+ <section class="page" id="page-profile">
+  <div class="section-title"><h2>Твой профиль</h2></div>
+  <div class="panel">
+   <div class="profile-head"><div class="profile-avatar" id="profileAvatar">👾</div><div><h2 id="profileLogin" style="margin:0 0 5px"></h2><div class="muted small">Игрок ROCKET PLAY</div></div></div>
+   <div class="field"><label>Отображаемое имя</label><input id="displayName" maxlength="24" placeholder="Твоё имя"></div>
+   <label class="muted small">Выбери аватар</label><div class="avatars" id="profileAvatars"></div>
+   <button class="btn" onclick="saveProfile()">Сохранить профиль</button>
+   <div class="section-title"><h2>Баланс</h2></div>
+   <div style="font-size:34px;font-weight:950;color:var(--gold);margin:10px 0 20px" id="profileBalance">10 000 ₽</div>
+   <div class="stats" id="profileStats"></div>
+   <div class="section-title"><h2>Настройки</h2></div>
+   <label style="display:flex;align-items:center;gap:10px;margin:14px 0"><input type="checkbox" id="soundToggle" style="width:auto" onchange="updateSettings()"> Звуковые эффекты</label>
+   <label style="display:flex;align-items:center;gap:10px;margin:14px 0"><input type="checkbox" id="animationToggle" style="width:auto" onchange="updateSettings()"> Анимации</label>
+   <button class="btn btn-secondary" onclick="exportData()">Экспорт данных JSON</button>
+   <label class="btn btn-secondary" style="display:inline-block;margin:10px 0">Импорт JSON<input type="file" accept=".json,application/json" style="display:none" onchange="importData(event)"></label>
+   <br><button class="btn btn-red" onclick="logout()" style="margin-top:12px">Выйти из аккаунта</button>
+  </div>
+ </section>
+</main>
+
+<div class="mobile-tabs">
+ <button onclick="showPage('games')"><span>🎮</span>Игры</button>
+ <button onclick="showPage('cases')"><span>🎁</span>Бонусы</button>
+ <button onclick="showPage('history')"><span>📜</span>История</button>
+ <button onclick="showPage('profile')"><span>👤</span>Профиль</button>
 </div>
 
-<!-- ПРИЛОЖЕНИЕ -->
-<div id="app" class="hidden">
-
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-  <div class="topbar">
-    <div class="logo">RubWin</div>
-    <div class="topbar-right">
-      <div class="balance-pill" id="balancePill">
-        <div class="coin">₽</div>
-        <span id="balanceText">10 000</span>
-      </div>
-      <button class="topup-btn" id="topupBtn">Пополнить</button>
-      <div class="avatar-btn" id="avatarBtn">🐮</div>
-    </div>
+<div id="gameScreen" class="game-screen">
+ <div class="game-top">
+  <button class="btn btn-secondary" onclick="closeGame()">← Назад</button>
+  <h2 id="gameTitle">Игра</h2>
+  <div class="round-label" id="roundNumber">Раунд #1</div>
+ </div>
+ <div class="game-content">
+  <div class="stage" id="gameStage">
+   <canvas id="gameCanvas" width="900" height="500"></canvas>
+   <div class="big-multiplier" id="bigMultiplier">1.00×</div>
+   <div class="stage-message" id="stageMessage">Готов к игре?</div>
+   <div id="minesBoard" class="mines-grid hidden"></div>
+   <div id="minesInfo" class="mines-info hidden"></div>
+   <div id="plinkoInfo" class="plinko-info hidden"></div>
+   <div id="roadNote" class="road-note hidden"></div>
   </div>
-
-  <!-- ГЛАВНАЯ -->
-  <div id="mainScreen" class="main-screen">
-    <div class="promo">
-      <div>
-        <h2>Подарок<br>за пополнение</h2>
-        <p>Получи 10 000 ₽ раз в сутки</p>
-      </div>
-      <button class="promo-btn" id="promoTopup">Пополнить →</button>
-      <div class="promo-emoji">🎁</div>
+  <div id="crashHistory" class="crash-history"></div>
+  <div class="controls">
+   <div class="control-box">
+    <label>Ставка · виртуальные рубли</label>
+    <div class="bet-row">
+     <button onclick="adjustBet(-1)">−</button>
+     <input id="betInput" type="number" min="1" step="1" value="100">
+     <button onclick="adjustBet(1)">+</button>
     </div>
-
-    <div class="live-section">
-      <div class="live-label"><span class="live-dot"></span>LIVE</div>
-      <div class="live-scroll" id="liveScroll"></div>
+    <div class="quick-bets">
+     <button onclick="quickBet(.5)">½</button><button onclick="quickBet(2)">2×</button><button onclick="quickBet('max')">MAX</button>
     </div>
-
-    <div class="section-title">Игры</div>
-    <div class="games-grid" id="gamesGrid"></div>
+    <div class="potential"><span>Доступно</span><strong id="availableBalance">10 000 ₽</strong></div>
+   </div>
+   <div class="control-box">
+    <label id="actionLabel">Управление раундом</label>
+    <button id="mainAction" class="btn action" onclick="gameAction()">Играть</button>
+    <div class="potential"><span>Возможный выигрыш</span><strong id="potentialWin">0 ₽</strong></div>
+    <div class="potential"><span>Текущий статус</span><span id="gameStatus">Ожидание</span></div>
+   </div>
   </div>
-
-  <!-- ИГРОВОЙ ЭКРАН -->
-  <div class="game-screen" id="gameScreen">
-    <div class="game-header">
-      <button class="back-btn" id="gameBack">←</button>
-      <div class="game-title" id="gameTitle">Игра</div>
-      <div class="game-header-icons" style="align-items:center;gap:8px">
-        <div class="round-indicator" id="roundIndicator">Раунд #0</div>
-        <div class="timer-pill hidden" id="timerPill">00:10</div>
-      </div>
-    </div>
-    <div class="game-content" id="gameContent"></div>
-  </div>
-
-  <!-- ПРОФИЛЬ -->
-  <div class="game-screen" id="profileScreen">
-    <div class="game-header">
-      <button class="back-btn" id="profileBack">←</button>
-      <div class="game-title">Профиль</div>
-    </div>
-    <div class="profile-header">
-      <div class="profile-avatar" id="profileAvatar" onclick="Profile.changeAvatar()">🐮</div>
-      <div class="profile-name" id="profileName">Игрок</div>
-      <div class="profile-balance" id="profileBalance">10 000 ₽</div>
-      <div class="profile-balance-label">Текущий баланс</div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-card"><div class="stat-value" id="statRounds">0</div><div class="stat-label">Раундов</div></div>
-      <div class="stat-card"><div class="stat-value green" id="statWins">0</div><div class="stat-label">Побед</div></div>
-      <div class="stat-card"><div class="stat-value red" id="statLoses">0</div><div class="stat-label">Проигрышей</div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-card"><div class="stat-value purple" id="statRate">0%</div><div class="stat-label">Винрейт</div></div>
-      <div class="stat-card"><div class="stat-value gold" id="statBestMult">1.00x</div><div class="stat-label">Лучший множитель</div></div>
-      <div class="stat-card"><div class="stat-value" id="statFavGame">—</div><div class="stat-label">Любимая</div></div>
-    </div>
-    <button class="logout-btn" id="logoutBtn">Выйти из аккаунта</button>
-  </div>
-
-  <!-- ИСТОРИЯ -->
-  <div class="game-screen" id="historyScreen">
-    <div class="game-header">
-      <button class="back-btn" id="historyBack">←</button>
-      <div class="game-title">История</div>
-    </div>
-    <div class="history-filters" id="historyFilters">
-      <div class="history-filter active" data-filter="all">Все</div>
-      <div class="history-filter" data-filter="win">Победы</div>
-      <div class="history-filter" data-filter="lose">Проигрыши</div>
-    </div>
-    <div id="historyList" style="padding:8px 0;"></div>
-  </div>
-
-  <!-- ДОСТИЖЕНИЯ -->
-  <div class="game-screen" id="achievementsScreen">
-    <div class="game-header">
-      <button class="back-btn" id="achievementsBack">←</button>
-      <div class="game-title">Достижения</div>
-    </div>
-    <div class="achievements-grid" id="achievementsGrid" style="padding:16px"></div>
-  </div>
-
-  <!-- НИЖНИЙ ТАБ-БАР -->
-  <div class="bottom-nav" id="bottomNav">
-    <div class="nav-item active" data-page="main"><span class="icon">🎮</span><span>Игры</span></div>
-    <div class="nav-item" data-page="achievements"><span class="icon">🏆</span><span>Награды</span></div>
-    <div class="nav-item" data-page="history"><span class="icon">📜</span><span>История</span></div>
-    <div class="nav-item" data-page="profile"><span class="icon">👤</span><span>Профиль</span></div>
-  </div>
-
-  <!-- МОДАЛКА -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modalContent"></div>
-  </div>
-
-  <!-- ТОСТ -->
-  <div class="toast" id="toast"></div>
+  <div id="extraControls" style="margin-top:12px"></div>
+ </div>
 </div>
+
+<div id="loginOverlay" class="login-overlay">
+ <div class="login-card">
+  <div class="logo"><span style="font-size:30px">🚀</span><span class="gradient-text">ROCKET PLAY</span></div>
+  <h1 id="authTitle">Твоя игра начинается</h1>
+  <p class="muted" id="authSubtitle">Создай аккаунт и получи 10 000 виртуальных рублей.</p>
+  <div class="field"><label>Выбери аватар</label><div class="avatars" id="loginAvatars"></div></div>
+  <div class="field"><label>Логин</label><input id="authLogin" minlength="3" maxlength="24" autocomplete="username" placeholder="Минимум 3 символа"></div>
+  <div class="field"><label>Пароль</label><input id="authPassword" minlength="3" maxlength="100" type="password" autocomplete="current-password" placeholder="Минимум 3 символа"></div>
+  <div class="error" id="authError"></div>
+  <button class="btn" style="width:100%;margin-top:8px" onclick="authenticate()" id="authButton">Зарегистрироваться</button>
+  <button class="btn btn-secondary" style="width:100%;margin-top:9px" onclick="toggleAuthMode()" id="authSwitch">Уже есть аккаунт? Войти</button>
+  <p class="muted small" style="margin-top:17px;line-height:1.5">Демо-проект. Баланс и ставки виртуальные, реальных денежных операций нет.</p>
+ </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
 
 <script>
-/* ============================================================
-   СОСТОЯНИЕ
-   ============================================================ */
-const State = {
-  user: null,
-  balance: 10000,
-  avatar: '🐮',
-  rounds: 0,
-  wins: 0,
-  loses: 0,
-  currentStreak: 0,
-  bestMult: 1.00,
-  history: [],
-  gameStats: {},
-  achievements: {},
-  settings: { sound: true, music: false, anim: true },
-  lastTopupDate: ''
+document.addEventListener('DOMContentLoaded',function(){
+'use strict';
+
+const USERS_KEY='rubwin_users_v4';
+const SESSION_KEY='rubwin_session_v4';
+const START_BALANCE=10000;
+const AVATARS=['👾','🚀','🦊','🐼','🐸','🐯','🐺','🐲','👽','🤖','🦁','🐵'];
+const GAME_META={
+ rocket:{name:'Ракетка',desc:'Успей забрать до краша!',icon:'rocket',art:'art-rocket',symbol:'🚀'},
+ flight:{name:'Рейс',desc:'Пройди воздушный маршрут и соверши посадку.',icon:'plane',art:'art-plane',symbol:'✈️'},
+ cow:{name:'Коровка',desc:'Перебеги дорогу и забери выигрыш.',icon:'cow',art:'art-cow',symbol:'🐄'},
+ mines:{name:'Мины',desc:'Открывай безопасные клетки с кристаллами.',icon:'mines',art:'art-mines',symbol:'💎'},
+ plinko:{name:'Плинко',desc:'Отправь шарик в одну из 13 лунок.',icon:'plinko',art:'art-plinko',symbol:'🔮'}
 };
-
-const Storage = {
-  KEY_USERS: 'rubwin_users_v3',
-  KEY_SESSION: 'rubwin_session_v3',
-  saveUsers(u) { try { localStorage.setItem(this.KEY_USERS, JSON.stringify(u)); } catch(e){} },
-  loadUsers() { try { const s = localStorage.getItem(this.KEY_USERS); return s ? JSON.parse(s) : {}; } catch(e){ return {}; } },
-  saveSession(s) { try { localStorage.setItem(this.KEY_SESSION, JSON.stringify(s)); } catch(e){} },
-  loadSession() { try { const s = localStorage.getItem(this.KEY_SESSION); return s ? JSON.parse(s) : null; } catch(e){ return null; } },
-  clearSession() { try { localStorage.removeItem(this.KEY_SESSION); } catch(e){} },
-  saveUserData() {
-    try {
-      if (!State.user) return;
-      const users = this.loadUsers();
-      if (users[State.user]) {
-        users[State.user].balance = State.balance;
-        users[State.user].avatar = State.avatar;
-        users[State.user].rounds = State.rounds;
-        users[State.user].wins = State.wins;
-        users[State.user].loses = State.loses;
-        users[State.user].currentStreak = State.currentStreak;
-        users[State.user].bestMult = State.bestMult;
-        users[State.user].history = State.history.slice(0, 100);
-        users[State.user].gameStats = State.gameStats;
-        users[State.user].achievements = State.achievements;
-        users[State.user].settings = State.settings;
-        users[State.user].lastTopupDate = State.lastTopupDate;
-        this.saveUsers(users);
-      }
-    } catch(e){}
-  }
-};
-
-const Utils = {
-  rand(a, b) { return Math.random() * (b - a) + a; },
-  randInt(a, b) { return Math.floor(this.rand(a, b + 1)); },
-  choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
-  fmt(n) { return Math.round(n).toLocaleString('ru-RU'); },
-  uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); },
-  pad(n) { return String(n).padStart(2, '0'); },
-  timeAgo(t) {
-    const d = Math.floor((Date.now() - t) / 1000);
-    if (d < 60) return 'только что';
-    if (d < 3600) return Math.floor(d / 60) + ' мин назад';
-    if (d < 86400) return Math.floor(d / 3600) + ' ч назад';
-    return Math.floor(d / 86400) + ' дн назад';
-  },
-  today() { return new Date().toDateString(); }
-};
-
-/* ============================================================
-   ЗВУКИ
-   ============================================================ */
-const Sound = {
-  ctx: null,
-  init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} },
-  play(freq, dur = 0.1, type = 'sine', vol = 0.08) {
-    if (!State.settings.sound || !this.ctx) return;
-    try {
-      const o = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      o.connect(g); g.connect(this.ctx.destination);
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(vol, this.ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
-      o.start(); o.stop(this.ctx.currentTime + dur);
-    } catch(e){}
-  },
-  click() { this.play(600, 0.05, 'sine', 0.04); },
-  win() { [523,659,784].forEach((f,i) => setTimeout(() => this.play(f, 0.1, 'sine', 0.1), i*100)); },
-  bigWin() { [523,659,784,1046].forEach((f,i) => setTimeout(() => this.play(f, 0.12, 'sine', 0.12), i*100)); },
-  lose() { this.play(300, 0.15, 'sawtooth', 0.08); setTimeout(() => this.play(200, 0.25, 'sawtooth', 0.08), 150); },
-  crash() { this.play(150, 0.4, 'sawtooth', 0.1); setTimeout(() => this.play(80, 0.5, 'sawtooth', 0.1), 100); },
-  whoosh() { this.play(800, 0.3, 'sine', 0.05); setTimeout(() => this.play(1200, 0.2, 'sine', 0.05), 100); },
-  coin() { this.play(1200, 0.08, 'sine', 0.08); setTimeout(() => this.play(1600, 0.08, 'sine', 0.08), 80); },
-  card() { this.play(900, 0.04, 'sine', 0.05); },
-  bounce() { this.play(700, 0.04, 'sine', 0.04); },
-  vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
-};
-
-/* ============================================================
-   UI
-   ============================================================ */
-const UI = {
-  _t: null,
-  toast(msg, type = '') {
-    const t = document.getElementById('toast');
-    if (!t) return;
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    clearTimeout(this._t);
-    this._t = setTimeout(() => { t.className = 'toast ' + type; }, 2400);
-  },
-  modal(html) {
-    document.getElementById('modalContent').innerHTML = html;
-    document.getElementById('modalOverlay').classList.add('open');
-  },
-  closeModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-  },
-  updateBalance() {
-    const el = document.getElementById('balanceText');
-    if (el) el.textContent = Utils.fmt(State.balance);
-    const p = document.getElementById('profileBalance');
-    if (p) p.textContent = Utils.fmt(State.balance) + ' ₽';
-    const pill = document.getElementById('balancePill');
-    if (pill) { pill.classList.add('bump'); setTimeout(() => pill.classList.remove('bump'), 500); }
-    const av = document.getElementById('avatarBtn');
-    if (av) av.textContent = State.avatar;
-    const pa = document.getElementById('profileAvatar');
-    if (pa) pa.textContent = State.avatar;
-    const pn = document.getElementById('profileName');
-    if (pn) pn.textContent = State.user || 'Игрок';
-  },
-  updateProfileStats() {
-    const rate = State.rounds > 0 ? Math.round((State.wins / State.rounds) * 100) : 0;
-    const games = Object.entries(State.gameStats || {}).sort((a,b) => b[1].rounds - a[1].rounds);
-    const fav = games.length > 0 ? games[0][0] : '—';
-    const names = { rocket: '🚀 Ракетка', race: '✈️ Рейс', mines: '💣 Мины', plinko: '🎯 Плинко', cow: '🐮 Коровка' };
-    document.getElementById('statRounds').textContent = State.rounds;
-    document.getElementById('statWins').textContent = State.wins;
-    document.getElementById('statLoses').textContent = State.loses;
-    document.getElementById('statRate').textContent = rate + '%';
-    document.getElementById('statBestMult').textContent = State.bestMult.toFixed(2) + 'x';
-    document.getElementById('statFavGame').textContent = names[fav] || '—';
-  }
-};
-
-/* ============================================================
-   АВТОРИЗАЦИЯ
-   ============================================================ */
-const Auth = {
-  mode: 'login',
-  selectedAvatar: '🐮',
-  init() {
-    Sound.init();
-    const session = Storage.loadSession();
-    if (session && session.login) {
-      const users = Storage.loadUsers();
-      const u = users[session.login];
-      if (u) {
-        State.user = session.login;
-        State.balance = u.balance ?? 10000;
-        State.avatar = u.avatar || '🐮';
-        State.rounds = u.rounds || 0;
-        State.wins = u.wins || 0;
-        State.loses = u.loses || 0;
-        State.currentStreak = u.currentStreak || 0;
-        State.bestMult = u.bestMult || 1;
-        State.history = u.history || [];
-        State.gameStats = u.gameStats || {};
-        State.achievements = u.achievements || {};
-        State.settings = u.settings || { sound: true, music: false, anim: true };
-        State.lastTopupDate = u.lastTopupDate || '';
-        this.showApp();
-        return;
-      }
-    }
-    this.showAuth();
-  },
-  showAuth() {
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('app').classList.add('hidden');
-  },
-  showApp() {
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    UI.updateBalance();
-    UI.updateProfileStats();
-    renderGames();
-    LiveFeed.init();
-    this.updateTopupButton();
-  },
-  updateTopupButton() {
-    const btn = document.getElementById('topupBtn');
-    const promo = document.getElementById('promoTopup');
-    const can = State.lastTopupDate !== Utils.today();
-    if (btn) btn.disabled = !can;
-    if (promo) { promo.textContent = can ? 'Пополнить →' : 'Завтра снова →'; promo.disabled = !can; }
-  },
-  login() {
-    const login = document.getElementById('authLogin').value.trim();
-    const pass = document.getElementById('authPassword').value.trim();
-    const err = document.getElementById('authError');
-    err.textContent = '';
-    if (!login || !pass) { err.textContent = 'Заполните все поля'; return; }
-    if (login.length < 3) { err.textContent = 'Логин минимум 3 символа'; return; }
-    if (pass.length < 3) { err.textContent = 'Пароль минимум 3 символа'; return; }
-
-    const users = Storage.loadUsers();
-    if (this.mode === 'register') {
-      if (users[login]) { err.textContent = 'Логин занят'; return; }
-      users[login] = {
-        password: pass, balance: 10000, avatar: this.selectedAvatar,
-        rounds: 0, wins: 0, loses: 0, currentStreak: 0, bestMult: 1,
-        history: [], gameStats: {}, achievements: {},
-        settings: { sound: true, music: false, anim: true },
-        lastTopupDate: ''
-      };
-      Storage.saveUsers(users);
-      Storage.saveSession({ login });
-      Sound.win();
-      this.init();
-    } else {
-      if (!users[login]) { err.textContent = 'Аккаунт не найден'; return; }
-      if (users[login].password !== pass) { err.textContent = 'Неверный пароль'; return; }
-      Storage.saveSession({ login });
-      Sound.win();
-      this.init();
-    }
-  },
-  logout() {
-    UI.modal(`
-      <div class="modal-title">Выйти из аккаунта?</div>
-      <div class="modal-sub">Прогресс сохранён.</div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="UI.closeModal()">Отмена</button>
-        <button class="btn btn-primary" onclick="Auth.confirmLogout()">Выйти</button>
-      </div>
-    `);
-  },
-  confirmLogout() {
-    Storage.saveUserData();
-    Storage.clearSession();
-    State.user = null;
-    UI.closeModal();
-    this.showAuth();
-  }
-};
-
-/* ============================================================
-   LIVE-ЛЕНТА
-   ============================================================ */
-const LiveFeed = {
-  names: ['Никус','@qwak1','Spectrum','lexa','Erop','NightMors','Феникс','Лис','Соня','Кекс'],
-  avatars: ['🐮','🚀','💎','🔥','⭐','🎯','🍀','🎲','👑','💣'],
-  _t: null,
-  init() {
-    this.render();
-    if (this._t) clearInterval(this._t);
-    this._t = setInterval(() => this.render(), 4000);
-  },
-  render() {
-    const el = document.getElementById('liveScroll');
-    if (!el) return;
-    let html = '';
-    for (let i = 0; i < 6; i++) {
-      html += `<div class="live-card">
-        <div class="live-avatar">${Utils.choice(this.avatars)}</div>
-        <div class="live-info">
-          <div class="live-name">${Utils.choice(this.names)}</div>
-          <div class="live-amount">${Utils.fmt(Utils.randInt(100, 5000))} ₽</div>
-        </div>
-      </div>`;
-    }
-    el.innerHTML = html;
-  }
-};
-
-/* ============================================================
-   СПИСОК ИГР
-   ============================================================ */
-const GAMES_LIST = [
-  { id: 'rocket', title: 'Ракетка', desc: 'Лети к звёздам — забери до краха', icon: '🚀', cls: 'rocket', wide: true },
-  { id: 'race', title: 'Рейс', desc: 'Проведи самолёт над океаном', icon: '✈️', cls: 'race' },
-  { id: 'cow', title: 'Коровка', desc: 'Переведи коровку через дорогу', icon: '🐮', cls: 'cow' },
-  { id: 'mines', title: 'Мины', desc: 'Открывай клетки, избегай мин', icon: '💣', cls: 'mines' },
-  { id: 'plinko', title: 'Плинко', desc: 'Брось шарик — куда упадёт, то твоё', icon: '🎯', cls: 'plinko' }
+const ACHIEVEMENTS=[
+ ['first','🎮','Первая игра','Сыграть 1 раунд.'],
+ ['win','🏆','Первая победа','Выиграть 1 раунд.'],
+ ['round10','🔟','Опытный игрок','Сыграть 10 раундов.'],
+ ['round50','👑','Легенда','Сыграть 50 раундов.'],
+ ['x2','⚡','Удвоение','Достичь множителя ×2.'],
+ ['x5','💜','Высокий полёт','Достичь множителя ×5.'],
+ ['x10','🌌','Космический рекорд','Достичь множителя ×10.'],
+ ['win1000','💰','Крупная победа','Получить выигрыш от 1 000 ₽.'],
+ ['win10000','💎','Джекпот','Получить выигрыш от 10 000 ₽.'],
+ ['streak3','🔥','Триумф','Выиграть 3 раунда подряд.'],
+ ['allgames','🧩','Коллекционер','Сыграть во все 5 игр.']
 ];
+const PLINKO_MULT=[8,4,2,1.5,1,.5,.3,.5,1,1.5,2,4,8];
+const COW_MULT=[1,1.2,1.5,1.9,2.5,3.3];
+const PLATFORMS=[1.5,2.5,4,7,12,20];
 
-function renderGames() {
-  const el = document.getElementById('gamesGrid');
-  if (!el) return;
-  el.innerHTML = GAMES_LIST.map(g => `
-    <div class="game-card ${g.cls} ${g.wide ? 'wide' : ''}" data-game="${g.id}">
-      <div class="game-card-bg"></div>
-      <div class="game-card-overlay"></div>
-      <div class="game-emoji">${g.icon}</div>
-      <div class="game-players"><span class="dot"></span><span>${Utils.randInt(15, 80)} играют</span></div>
-      <div class="game-name">${g.title}</div>
-    </div>
-  `).join('');
-  el.querySelectorAll('.game-card').forEach(c => {
-    c.onclick = () => { Sound.click(); Games.open(c.dataset.game); };
-  });
+let users={},login='',user=null,authMode='register',selectedAvatar='👾';
+let currentGame='',round=1,roundState=null,animationFrame=0,toastTimer=0;
+let soundEnabled=true,animationsEnabled=true;
+let plinkoBall=null,cowCars=[],lastFrame=0,stageObserver=null;
+let mineCount=3,minePositions=[],openedCells=[],rocketCrashHistory=[];
+let ctx=null;
+
+function safeParse(v,fallback){try{return JSON.parse(v)||fallback}catch{return fallback}}
+function loadUsers(){users=safeParse(localStorage.getItem(USERS_KEY),{})}
+function saveUsers(){try{localStorage.setItem(USERS_KEY,JSON.stringify(users))}catch(e){notify('Не удалось сохранить данные в браузере.')}}
+function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify({login}))}
+function fmt(n){return Math.round(n).toLocaleString('ru-RU')}
+function money(n){return fmt(n)+' ₽'}
+function randInt(n){return Math.floor(Math.random()*n)}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function randomSeed(seed){let x=seed>>>0;return function(){x=(1664525*x+1013904223)>>>0;return x/4294967296}}
+function seededRound(seed){return randomSeed(seed)()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function now(){return Date.now()}
+function notify(msg){
+ const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),2600)
 }
-
-/* ============================================================
-   ДОСТИЖЕНИЯ
-   ============================================================ */
-const ACHIEVEMENTS = [
-  { id: 'first_game', icon: '🎮', title: 'Первая игра', desc: 'Сыграть первый раунд' },
-  { id: 'first_win', icon: '🏆', title: 'Первая победа', desc: 'Выиграть первый раунд' },
-  { id: 'rounds_10', icon: '🎯', title: '10 раундов', desc: 'Сыграть 10 раундов' },
-  { id: 'rounds_50', icon: '🔥', title: '50 раундов', desc: 'Сыграть 50 раундов' },
-  { id: 'mult_2', icon: '⭐', title: 'Множитель ×2', desc: 'Достичь ×2.00' },
-  { id: 'mult_5', icon: '🌟', title: 'Множитель ×5', desc: 'Достичь ×5.00' },
-  { id: 'mult_10', icon: '💫', title: 'Множитель ×10', desc: 'Достичь ×10.00' },
-  { id: 'win_1000', icon: '💰', title: 'Выигрыш 1000', desc: 'Выиграть 1000 ₽ за раунд' },
-  { id: 'win_10000', icon: '💎', title: 'Выигрыш 10000', desc: 'Выиграть 10000 ₽ за раунд' },
-  { id: 'streak_3', icon: '🔥', title: 'Серия 3', desc: '3 победы подряд' },
-  { id: 'all_games', icon: '🎪', title: 'Везде по разу', desc: 'Сыграть во все 5 игр' }
-];
-
-const Achievements = {
-  check(id, ctx = {}) {
-    if (State.achievements[id]) return;
-    let ok = false;
-    switch(id) {
-      case 'first_game': ok = State.rounds >= 1; break;
-      case 'first_win': ok = State.wins >= 1; break;
-      case 'rounds_10': ok = State.rounds >= 10; break;
-      case 'rounds_50': ok = State.rounds >= 50; break;
-      case 'mult_2': ok = State.bestMult >= 2; break;
-      case 'mult_5': ok = State.bestMult >= 5; break;
-      case 'mult_10': ok = State.bestMult >= 10; break;
-      case 'win_1000': ok = (ctx.winAmount || 0) >= 1000; break;
-      case 'win_10000': ok = (ctx.winAmount || 0) >= 10000; break;
-      case 'streak_3': ok = (State.currentStreak || 0) >= 3; break;
-      case 'all_games': ok = Object.keys(State.gameStats).length >= 5; break;
-    }
-    if (ok) {
-      State.achievements[id] = Date.now();
-      Sound.coin();
-      UI.toast('🏆 ' + ACHIEVEMENTS.find(a => a.id === id).title, 'success');
-      Storage.saveUserData();
-    }
-  },
-  render() {
-    const el = document.getElementById('achievementsGrid');
-    if (!el) return;
-    el.innerHTML = ACHIEVEMENTS.map(a => {
-      const u = !!State.achievements[a.id];
-      return `<div class="achievement ${u ? 'unlocked' : 'locked'}">
-        <div class="achievement-icon">${u ? a.icon : '🔒'}</div>
-        <div class="achievement-title">${a.title}</div>
-        <div class="achievement-desc">${a.desc}</div>
-      </div>`;
-    }).join('');
-  }
-};
-
-/* ============================================================
-   ИСТОРИЯ
-   ============================================================ */
-const History = {
-  filter: 'all',
-  render() {
-    const el = document.getElementById('historyList');
-    if (!el) return;
-    let list = State.history.slice(0, 100);
-    if (this.filter === 'win') list = list.filter(h => h.win);
-    else if (this.filter === 'lose') list = list.filter(h => !h.win);
-    else if (this.filter !== 'all') list = list.filter(h => h.game === this.filter);
-    if (list.length === 0) {
-      el.innerHTML = '<div class="empty"><div class="empty-icon">📜</div><div class="empty-title">История пуста</div><div class="empty-desc">Сыграй первый раунд</div></div>';
-      return;
-    }
-    const names = { rocket: '🚀 Ракетка', race: '✈️ Рейс', mines: '💣 Мины', plinko: '🎯 Плинко', cow: '🐮 Коровка' };
-    el.innerHTML = list.map(h => `
-      <div class="history-item">
-        <div class="history-item-left">
-          <div class="history-item-game">${names[h.game] || h.game}</div>
-          <div class="history-item-info">${h.detail} · ${Utils.timeAgo(h.time)}</div>
-        </div>
-        <div class="history-item-amount ${h.win ? 'win' : 'lose'}">${h.win ? '+' : '-'}${Utils.fmt(Math.abs(h.amount))} ₽</div>
-      </div>
-    `).join('');
-  }
-};
-
-/* ============================================================
-   ПРОФИЛЬ
-   ============================================================ */
-const Profile = {
-  changeAvatar() {
-    const avs = ['🐮','🚀','💎','🔥','👑','🎯','⭐','🎲','🍀','🐯','🦊','🐻','🦁','🐸','🐵','🦄','🐲','👾'];
-    UI.modal(`
-      <div class="modal-title">Выбери аватар</div>
-      <div class="modal-sub">Нажми, чтобы выбрать</div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
-        ${avs.map(a => `<div style="aspect-ratio:1;background:var(--bg);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;border:2px solid ${State.avatar === a ? 'var(--blue)' : 'transparent'}" onclick="Profile.setAvatar('${a}')">${a}</div>`).join('')}
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="UI.closeModal()">Закрыть</button>
-      </div>
-    `);
-  },
-  setAvatar(a) {
-    State.avatar = a;
-    Storage.saveUserData();
-    UI.updateBalance();
-    UI.closeModal();
-    UI.toast('Аватар изменён', 'success');
-    Sound.coin();
-  }
-};
-
-/* ============================================================
-   НАСТРОЙКИ
-   ============================================================ */
-const Settings = {
-  toggle(key) {
-    State.settings[key] = !State.settings[key];
-    Storage.saveUserData();
-    Sound.click();
-  }
-};
-
-/* ============================================================
-   ПОПОЛНЕНИЕ
-   ============================================================ */
-function handleTopup() {
-  if (State.lastTopupDate === Utils.today()) {
-    UI.toast('Уже получали сегодня!', 'error');
-    return;
-  }
-  UI.modal(`
-    <div class="modal-title">Пополнить баланс</div>
-    <div class="modal-sub">Зачислить 10 000 ₽?\n\nСледующее — завтра.</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="UI.closeModal()">Отмена</button>
-      <button class="btn btn-primary" onclick="confirmTopup()">Получить</button>
-    </div>
-  `);
+function sound(type){
+ if(!soundEnabled)return;
+ try{
+  const ac=new(window.AudioContext||window.webkitAudioContext)();
+  const osc=ac.createOscillator(),gain=ac.createGain();
+  osc.connect(gain);gain.connect(ac.destination);
+  const t=ac.currentTime;
+  const f=type==='win'?660:type==='lose'?120:type==='click'?360:240;
+  osc.frequency.setValueAtTime(f,t);
+  if(type==='win')osc.frequency.linearRampToValueAtTime(990,t+.16);
+  gain.gain.setValueAtTime(.045,t);gain.gain.exponentialRampToValueAtTime(.001,t+.2);
+  osc.start(t);osc.stop(t+.21);osc.onended=()=>ac.close()
+ }catch(e){}
 }
-function confirmTopup() {
-  State.balance += 10000;
-  State.lastTopupDate = Utils.today();
-  UI.updateBalance();
-  Auth.updateTopupButton();
-  Sound.bigWin();
-  Sound.vib([50, 30, 50]);
-  Storage.saveUserData();
-  UI.closeModal();
-  UI.toast('+10 000 ₽', 'success');
+function newUser(password,avatar){
+ return {password,balance:START_BALANCE,avatar,displayName:login,rounds:0,wins:0,loses:0,history:[],gameStats:{},achievements:{},settings:{sound:true,animations:true},lastTopupDate:null,bestMultiplier:1,streak:0,bestStreak:0,playedGames:[]}
 }
-
-/* ============================================================
-   РОУТЕР ИГР
-   ============================================================ */
-const Games = {
-  current: null,
-  open(id) {
-    const screen = document.getElementById('gameScreen');
-    const content = document.getElementById('gameContent');
-    const title = document.getElementById('gameTitle');
-    let game, titleText;
-    if (id === 'rocket' && typeof RocketGame !== 'undefined') { game = RocketGame; titleText = '🚀 Ракетка'; }
-    else if (id === 'race' && typeof RaceGame !== 'undefined') { game = RaceGame; titleText = '✈️ Рейс'; }
-    else if (id === 'mines' && typeof MinesGame !== 'undefined') { game = MinesGame; titleText = '💣 Мины'; }
-    else if (id === 'plinko' && typeof PlinkoGame !== 'undefined') { game = PlinkoGame; titleText = '🎯 Плинко'; }
-    else if (id === 'cow' && typeof CowGame !== 'undefined') { game = CowGame; titleText = '🐮 Коровка'; }
-    else { UI.toast('Игра загружается...', 'error'); return; }
-    title.textContent = titleText;
-    content.innerHTML = game.render();
-    screen.classList.add('open');
-    this.current = game;
-    game.init();
-  },
-  close() {
-    Sound.click();
-    document.getElementById('gameScreen').classList.remove('open');
-    if (this.current && this.current.destroy) this.current.destroy();
-    this.current = null;
-    document.getElementById('timerPill').classList.add('hidden');
-    UI.updateBalance();
-    UI.updateProfileStats();
-  }
-};
-
-/* ============================================================
-   ОБЩАЯ ЛОГИКА РАУНДА
-   ============================================================ */
-function trackRound(game, win, mult = 1, winAmount = 0) {
-  if (!State.gameStats[game]) State.gameStats[game] = { rounds: 0, wins: 0, loses: 0, bestMult: 1 };
-  State.gameStats[game].rounds++;
-  if (win) State.gameStats[game].wins++; else State.gameStats[game].loses++;
-  if (mult > State.gameStats[game].bestMult) State.gameStats[game].bestMult = mult;
-  State.rounds++;
-  if (win) { State.wins++; State.currentStreak = (State.currentStreak || 0) + 1; Achievements.check('streak_3'); }
-  else { State.loses++; State.currentStreak = 0; }
-  if (win && mult > State.bestMult) State.bestMult = mult;
-  Achievements.check('first_game');
-  Achievements.check('first_win');
-  Achievements.check('rounds_10');
-  Achievements.check('rounds_50');
-  Achievements.check('mult_2');
-  Achievements.check('mult_5');
-  Achievements.check('mult_10');
-  Achievements.check('win_1000', { winAmount });
-  Achievements.check('win_10000', { winAmount });
-  Achievements.check('all_games');
-  Storage.saveUserData();
-  UI.updateProfileStats();
+function normalizeUser(u){
+ u.balance=Number.isFinite(u.balance)?Math.max(0,u.balance):START_BALANCE;
+ u.history=Array.isArray(u.history)?u.history:[];
+ u.gameStats=u.gameStats||{};u.achievements=u.achievements||{};
+ u.settings=u.settings||{sound:true,animations:true};
+ u.rounds=u.rounds||0;u.wins=u.wins||0;u.loses=u.loses||0;
+ u.bestMultiplier=u.bestMultiplier||1;u.streak=u.streak||0;
+ u.playedGames=u.playedGames||[];u.avatar=u.avatar||'👾';
+ return u
 }
-
-function addHistory(game, detail, amount, win) {
-  State.history.unshift({ id: Utils.uid(), game, detail, amount, win, time: Date.now() });
-  if (State.history.length > 200) State.history.pop();
-  Storage.saveUserData();
+function setUser(){user=normalizeUser(users[login]);users[login]=user;soundEnabled=user.settings.sound!==false;animationsEnabled=user.settings.animations!==false}
+function toggleAuthMode(){
+ authMode=authMode==='register'?'login':'register';
+ document.getElementById('authTitle').textContent=authMode==='register'?'Создай аккаунт':'С возвращением!';
+ document.getElementById('authSubtitle').textContent=authMode==='register'?'Стартовый баланс — 10 000 виртуальных рублей.':'Войди в свой аккаунт.';
+ document.getElementById('authButton').textContent=authMode==='register'?'Зарегистрироваться':'Войти';
+ document.getElementById('authSwitch').textContent=authMode==='register'?'Уже есть аккаунт? Войти':'Нет аккаунта? Регистрация';
+ document.getElementById('authError').textContent=''
 }
-
-/* ============================================================
-   ФОНОВЫЕ ЧАСТИЦЫ
-   ============================================================ */
-function initBgParticles() {
-  let el = document.querySelector('.bg-particles');
-  if (!el) {
-    el = document.createElement('div');
-    el.className = 'bg-particles';
-    document.body.appendChild(el);
-  }
+function renderAvatarChoices(id){
+ document.getElementById(id).innerHTML=AVATARS.map(a=>`<button class="avatar-choice ${a===selectedAvatar?'selected':''}" data-avatar="${a}" type="button">${a}</button>`).join('');
+ document.getElementById(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{selectedAvatar=b.dataset.avatar;renderAvatarChoices('loginAvatars');if(user)renderProfile()})
 }
-
-/* ============================================================
-   ИНИЦИАЛИЗАЦИЯ
-   ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  // auth
-  document.getElementById('authBtn').onclick = () => Auth.login();
-  document.getElementById('authSwitch').onclick = () => {
-    const b = document.getElementById('authBtn');
-    const s = document.getElementById('authSwitch');
-    document.getElementById('authError').textContent = '';
-    if (Auth.mode === 'login') { Auth.mode = 'register'; b.textContent = 'Зарегистрироваться'; s.innerHTML = 'Уже есть аккаунт? <span>Войти</span>'; }
-    else { Auth.mode = 'login'; b.textContent = 'Войти'; s.innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>'; }
-    Sound.click();
-  };
-  document.querySelectorAll('.auth-avatar-option').forEach(o => o.onclick = () => {
-    document.querySelectorAll('.auth-avatar-option').forEach(x => x.classList.remove('active'));
-    o.classList.add('active');
-    Auth.selectedAvatar = o.dataset.avatar;
-    Sound.click();
-  });
-  document.getElementById('authPassword').addEventListener('keypress', e => { if (e.key === 'Enter') Auth.login(); });
-  document.getElementById('authLogin').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('authPassword').focus(); });
-
-  // topbar
-  document.getElementById('topupBtn').onclick = handleTopup;
-  document.getElementById('promoTopup').onclick = handleTopup;
-  document.getElementById('avatarBtn').onclick = () => openProfile();
-
-  // screens
-  function openProfile() { UI.updateProfileStats(); UI.updateBalance(); document.getElementById('profileScreen').classList.add('open'); }
-  function openHistory() { History.render(); document.getElementById('historyScreen').classList.add('open'); }
-  function openAchievements() { Achievements.render(); document.getElementById('achievementsScreen').classList.add('open'); }
-
-  document.getElementById('gameBack').onclick = () => Games.close();
-  document.getElementById('profileBack').onclick = () => document.getElementById('profileScreen').classList.remove('open');
-  document.getElementById('historyBack').onclick = () => document.getElementById('historyScreen').classList.remove('open');
-  document.getElementById('achievementsBack').onclick = () => document.getElementById('achievementsScreen').classList.remove('open');
-  document.getElementById('logoutBtn').onclick = () => Auth.logout();
-
-  document.querySelectorAll('.history-filter').forEach(f => f.onclick = () => {
-    document.querySelectorAll('.history-filter').forEach(x => x.classList.remove('active'));
-    f.classList.add('active');
-    History.filter = f.dataset.filter;
-    History.render();
-    Sound.click();
-  });
-
-  // bottom nav
-  document.querySelectorAll('.nav-item').forEach(item => item.onclick = () => {
-    const p = item.dataset.page;
-    Sound.click();
-    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-    item.classList.add('active');
-    // закрываем все экраны
-    document.getElementById('profileScreen').classList.remove('open');
-    document.getElementById('historyScreen').classList.remove('open');
-    document.getElementById('achievementsScreen').classList.remove('open');
-    if (Games.current) Games.close();
-    if (p === 'profile') openProfile();
-    else if (p === 'history') openHistory();
-    else if (p === 'achievements') openAchievements();
-  });
-
-  document.getElementById('modalOverlay').onclick = (e) => {
-    if (e.target.id === 'modalOverlay') UI.closeModal();
-  };
-
-  initBgParticles();
-  Auth.init();
-});
-/* ============================================================
-   ИГРА «РАКЕТКА»
-   ============================================================ */
-const RocketGame = {
-  phase: 'idle', active: false, bet: 0, multiplier: 1, crashAt: 2,
-  startTime: 0, cashouted: false, waitTimer: null, tickTimer: null, history: [], waitLeft: 10,
-
-  render() {
-    return `
-      <div class="arena" style="background:radial-gradient(ellipse at 50% 100%,rgba(124,58,237,.3) 0%,transparent 60%),#050510">
-        <div class="rocket-stars" id="rStars"></div>
-        <div class="crash-history" id="rHistory"></div>
-        <div class="multiplier" id="rMult">1.00x</div>
-        <svg id="rSprite" style="position:absolute;width:80px;height:140px;left:15%;bottom:15%;transition:transform .08s linear;z-index:5;filter:drop-shadow(0 0 25px rgba(124,58,237,.7))" viewBox="0 0 100 160" fill="none">
-          <defs>
-            <linearGradient id="rBody" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#F6F7FF"/><stop offset="0.5" stop-color="#929CB4"/><stop offset="1" stop-color="#5A6483"/>
-            </linearGradient>
-            <linearGradient id="rFlame" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FFC857"/><stop offset="0.5" stop-color="#FF4F70"/><stop offset="1" stop-color="#8855FF"/>
-            </linearGradient>
-            <radialGradient id="rWin" cx="0.4" cy="0.4">
-              <stop offset="0" stop-color="#25D9FF"/><stop offset="1" stop-color="#1BA5CC"/>
-            </radialGradient>
-          </defs>
-          <ellipse cx="50" cy="150" rx="20" ry="8" fill="url(#rFlame)" opacity="0.6"/>
-          <path d="M30 130 L35 145 L45 138 L50 150 L55 138 L65 145 L70 130 Z" fill="url(#rFlame)"/>
-          <path d="M20 90 Q15 110 25 125 L35 120 L35 100 Z" fill="#8855FF"/>
-          <path d="M80 90 Q85 110 75 125 L65 120 L65 100 Z" fill="#8855FF"/>
-          <path d="M50 5 Q75 40 75 90 L70 125 L30 125 L25 90 Q25 40 50 5 Z" fill="url(#rBody)"/>
-          <path d="M50 5 Q60 30 60 50 L40 50 Q40 30 50 5 Z" fill="#FF4F70"/>
-          <circle cx="50" cy="70" r="10" fill="url(#rWin)" stroke="#5A6483" stroke-width="2"/>
-          <circle cx="47" cy="67" r="3" fill="#fff" opacity="0.7"/>
-        </svg>
-        <div id="rStatus" style="position:absolute;bottom:15%;left:50%;transform:translateX(-50%);font-size:14px;color:var(--text2);z-index:4;text-align:center;padding:0 20px;width:100%">Ожидание</div>
-      </div>
-      <div class="controls">
-        <div class="controls-row">
-          <div class="bet-group">
-            <button class="bet-btn" onclick="RocketGame.betStep(-10)">−</button>
-            <input type="number" id="rBet" value="10" min="1" step="1">
-            <button class="bet-btn" onclick="RocketGame.betStep(10)">+</button>
-            <div class="bet-quick">
-              <button onclick="RocketGame.betSet('half')">½</button>
-              <button onclick="RocketGame.betSet('double')">2×</button>
-              <button onclick="RocketGame.betSet('max')">MAX</button>
-            </div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">Множитель</div>
-            <div class="info-value purple" id="rInfoMult">1.00x</div>
-          </div>
-        </div>
-        <div class="controls-row">
-          <div class="info-group" style="flex:1">
-            <div class="info-label">Потенциальный выигрыш</div>
-            <div class="info-value green" id="rInfoWin">0 ₽</div>
-          </div>
-        </div>
-        <button class="play-btn" id="rBtn" onclick="RocketGame.onPlay()">Сделать ставку</button>
-      </div>
-    `;
-  },
-
-  init() {
-    const s = document.getElementById('rStars');
-    if (s) {
-      let h = '';
-      for (let i = 0; i < 100; i++) h += `<div class="rocket-star" style="left:${Utils.rand(0,100)}%;top:${Utils.rand(0,100)}%;width:${Utils.rand(1,3)}px;height:${Utils.rand(1,3)}px;animation-delay:${Utils.rand(0,3)}s"></div>`;
-      s.innerHTML = h;
-    }
-    this.phase = 'idle';
-    this.active = false;
-    this.cashouted = false;
-    this.multiplier = 1;
-    document.getElementById('roundIndicator').textContent = 'Раунд #' + ((State.gameStats.rocket?.rounds || 0) + 1);
-    this.startRound();
-  },
-
-  betStep(d) {
-    const el = document.getElementById('rBet');
-    let v = parseInt(el.value) || 0;
-    v = Math.max(1, Math.min(State.balance, v + d));
-    el.value = v;
-    Sound.click();
-  },
-  betSet(type) {
-    const el = document.getElementById('rBet');
-    let v = parseInt(el.value) || 0;
-    if (type === 'half') v = Math.max(1, Math.floor(v / 2));
-    else if (type === 'double') v = Math.min(State.balance, v * 2);
-    else v = Math.floor(State.balance);
-    el.value = v;
-    Sound.click();
-  },
-
-  genCrash() {
-    const r = Math.random();
-    if (r < 0.03) return 1.00;
-    return Math.max(1.00, Math.min(0.97 / (1 - r), 1000));
-  },
-
-  startRound() {
-    this.phase = 'waiting';
-    this.active = false;
-    this.cashouted = false;
-    this.multiplier = 1;
-    this.crashAt = this.genCrash();
-    const btn = document.getElementById('rBtn');
-    const mult = document.getElementById('rMult');
-    const sprite = document.getElementById('rSprite');
-    const status = document.getElementById('rStatus');
-    const timer = document.getElementById('timerPill');
-    if (mult) { mult.textContent = '1.00x'; mult.className = 'multiplier'; }
-    if (sprite) sprite.style.transform = 'translate(0,0)';
-    if (sprite) sprite.style.opacity = '1';
-    if (status) status.textContent = 'Приём ставок';
-    if (btn) { btn.textContent = 'Сделать ставку'; btn.className = 'play-btn'; btn.disabled = false; }
-    if (timer) timer.classList.remove('hidden');
-    document.getElementById('rInfoMult').textContent = '1.00x';
-    document.getElementById('rInfoWin').textContent = '0 ₽';
-    this.updateHistory();
-    if (this.waitTimer) clearInterval(this.waitTimer);
-    this.waitLeft = 10;
-    if (timer) timer.textContent = '00:10';
-    this.waitTimer = setInterval(() => {
-      this.waitLeft--;
-      if (timer) {
-        timer.textContent = '00:' + Utils.pad(this.waitLeft);
-        if (this.waitLeft <= 3) timer.classList.add('warn');
-        else timer.classList.remove('warn');
-      }
-      if (this.waitLeft <= 0) {
-        clearInterval(this.waitTimer);
-        if (timer) timer.classList.add('hidden');
-        this.startFlight();
-      }
-    }, 1000);
-  },
-
-  startFlight() {
-    this.phase = 'flying';
-    this.startTime = Date.now();
-    Sound.whoosh();
-    const btn = document.getElementById('rBtn');
-    const status = document.getElementById('rStatus');
-    if (status) status.textContent = 'Летит!';
-    if (this.active) btn.className = 'play-btn cashout';
-    else { btn.textContent = 'Раунд идёт'; btn.className = 'play-btn wait'; btn.disabled = true; }
-    if (this.tickTimer) clearInterval(this.tickTimer);
-    this.tickTimer = setInterval(() => {
-      const e = (Date.now() - this.startTime) / 1000;
-      this.multiplier = Math.pow(1.06, e * 3);
-      const m = this.multiplier.toFixed(2) + 'x';
-      document.getElementById('rMult').textContent = m;
-      document.getElementById('rInfoMult').textContent = m;
-      if (this.active && !this.cashouted) {
-        const win = this.bet * this.multiplier;
-        document.getElementById('rInfoWin').textContent = Utils.fmt(win) + ' ₽';
-        document.getElementById('rBtn').textContent = 'Забрать ' + Utils.fmt(win) + ' ₽';
-      }
-      const sprite = document.getElementById('rSprite');
-      const w = window.innerWidth, h = window.innerHeight;
-      sprite.style.transform = `translate(${Math.min(e*15, w*0.5)}px, ${-Math.min(e*30, h*0.5)}px)`;
-      if (this.multiplier >= this.crashAt) this.crash();
-    }, 50);
-  },
-
-  crash() {
-    clearInterval(this.tickTimer);
-    this.phase = 'crashed';
-    const mult = document.getElementById('rMult');
-    const status = document.getElementById('rStatus');
-    mult.textContent = this.crashAt.toFixed(2) + 'x';
-    mult.className = 'multiplier crashed';
-    status.textContent = 'Улетела на ' + this.crashAt.toFixed(2) + 'x';
-    document.getElementById('rSprite').style.opacity = '0.3';
-    this.history.unshift(this.crashAt);
-    if (this.history.length > 8) this.history.pop();
-    this.updateHistory();
-    if (this.active && !this.cashouted) {
-      this.active = false;
-      trackRound('rocket', false, this.crashAt);
-      addHistory('rocket', 'Краш ×' + this.crashAt.toFixed(2), this.bet, false);
-      Sound.crash();
-      Sound.vib([100, 50, 100]);
-      UI.toast('Краш на ' + this.crashAt.toFixed(2) + 'x', 'error');
-    }
-    setTimeout(() => this.startRound(), 3000);
-  },
-
-  onPlay() {
-    if (this.phase === 'waiting') this.placeBet();
-    else if (this.phase === 'flying' && this.active) this.cashout();
-  },
-
-  placeBet() {
-    if (this.active) {
-      State.balance += this.bet;
-      this.active = false;
-      UI.updateBalance();
-      Storage.saveUserData();
-      UI.toast('Ставка отменена');
-      document.getElementById('rBtn').textContent = 'Сделать ставку';
-      document.getElementById('rBtn').className = 'play-btn';
-      document.getElementById('rInfoWin').textContent = '0 ₽';
-      return;
-    }
-    const bet = parseInt(document.getElementById('rBet').value) || 0;
-    if (bet < 1) { UI.toast('Минимум 1 ₽', 'error'); return; }
-    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
-    this.bet = bet;
-    State.balance -= bet;
-    this.active = true;
-    UI.updateBalance();
-    Storage.saveUserData();
-    Sound.click();
-    document.getElementById('rBtn').textContent = 'Отменить ставку';
-    document.getElementById('rBtn').className = 'play-btn wait';
-    UI.toast('Ставка ' + Utils.fmt(bet) + ' ₽ принята', 'success');
-  },
-
-  cashout() {
-    if (!this.active || this.cashouted) return;
-    this.cashouted = true;
-    this.active = false;
-    const win = this.bet * this.multiplier;
-    State.balance += win;
-    UI.updateBalance();
-    Sound.win();
-    Sound.vib([50, 30, 50]);
-    UI.toast('Забрали ' + Utils.fmt(win) + ' ₽ при ' + this.multiplier.toFixed(2) + 'x', 'success');
-    trackRound('rocket', true, this.multiplier, win);
-    addHistory('rocket', 'Забрал ×' + this.multiplier.toFixed(2), win, true);
-    const btn = document.getElementById('rBtn');
-    btn.textContent = 'Забрали!';
-    btn.className = 'play-btn wait';
-    btn.disabled = true;
-  },
-
-  updateHistory() {
-    const el = document.getElementById('rHistory');
-    if (!el) return;
-    el.innerHTML = this.history.slice(0, 8).map(h => {
-      const cls = h < 2 ? 'low' : h < 10 ? 'mid' : 'high';
-      return `<div class="crash-history-pill ${cls}">${h.toFixed(2)}x</div>`;
-    }).join('');
-  },
-
-  destroy() {
-    if (this.waitTimer) clearInterval(this.waitTimer);
-    if (this.tickTimer) clearInterval(this.tickTimer);
+function authenticate(){
+ const name=document.getElementById('authLogin').value.trim();
+ const pass=document.getElementById('authPassword').value;
+ const error=document.getElementById('authError');
+ if(name.length<3||name.length>24){error.textContent='Логин должен содержать от 3 до 24 символов.';return}
+ if(pass.length<3){error.textContent='Пароль должен содержать минимум 3 символа.';return}
+ if(!/^[a-zA-Zа-яА-ЯёЁ0-9_-]+$/.test(name)){error.textContent='Используй буквы, цифры, _ или -.';return}
+ loadUsers();
+ if(authMode==='register'){
+  if(users[name]){error.textContent='Этот логин уже занят.';return}
+  login=name;users[login]=newUser(pass,selectedAvatar)
+ }else{
+  if(!users[name]||users[name].password!==pass){error.textContent='Неверный логин или пароль.';return}
+  login=name
+ }
+ setUser();saveUsers();saveSession();
+ document.getElementById('loginOverlay').classList.add('hidden');
+ renderAll();notify('Добро пожаловать в ROCKET PLAY!')
+}
+function logout(){
+ if(currentGame)closeGame(true);
+ localStorage.removeItem(SESSION_KEY);login='';user=null;
+ document.getElementById('loginOverlay').classList.remove('hidden');
+ document.getElementById('authPassword').value='';showPage('home')
+}
+function showPage(page){
+ if(page==='cases'){notify('Бонусный раздел скоро появится.');return}
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ const el=document.getElementById('page-'+page);if(el)el.classList.add('active');
+ document.querySelectorAll('nav [data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+ if(user)renderAll();
+ window.scrollTo({top:0,behavior:animationsEnabled?'smooth':'auto'})
+}
+function makeRocketSvg(){
+ return `<svg viewBox="0 0 200 100" aria-label="Ракета"><g transform="translate(100 50) rotate(-25)"><path d="M0-42Q-28-15-20 21L0 38 20 21Q28-15 0-42Z" fill="#b3a5ff" stroke="#fff" stroke-width="2"/><circle cy="-12" r="9" fill="#14283d" stroke="#25D9FF" stroke-width="4"/><path d="M-17 10-42 29-19 29M17 10 42 29 19 29" fill="#8855FF"/><path d="M-8 28 0 50 8 28Z" fill="#25D9FF"/></g></svg>`
+}
+function makePlaneSvg(){
+ return `<svg viewBox="0 0 200 100" aria-label="Самолёт"><g transform="translate(100 50)"><path d="M-65-4 50-12Q69-10 76 0Q69 10 50 12L-65 4Z" fill="#F6F7FF"/><path d="M-12-4 5-40 23-38 16-3M-12 4 5 40 23 38 16 3" fill="#25D9FF"/><path d="M-54-4-65-20-53-21-36-3M-54 4-65 20-53 21-36 3" fill="#8855FF"/><path d="M26-7 44-7 54 0 44 7 26 7Z" fill="#536CFF"/><path d="M-5-5 12-5 18-1-5-1Z" fill="#25D9FF"/></g></svg>`
+}
+function makeCowSvg(){
+ return `<svg viewBox="0 0 180 100" aria-label="Коровка"><g transform="translate(90 52)"><path d="M-35-10Q-46-27-55-16L-50 0-40 9" fill="#F6F7FF"/><ellipse cx="0" cy="0" rx="44" ry="25" fill="#fff" stroke="#d7deea" stroke-width="2"/><path d="M-22-19Q-5-31 4-13L-3 3-21 7-30-6ZM14 0Q26-18 37-3L28 16 12 17Z" fill="#252b3a"/><path d="M31-13Q39-37 47-25L44-12M-4-20Q-15-38-23-26L-19-14" fill="#fff" stroke="#c3cce0" stroke-width="3"/><ellipse cx="46" cy="-7" rx="19" ry="16" fill="#fff" stroke="#c3cce0" stroke-width="2"/><ellipse cx="56" cy="-3" rx="10" ry="7" fill="#ffb8c9"/><circle cx="41" cy="-12" r="3" fill="#141725"/><circle cx="51" cy="-12" r="3" fill="#141725"/><path d="M-23 16-25 35M-5 18-6 35M21 16 23 35M36 12 37 34" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M-40-1Q-59-1-58-22" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g></svg>`
+}
+function renderGameCards(id){
+ document.getElementById(id).innerHTML=Object.keys(GAME_META).map(k=>{
+ const g=GAME_META[k];let art=k==='rocket'?makeRocketSvg():k==='flight'?makePlaneSvg():k==='cow'?makeCowSvg():`<div style="font-size:49px">${g.symbol}</div>`;
+ return `<article class="game-card"><div class="game-art ${g.art}">${art}</div><h3>${g.name}</h3><p>${g.desc}</p><button class="btn" onclick="openGame('${k}')">Играть →</button></article>`
+ }).join('')
+}
+function renderAll(){
+ if(!user)return;
+ document.getElementById('headerBalance').textContent=money(user.balance);
+ document.getElementById('headerAvatar').textContent=user.avatar;
+ document.getElementById('profileAvatar').textContent=user.avatar;
+ document.getElementById('profileLogin').textContent=user.displayName||login;
+ document.getElementById('displayName').value=user.displayName||login;
+ document.getElementById('profileBalance').textContent=money(user.balance);
+ document.getElementById('soundToggle').checked=soundEnabled;
+ document.getElementById('animationToggle').checked=animationsEnabled;
+ renderGameCards('homeGames');renderGameCards('allGames');
+ const wr=user.rounds?Math.round(user.wins/user.rounds*100):0;
+ const stats=[['Раунды',user.rounds],['Победы',user.wins],['Поражения',user.loses],['Винрейт',wr+'%']];
+ const html=stats.map(s=>`<div class="stat"><span class="muted small">${s[0]}</span><strong>${s[1]}</strong></div>`).join('');
+ document.getElementById('homeStats').innerHTML=html;
+ document.getElementById('profileStats').innerHTML=html+
+ `<div class="stat"><span class="muted small">Лучший множитель</span><strong>${Number(user.bestMultiplier).toFixed(2)}×</strong></div>
+ <div class="stat"><span class="muted small">Серия побед</span><strong>${user.bestStreak||0}</strong></div>
+ <div class="stat"><span class="muted small">Разных игр</span><strong>${user.playedGames.length}/5</strong></div>
+ <div class="stat"><span class="muted small">Игрок</span><strong style="font-size:15px">${esc(login)}</strong></div>`;
+ renderAvatarChoices('profileAvatars');renderHistory();renderAchievements()
+}
+function renderHistory(){
+ if(!user)return;
+ const f=document.getElementById('historyFilter').value,g=document.getElementById('historyGame').value;
+ const list=user.history.filter(h=>(f==='all'||(f==='win'?h.win:!h.win))&&(g==='all'||h.game===g));
+ document.getElementById('historyList').innerHTML=list.length?list.slice(0,200).map(h=>`
+ <div class="history-item"><div><strong>${GAME_META[h.game]?.name||h.game}</strong><div class="muted small">${esc(h.details||'Раунд')} · ${new Date(h.time).toLocaleString('ru-RU')}</div><div class="muted small">Ставка: ${money(h.bet)} · ${Number(h.multiplier||0).toFixed(2)}×</div></div>
+ <strong class="${h.win?'positive':'negative'}">${h.win?'+':'−'}${money(h.win?h.payout:h.bet)}</strong></div>`).join(''):'<p class="muted">История пока пуста. Сыграй свой первый раунд!</p>'
+}
+function renderAchievements(){
+ if(!user)return;
+ let n=0;
+ document.getElementById('achievementList').innerHTML=ACHIEVEMENTS.map(a=>{
+ const done=!!user.achievements[a[0]];if(done)n++;
+ return `<div class="achievement ${done?'done':''}"><div class="emoji">${done?a[1]:'🔒'}</div><strong>${a[2]}</strong><div class="muted small">${a[3]}</div><div class="small" style="margin-top:9px;color:${done?'var(--gold)':'var(--muted)'}">${done?'РАЗБЛОКИРОВАНО':'ЗАБЛОКИРОВАНО'}</div></div>`
+ }).join('');
+ document.getElementById('achievementCount').textContent=n+' / '+ACHIEVEMENTS.length
+}
+function unlock(key){
+ if(!user.achievements[key]){
+  user.achievements[key]=true;notify('🏆 Достижение: '+(ACHIEVEMENTS.find(a=>a[0]===key)?.[2]||key));saveUsers()
+ }
+}
+function saveProfile(){
+ let n=document.getElementById('displayName').value.trim();
+ if(!n)n=login;
+ user.displayName=n.slice(0,24);user.avatar=selectedAvatar;saveUsers();renderAll();notify('Профиль сохранён.')
+}
+function updateSettings(){
+ soundEnabled=document.getElementById('soundToggle').checked;
+ animationsEnabled=document.getElementById('animationToggle').checked;
+ user.settings={sound:soundEnabled,animations:animationsEnabled};saveUsers()
+}
+function exportData(){
+ if(!user)return;
+ const blob=new Blob([JSON.stringify({version:4,login,user},null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rocket-play-'+login+'.json';a.click();URL.revokeObjectURL(a.href)
+}
+function importData(ev){
+ const file=ev.target.files[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+ try{
+  const data=JSON.parse(reader.result),u=data.user;
+  if(!u||typeof u!=='object'||!Number.isFinite(u.balance)||!Array.isArray(u.history))throw Error();
+  if(!confirm('Импортировать данные и заменить текущий прогресс?'))return;
+  user=normalizeUser(u);users[login]=user;saveUsers();renderAll();notify('Данные импортированы.')
+ }catch(e){notify('Файл JSON не распознан.')}
+ };
+ reader.readAsText(file);ev.target.value=''
+}
+function openGame(id){
+ if(!user)return;
+ if(currentGame)stopAnimation();
+ currentGame=id;
+ document.getElementById('gameScreen').classList.add('active');
+ document.getElementById('gameTitle').textContent=GAME_META[id].name;
+ document.getElementById('roundNumber').textContent='Раунд #'+(user.rounds+1);
+ document.getElementById('gameStage').className='stage '+(id==='rocket'?'crash-bg':id==='flight'?'sky-bg':id==='cow'?'grass-bg':id==='mines'?'mines-bg':'plinko-bg');
+ document.getElementById('minesBoard').classList.toggle('hidden',id!=='mines');
+ document.getElementById('minesInfo').classList.toggle('hidden',id!=='mines');
+ document.getElementById('plinkoInfo').classList.toggle('hidden',id!=='plinko');
+ document.getElementById('roadNote').classList.toggle('hidden',id!=='cow');
+ document.getElementById('crashHistory').classList.toggle('hidden',id!=='rocket'&&id!=='flight');
+ document.getElementById('extraControls').innerHTML='';
+ document.getElementById('betInput').value=100;
+ roundState=null;plinkoBall=null;
+ const canvas=document.getElementById('gameCanvas');
+ canvas.classList.toggle('hidden',id==='mines');
+ if(id==='mines')setupMines();
+ if(id==='cow')setupCow();
+ if(id==='plinko')drawPlinkoIdle();
+ if(id==='rocket'||id==='flight')setupCrashGame();
+ updateGameUI();renderAll()
+}
+function closeGame(force=false){
+ stopAnimation();
+ document.getElementById('gameScreen').classList.remove('active');
+ currentGame='';
+ roundState=null;renderAll();
+}
+function stopAnimation(){if(animationFrame)cancelAnimationFrame(animationFrame);animationFrame=0}
+function getBet(){
+ const v=Number(document.getElementById('betInput').value);
+ if(!Number.isFinite(v)||v<1||!Number.isInteger(v)||v>user.balance){notify('Ставка должна быть целым числом от 1 ₽ до доступного баланса.');return 0}
+ return v
+}
+function adjustBet(dir){
+ let input=document.getElementById('betInput'),v=Number(input.value)||100;
+ input.value=clamp(v+dir,1,Math.max(1,user.balance))
+}
+function quickBet(mode){
+ let v=Number(document.getElementById('betInput').value)||100;
+ if(mode==='max')v=user.balance;else v=mode===.5?Math.floor(v/2):Math.min(user.balance,v*2);
+ document.getElementById('betInput').value=Math.max(1,v)
+}
+function updateGameUI(){
+ if(!user)return;
+ document.getElementById('availableBalance').textContent=money(user.balance);
+ document.getElementById('roundNumber').textContent='Раунд #'+(user.rounds+1);
+ let s=roundState;
+ const btn=document.getElementById('mainAction');
+ btn.className='btn action';
+ btn.textContent='Играть';
+ document.getElementById('gameStatus').textContent=s?.status||'Ожидание';
+ document.getElementById('bigMultiplier').textContent=(s?.multiplier||1).toFixed(2)+'×';
+ document.getElementById('potentialWin').textContent=s?.active?money((s.bet||0)*(s.multiplier||1)):'0 ₽';
+ if(s?.active){
+  btn.textContent=(currentGame==='cow'?'ШАГ':currentGame==='mines'?'Открыть клетку':currentGame==='plinko'?'Бросить шарик':'Забрать');
+  btn.className='btn action '+(currentGame==='mines'?'':'btn-green')
+ }
+ if(s?.finished){btn.textContent='Новый раунд';btn.className='btn action';}
+ if(s?.waiting){btn.textContent='Раунд уже идёт';btn.className='btn action btn-secondary';}
+}
+function chargeBet(bet){
+ if(!bet||bet>user.balance)return false;
+ user.balance-=bet;saveUsers();return true
+}
+function recordRound(win,payout,details,multiplier){
+ const s=roundState;if(!s||s.recorded)return;
+ s.recorded=true;
+ const bet=s.bet||0;
+ user.rounds++;user.gameStats[currentGame]=(user.gameStats[currentGame]||0)+1;
+ if(!user.playedGames.includes(currentGame))user.playedGames.push(currentGame);
+ if(win){user.wins++;user.streak++;user.bestStreak=Math.max(user.bestStreak,user.streak);user.balance+=payout}
+ else{user.loses++;user.streak=0}
+ user.bestMultiplier=Math.max(user.bestMultiplier,multiplier||1);
+ user.history.unshift({game:currentGame,win,bet,payout:win?payout:0,details,time:now(),multiplier:multiplier||1});
+ user.history=user.history.slice(0,500);
+ if(user.rounds>=1)unlock('first');
+ if(user.wins>=1)unlock('win');
+ if(user.rounds>=10)unlock('round10');
+ if(user.rounds>=50)unlock('round50');
+ if(user.bestMultiplier>=2)unlock('x2');
+ if(user.bestMultiplier>=5)unlock('x5');
+ if(user.bestMultiplier>=10)unlock('x10');
+ if(win&&payout>=1000)unlock('win1000');
+ if(win&&payout>=10000)unlock('win10000');
+ if(user.streak>=3)unlock('streak3');
+ if(user.playedGames.length>=5)unlock('allgames');
+ saveUsers();renderAll();updateGameUI()
+}
+function finishWin(details,multiplier){
+ const s=roundState;if(!s||!s.active)return;
+ const payout=Math.floor(s.bet*multiplier);
+ s.active=false;s.finished=true;s.status='Победа';s.multiplier=multiplier;
+ recordRound(true,payout,details,multiplier);sound('win');notify('Победа! +'+money(payout))
+}
+function finishLose(details,multiplier=0){
+ const s=roundState;if(!s||!s.active)return;
+ s.active=false;s.finished=true;s.status='Проигрыш';
+ recordRound(false,0,details,multiplier);sound('lose');notify('Раунд завершён. Попробуй ещё раз.')
+}
+function gameAction(){
+ if(!currentGame)return;
+ sound('click');
+ if(!roundState||roundState.finished){
+  if(currentGame==='rocket'||currentGame==='flight'){notify('Следующий раунд синхронизирован с UTC.');return}
+  startRound();return
+ }
+ const s=roundState;
+ if(!s.active)return;
+ if(currentGame==='rocket'||currentGame==='flight'){cashOutCrash();return}
+ if(currentGame==='cow'){cowStep();return}
+ if(currentGame==='mines'){openMine();return}
+ if(currentGame==='plinko'){dropPlinko();return}
+}
+function startRound(){
+ const bet=getBet();if(!bet)return;if(!chargeBet(bet))return;
+ roundState={bet,active:true,finished:false,status:'Игра идёт',multiplier:1,startedAt:now(),recorded:false};
+ if(currentGame==='cow'){
+  roundState.step=0;roundState.status='Перебеги дорогу';setupCow()
+ }
+ if(currentGame==='mines'){
+  roundState.opened=0;roundState.status='Выбирай клетку';roundState.multiplier=1;
+  minePositions=[];while(minePositions.length<mineCount){let p=randInt(25);if(!minePositions.includes(p))minePositions.push(p)}
+  openedCells=[];renderMineCells()
+ }
+ if(currentGame==='plinko'){roundState.status='Готов к броску';drawPlinkoIdle()}
+ if(currentGame==='rocket'||currentGame==='flight'){
+  roundState.waiting=true;roundState.active=false;roundState.status='Ожидание следующего раунда';
+  notify('Ставка принята. Ожидай следующий раунд.')
+ }
+ updateGameUI();saveUsers()
+}
+function setupCrashGame(){
+ const isRocket=currentGame==='rocket';
+ const canvas=document.getElementById('gameCanvas');
+ const history=document.getElementById('crashHistory');
+ history.innerHTML=(rocketCrashHistory.length?rocketCrashHistory:[2.15,1.31,5.4,1.07,3.22,12.4,1.7,2.8]).map(x=>`<span class="crash-pill" style="color:${x<2?'var(--red)':x<10?'var(--gold)':'var(--green)'}">${x.toFixed(2)}×</span>`).join('');
+ document.getElementById('stageMessage').textContent='Новый раунд каждые 20 секунд по UTC';
+ const state=roundState;
+ if(state?.active||state?.waiting)state.crashAt=state.crashAt||calculateCrash(state.roundId||Math.floor(now()/20000));
+ animateCrash();
+}
+function calculateCrash(seed){
+ const r=seededRound(seed);
+ return r<.03?1:Math.min(.97/(1-r),1000)
+}
+function cashOutCrash(){
+ const s=roundState;if(!s||!s.active)return;
+ const elapsed=(now()-s.flightStartedAt)/1000;
+ const mult=Math.pow(1.06,elapsed*3);
+ if(mult>=s.crashAt){crashNow();return}
+ finishWin('Забрал на '+mult.toFixed(2)+'×',mult)
+}
+function crashNow(){
+ const s=roundState;if(!s||!s.active)return;
+ s.multiplier=s.crashAt;
+ document.getElementById('stageMessage').textContent='КРАШ! '+s.crashAt.toFixed(2)+'×';
+ rocketCrashHistory.unshift(s.crashAt);rocketCrashHistory=rocketCrashHistory.slice(0,8);
+ document.getElementById('crashHistory').innerHTML=rocketCrashHistory.map(x=>`<span class="crash-pill" style="color:${x<2?'var(--red)':x<10?'var(--gold)':'var(--green)'}">${x.toFixed(2)}×</span>`).join('');
+ finishLose('Краш на '+s.crashAt.toFixed(2)+'×',s.crashAt);drawCrashScene()
+}
+function animateCrash(){
+ stopAnimation();
+ const canvas=document.getElementById('gameCanvas');if(!canvas)return;
+ ctx=canvas.getContext('2d');
+ function frame(){
+  if(!currentGame||(currentGame!=='rocket'&&currentGame!=='flight'))return;
+  const w=canvas.width,h=canvas.height,s=roundState;
+  ctx.clearRect(0,0,w,h);
+  const t=now()/1000;
+  if(currentGame==='rocket'){
+   const g=ctx.createRadialGradient(w*.65,h*.8,5,w*.65,h*.8,480);g.addColorStop(0,'#34215e');g.addColorStop(1,'#080d1c');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+   for(let i=0;i<75;i++){let x=(i*137.5+t*(i%3+1)*4)%w,y=(i*83)%h;ctx.fillStyle=`rgba(205,210,255,${.3+.6*Math.abs(Math.sin(t+i))})`;ctx.fillRect(x,y,2,2)}
+   ctx.fillStyle='#373d76';ctx.beginPath();ctx.arc(740,105,55,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#222b59';ctx.beginPath();ctx.arc(760,95,24,0,Math.PI*2);ctx.fill();
+   if(s?.active){
+    const elapsed=(now()-s.flightStartedAt)/1000;
+    s.multiplier=Math.pow(1.06,elapsed*3);
+    if(s.multiplier>=s.crashAt){crashNow();return}
+    document.getElementById('bigMultiplier').textContent=s.multiplier.toFixed(2)+'×';
+    document.getElementById('potentialWin').textContent=money(s.bet*s.multiplier);
+    const x=150+Math.min(550,elapsed*32),y=h-95-Math.min(235,elapsed*18);
+    drawRocket(ctx,x,y,1.05);
+    ctx.strokeStyle='#8855FF';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(70,h-40);ctx.quadraticCurveTo(300,h-70,x,y);ctx.stroke();
+    if(elapsed>4){const ex=(x+180)%w,ey=h-90-(elapsed*13)%190;drawRocket(ctx,ex,ey,.55)}
+    if(elapsed>5&&elapsed%8<.06){document.getElementById('stageMessage').textContent='Платформа впереди — можно забрать!'}
+   }else drawRocket(ctx,180,h-115,1);
+  }else{
+   const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#51aee8');sky.addColorStop(.62,'#bcecff');sky.addColorStop(.63,'#167da2');sky.addColorStop(1,'#06445f');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+   ctx.fillStyle='#fff4b8';ctx.beginPath();ctx.arc(730,80,35,0,Math.PI*2);ctx.fill();
+   for(let i=0;i<6;i++){let x=(i*190+t*12)%w;drawCloud(ctx,x,80+(i%3)*45)}
+   for(let i=0;i<6;i++){let x=(i*175-t*7)%w;ctx.fillStyle='#367a64';ctx.beginPath();ctx.ellipse(x,h*.63,60,14,0,Math.PI,Math.PI*2);ctx.fill()}
+   if(s?.active){
+    const elapsed=(now()-s.flightStartedAt)/1000;
+    s.multiplier=Math.pow(1.06,elapsed*3);
+    if(s.multiplier>=s.crashAt){crashNow();return}
+    const platform=PLATFORMS.findIndex(m=>s.multiplier<m);
+    document.getElementById('bigMultiplier').textContent=s.multiplier.toFixed(2)+'×';
+    document.getElementById('stageMessage').textContent='Дистанция: '+Math.floor(elapsed*135)+' м · Платформа '+(platform<0?6:platform+1);
+    for(let i=0;i<6;i++){const x=90+i*130;ctx.fillStyle='#e8f7ff';ctx.fillRect(x,h-85,75,8);ctx.fillStyle='#ffc857';ctx.fillRect(x+5,h-100,65,14);ctx.fillStyle='#fff';ctx.font='13px Arial';ctx.fillText('×'+PLATFORMS[i],x+8,h-107)}
+    drawPlane(ctx,120+Math.min(560,elapsed*36),h-160-Math.min(90,elapsed*5));
+   }else drawPlane(ctx,170,h-155)
   }
-};
-
-/* ============================================================
-   ИГРА «РЕЙС»
-   ============================================================ */
-const RaceGame = {
-  phase: 'idle', active: false, bet: 0, multiplier: 1, crashAt: 2,
-  startTime: 0, cashouted: false, waitTimer: null, tickTimer: null, history: [], waitLeft: 10,
-
-  render() {
-    return `
-      <div class="arena" style="background:linear-gradient(180deg,#1B6DB5 0%,#3B9DDB 40%,#7FC4E8 70%,#25A5D9 100%);position:relative;overflow:hidden">
-        <div style="position:absolute;top:8%;right:12%;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#FFE58F 0%,#FFC857 40%,transparent 75%);box-shadow:0 0 80px rgba(255,200,87,.6)"></div>
-        <div id="rClouds"></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,#1E88C4 0%,#0D5C91 100%)"></div>
-        <svg id="rPlane" viewBox="0 0 100 60" fill="none" style="position:absolute;width:90px;height:60px;left:8%;top:40%;z-index:6;transition:all .06s linear;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))">
-          <defs>
-            <linearGradient id="plBody" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#F6F7FF"/><stop offset="1" stop-color="#929CB4"/>
-            </linearGradient>
-          </defs>
-          <path d="M10 30 L45 20 L55 20 L90 30 L55 40 L45 40 Z" fill="url(#plBody)" stroke="#5A6483" stroke-width="1.5"/>
-          <path d="M40 20 L35 8 L50 20 Z" fill="#25D9FF"/>
-          <path d="M40 40 L35 52 L50 40 Z" fill="#25D9FF"/>
-          <path d="M60 20 L75 8 L85 20 Z" fill="#8855FF"/>
-          <path d="M60 40 L75 52 L85 40 Z" fill="#8855FF"/>
-          <ellipse cx="60" cy="30" rx="4" ry="6" fill="#FF4F70"/>
-          <circle cx="55" cy="30" r="2" fill="#F6F7FF"/>
-        </svg>
-        <div id="rStatus" style="position:absolute;bottom:8%;left:50%;transform:translateX(-50%);font-size:14px;color:#fff;z-index:8;text-align:center;padding:0 20px;text-shadow:0 2px 8px rgba(0,0,0,.5);width:100%">Ожидание</div>
-      </div>
-      <div class="controls">
-        <div class="controls-row">
-          <div class="bet-group">
-            <button class="bet-btn" onclick="RaceGame.betStep(-10)">−</button>
-            <input type="number" id="rcBet" value="10" min="1" step="1">
-            <button class="bet-btn" onclick="RaceGame.betStep(10)">+</button>
-            <div class="bet-quick">
-              <button onclick="RaceGame.betSet('half')">½</button>
-              <button onclick="RaceGame.betSet('double')">2×</button>
-              <button onclick="RaceGame.betSet('max')">MAX</button>
-            </div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">Множитель</div>
-            <div class="info-value purple" id="rcInfoMult">1.00x</div>
-          </div>
-        </div>
-        <div class="controls-row">
-          <div class="info-group" style="flex:1">
-            <div class="info-label">Потенциальный выигрыш</div>
-            <div class="info-value green" id="rcInfoWin">0 ₽</div>
-          </div>
-        </div>
-        <button class="play-btn" id="rcBtn" onclick="RaceGame.onPlay()">Сделать ставку</button>
-      </div>
-    `;
-  },
-
-  init() {
-    const c = document.getElementById('rClouds');
-    if (c) {
-      let h = '';
-      for (let i = 0; i < 5; i++) {
-        const size = Utils.rand(60, 120);
-        h += `<div class="race-cloud" style="width:${size}px;height:${size*0.5}px;top:${Utils.rand(10,45)}%;left:${Utils.rand(-10,90)}%;animation:cloudMove ${Utils.rand(40,80)}s linear infinite;animation-delay:${-Utils.rand(0,40)}s"></div>`;
-      }
-      c.innerHTML = h;
-    }
-    this.phase = 'idle';
-    this.active = false;
-    this.cashouted = false;
-    this.multiplier = 1;
-    document.getElementById('roundIndicator').textContent = 'Раунд #' + ((State.gameStats.race?.rounds || 0) + 1);
-    this.startRound();
-  },
-
-  betStep(d) {
-    const el = document.getElementById('rcBet');
-    let v = parseInt(el.value) || 0;
-    v = Math.max(1, Math.min(State.balance, v + d));
-    el.value = v;
-    Sound.click();
-  },
-  betSet(type) {
-    const el = document.getElementById('rcBet');
-    let v = parseInt(el.value) || 0;
-    if (type === 'half') v = Math.max(1, Math.floor(v / 2));
-    else if (type === 'double') v = Math.min(State.balance, v * 2);
-    else v = Math.floor(State.balance);
-    el.value = v;
-    Sound.click();
-  },
-
-  genCrash() {
-    const r = Math.random();
-    if (r < 0.04) return 1.00;
-    return Math.max(1.00, Math.min(0.96 / (1 - r), 500));
-  },
-
-  startRound() {
-    this.phase = 'waiting';
-    this.active = false;
-    this.cashouted = false;
-    this.multiplier = 1;
-    this.crashAt = this.genCrash();
-    const btn = document.getElementById('rcBtn');
-    const status = document.getElementById('rStatus');
-    const plane = document.getElementById('rPlane');
-    const timer = document.getElementById('timerPill');
-    if (btn) { btn.textContent = 'Сделать ставку'; btn.className = 'play-btn'; btn.disabled = false; }
-    if (status) status.textContent = 'Приём ставок';
-    if (plane) { plane.style.left = '8%'; plane.style.top = '40%'; plane.style.transform = 'rotate(0deg)'; plane.style.opacity = '1'; }
-    if (timer) timer.classList.remove('hidden');
-    document.getElementById('rcInfoMult').textContent = '1.00x';
-    document.getElementById('rcInfoWin').textContent = '0 ₽';
-    if (this.waitTimer) clearInterval(this.waitTimer);
-    this.waitLeft = 10;
-    if (timer) timer.textContent = '00:10';
-    this.waitTimer = setInterval(() => {
-      this.waitLeft--;
-      if (timer) {
-        timer.textContent = '00:' + Utils.pad(this.waitLeft);
-        if (this.waitLeft <= 3) timer.classList.add('warn');
-        else timer.classList.remove('warn');
-      }
-      if (this.waitLeft <= 0) {
-        clearInterval(this.waitTimer);
-        if (timer) timer.classList.add('hidden');
-        this.startFlight();
-      }
-    }, 1000);
-  },
-
-  startFlight() {
-    this.phase = 'flying';
-    this.startTime = Date.now();
-    Sound.whoosh();
-    const btn = document.getElementById('rcBtn');
-    const status = document.getElementById('rStatus');
-    if (status) status.textContent = 'Летит!';
-    if (this.active) btn.className = 'play-btn cashout';
-    else { btn.textContent = 'Раунд идёт'; btn.className = 'play-btn wait'; btn.disabled = true; }
-    if (this.tickTimer) clearInterval(this.tickTimer);
-    this.tickTimer = setInterval(() => {
-      const e = (Date.now() - this.startTime) / 1000;
-      this.multiplier = Math.pow(1.06, e * 3);
-      const m = this.multiplier.toFixed(2) + 'x';
-      document.getElementById('rcInfoMult').textContent = m;
-      if (this.active && !this.cashouted) {
-        const win = this.bet * this.multiplier;
-        document.getElementById('rcInfoWin').textContent = Utils.fmt(win) + ' ₽';
-        document.getElementById('rcBtn').textContent = 'Забрать ' + Utils.fmt(win) + ' ₽';
-      }
-      const plane = document.getElementById('rPlane');
-      const progress = Math.min(e / 15, 1);
-      plane.style.left = (8 + progress * 75) + '%';
-      plane.style.top = (40 - progress * 15) + '%';
-      plane.style.transform = 'rotate(' + (-progress * 10) + 'deg)';
-      if (this.multiplier >= this.crashAt) this.crash();
-    }, 50);
-  },
-
-  crash() {
-    clearInterval(this.tickTimer);
-    this.phase = 'crashed';
-    const status = document.getElementById('rStatus');
-    status.textContent = 'Самолёт упал в воду!';
-    const plane = document.getElementById('rPlane');
-    plane.style.top = '75%';
-    plane.style.transform = 'rotate(45deg)';
-    plane.style.opacity = '0.6';
-    this.history.unshift(this.crashAt);
-    if (this.history.length > 8) this.history.pop();
-    if (this.active && !this.cashouted) {
-      this.active = false;
-      trackRound('race', false, this.crashAt);
-      addHistory('race', 'Упал ×' + this.crashAt.toFixed(2), this.bet, false);
-      Sound.crash();
-      Sound.vib([100, 50, 100]);
-      UI.toast('Упал на ' + this.crashAt.toFixed(2) + 'x', 'error');
-    }
-    setTimeout(() => this.startRound(), 3000);
-  },
-
-  onPlay() {
-    if (this.phase === 'waiting') this.placeBet();
-    else if (this.phase === 'flying' && this.active) this.cashout();
-  },
-
-  placeBet() {
-    if (this.active) {
-      State.balance += this.bet;
-      this.active = false;
-      UI.updateBalance();
-      Storage.saveUserData();
-      UI.toast('Ставка отменена');
-      document.getElementById('rcBtn').textContent = 'Сделать ставку';
-      document.getElementById('rcBtn').className = 'play-btn';
-      return;
-    }
-    const bet = parseInt(document.getElementById('rcBet').value) || 0;
-    if (bet < 1) { UI.toast('Минимум 1 ₽', 'error'); return; }
-    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
-    this.bet = bet;
-    State.balance -= bet;
-    this.active = true;
-    UI.updateBalance();
-    Storage.saveUserData();
-    Sound.click();
-    document.getElementById('rcBtn').textContent = 'Отменить ставку';
-    document.getElementById('rcBtn').className = 'play-btn wait';
-    UI.toast('Ставка ' + Utils.fmt(bet) + ' ₽ принята', 'success');
-  },
-
-  cashout() {
-    if (!this.active || this.cashouted) return;
-    this.cashouted = true;
-    this.active = false;
-    const win = this.bet * this.multiplier;
-    State.balance += win;
-    UI.updateBalance();
-    Sound.win();
-    Sound.vib([50, 30, 50]);
-    UI.toast('Успел на ' + this.multiplier.toFixed(2) + 'x +' + Utils.fmt(win) + ' ₽', 'success');
-    trackRound('race', true, this.multiplier, win);
-    addHistory('race', 'Забрал ×' + this.multiplier.toFixed(2), win, true);
-    const btn = document.getElementById('rcBtn');
-    btn.textContent = 'Успел!';
-    btn.className = 'play-btn wait';
-    btn.disabled = true;
-  },
-
-  destroy() {
-    if (this.waitTimer) clearInterval(this.waitTimer);
-    if (this.tickTimer) clearInterval(this.tickTimer);
+  if(s?.active||s?.waiting)animationFrame=requestAnimationFrame(frame)
+ }
+ frame()
+}
+function drawCrashScene(){if(currentGame==='rocket'||currentGame==='flight'){const s=roundState;if(s)s.active=false;animateCrashStatic()}}
+function animateCrashStatic(){
+ const c=document.getElementById('gameCanvas'),x=c.getContext('2d');
+ if(currentGame==='rocket'){x.fillStyle='#100d20';x.fillRect(0,0,c.width,c.height);drawRocket(x,450,250,1.5)}
+ else{x.fillStyle='#14566c';x.fillRect(0,0,c.width,c.height);drawPlane(x,450,280)}
+}
+function drawRocket(c,x,y,k=1){
+ c.save();c.translate(x,y);c.scale(k,k);
+ c.fillStyle='#ff9c43';c.beginPath();c.moveTo(-8,23);c.lineTo(0,47+Math.random()*4);c.lineTo(8,23);c.fill();
+ c.fillStyle='#25D9FF';c.beginPath();c.moveTo(-6,25);c.lineTo(0,38);c.lineTo(6,25);c.fill();
+ c.fillStyle='#b8adff';c.beginPath();c.moveTo(0,-34);c.quadraticCurveTo(-24,-8,-17,23);c.lineTo(0,37);c.lineTo(17,23);c.quadraticCurveTo(24,-8,0,-34);c.fill();
+ c.strokeStyle='#fff';c.lineWidth=2;c.stroke();
+ c.fillStyle='#8855FF';c.beginPath();c.moveTo(-14,10);c.lineTo(-34,28);c.lineTo(-15,26);c.fill();c.beginPath();c.moveTo(14,10);c.lineTo(34,28);c.lineTo(15,26);c.fill();
+ c.fillStyle='#102b42';c.beginPath();c.arc(0,-7,8,0,Math.PI*2);c.fill();c.strokeStyle='#25D9FF';c.lineWidth=3;c.stroke();
+ c.restore()
+}
+function drawPlane(c,x,y){
+ c.save();c.translate(x,y);
+ c.fillStyle='#f7f7ff';c.beginPath();c.moveTo(-65,0);c.lineTo(38,-10);c.lineTo(70,0);c.lineTo(38,10);c.lineTo(-65,4);c.closePath();c.fill();
+ c.fillStyle='#25d9ff';c.beginPath();c.moveTo(-5,-4);c.lineTo(10,-38);c.lineTo(28,-36);c.lineTo(18,-2);c.lineTo(30,4);c.lineTo(28,36);c.lineTo(10,38);c.lineTo(-5,4);c.fill();
+ c.fillStyle='#8855ff';c.beginPath();c.moveTo(-48,-2);c.lineTo(-63,-20);c.lineTo(-48,-18);c.lineTo(-30,-2);c.fill();c.beginPath();c.moveTo(-48,2);c.lineTo(-63,20);c.lineTo(-48,18);c.lineTo(-30,2);c.fill();
+ c.fillStyle='#243b59';c.fillRect(18,-3,20,6);c.restore()
+}
+function drawCloud(c,x,y){
+ c.fillStyle='#ffffffc9';c.beginPath();c.arc(x,y,20,0,Math.PI*2);c.arc(x+20,y-8,27,0,Math.PI*2);c.arc(x+45,y,19,0,Math.PI*2);c.fill()
+}
+function setupCow(){
+ const c=document.getElementById('gameCanvas'),x=c.getContext('2d');
+ cowCars=[{lane:0,x:50,speed:180,color:'#ff4f70'},{lane:1,x:440,speed:235,color:'#ffc857'},{lane:2,x:700,speed:155,color:'#25d9ff'},{lane:0,x:620,speed:115,color:'#35e6a2'}];
+ drawCowScene()
+}
+function drawCowScene(){
+ const c=document.getElementById('gameCanvas'),x=c.getContext('2d'),w=c.width,h=c.height;
+ x.clearRect(0,0,w,h);
+ const sky=x.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#61b9ed');sky.addColorStop(.4,'#b2e5f7');sky.addColorStop(.41,'#69b66e');sky.addColorStop(1,'#347d4b');x.fillStyle=sky;x.fillRect(0,0,w,h);
+ x.fillStyle='#303748';x.beginPath();x.moveTo(180,175);x.lineTo(720,175);x.lineTo(900,500);x.lineTo(0,500);x.closePath();x.fill();
+ x.strokeStyle='#f6f7ff';x.lineWidth=5;x.setLineDash([28,23]);x.beginPath();x.moveTo(450,180);x.lineTo(450,500);x.stroke();x.setLineDash([]);
+ x.fillStyle='#347d4b';x.fillRect(0,170,180,h);x.fillRect(720,170,180,h);
+ cowCars.forEach(car=>{x.fillStyle=car.color;x.fillRect(car.x,215+car.lane*75,85,35);x.fillStyle='#15243a';x.fillRect(car.x+13,220+car.lane*75,21,11);x.fillRect(car.x+52,220+car.lane*75,21,11);x.fillStyle='#171b28';x.beginPath();x.arc(car.x+17,250+car.lane*75,9,0,Math.PI*2);x.arc(car.x+68,250+car.lane*75,9,0,Math.PI*2);x.fill()});
+ const step=roundState?.step||0;drawCow(x,450,440-step*75);
+ document.getElementById('roadNote').textContent='ШАГ '+step+' / 5'
+}
+function drawCow(c,x,y){
+ c.save();c.translate(x,y);
+ c.fillStyle='#fff';c.strokeStyle='#d7deea';c.lineWidth=3;c.beginPath();c.ellipse(0,0,39,24,0,0,Math.PI*2);c.fill();c.stroke();
+ c.fillStyle='#252b3a';c.beginPath();c.ellipse(-12,-8,12,10,-.3,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(13,5,11,9,.3,0,Math.PI*2);c.fill();
+ c.fillStyle='#fff';c.beginPath();c.ellipse(34,-10,18,16,0,0,Math.PI*2);c.fill();c.stroke();
+ c.fillStyle='#ffb8c9';c.beginPath();c.ellipse(44,-4,9,6,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#151925';c.beginPath();c.arc(30,-16,3,0,Math.PI*2);c.arc(40,-16,3,0,Math.PI*2);c.fill();
+ c.strokeStyle='#fff';c.lineWidth=7;for(const xx of [-22,-4,17,30]){c.beginPath();c.moveTo(xx,16);c.lineTo(xx,34);c.stroke()}
+ c.strokeStyle='#fff';c.lineWidth=4;c.beginPath();c.moveTo(-37,-2);c.quadraticCurveTo(-53,-10,-49,-26);c.stroke();
+ c.strokeStyle='#ffc857';c.lineWidth=5;c.beginPath();c.moveTo(26,-22);c.lineTo(21,-31);c.moveTo(40,-23);c.lineTo(45,-31);c.stroke();
+ c.restore()
+}
+function cowStep(){
+ const s=roundState;if(!s?.active)return;
+ s.step++;s.multiplier=COW_MULT[Math.min(s.step,COW_MULT.length-1)]||3.3;
+ if(s.step>=5){drawCowScene();finishWin('Коровка перешла дорогу',3.3);return}
+ const car=cowCars.find(car=>car.lane===s.step-1);
+ const hit=car&&Math.abs(car.x-450)<90;
+ drawCowScene();
+ if(hit){document.getElementById('stageMessage').textContent='Ой! Коровку сбила машина!';finishLose('Столкновение с машиной',s.multiplier);return}
+ document.getElementById('stageMessage').textContent='Удачный шаг! Множитель '+s.multiplier.toFixed(2)+'×';
+ updateGameUI()
+}
+function setupMines(){
+ mineCount=3;minePositions=[];openedCells=[];
+ document.getElementById('extraControls').innerHTML=`<div class="panel"><label class="muted small">Количество мин</label><div style="display:flex;gap:8px;margin-top:8px">${[1,3,5,10].map(n=>`<button class="btn ${n===mineCount?'':'btn-secondary'}" onclick="setMineCount(${n})">${n} мин</button>`).join('')}</div></div>`;
+ renderMineCells()
+}
+function setMineCount(n){
+ if(roundState?.active){notify('Нельзя менять мины во время раунда.');return}
+ mineCount=n;setupMines();notify('Выбрано мин: '+n)
+}
+function renderMineCells(){
+ document.getElementById('minesBoard').innerHTML=Array.from({length:25},(_,i)=>{
+ const open=openedCells.includes(i),bomb=roundState?.finished&&minePositions.includes(i);
+ return `<button class="mine-cell ${open?'opened':''} ${bomb?'bomb':''}" ${open||roundState?.finished?'disabled':''} onclick="selectMine(${i})">${open?(minePositions.includes(i)?'💣':'💎'):bomb?'💣':''}</button>`
+ }).join('');
+ document.getElementById('minesInfo').textContent=`Мин: ${mineCount} · Открыто: ${openedCells.length}`
+}
+function openMine(){
+ if(!roundState?.active)return;
+ notify('Выбери клетку на игровом поле.')
+}
+function selectMine(i){
+ const s=roundState;
+ if(!s?.active){if(!s||s.finished)notify('Нажми «Играть», чтобы начать раунд.');return}
+ if(openedCells.includes(i))return;
+ if(minePositions.includes(i)){
+  openedCells.push(i);s.multiplier=calcMinesMultiplier(openedCells.length-1);
+  renderMineCells();finishLose('Открыта мина',s.multiplier);renderMineCells();return
+ }
+ openedCells.push(i);s.opened=openedCells.length;s.multiplier=calcMinesMultiplier(s.opened);
+ renderMineCells();updateGameUI();sound('click');
+ document.getElementById('stageMessage').textContent='Кристалл найден! '+s.multiplier.toFixed(2)+'×';
+ if(s.opened>=25-mineCount){finishWin('Открыты все безопасные клетки',s.multiplier);renderMineCells()}
+}
+function calcMinesMultiplier(k){
+ if(k<=0)return 1;
+ let p=1;for(let i=0;i<k;i++)p*=(25-i)/(25-mineCount-i);
+ return p*.97
+}
+function drawPlinkoIdle(){
+ const c=document.getElementById('gameCanvas'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+ const w=c.width,h=c.height,rows=12,spacing=49;
+ for(let r=0;r<rows;r++)for(let col=0;col<=r;col++){
+  const px=w/2+(col-r/2)*spacing,py=52+r*27;
+  x.beginPath();x.arc(px,py,5,0,Math.PI*2);x.fillStyle='#8c74ff';x.shadowColor='#8855ff';x.shadowBlur=8;x.fill();x.shadowBlur=0
+ }
+ PLINKO_MULT.forEach((m,i)=>{
+  const bw=w/13,xp=i*bw;
+  x.fillStyle=m>=4?'#8855FF':m>=1?'#207f86':m>=.5?'#4b5170':'#a43d5c';x.fillRect(xp+2,h-37,bw-4,29);
+  x.fillStyle='#fff';x.font='bold 16px Arial';x.textAlign='center';x.fillText(m+'×',xp+bw/2,h-17)
+ });
+ document.getElementById('plinkoInfo').textContent='12 рядов · 13 лунок · результат фиксируется перед броском'
+}
+function dropPlinko(){
+ const s=roundState;if(!s?.active)return;
+ if(plinkoBall){notify('Шарик ещё в движении.');return}
+ const bet=s.bet,slot=randInt(13),mult=PLINKO_MULT[slot];
+ plinkoBall={x:450,y:20,vx:0,vy:0,slot,mult,bet,started:now(),history:[],finished:false};
+ document.getElementById('stageMessage').textContent='Шарик в полёте…';
+ animatePlinko()
+}
+function animatePlinko(){
+ stopAnimation();
+ const c=document.getElementById('gameCanvas'),x=c.getContext('2d');
+ const ball=plinkoBall;if(!ball)return;
+ function frame(){
+  if(!currentGame||currentGame!=='plinko'||!plinkoBall)return;
+  const elapsed=(now()-ball.started)/1000,w=c.width,h=c.height;
+  drawPlinkoIdle();
+  const rows=12,spacing=49;
+  for(let i=0;i<ball.history.length;i++){const p=ball.history[i];x.fillStyle=`rgba(37,217,255,${i/ball.history.length*.4})`;x.beginPath();x.arc(p.x,p.y,3,0,Math.PI*2);x.fill()}
+  let progress=clamp(elapsed/2.7,0,1);
+  const targetX=(ball.slot+.5)*w/13;
+  const drift=Math.sin(elapsed*17)*18*(1-progress);
+  ball.x=w/2+(targetX-w/2)*progress+drift;
+  ball.y=20+progress*(h-70);
+  ball.history.push({x:ball.x,y:ball.y});if(ball.history.length>12)ball.history.shift();
+  if(progress<1){
+   x.beginPath();x.arc(ball.x,ball.y,10,0,Math.PI*2);x.fillStyle='#25D9FF';x.shadowColor='#25D9FF';x.shadowBlur=20;x.fill();x.shadowBlur=0;
+   animationFrame=requestAnimationFrame(frame)
+  }else{
+   plinkoBall=null;finishWin('Лунка '+(ball.slot+1)+' · '+ball.mult+'×',ball.mult);
+   document.getElementById('stageMessage').textContent='Результат: '+ball.mult+'×';drawPlinkoIdle()
   }
+ }
+ frame()
+}
+function animateCowCars(){
+ if(!currentGame||currentGame!=='cow')return;
+ const dt=Math.min(.05,(now()-lastFrame)/1000||.016);lastFrame=now();
+ cowCars.forEach(c=>{c.x+=c.speed*dt;if(c.x>930)c.x=-100});
+ drawCowScene();animationFrame=requestAnimationFrame(animateCowCars)
+}
+function saveCrashStake(){
+ const bet=getBet();if(!bet)return false;if(!chargeBet(bet))return false;
+ return true
+}
+function utcRound(){
+ const ms=now(),period=20000,phase=ms%period;
+ return {id:Math.floor(ms/period),phase,remaining:period-phase,betting:phase<10000}
+}
+function setupCrashRound(){
+ if(!currentGame||!['rocket','flight'].includes(currentGame))return;
+ const clock=utcRound(),s=roundState;
+ if(s&&s.roundId===clock.id)return;
+ if(s?.active){finishLose('Раунд завершился',s.multiplier||1)}
+ roundState={roundId:clock.id,phase:clock.phase,betting:clock.betting,waiting:true,active:false,finished:false,recorded:false,multiplier:1,status:clock.betting?'Приём ставок':'Полёт',crashAt:calculateCrash(clock.id+713)};
+ document.getElementById('stageMessage').textContent=clock.betting?'Приём ставок · '+Math.ceil(clock.remaining/1000)+' сек':'Раунд уже летит';
+ if(clock.betting&&s?.queuedBet){
+  roundState.bet=s.queuedBet;roundState.queuedBet=null;roundState.active=true;roundState.waiting=false;roundState.flightStartedAt=msToFlightStart(clock.id)
+ }
+ if(s?.queuedBet&&clock.betting){roundState.bet=s.queuedBet;roundState.active=true;roundState.waiting=false;roundState.flightStartedAt=msToFlightStart(clock.id)}
+}
+function msToFlightStart(id){return (id*20000)+10000}
+function crashBet(){
+ const s=roundState;
+ if(!s||!s.betting){notify('Приём ставок закрыт.');return}
+ if(s.active){cashOutCrash();return}
+ const bet=getBet();if(!bet)return;if(!chargeBet(bet))return;
+ s.bet=bet;s.active=true;s.waiting=false;s.flightStartedAt=now();s.status='Полёт';s.crashAt=calculateCrash(s.roundId+713);
+ document.getElementById('stageMessage').textContent='Ракета взлетела! Забирай вовремя.';
+ updateGameUI()
+}
+function crashTick(){
+ if(!currentGame||!['rocket','flight'].includes(currentGame))return;
+ const clock=utcRound();
+ if(!roundState||roundState.roundId!==clock.id){
+  setupCrashRound()
+ }
+ const s=roundState;
+ if(!s)return;
+ if(s.active&&!s.finished){
+  const elapsed=(now()-s.flightStartedAt)/1000;
+  s.multiplier=Math.pow(1.06,Math.max(0,elapsed)*3);
+  if(s.multiplier>=s.crashAt){crashNow()}
+ }else if(s.betting&&!s.active){
+  s.status='Приём ставок';document.getElementById('stageMessage').textContent='До взлёта: '+Math.ceil((10000-clock.phase)/1000)+' сек'
+ }else if(!s.active&&!s.finished){
+  s.status='Полёт';document.getElementById('stageMessage').textContent='Раунд идёт. Жди следующего.'
+ }
+ updateGameUI();
+ setTimeout(crashTick,200)
+}
+function installCrashAction(){
+ document.getElementById('mainAction').onclick=()=>{
+  if(!currentGame)return;
+  if(currentGame==='rocket'||currentGame==='flight'){
+   const s=roundState;
+   if(s?.active){cashOutCrash();return}
+   if(s?.betting){crashBet();return}
+   notify('Дождись следующего приёма ставок.');return
+  }
+  gameAction()
+ }
+}
+function boot(){
+ loadUsers();
+ const sess=safeParse(localStorage.getItem(SESSION_KEY),null);
+ if(sess?.login&&users[sess.login]){
+  login=sess.login;setUser();
+  document.getElementById('loginOverlay').classList.add('hidden')
+ }else{
+  document.getElementById('loginOverlay').classList.remove('hidden')
+ }
+ renderAvatarChoices('loginAvatars');renderAll();
+ installCrashAction();
+ document.getElementById('betInput').addEventListener('keydown',e=>{if(e.key==='Enter')gameAction()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentGame&&['rocket','flight'].includes(currentGame)){setupCrashRound();crashTick()}});
+ window.addEventListener('beforeunload',()=>{if(user)saveUsers()});
+}
+boot();
+
+/* Public handlers used by the interface. */
+window.showPage=showPage;
+window.authenticate=authenticate;
+window.toggleAuthMode=toggleAuthMode;
+window.logout=logout;
+window.saveProfile=saveProfile;
+window.updateSettings=updateSettings;
+window.exportData=exportData;
+window.importData=importData;
+window.openGame=function(id){
+ openGame(id);
+ if(id==='rocket'||id==='flight'){
+  setupCrashRound();crashTick()
+ }
+ if(id==='cow'){lastFrame=now();animateCowCars()}
 };
+window.closeGame=closeGame;
+window.adjustBet=adjustBet;
+window.quickBet=quickBet;
+window.gameAction=gameAction;
+window.setMineCount=setMineCount;
+window.selectMine=selectMine;
+window.renderHistory=renderHistory;
+window.cowStep=cowStep;
+window.openMine=openMine;
+window.dropPlinko=dropPlinko;
 
-/* ============================================================
-   ИГРА «МИНЫ»
-   ============================================================ */
-const MinesGame = {
-  active: false, bet: 0, mines: 3, grid: [], opened: 0, multiplier: 1,
-
-  render() {
-    return `
-      <div class="arena" style="background:radial-gradient(ellipse at 50% 30%,rgba(79,107,255,.15) 0%,transparent 60%),#0A0E1A;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
-        <div style="text-align:center;margin-bottom:16px">
-          <div class="multiplier" id="mMult" style="font-size:44px;position:static;background:linear-gradient(135deg,#22c55e 0%,#25D9FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">1.00x</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:4px">Открыто: <span id="mOpened">0</span></div>
-        </div>
-        <div id="mGrid" style="display:grid;gap:8px;width:100%;max-width:440px;grid-template-columns:repeat(5,1fr)"></div>
-      </div>
-      <div class="controls">
-        <div class="controls-row">
-          <div class="bet-group">
-            <button class="bet-btn" onclick="MinesGame.betStep(-10)">−</button>
-            <input type="number" id="mBet" value="10" min="1" step="1">
-            <button class="bet-btn" onclick="MinesGame.betStep(10)">+</button>
-            <div class="bet-quick">
-              <button onclick="MinesGame.betSet('half')">½</button>
-              <button onclick="MinesGame.betSet('double')">2×</button>
-              <button onclick="MinesGame.betSet('max')">MAX</button>
-            </div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">Потенциал</div>
-            <div class="info-value green" id="mInfoWin">0 ₽</div>
-          </div>
-        </div>
-        <div class="controls-row" id="mMineTabs" style="gap:6px">
-          <button class="bet-btn" style="flex:1;font-size:12px" data-m="1" onclick="MinesGame.setMines(1)">1 💣</button>
-          <button class="bet-btn" style="flex:1;font-size:12px;background:var(--grad);border-color:transparent" data-m="3" onclick="MinesGame.setMines(3)">3 💣</button>
-          <button class="bet-btn" style="flex:1;font-size:12px" data-m="5" onclick="MinesGame.setMines(5)">5 💣</button>
-          <button class="bet-btn" style="flex:1;font-size:12px" data-m="10" onclick="MinesGame.setMines(10)">10 💣</button>
-        </div>
-        <button class="play-btn" id="mBtn" onclick="MinesGame.onPlay()">Начать</button>
-      </div>
-    `;
-  },
-
-  init() {
-    this.active = false;
-    this.opened = 0;
-    this.multiplier = 1;
-    this.mines = 3;
-    document.getElementById('roundIndicator').textContent = 'Раунд #' + ((State.gameStats.mines?.rounds || 0) + 1);
-    this.renderGrid();
-  },
-
-  betStep(d) {
-    const el = document.getElementById('mBet');
-    let v = parseInt(el.value) || 0;
-    v = Math.max(1, Math.min(State.balance, v + d));
-    el.value = v;
-    Sound.click();
-  },
-  betSet(type) {
-    const el = document.getElementById('mBet');
-    let v = parseInt(el.value) || 0;
-    if (type === 'half') v = Math.max(1, Math.floor(v / 2));
-    else if (type === 'double') v = Math.min(State.balance, v * 2);
-    else v = Math.floor(State.balance);
-    el.value = v;
-    Sound.click();
-  },
-  setMines(n) {
-    if (this.active) return;
-    this.mines = n;
-    document.querySelectorAll('#mMineTabs button').forEach(b => { b.style.background = ''; b.style.borderColor = ''; });
-    const el = document.querySelector(`#mMineTabs button[data-m="${n}"]`);
-    if (el) { el.style.background = 'var(--grad)'; el.style.borderColor = 'transparent'; }
-    Sound.click();
-  },
-
-  renderGrid() {
-    const g = document.getElementById('mGrid');
-    if (!g) return;
-    let h = '';
-    for (let i = 0; i < 25; i++) {
-      h += `<div class="mine-cell" data-idx="${i}" style="aspect-ratio:1;background:linear-gradient(135deg,#1a1a35 0%,#151C2B 100%);border-radius:12px;border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;transition:all .15s"></div>`;
-    }
-    g.innerHTML = h;
-  },
-
-  onPlay() { if (this.active) this.cashout(); else this.start(); },
-
-  start() {
-    const bet = parseInt(document.getElementById('mBet').value) || 0;
-    if (bet < 1) { UI.toast('Минимум 1 ₽', 'error'); return; }
-    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
-    this.bet = bet;
-    this.active = true;
-    this.opened = 0;
-    this.multiplier = 1;
-    State.balance -= bet;
-    UI.updateBalance();
-    Storage.saveUserData();
-    this.renderGrid();
-    this.grid = Array(25).fill(false);
-    let p = 0;
-    while (p < this.mines) { const i = Utils.randInt(0, 24); if (!this.grid[i]) { this.grid[i] = true; p++; } }
-    const btn = document.getElementById('mBtn');
-    btn.textContent = 'Забрать';
-    btn.className = 'play-btn cashout';
-    document.querySelectorAll('#mMineTabs button').forEach(b => b.disabled = true);
-    document.querySelectorAll('.mine-cell').forEach(c => {
-      c.onclick = () => this.openCell(parseInt(c.dataset.idx), c);
-    });
-  },
-
-  openCell(idx, cell) {
-    if (!this.active) return;
-    if (cell.classList.contains('opened') || cell.classList.contains('mine')) return;
-    if (this.grid[idx]) {
-      cell.classList.add('mine');
-      cell.style.background = 'linear-gradient(135deg,rgba(239,68,68,.35),rgba(220,38,38,.35))';
-      cell.style.borderColor = 'var(--red)';
-      cell.textContent = '💣';
-      this.lose();
-    } else {
-      cell.classList.add('opened');
-      cell.style.background = 'linear-gradient(135deg,rgba(34,197,94,.25),rgba(37,217,255,.25))';
-      cell.style.borderColor = 'var(--green)';
-      cell.textContent = '💎';
-      this.opened++;
-      Sound.coin();
-      this.updateMult();
-    }
-  },
-
-  updateMult() {
-    const N = 25, M = this.mines;
-    let m = 1;
-    for (let i = 0; i < this.opened; i++) m *= (N - i) / (N - M - i);
-    m *= 0.97;
-    this.multiplier = m;
-    document.getElementById('mMult').textContent = m.toFixed(2) + 'x';
-    document.getElementById('mOpened').textContent = this.opened;
-    const win = this.bet * m;
-    document.getElementById('mInfoWin').textContent = Utils.fmt(win) + ' ₽';
-    document.getElementById('mBtn').textContent = 'Забрать ' + Utils.fmt(win) + ' ₽';
-  },
-
-  cashout() {
-    if (!this.active) return;
-    if (this.opened === 0) { UI.toast('Открой хотя бы одну', 'error'); return; }
-    const win = this.bet * this.multiplier;
-    State.balance += win;
-    UI.updateBalance();
-    Sound.win();
-    Sound.vib([50, 30, 50]);
-    UI.toast('+' + Utils.fmt(win) + ' ₽ при ×' + this.multiplier.toFixed(2), 'success');
-    trackRound('mines', true, this.multiplier, win);
-    addHistory('mines', this.opened + ' клеток ×' + this.multiplier.toFixed(2), win, true);
-    this.reset();
-  },
-
-  lose() {
-    this.active = false;
-    Sound.crash();
-    Sound.vib([100, 50, 100]);
-    UI.toast('Мина!', 'error');
-    trackRound('mines', false, this.multiplier);
-    addHistory('mines', 'Мина', this.bet, false);
-    document.querySelectorAll('.mine-cell').forEach(c => {
-      const i = parseInt(c.dataset.idx);
-      if (this.grid[i] && !c.classList.contains('mine')) {
-        c.classList.add('mine');
-        c.style.background = 'linear-gradient(135deg,rgba(239,68,68,.35),rgba(220,38,38,.35))';
-        c.style.borderColor = 'var(--red)';
-        c.textContent = '💣';
-      }
-    });
-    setTimeout(() => this.reset(), 2200);
-  },
-
-  reset() {
-    this.active = false;
-    this.opened = 0;
-    this.multiplier = 1;
-    const btn = document.getElementById('mBtn');
-    if (btn) { btn.textContent = 'Начать'; btn.className = 'play-btn'; }
-    const m = document.getElementById('mMult');
-    if (m) m.textContent = '1.00x';
-    const o = document.getElementById('mOpened');
-    if (o) o.textContent = '0';
-    const w = document.getElementById('mInfoWin');
-    if (w) w.textContent = '0 ₽';
-    document.querySelectorAll('#mMineTabs button').forEach(b => b.disabled = false);
-    this.renderGrid();
-  },
-
-  destroy() { this.reset(); }
-};
-
-/* ============================================================
-   ИГРА «ПЛИНКО»
-   ============================================================ */
-const PlinkoGame = {
-  active: false, bet: 0, rows: 12,
-  multipliers: [8, 4, 2, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 2, 4, 8],
-  colors: ['#ef4444','#ef4444','#fbbf24','#fbbf24','#22c55e','#22c55e','#22c55e','#22c55e','#22c55e','#fbbf24','#fbbf24','#ef4444','#ef4444'],
-  canvas: null, ctx: null, W: 0, H: 0,
-
-  render() {
-    return `
-      <div class="arena" style="background:radial-gradient(ellipse at 50% 20%,rgba(79,107,255,.15) 0%,transparent 60%),#0A0E1A;position:relative;overflow:hidden;display:flex;justify-content:center;padding:10px 0">
-        <canvas id="plCanvas" style="width:100%;height:100%;max-width:520px"></canvas>
-      </div>
-      <div class="controls">
-        <div class="controls-row">
-          <div class="bet-group">
-            <button class="bet-btn" onclick="PlinkoGame.betStep(-10)">−</button>
-            <input type="number" id="plBet" value="10" min="1" step="1">
-            <button class="bet-btn" onclick="PlinkoGame.betStep(10)">+</button>
-            <div class="bet-quick">
-              <button onclick="PlinkoGame.betSet('half')">½</button>
-              <button onclick="PlinkoGame.betSet('double')">2×</button>
-              <button onclick="PlinkoGame.betSet('max')">MAX</button>
-            </div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">Последний</div>
-            <div class="info-value gold" id="plLast">—</div>
-          </div>
-        </div>
-        <div class="controls-row">
-          <div class="info-group" style="flex:1">
-            <div class="info-label">Макс. потенциально</div>
-            <div class="info-value green" id="plInfoWin">0 ₽</div>
-          </div>
-        </div>
-        <button class="play-btn" id="plBtn" onclick="PlinkoGame.play()">Бросить шарик</button>
-      </div>
-    `;
-  },
-
-  init() {
-    document.getElementById('roundIndicator').textContent = 'Раунд #' + ((State.gameStats.plinko?.rounds || 0) + 1);
-    this.active = false;
-    const c = document.getElementById('plCanvas');
-    this.canvas = c;
-    this.ctx = c.getContext('2d');
-    this.resize();
-    window.addEventListener('resize', () => this.resize());
-    document.getElementById('plInfoWin').textContent = Utils.fmt(parseInt(document.getElementById('plBet').value) * 8) + ' ₽';
-    this.drawBoard();
-  },
-
-  resize() {
-    const arena = this.canvas?.parentElement;
-    if (!arena || !this.canvas) return;
-    const rect = arena.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.canvas.style.width = rect.width + 'px';
-    this.canvas.style.height = rect.height + 'px';
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.scale(dpr, dpr);
-    this.W = rect.width;
-    this.H = rect.height;
-    this.drawBoard();
-  },
-
-  betStep(d) {
-    const el = document.getElementById('plBet');
-    let v = parseInt(el.value) || 0;
-    v = Math.max(1, Math.min(State.balance, v + d));
-    el.value = v;
-    document.getElementById('plInfoWin').textContent = Utils.fmt(v * 8) + ' ₽';
-    Sound.click();
-  },
-  betSet(type) {
-    const el = document.getElementById('plBet');
-    let v = parseInt(el.value) || 0;
-    if (type === 'half') v = Math.max(1, Math.floor(v / 2));
-    else if (type === 'double') v = Math.min(State.balance, v * 2);
-    else v = Math.floor(State.balance);
-    el.value = v;
-    document.getElementById('plInfoWin').textContent = Utils.fmt(v * 8) + ' ₽';
-    Sound.click();
-  },
-
-  drawBoard() {
-    if (!this.ctx) return;
-    const ctx = this.ctx;
-    const W = this.W, H = this.H;
-    ctx.clearRect(0, 0, W, H);
-    const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H);
-    grad.addColorStop(0, 'rgba(79,107,255,0.12)');
-    grad.addColorStop(1, 'rgba(10,14,26,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    const rows = this.rows;
-    const bucketH = 44;
-    const bucketY = H - bucketH - 10;
-    const pegAreaTop = 30;
-    const pegAreaH = bucketY - pegAreaTop - 10;
-    const rowH = pegAreaH / rows;
-    const maxPegs = rows + 2;
-    const pegSpacing = (W - 40) / (maxPegs - 1);
-
-    for (let r = 0; r < rows; r++) {
-      const count = r + 3;
-      const y = pegAreaTop + r * rowH;
-      const rowW = (count - 1) * pegSpacing;
-      const startX = (W - rowW) / 2;
-      for (let i = 0; i < count; i++) {
-        const x = startX + i * pegSpacing;
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.shadowColor = 'rgba(79,107,255,0.6)';
-        ctx.shadowBlur = 6;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-    }
-
-    const bucketCount = 13;
-    const bucketW = (W - 20) / bucketCount;
-    for (let i = 0; i < bucketCount; i++) {
-      const x = 10 + i * bucketW;
-      ctx.fillStyle = this.colors[i];
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x + 1, bucketY, bucketW - 2, bucketH, 6);
-      else ctx.rect(x + 1, bucketY, bucketW - 2, bucketH);
-      ctx.fill();
-      ctx.fillStyle = '#000';
-      ctx.font = 'bold 11px -apple-system,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('×' + this.multipliers[i], x + bucketW/2, bucketY + bucketH/2);
-    }
-  },
-
-  play() {
-    if (this.active) return;
-    const bet = parseInt(document.getElementById('plBet').value) || 0;
-    if (bet < 1) { UI.toast('Минимум 1 ₽', 'error'); return; }
-    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
-    this.bet = bet;
-    this.active = true;
-    State.balance -= bet;
-    UI.updateBalance();
-    Storage.saveUserData();
-    Sound.click();
-    const btn = document.getElementById('plBtn');
-    btn.textContent = 'Бросаем...';
-    btn.className = 'play-btn wait';
-    btn.disabled = true;
-    const rows = this.rows;
-    let path = [], pos = 0;
-    for (let r = 0; r < rows; r++) { pos += Math.random() < 0.5 ? -1 : 1; path.push(pos); }
-    const finalPos = Math.max(-6, Math.min(6, pos));
-    const bucketIdx = finalPos + 6;
-    this.animateBall(path, bucketIdx);
-  },
-
-  animateBall(path, bucketIdx) {
-    const ctx = this.ctx;
-    const W = this.W, H = this.H;
-    const rows = this.rows;
-    const bucketH = 44;
-    const bucketY = H - bucketH - 10;
-    const pegAreaTop = 30;
-    const pegAreaH = bucketY - pegAreaTop - 10;
-    const rowH = pegAreaH / rows;
-    const maxPegs = rows + 2;
-    const pegSpacing = (W - 40) / (maxPegs - 1);
-    const bucketCount = 13;
-    const bucketW = (W - 20) / bucketCount;
-    const targetX = 10 + bucketIdx * bucketW + bucketW/2;
-    let step = 0;
-    const total = path.length;
-    let ballX = W/2, ballY = pegAreaTop - 20;
-
-    const stepFn = () => {
-      if (!this.active) return;
-      this.drawBoard();
-      ctx.beginPath();
-      ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
-      const g = ctx.createRadialGradient(ballX - 2, ballY - 2, 0, ballX, ballY, 10);
-      g.addColorStop(0, '#fbbf24');
-      g.addColorStop(1, '#ef4444');
-      ctx.fillStyle = g;
-      ctx.shadowColor = 'rgba(251,191,36,0.9)';
-      ctx.shadowBlur = 16;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      step++;
-      if (step <= total) {
-        const y = pegAreaTop + step * rowH;
-        const offset = path.slice(0, step).reduce((a,b) => a+b, 0);
-        ballX = W/2 + offset * (pegSpacing / 2);
-        ballY = y;
-        Sound.bounce();
-        setTimeout(stepFn, 140);
-      } else {
-        ballX = targetX;
-        ballY = bucketY + 20;
-        setTimeout(() => this.finish(bucketIdx), 200);
-      }
-    };
-    stepFn();
-  },
-
-  finish(bucketIdx) {
-    this.active = false;
-    const mult = this.multipliers[bucketIdx] || 0.3;
-    document.getElementById('plLast').textContent = '×' + mult;
-    const btn = document.getElementById('plBtn');
-    btn.textContent = 'Бросить ещё';
-    btn.className = 'play-btn';
-    btn.disabled = false;
-    if (mult >= 1) {
-      const win = this.bet * mult;
-      State.balance += win;
-      UI.updateBalance();
-      Sound.win();
-      Sound.vib([50, 30, 50]);
-      UI.toast('×' + mult + ' → +' + Utils.fmt(win) + ' ₽', 'success');
-      trackRound('plinko', true, mult, win);
-      addHistory('plinko', '×' + mult, win, true);
-    } else {
-      Sound.lose();
-      UI.toast('×' + mult + ' → минус', 'error');
-      trackRound('plinko', false, mult);
-      addHistory('plinko', '×' + mult, this.bet, false);
-    }
-    this.drawBoard();
-  },
-
-  destroy() { this.active = false; }
-};
-
-/* ============================================================
-   ИГРА «КОРОВКА»
-   ============================================================ */
-const CowGame = {
-  active: false, bet: 0, lane: 0, posInLane: 0, multiplier: 1, carTimers: [],
-  multTable: [1.00, 1.20, 1.50, 1.90, 2.50, 3.30],
-
-  render() {
-    return `
-      <div class="arena" style="background:linear-gradient(180deg,#7FD4FF 0%,#B7E5FF 40%,#A8E063 60%,#7CB342 100%);position:relative;overflow:hidden">
-        <div style="position:absolute;top:6%;right:10%;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,#FFF3B0 0%,#FFC857 60%,transparent 80%);box-shadow:0 0 60px rgba(255,200,87,.7)"></div>
-        <div id="cClouds"></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:50%">
-          <div style="position:absolute;bottom:0;left:-5%;width:45%;height:150px;background:linear-gradient(180deg,#A8E063 0%,#7CB342 100%);border-radius:50% 50% 0 0;opacity:.5"></div>
-          <div style="position:absolute;bottom:0;left:35%;width:45%;height:180px;background:linear-gradient(180deg,#A8E063 0%,#7CB342 100%);border-radius:50% 50% 0 0;opacity:.7"></div>
-        </div>
-        <div id="cRoad" style="position:absolute;bottom:8%;left:0;right:0;height:180px;background:linear-gradient(180deg,#4A4A4A 0%,#3A3A3A 50%,#2A2A2A 100%);border-top:4px solid #5A5A5A;border-bottom:4px solid #5A5A5A">
-          <div style="position:absolute;top:50%;left:0;right:0;height:5px;background:repeating-linear-gradient(90deg,#FFC857 0 40px,transparent 40px 80px);transform:translateY(-50%);opacity:.9"></div>
-        </div>
-        <svg id="cSprite" viewBox="0 0 100 70" fill="none" style="position:absolute;width:70px;height:50px;left:6%;bottom:12%;z-index:10;transition:left .35s ease,bottom .35s ease;filter:drop-shadow(0 6px 12px rgba(0,0,0,.3))">
-          <defs>
-            <linearGradient id="cowBody" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E8EEF7"/>
-            </linearGradient>
-          </defs>
-          <ellipse cx="50" cy="48" rx="28" ry="16" fill="url(#cowBody)" stroke="#2A2A2A" stroke-width="2"/>
-          <ellipse cx="42" cy="42" rx="6" ry="5" fill="#2A2A2A"/>
-          <ellipse cx="60" cy="50" rx="7" ry="5" fill="#2A2A2A"/>
-          <ellipse cx="34" cy="52" rx="5" ry="4" fill="#2A2A2A"/>
-          <rect x="24" y="60" width="5" height="8" fill="#2A2A2A" rx="2"/>
-          <rect x="36" y="60" width="5" height="8" fill="#2A2A2A" rx="2"/>
-          <rect x="58" y="60" width="5" height="8" fill="#2A2A2A" rx="2"/>
-          <rect x="72" y="60" width="5" height="8" fill="#2A2A2A" rx="2"/>
-          <ellipse cx="24" cy="36" rx="14" ry="12" fill="url(#cowBody)" stroke="#2A2A2A" stroke-width="2"/>
-          <ellipse cx="22" cy="40" rx="6" ry="4" fill="#FFB6C1"/>
-          <circle cx="20" cy="36" r="1.5" fill="#2A2A2A"/>
-          <circle cx="26" cy="36" r="1.5" fill="#2A2A2A"/>
-          <ellipse cx="14" cy="32" rx="3" ry="4" fill="#2A2A2A"/>
-          <ellipse cx="32" cy="32" rx="3" ry="4" fill="#2A2A2A"/>
-          <path d="M78 40 Q88 35 92 42" stroke="#2A2A2A" stroke-width="2" fill="none"/>
-        </svg>
-        <div id="cStatus" style="position:absolute;top:14px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:20px;background:rgba(0,0,0,.5);font-size:13px;font-weight:800;color:#fff;z-index:15;white-space:nowrap">Переведи коровку через дорогу</div>
-      </div>
-      <div class="controls">
-        <div class="controls-row">
-          <div class="bet-group">
-            <button class="bet-btn" onclick="CowGame.betStep(-10)">−</button>
-            <input type="number" id="cBet" value="10" min="1" step="1">
-            <button class="bet-btn" onclick="CowGame.betStep(10)">+</button>
-            <div class="bet-quick">
-              <button onclick="CowGame.betSet('half')">½</button>
-              <button onclick="CowGame.betSet('double')">2×</button>
-              <button onclick="CowGame.betSet('max')">MAX</button>
-            </div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">Множитель</div>
-            <div class="info-value purple" id="cInfoMult">1.00x</div>
-          </div>
-        </div>
-        <div class="controls-row">
-          <div class="info-group" style="flex:1">
-            <div class="info-label">Потенциальный выигрыш</div>
-            <div class="info-value green" id="cInfoWin">0 ₽</div>
-          </div>
-        </div>
-        <button class="play-btn" id="cBtn" onclick="CowGame.onPlay()">Начать</button>
-      </div>
-    `;
-  },
-
-  init() {
-    document.getElementById('roundIndicator').textContent = 'Раунд #' + ((State.gameStats.cow?.rounds || 0) + 1);
-    this.active = false;
-    this.lane = 0;
-    this.posInLane = 0;
-    this.multiplier = 1;
-    this.renderClouds();
-  },
-
-  renderClouds() {
-    const el = document.getElementById('cClouds');
-    if (!el) return;
-    let h = '';
-    for (let i = 0; i < 4; i++) {
-      const size = Utils.rand(50, 100);
-      h += `<div class="cow-cloud" style="width:${size}px;height:${size*0.5}px;top:${Utils.rand(5,25)}%;left:${Utils.rand(-5,85)}%;animation:cloudMove ${Utils.rand(50,90)}s linear infinite;animation-delay:${-Utils.rand(0,50)}s"></div>`;
-    }
-    el.innerHTML = h;
-  },
-
-  betStep(d) {
-    const el = document.getElementById('cBet');
-    let v = parseInt(el.value) || 0;
-    v = Math.max(1, Math.min(State.balance, v + d));
-    el.value = v;
-    Sound.click();
-  },
-  betSet(type) {
-    const el = document.getElementById('cBet');
-    let v = parseInt(el.value) || 0;
-    if (type === 'half') v = Math.max(1, Math.floor(v / 2));
-    else if (type === 'double') v = Math.min(State.balance, v * 2);
-    else v = Math.floor(State.balance);
-    el.value = v;
-    Sound.click();
-  },
-
-  onPlay() { if (this.active) this.step(); else this.start(); },
-
-  start() {
-    const bet = parseInt(document.getElementById('cBet').value) || 0;
-    if (bet < 1) { UI.toast('Минимум 1 ₽', 'error'); return; }
-    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
-    this.bet = bet;
-    this.lane = 0;
-    this.posInLane = 0;
-    this.multiplier = 1;
-    this.active = true;
-    this.carTimers = [];
-    State.balance -= bet;
-    UI.updateBalance();
-    Storage.saveUserData();
-    const btn = document.getElementById('cBtn');
-    btn.textContent = 'ШАГ ×1.00';
-    btn.className = 'play-btn cashout';
-    document.getElementById('cStatus').textContent = 'Коровка на дороге...';
-    document.getElementById('cSprite').style.left = '6%';
-    document.getElementById('cSprite').style.bottom = '12%';
-    document.getElementById('cSprite').style.transform = '';
-    this.updateMult();
-    this.startCars();
-    Sound.play(220, 0.15, 'sine', 0.08);
-  },
-
-  startCars() {
-    for (let li = 0; li < 3; li++) {
-      const timer = setInterval(() => {
-        if (!this.active) return;
-        const road = document.getElementById('cRoad');
-        if (!road) return;
-        const car = document.createElement('div');
-        const carEmoji = ['🚗','🚕','🚙'][li];
-        const fromLeft = li % 2 === 0;
-        car.textContent = carEmoji;
-        car.style.position = 'absolute';
-        car.style.fontSize = '32px';
-        car.style.top = (15 + li * 30) + '%';
-        car.style.left = fromLeft ? '-15%' : '110%';
-        car.style.transform = fromLeft ? 'scaleX(-1)' : 'scaleX(1)';
-        car.style.transition = 'left linear';
-        car.style.transitionDuration = Utils.rand(2.5, 4) + 's';
-        car.style.zIndex = '5';
-        car.dataset.lane = li;
-        car.dataset.fromLeft = fromLeft;
-        road.appendChild(car);
-        setTimeout(() => { car.style.left = fromLeft ? '110%' : '-15%'; }, 50);
-        setTimeout(() => car.remove(), 5000);
-      }, Utils.rand(1500, 2200) + li * 400);
-      this.carTimers.push(timer);
-    }
-  },
-
-  checkCollision() {
-    const road = document.getElementById('cRoad');
-    if (!road) return false;
-    const cars = road.querySelectorAll('div[data-lane]');
-    const cow = document.getElementById('cSprite').getBoundingClientRect();
-    for (const car of cars) {
-      const carLane = parseInt(car.dataset.lane);
-      const expectedTop = 15 + carLane * 30;
-      const carTop = parseFloat(car.style.top);
-      if (Math.abs(carTop - expectedTop) > 5) continue;
-      if (carLane !== this.lane) continue;
-      const carRect = car.getBoundingClientRect();
-      if (carRect.left < cow.right && carRect.right > cow.left &&
-          carRect.top < cow.bottom && carRect.bottom > cow.top) {
-        return true;
-      }
-    }
-    return false;
-  },
-
-  step() {
-    if (!this.active) return;
-    if (this.checkCollision()) { this.hit(); return; }
-    this.posInLane++;
-    Sound.click();
-    const leftPct = 6 + this.posInLane * 24;
-    document.getElementById('cSprite').style.left = leftPct + '%';
-    if (this.posInLane >= 3) {
-      this.lane++;
-      this.posInLane = 0;
-      if (this.lane >= 3) { this.win(); return; }
-      document.getElementById('cSprite').style.left = '6%';
-      document.getElementById('cSprite').style.bottom = (12 + this.lane * 20) + '%';
-      Sound.play(220, 0.15, 'sine', 0.08);
-    }
-    this.multiplier = this.multTable[this.lane] || this.multTable[5];
-    this.updateMult();
-  },
-
-  updateMult() {
-    const m = this.multiplier;
-    document.getElementById('cInfoMult').textContent = m.toFixed(2) + 'x';
-    const win = this.bet * m;
-    document.getElementById('cInfoWin').textContent = Utils.fmt(win) + ' ₽';
-    if (this.active) document.getElementById('cBtn').textContent = 'ШАГ ×' + m.toFixed(2);
-  },
-
-  hit() {
-    if (!this.active) return;
-    this.active = false;
-    this.carTimers.forEach(t => clearInterval(t));
-    this.carTimers = [];
-    Sound.crash();
-    Sound.vib([100, 50, 100]);
-    document.getElementById('cSprite').style.transform = 'rotate(-90deg) translateY(20px)';
-    document.getElementById('cStatus').textContent = 'Машина сбила коровку!';
-    UI.toast('Сбила машина!', 'error');
-    trackRound('cow', false, this.multiplier);
-    addHistory('cow', 'Сбила ×' + this.multiplier.toFixed(2), this.bet, false);
-    setTimeout(() => this.reset(), 2200);
-  },
-
-  win() {
-    this.active = false;
-    this.carTimers.forEach(t => clearInterval(t));
-    this.carTimers = [];
-    this.multiplier = this.multTable[5];
-    const win = this.bet * this.multiplier;
-    State.balance += win;
-    UI.updateBalance();
-    Sound.bigWin();
-    Sound.vib([50, 30, 50]);
-    document.getElementById('cStatus').textContent = 'Коровка перешла! ×' + this.multiplier.toFixed(2);
-    UI.toast('+' + Utils.fmt(win) + ' ₽ при ×' + this.multiplier.toFixed(2), 'success');
-    trackRound('cow', true, this.multiplier, win);
-    addHistory('cow', 'Перешла ×' + this.multiplier.toFixed(2), win, true);
-    setTimeout(() => this.reset(), 2200);
-  },
-
-  reset() {
-    this.active = false;
-    this.carTimers.forEach(t => clearInterval(t));
-    this.carTimers = [];
-    this.lane = 0;
-    this.posInLane = 0;
-    this.multiplier = 1;
-    const btn = document.getElementById('cBtn');
-    if (btn) { btn.textContent = 'Начать'; btn.className = 'play-btn'; }
-    const st = document.getElementById('cStatus');
-    if (st) st.textContent = 'Переведи коровку через дорогу';
-    const sp = document.getElementById('cSprite');
-    if (sp) { sp.style.left = '6%'; sp.style.bottom = '12%'; sp.style.transform = ''; }
-    const m = document.getElementById('cInfoMult');
-    if (m) m.textContent = '1.00x';
-    const w = document.getElementById('cInfoWin');
-    if (w) w.textContent = '0 ₽';
-    const road = document.getElementById('cRoad');
-    if (road) road.querySelectorAll('div[data-lane]').forEach(c => c.remove());
-  },
-
-  destroy() { this.reset(); }
-};
-
-/* ============================================================
-   ФИНАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
-   ============================================================ */
-window.addEventListener('resize', () => {
-  if (typeof PlinkoGame !== 'undefined' && PlinkoGame.canvas) PlinkoGame.resize();
 });
 </script>
 </body>
