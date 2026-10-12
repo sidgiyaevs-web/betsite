@@ -2,4314 +2,1186 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#101318">
-<title>OpenBet — Sports Simulator</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0d1a">
+<title>RubWin — Мини-приложение</title>
 <style>
-/* =========================================================
-   OPENBET — DESIGN SYSTEM
-   ========================================================= */
-
-:root {
-    --bg: #101318;
-    --bg-secondary: #151920;
-    --panel: #1a1f27;
-    --panel-hover: #202630;
-    --panel-light: #252c36;
-    --border: #2a303b;
-    --border-light: #343c49;
-    --text: #f2f4f7;
-    --text-secondary: #a2a9b6;
-    --text-muted: #707989;
-    --accent: #a5f05c;
-    --accent-hover: #b8ff70;
-    --accent-text: #14200b;
-    --red: #ff5265;
-    --orange: #ffab58;
-    --blue: #69a9ff;
-    --purple: #b49aff;
-    --radius: 12px;
-    --radius-small: 8px;
-    --sidebar-width: 238px;
-    --coupon-width: 315px;
-    --topbar-height: 68px;
-    --transition: 160ms ease;
-    --shadow: 0 12px 36px rgba(0,0,0,.18);
-}
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-    scrollbar-color: #454d59 #171b22;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                 Roboto, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.45;
-}
-
-button, input, select {
-    font: inherit;
-}
-
-button {
-    color: inherit;
-    cursor: pointer;
-}
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-button:disabled {
-    opacity: .45;
-    cursor: not-allowed;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.muted {
-    color: var(--text-secondary);
-}
-
-.green {
-    color: var(--accent);
-}
-
-.red {
-    color: var(--red);
-}
-
-.small {
-    font-size: 11px;
-}
-
-.uppercase {
-    text-transform: uppercase;
-    letter-spacing: .08em;
-}
-
-.app {
-    min-height: 100vh;
-}
-
-.topbar {
-    height: var(--topbar-height);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    padding: 0 20px;
-    background: rgba(17,20,26,.96);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    flex-shrink: 0;
-    font-size: 21px;
-    font-weight: 900;
-    letter-spacing: -.8px;
-}
-
-.brand-symbol {
-    width: 35px;
-    height: 35px;
-    display: grid;
-    place-items: center;
-    background: var(--accent);
-    color: #17200f;
-    border-radius: 10px;
-    font-size: 23px;
-    font-weight: 1000;
-}
-
-.brand span:last-child span {
-    color: var(--accent);
-}
-
-.demo-tag {
-    margin-left: 2px;
-    padding: 3px 5px;
-    border: 1px solid #4a613b;
-    border-radius: 4px;
-    color: var(--accent);
-    font-size: 9px;
-    letter-spacing: .8px;
-}
-
-.search-box {
-    width: min(430px, 35vw);
-    height: 37px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    background: #1a1e25;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-
-.search-box span {
-    font-size: 19px;
-    color: var(--text-muted);
-}
-
-.search-box input {
-    width: 100%;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    outline: none;
-}
-
-.search-box input::placeholder {
-    color: #747c89;
-}
-
-.topbar-spacer {
-    flex: 1;
-}
-
-.balance-box {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-}
-
-.balance-box small {
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.balance-box strong {
-    color: var(--accent);
-    font-size: 15px;
-}
-
-.user-button {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 6px 10px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-}
-
-.avatar {
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #35402e;
-    color: var(--accent);
-    font-weight: 800;
-}
-
-.layout {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) minmax(0,1fr) var(--coupon-width);
-    min-height: calc(100vh - var(--topbar-height));
-}
-
-.sidebar {
-    position: sticky;
-    top: var(--topbar-height);
-    height: calc(100vh - var(--topbar-height));
-    overflow-y: auto;
-    padding: 18px 12px;
-    background: #13171d;
-    border-right: 1px solid var(--border);
-}
-
-.sidebar-heading {
-    padding: 10px 10px 8px;
-    color: #737d8c;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-}
-
-.nav-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px;
-    margin-bottom: 3px;
-    color: #abb2bf;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    text-align: left;
-    transition: background var(--transition), color var(--transition);
-}
-
-.nav-item:hover {
-    color: var(--text);
-    background: #20252e;
-}
-
-.nav-item.active {
-    color: var(--accent);
-    background: #242d20;
-    border-color: #36442e;
-}
-
-.nav-icon {
-    width: 20px;
-    text-align: center;
-    font-size: 16px;
-}
-
-.nav-count {
-    margin-left: auto;
-    padding: 2px 6px;
-    color: #aab2be;
-    background: #292f39;
-    border-radius: 5px;
-    font-size: 10px;
-}
-
-.sidebar-divider {
-    height: 1px;
-    margin: 13px 5px;
-    background: var(--border);
-}
-
-.sidebar-footer {
-    margin-top: 24px;
-    padding: 12px;
-    background: #1a2027;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-}
-
-.demo-status {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    color: var(--accent);
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: .6px;
-}
-
-.status-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 9px #a5f05c77;
-}
-
-.sidebar-footer p {
-    margin: 9px 0 0;
-    color: var(--text-muted);
-    font-size: 10px;
-    line-height: 1.7;
-}
-
-.main {
-    min-width: 0;
-    padding: 22px 23px 55px;
-}
-
-.breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 19px;
-    color: var(--text-muted);
-    font-size: 11px;
-}
-
-.breadcrumbs strong {
-    color: var(--text);
-}
-
-.page {
-    display: none;
-    animation: pageEnter .18s ease;
-}
-
-.page.active {
-    display: block;
-}
-
-@keyframes pageEnter {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.hero {
-    position: relative;
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    padding: 28px;
-    background:
-        radial-gradient(ellipse at 83% 50%, #405d2c66, transparent 40%),
-        linear-gradient(115deg,#242d24,#1b2224 58%,#252b31);
-    border: 1px solid #384337;
-    border-radius: 15px;
-}
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 520px;
-}
-
-.hero-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 8px;
-    color: var(--accent);
-    background: #a5f05c12;
-    border: 1px solid #a5f05c35;
-    border-radius: 5px;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 1px;
-}
-
-.hero h1 {
-    margin: 15px 0 9px;
-    font-size: clamp(26px,3vw,39px);
-    line-height: 1.06;
-    letter-spacing: -1.4px;
-}
-
-.hero h1 span {
-    color: var(--accent);
-}
-
-.hero p {
-    max-width: 410px;
-    color: #aab4aa;
-    font-size: 12px;
-    line-height: 1.8;
-}
-
-.hero-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px;
-    margin-top: 20px;
-}
-
-.primary-button,
-.secondary-button {
-    min-height: 37px;
-    padding: 0 15px;
-    border-radius: 7px;
-    font-weight: 800;
-    font-size: 11px;
-    transition: transform var(--transition), background var(--transition);
-}
-
-.primary-button {
-    color: var(--accent-text);
-    background: var(--accent);
-    border: 1px solid var(--accent);
-}
-
-.primary-button:hover {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-}
-
-.secondary-button {
-    color: var(--text);
-    background: #ffffff08;
-    border: 1px solid #ffffff20;
-}
-
-.secondary-button:hover {
-    background: #ffffff12;
-}
-
-.hero-decoration {
-    position: absolute;
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: clamp(100px,15vw,190px);
-    font-weight: 1000;
-    letter-spacing: -15px;
-    color: #ffffff06;
-    user-select: none;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4,minmax(0,1fr));
-    gap: 10px;
-    margin: 15px 0 26px;
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-    padding: 15px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.stat-icon {
-    width: 35px;
-    height: 35px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    background: #a5f05c12;
-    color: var(--accent);
-    border-radius: 8px;
-    font-size: 17px;
-}
-
-.stat-card small {
-    display: block;
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.stat-card strong {
-    display: block;
-    margin-top: 3px;
-    font-size: 19px;
-    letter-spacing: -.4px;
-}
-
-.section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 26px 0 15px;
-}
-
-.section-heading h2,
-.page-heading h1 {
-    margin: 0;
-    font-size: 19px;
-    letter-spacing: -.5px;
-}
-
-.section-heading p,
-.page-heading p {
-    margin: 5px 0 0;
-    color: var(--text-muted);
-    font-size: 11px;
-}
-
-.text-button {
-    padding: 5px;
-    color: var(--accent);
-    background: transparent;
-    border: 0;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.sport-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 18px;
-}
-
-.chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 12px;
-    color: #b2bac6;
-    background: #1b2028;
-    border: 1px solid #2b323d;
-    border-radius: 7px;
-    font-size: 11px;
-    transition: var(--transition);
-}
-
-.chip:hover {
-    border-color: #59636f;
-    color: var(--text);
-}
-
-.chip.active {
-    color: var(--accent);
-    background: #283121;
-    border-color: #4c623b;
-}
-
-.event-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.league-block {
-    overflow: hidden;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-}
-
-.league-header {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 12px 14px;
-    background: #1e242d;
-    border-bottom: 1px solid var(--border);
-}
-
-.league-flag {
-    font-size: 16px;
-}
-
-.league-title {
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.league-subtitle {
-    margin-top: 2px;
-    color: var(--text-muted);
-    font-size: 9px;
-}
-
-.league-event-count {
-    margin-left: auto;
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.event-row {
-    display: grid;
-    grid-template-columns: minmax(0,1fr) minmax(180px,.85fr);
-    gap: 14px;
-    padding: 15px;
-    border-bottom: 1px solid #292f38;
-    transition: background var(--transition);
-}
-
-.event-row:last-child {
-    border-bottom: 0;
-}
-
-.event-row:hover {
-    background: #ffffff03;
-}
-
-.event-main {
-    min-width: 0;
-}
-
-.event-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 12px;
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.live-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--red);
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: .5px;
-}
-
-.live-label::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    background: var(--red);
-    border-radius: 50%;
-    animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-    0%,100% { opacity: 1; }
-    50% { opacity: .35; }
-}
-
-.team-line {
-    display: grid;
-    grid-template-columns: minmax(0,1fr) 48px;
-    align-items: center;
-    gap: 10px;
-    margin: 7px 0;
-}
-
-.team-info {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    min-width: 0;
-}
-
-.team-logo {
-    width: 27px;
-    height: 27px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    background: #2b323d;
-    border: 1px solid #3a424e;
-    border-radius: 7px;
-    font-size: 13px;
-    font-weight: 900;
-}
-
-.team-name {
-    overflow: hidden;
-    color: #e6e9ee;
-    font-size: 12px;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.team-score {
-    text-align: right;
-    font-size: 17px;
-    font-weight: 900;
-}
-
-.team-score.winner {
-    color: var(--accent);
-}
-
-.event-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 12px;
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.event-details span {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.event-markets {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-}
-
-.market-label {
-    margin-bottom: 1px;
-    color: var(--text-muted);
-    font-size: 9px;
-}
-
-.odds-grid {
-    display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 6px;
-}
-
-.odds-button {
-    min-width: 0;
-    padding: 9px 4px;
-    color: var(--text);
-    background: #252b35;
-    border: 1px solid #333b47;
-    border-radius: 6px;
-    text-align: center;
-    transition: background var(--transition),border-color var(--transition);
-}
-
-.odds-button:hover {
-    background: #303945;
-    border-color: #63704f;
-}
-
-.odds-button.selected {
-    color: var(--accent);
-    background: #303d27;
-    border-color: var(--accent);
-}
-
-.odds-button .odd-name {
-    display: block;
-    overflow: hidden;
-    color: #a6aebb;
-    font-size: 9px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.odds-button .odd-value {
-    display: block;
-    margin-top: 3px;
-    font-size: 12px;
-    font-weight: 900;
-}
-
-.odds-button.disabled {
-    opacity: .3;
-    cursor: not-allowed;
-}
-
-.event-bottom {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 4px;
-}
-
-.more-markets {
-    color: var(--accent);
-    background: transparent;
-    border: 0;
-    font-size: 10px;
-}
-
-.event-favorite {
-    color: #747d8b;
-    background: transparent;
-    border: 0;
-    font-size: 18px;
-}
-
-.event-favorite.active {
-    color: #ffd46d;
-}
-
-.empty-state {
-    padding: 55px 20px;
-    color: var(--text-muted);
-    background: var(--panel);
-    border: 1px dashed var(--border-light);
-    border-radius: 10px;
-    text-align: center;
-}
-
-.empty-state strong {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--text);
-    font-size: 16px;
-}
-
-.page-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.page-heading h1 {
-    font-size: 25px;
-}
-
-.page-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px;
-    margin-bottom: 15px;
-}
-
-.input,
-.select {
-    min-height: 37px;
-    padding: 0 11px;
-    color: var(--text);
-    background: #1b2028;
-    border: 1px solid var(--border-light);
-    border-radius: 7px;
-}
-
-.input {
-    min-width: 180px;
-}
-
-.select option {
-    background: var(--panel);
-}
-
-.sport-detail-banner {
-    padding: 23px;
-    margin-bottom: 19px;
-    background: linear-gradient(110deg,#263027,#1a2027);
-    border: 1px solid #394637;
-    border-radius: 12px;
-}
-
-.sport-detail-banner h1 {
-    margin: 0;
-    font-size: 27px;
-}
-
-.sport-detail-banner p {
-    margin: 6px 0 0;
-    color: var(--text-secondary);
-}
-
-.detail-event {
-    margin-bottom: 16px;
-    overflow: hidden;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-}
-
-.detail-event-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    background: #202630;
-    border-bottom: 1px solid var(--border);
-}
-
-.detail-event-body {
-    padding: 20px;
-}
-
-.detail-scoreboard {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 20px;
-    padding: 18px 0 24px;
-}
-
-.detail-team {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    text-align: center;
-}
-
-.detail-team .team-logo {
-    width: 57px;
-    height: 57px;
-    font-size: 25px;
-    border-radius: 13px;
-}
-
-.detail-team-name {
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.detail-score {
-    font-size: 34px;
-    font-weight: 1000;
-    letter-spacing: 3px;
-}
-
-.detail-period {
-    margin-top: 4px;
-    color: var(--text-muted);
-    font-size: 10px;
-    text-align: center;
-}
-
-.market-tabs {
-    display: flex;
-    gap: 5px;
-    overflow-x: auto;
-    padding: 0 0 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-.market-tab {
-    flex-shrink: 0;
-    padding: 8px 11px;
-    color: var(--text-secondary);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    font-size: 10px;
-}
-
-.market-tab.active {
-    color: var(--accent);
-    background: #283121;
-    border-color: #47583a;
-}
-
-.market-section {
-    padding-top: 17px;
-}
-
-.market-section h3 {
-    margin: 0 0 11px;
-    font-size: 12px;
-}
-
-.market-selection-grid {
-    display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 8px;
-}
-
-.market-selection {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 9px;
-    min-height: 42px;
-    padding: 10px;
-    background: #232933;
-    border: 1px solid #333b47;
-    border-radius: 7px;
-    text-align: left;
-    transition: var(--transition);
-}
-
-.market-selection:hover {
-    background: #303744;
-    border-color: #56614d;
-}
-
-.market-selection.selected {
-    color: var(--accent);
-    background: #2d3925;
-    border-color: var(--accent);
-}
-
-.market-selection span:first-child {
-    color: #b9c0cb;
-    font-size: 10px;
-}
-
-.market-selection strong {
-    flex-shrink: 0;
-    font-size: 12px;
-}
-
-.market-category {
-    margin-top: 20px;
-}
-
-.market-category:first-child {
-    margin-top: 0;
-}
-
-.market-category-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.market-category-header h3 {
-    margin: 0;
-    font-size: 12px;
-}
-
-.market-category-header span {
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.coupon {
-    position: sticky;
-    top: var(--topbar-height);
-    height: calc(100vh - var(--topbar-height));
-    overflow-y: auto;
-    padding: 17px 13px;
-    background: #13171d;
-    border-left: 1px solid var(--border);
-}
-
-.coupon-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-
-.coupon-header h2 {
-    margin: 0;
-    font-size: 15px;
-}
-
-.coupon-count {
-    display: grid;
-    place-items: center;
-    min-width: 21px;
-    height: 21px;
-    padding: 0 5px;
-    color: var(--accent-text);
-    background: var(--accent);
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.coupon-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    padding: 4px;
-    margin-bottom: 14px;
-    background: #20252d;
-    border-radius: 8px;
-}
-
-.coupon-tab {
-    padding: 8px;
-    color: var(--text-secondary);
-    background: transparent;
-    border: 0;
-    border-radius: 6px;
-    font-size: 10px;
-}
-
-.coupon-tab.active {
-    color: var(--text);
-    background: #353c47;
-}
-
-.coupon-empty {
-    padding: 32px 14px;
-    color: var(--text-muted);
-    text-align: center;
-}
-
-.coupon-empty-icon {
-    margin-bottom: 12px;
-    font-size: 35px;
-    opacity: .65;
-}
-
-.coupon-empty strong {
-    display: block;
-    margin-bottom: 7px;
-    color: var(--text);
-    font-size: 12px;
-}
-
-.coupon-empty p {
-    font-size: 10px;
-    line-height: 1.7;
-}
-
-.coupon-selection {
-    padding: 12px;
-    margin-bottom: 9px;
-    background: #1d232b;
-    border: 1px solid #303743;
-    border-radius: 9px;
-}
-
-.coupon-selection-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.coupon-selection-title {
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.coupon-remove {
-    padding: 0 3px;
-    color: #858e9b;
-    background: transparent;
-    border: 0;
-    font-size: 16px;
-}
-
-.coupon-selection-market {
-    margin-top: 7px;
-    color: var(--text-secondary);
-    font-size: 10px;
-}
-
-.coupon-selection-odd {
-    margin-top: 5px;
-    color: var(--accent);
-    font-size: 12px;
-    font-weight: 900;
-}
-
-.coupon-divider {
-    height: 1px;
-    margin: 14px 0;
-    background: var(--border);
-}
-
-.coupon-total-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 9px 0;
-    color: var(--text-secondary);
-    font-size: 11px;
-}
-
-.coupon-total-row strong {
-    color: var(--text);
-    font-size: 12px;
-}
-
-.coupon-total-row.payout strong {
-    color: var(--accent);
-    font-size: 17px;
-}
-
-.stake-label {
-    display: block;
-    margin: 15px 0 7px;
-    color: var(--text-secondary);
-    font-size: 10px;
-}
-
-.stake-input-wrap {
-    display: flex;
-    align-items: center;
-    background: #1d232b;
-    border: 1px solid #3b4451;
-    border-radius: 7px;
-}
-
-.stake-input-wrap input {
-    width: 100%;
-    min-width: 0;
-    padding: 10px;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    outline: 0;
-}
-
-.stake-input-wrap span {
-    padding-right: 10px;
-    color: var(--text-muted);
-}
-
-.stake-presets {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 5px;
-    margin-top: 7px;
-}
-
-.stake-preset {
-    padding: 7px 2px;
-    color: #b6bdc8;
-    background: #242a34;
-    border: 1px solid #333b47;
-    border-radius: 5px;
-    font-size: 10px;
-}
-
-.stake-preset:hover {
-    color: var(--accent);
-    border-color: #627451;
-}
-
-.place-button {
-    width: 100%;
-    min-height: 43px;
-    margin-top: 15px;
-    color: #18220e;
-    background: var(--accent);
-    border: 0;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 900;
-    transition: var(--transition);
-}
-
-.place-button:hover:not(:disabled) {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-}
-
-.place-button:disabled {
-    color: #7e858d;
-    background: #303640;
-}
-
-.coupon-note {
-    margin-top: 10px;
-    color: var(--text-muted);
-    font-size: 9px;
-    line-height: 1.7;
-}
-
-.content-card {
-    padding: 17px;
-    margin-bottom: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.content-card h3 {
-    margin: 0 0 14px;
-    font-size: 13px;
-}
-
-.history-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-    padding: 13px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.history-row:last-child {
-    border-bottom: 0;
-}
-
-.history-title {
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.history-description {
-    margin-top: 5px;
-    color: var(--text-muted);
-    font-size: 10px;
-}
-
-.history-amount {
-    text-align: right;
-    font-weight: 900;
-}
-
-.history-status {
-    display: inline-block;
-    margin-top: 5px;
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-size: 9px;
-}
-
-.status-pending {
-    color: #ffcc7c;
-    background: #ffb84d16;
-}
-
-.status-won {
-    color: var(--accent);
-    background: #a5f05c14;
-}
-
-.status-lost {
-    color: #ff7b88;
-    background: #ff526515;
-}
-
-.profile-grid {
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 12px;
-}
-
-.profile-stat {
-    padding: 14px;
-    background: #202630;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-
-.profile-stat small {
-    display: block;
-    color: var(--text-muted);
-}
-
-.profile-stat strong {
-    display: block;
-    margin-top: 7px;
-    font-size: 21px;
-}
-
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    background: #000b;
-    backdrop-filter: blur(5px);
-}
-
-.modal {
-    width: min(550px,100%);
-    max-height: 85vh;
-    overflow-y: auto;
-    background: #1b2028;
-    border: 1px solid #39414e;
-    border-radius: 13px;
-    box-shadow: var(--shadow);
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 17px 20px;
-    border-bottom: 1px solid var(--border);
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 16px;
-}
-
-.modal-close {
-    width: 29px;
-    height: 29px;
-    color: #b4bdc9;
-    background: #2a303a;
-    border: 0;
-    border-radius: 6px;
-    font-size: 18px;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-body p {
-    color: var(--text-secondary);
-    font-size: 12px;
-    line-height: 1.8;
-}
-
-.toast-container {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
-}
-
-.toast {
-    min-width: 220px;
-    max-width: 360px;
-    padding: 13px 15px;
-    color: var(--text);
-    background: #242b35;
-    border: 1px solid #424c59;
-    border-left: 3px solid var(--accent);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    animation: toastEnter .2s ease;
-    font-size: 11px;
-}
-
-.toast.error {
-    border-left-color: var(--red);
-}
-
-.toast.warning {
-    border-left-color: var(--orange);
-}
-
-@keyframes toastEnter {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.mobile-menu {
-    display: none;
-}
-
-@media(max-width:1250px) {
-    :root {
-        --sidebar-width: 205px;
-        --coupon-width: 285px;
-    }
-
-    .main {
-        padding-right: 15px;
-        padding-left: 15px;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-    }
-
-    .event-row {
-        grid-template-columns: 1fr;
-    }
-
-    .event-markets {
-        padding-top: 8px;
-    }
-}
-
-@media(max-width:980px) {
-    .layout {
-        grid-template-columns: var(--sidebar-width) minmax(0,1fr);
-    }
-
-    .coupon {
-        position: fixed;
-        top: 0;
-        right: 0;
-        z-index: 90;
-        width: min(360px,92vw);
-        height: 100dvh;
-        transform: translateX(105%);
-        transition: transform .22s ease;
-        box-shadow: var(--shadow);
-    }
-
-    .coupon.open {
-        transform: translateX(0);
-    }
-
-    .coupon-mobile-close {
-        display: inline-flex !important;
-    }
-
-    .coupon-backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 80;
-        background: #0009;
-    }
-
-    .topbar {
-        gap: 12px;
-        padding: 0 13px;
-    }
-
-    .search-box {
-        flex: 1;
-        width: auto;
-    }
-
-    .balance-box {
-        display: none;
-    }
-}
-
-@media(max-width:650px) {
-    :root {
-        --topbar-height: 59px;
-    }
-
-    .topbar {
-        gap: 9px;
-    }
-
-    .brand {
-        gap: 6px;
-        font-size: 17px;
-    }
-
-    .brand-symbol {
-        width: 29px;
-        height: 29px;
-        font-size: 19px;
-    }
-
-    .demo-tag {
-        display: none;
-    }
-
-    .search-box {
-        max-width: 145px;
-        height: 33px;
-        padding: 0 7px;
-    }
-
-    .search-box input {
-        font-size: 10px;
-    }
-
-    .user-button {
-        padding: 4px;
-        border: 0;
-        background: transparent;
-    }
-
-    .user-button .profile-label {
-        display: none;
-    }
-
-    .layout {
-        display: block;
-    }
-
-    .sidebar {
-        position: fixed;
-        top: var(--topbar-height);
-        left: 0;
-        z-index: 70;
-        width: 260px;
-        height: calc(100dvh - var(--topbar-height));
-        transform: translateX(-105%);
-        transition: transform .2s ease;
-        box-shadow: var(--shadow);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .main {
-        padding: 14px 11px 35px;
-    }
-
-    .hero {
-        min-height: 240px;
-        padding: 20px 17px;
-    }
-
-    .hero h1 {
-        font-size: 30px;
-    }
-
-    .hero-decoration {
-        right: 2%;
-        top: 25%;
-        font-size: 100px;
-    }
-
-    .stats-grid {
-        gap: 7px;
-        margin-bottom: 23px;
-    }
-
-    .stat-card {
-        gap: 8px;
-        padding: 10px;
-    }
-
-    .stat-icon {
-        width: 29px;
-        height: 29px;
-    }
-
-    .stat-card strong {
-        font-size: 16px;
-    }
-
-    .sport-chips {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 5px;
-    }
-
-    .chip {
-        flex-shrink: 0;
-    }
-
-    .event-row {
-        padding: 12px;
-    }
-
-    .odds-grid {
-        gap: 5px;
-    }
-
-    .detail-scoreboard {
-        gap: 9px;
-    }
-
-    .detail-score {
-        font-size: 27px;
-    }
-
-    .detail-team .team-logo {
-        width: 43px;
-        height: 43px;
-    }
-
-    .market-selection-grid {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-    }
-
-    .profile-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .page-heading {
-        flex-direction: column;
-    }
-
-    .section-heading h2 {
-        font-size: 16px;
-    }
+:root{
+  --bg:#0d0d1a;--bg2:#15162a;--card:#1c1d35;--card2:#25264a;
+  --text:#ffffff;--text2:#9a9bb8;--text3:#5f6080;
+  --blue:#4f6bff;--blue2:#6b4fff;--purple:#8b5cf6;
+  --green:#22c55e;--red:#ef4444;--yellow:#fbbf24;
+  --border:#2a2b4a;--border2:#343560;
+  --grad:linear-gradient(135deg,#4f6bff 0%,#8b5cf6 100%);
+  --grad2:linear-gradient(135deg,#8b5cf6 0%,#ec4899 100%);
+  --grad-green:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--radius-xl:20px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.4;user-select:none;-webkit-font-smoothing:antialiased;padding-bottom:80px}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;outline:none;background:none;transition:transform .1s,opacity .15s,background-color .15s}
+button:active{opacity:.85;transform:scale(.98)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+.hidden{display:none!important}
+
+/* ВЕРХНЯЯ ПАНЕЛЬ */
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg);padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.balance-pill{background:var(--card);padding:8px 14px;border-radius:24px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;border:1px solid var(--border2)}
+.balance-pill .coin{width:20px;height:20px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.topup-btn{background:var(--grad);color:#fff;padding:9px 16px;border-radius:24px;font-weight:700;font-size:13px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--grad2);display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--border2)}
+
+/* ПРОМО */
+.promo{margin:16px;border-radius:var(--radius-xl);background:linear-gradient(135deg,#5b3df5 0%,#7c3aed 50%,#a855f7 100%);padding:20px;position:relative;overflow:hidden;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 32px rgba(91,61,245,.35)}
+.promo::before{content:'';position:absolute;top:-50%;right:-30%;width:250px;height:250px;background:radial-gradient(circle,rgba(255,255,255,.15) 0%,transparent 70%)}
+.promo h2{font-size:26px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;position:relative;z-index:1}
+.promo p{font-size:14px;opacity:.9;margin-bottom:16px;position:relative;z-index:1}
+.promo-btn{background:rgba(255,255,255,.2);backdrop-filter:blur(10px);color:#fff;padding:12px 24px;border-radius:24px;font-weight:700;font-size:14px;align-self:flex-start;position:relative;z-index:1;border:1px solid rgba(255,255,255,.3)}
+.promo-emoji{position:absolute;right:-10px;bottom:-10px;font-size:120px;opacity:.25;z-index:0}
+.promo-dots{position:absolute;bottom:12px;right:20px;display:flex;gap:4px;z-index:2}
+.promo-dots span{width:20px;height:3px;border-radius:2px;background:rgba(255,255,255,.3)}
+.promo-dots span.active{background:#fff}
+
+/* LIVE ЛЕНТА */
+.live-section{padding:0 16px;margin-bottom:16px}
+.live-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--red);margin-bottom:8px;letter-spacing:1px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.live-scroll::-webkit-scrollbar{display:none}
+.live-card{min-width:160px;background:var(--card);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border2);flex-shrink:0}
+.live-avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.live-info{flex:1;min-width:0}
+.live-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live-amount{font-size:13px;font-weight:800;color:var(--green)}
+
+/* ЗАГОЛОВКИ */
+.section-title{font-size:20px;font-weight:800;padding:0 16px;margin:20px 0 12px;letter-spacing:-.3px}
+
+/* ИГРЫ */
+.games-grid{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.game-card{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border2);cursor:pointer;position:relative;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;transition:transform .15s}
+.game-card:active{transform:scale(.97)}
+.game-card.wide{grid-column:1 / -1;min-height:150px}
+.game-card-bg{position:absolute;inset:0;opacity:.9;z-index:0}
+.game-card.cow .game-card-bg{background:linear-gradient(135deg,#4f6bff 0%,#8b5cf6 100%)}
+.game-card.rocket .game-card-bg{background:linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)}
+.game-card.mines .game-card-bg{background:linear-gradient(135deg,#1e3a8a 0%,#312e81 100%)}
+.game-card.upgrade .game-card-bg{background:linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)}
+.game-card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.5) 100%);z-index:1}
+.game-emoji{position:absolute;top:10px;right:12px;font-size:56px;z-index:2;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+.game-players{position:relative;z-index:3;font-size:11px;opacity:.85;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.game-players .dot{width:6px;height:6px;border-radius:50%;background:#4ade80}
+.game-name{position:relative;z-index:3;font-size:17px;font-weight:800}
+
+/* НИЖНИЙ ТАБ-БАР */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);display:flex;justify-content:space-around;padding:10px 0 14px;border-top:1px solid var(--border2);z-index:200;backdrop-filter:blur(20px)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);flex:1;padding:4px 0;position:relative;transition:color .15s}
+.nav-item.active{color:var(--text)}
+.nav-item .icon{font-size:22px;line-height:1}
+.nav-item .free-tag{position:absolute;top:-4px;right:50%;transform:translateX(14px);background:var(--yellow);color:#000;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px}
+
+/* ИГРОВОЙ ЭКРАН */
+.game-screen{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;overflow-y:auto;padding-bottom:100px}
+.game-screen.open{display:flex}
+.game-header{position:sticky;top:0;background:var(--bg);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);z-index:10}
+.back-btn{font-size:20px;color:var(--text);padding:4px 8px;font-weight:600}
+.game-title{font-size:18px;font-weight:800;flex:1}
+.game-header-icons{display:flex;gap:12px;font-size:18px}
+
+.game-content{padding:16px;flex:1;display:flex;flex-direction:column}
+
+/* CRASH ARENA */
+.crash-arena{flex:1;min-height:280px;background:radial-gradient(ellipse at center,rgba(79,107,255,.15) 0%,transparent 70%);border-radius:var(--radius-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-bottom:16px;overflow:hidden;border:1px solid var(--border)}
+.crash-multiplier{font-size:64px;font-weight:900;letter-spacing:-2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;z-index:2}
+.crash-emoji{font-size:80px;margin:12px 0;z-index:2}
+.crash-status{font-size:14px;color:var(--text2);margin-top:8px;z-index:2}
+.crash-history{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:3}
+.crash-history-pill{background:rgba(255,255,255,.08);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.crash-history-pill.red{color:var(--red)}
+.crash-history-pill.green{color:var(--green)}
+
+/* MINES */
+.mines-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.mine-cell{aspect-ratio:1;background:var(--card2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .15s;border:1px solid var(--border2)}
+.mine-cell:active{transform:scale(.95)}
+.mine-cell.opened{background:var(--grad);border-color:transparent}
+.mine-cell.mine{background:var(--red);border-color:transparent}
+.mine-cell.gem{background:var(--green);border-color:transparent}
+
+/* UPGRADE WHEEL */
+.upgrade-wheel-wrap{display:flex;flex-direction:column;align-items:center;margin:20px 0}
+.wheel-container{width:260px;height:260px;position:relative;margin-bottom:20px}
+.wheel{width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#4f6bff 0deg 30deg,#8b5cf6 30deg 60deg,#ec4899 60deg 90deg,#f59e0b 90deg 120deg,#22c55e 120deg 150deg,#4f6bff 150deg 180deg,#8b5cf6 180deg 210deg,#ec4899 210deg 240deg,#f59e0b 240deg 270deg,#22c55e 270deg 300deg,#4f6bff 300deg 330deg,#8b5cf6 330deg 360deg);position:relative;transition:transform 4s cubic-bezier(.17,.67,.25,1)}
+.wheel-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;border:4px solid var(--card2)}
+.wheel-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:32px;z-index:10;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+
+/* УПРАВЛЕНИЕ */
+.controls{background:var(--card);border-radius:var(--radius-lg);padding:14px;border:1px solid var(--border2);margin-top:auto}
+.control-row{display:flex;gap:8px;margin-bottom:10px}
+.control-row:last-child{margin-bottom:0}
+.tab-btn{flex:1;background:var(--card2);color:var(--text2);padding:10px;border-radius:var(--radius);font-weight:600;font-size:13px;border:1px solid var(--border2)}
+.tab-btn.active{background:var(--grad);color:#fff;border-color:transparent}
+.bet-input-row{display:flex;gap:8px;align-items:center;background:var(--card2);border-radius:var(--radius);padding:4px;border:1px solid var(--border2)}
+.bet-input-row input{flex:1;background:none;border:none;color:var(--text);font-size:16px;font-weight:700;padding:10px 12px;outline:none;min-width:0;font-family:inherit}
+.quick-btn{background:var(--bg2);color:var(--text2);padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;border:1px solid var(--border2)}
+.quick-btn:active{background:var(--card2)}
+.play-btn{width:100%;background:var(--grad);color:#fff;padding:16px;border-radius:var(--radius);font-size:17px;font-weight:800;margin-top:12px;box-shadow:0 8px 24px rgba(79,107,255,.4)}
+.play-btn:disabled{opacity:.5;box-shadow:none}
+.play-btn.cashout{background:var(--grad-green);box-shadow:0 8px 24px rgba(34,197,94,.4)}
+.play-btn.danger{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);box-shadow:0 8px 24px rgba(239,68,68,.4)}
+
+/* МОДАЛКА */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal.open{display:flex}
+.modal-content{background:var(--card);border-radius:var(--radius-xl);padding:24px;max-width:380px;width:100%;border:1px solid var(--border2);text-align:center;animation:modalIn .25s ease}
+@keyframes modalIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:8px}
+.modal-text{color:var(--text2);font-size:14px;margin-bottom:20px}
+.modal-btn{background:var(--grad);color:#fff;padding:14px;border-radius:var(--radius);font-size:15px;font-weight:700;width:100%;margin-bottom:8px}
+.modal-btn.secondary{background:var(--card2);border:1px solid var(--border2)}
+
+/* ПРОФИЛЬ */
+.profile-header{background:var(--grad);padding:32px 16px 24px;text-align:center;border-radius:0 0 24px 24px;margin-bottom:16px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px;backdrop-filter:blur(10px)}
+.profile-name{font-size:20px;font-weight:800;margin-bottom:4px}
+.profile-balance{font-size:32px;font-weight:900;letter-spacing:-1px}
+.profile-balance-label{font-size:12px;opacity:.8;margin-bottom:16px}
+.stat-row{display:flex;gap:12px;padding:0 16px;margin-bottom:16px}
+.stat-card{flex:1;background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border2);text-align:center}
+.stat-value{font-size:18px;font-weight:800;margin-bottom:2px}
+.stat-value.green{color:var(--green)}
+.stat-value.red{color:var(--red)}
+.stat-label{font-size:11px;color:var(--text2)}
+
+/* ИСТОРИЯ */
+.history-item{background:var(--card);border-radius:var(--radius);padding:14px;margin:8px 16px;border:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.history-item .h-left{flex:1;min-width:0}
+.history-item .h-game{font-size:13px;font-weight:700;margin-bottom:2px}
+.history-item .h-info{font-size:11px;color:var(--text2)}
+.history-item .h-amount{font-weight:800;font-size:15px}
+.history-item .h-amount.win{color:var(--green)}
+.history-item .h-amount.lose{color:var(--red)}
+
+/* ТОСТ */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);color:#fff;padding:12px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:1000;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;border:1px solid var(--border2);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green);border-color:transparent}
+.toast.error{background:var(--red);border-color:transparent}
+
+/* АДАПТИВ */
+@media (max-width:360px){
+  .crash-multiplier{font-size:48px}
+  .crash-emoji{font-size:60px}
+  .game-name{font-size:15px}
+  .game-emoji{font-size:44px}
 }
 </style>
 </head>
-
 <body>
-<div class="app">
 
-<header class="topbar">
-    <button class="user-button" id="menuToggle" aria-label="Меню">☰</button>
-
-    <a class="brand" href="#" data-page="home">
-        <span class="brand-symbol">O</span>
-        <span>OPEN<span>BET</span></span>
-        <span class="demo-tag">DEMO</span>
-    </a>
-
-    <label class="search-box">
-        <span>⌕</span>
-        <input id="globalSearch" type="search"
-               placeholder="Поиск команд и матчей">
-    </label>
-
-    <div class="topbar-spacer"></div>
-
-    <div class="balance-box">
-        <small>Виртуальный баланс</small>
-        <strong id="headerBalance">100 000 ₽</strong>
+<!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+<div class="topbar">
+  <div class="logo">RubWin</div>
+  <div class="topbar-right">
+    <div class="balance-pill" id="balancePill">
+      <div class="coin">₽</div>
+      <span id="balanceText">0</span>
     </div>
-
-    <button class="user-button" id="openProfile">
-        <span class="avatar" id="avatar">Г</span>
-        <span class="profile-label" id="username">Гость</span>
-    </button>
-</header>
-
-<div class="layout">
-
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-heading">НАВИГАЦИЯ</div>
-
-    <button class="nav-item active" data-page="home">
-        <span class="nav-icon">⌂</span> Главная
-    </button>
-
-    <button class="nav-item" data-page="live">
-        <span class="nav-icon">●</span> Live
-        <span class="nav-count" id="liveCount">0</span>
-    </button>
-
-    <button class="nav-item" data-page="upcoming">
-        <span class="nav-icon">◷</span> Предстоящие
-    </button>
-
-    <button class="nav-item" data-page="favorites">
-        <span class="nav-icon">☆</span> Избранное
-    </button>
-
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-heading">ВИДЫ СПОРТА</div>
-
-    <button class="nav-item" data-sport="football">⚽ Футбол</button>
-    <button class="nav-item" data-sport="hockey">🏒 Хоккей</button>
-    <button class="nav-item" data-sport="basketball">🏀 Баскетбол</button>
-    <button class="nav-item" data-sport="tennis">🎾 Теннис</button>
-    <button class="nav-item" data-sport="volleyball">🏐 Волейбол</button>
-    <button class="nav-item" data-sport="mma">🥊 ММА</button>
-
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-heading">МОЙ АККАУНТ</div>
-
-    <button class="nav-item" data-page="coupon">
-        <span class="nav-icon">▤</span> Купон
-        <span class="nav-count" id="couponCount">0</span>
-    </button>
-
-    <button class="nav-item" data-page="history">
-        <span class="nav-icon">◴</span> История
-    </button>
-
-    <button class="nav-item" data-page="profile">
-        <span class="nav-icon">♙</span> Профиль
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-footer">
-        <div class="demo-status">
-            <span class="status-dot"></span> ДЕМО-РЕЖИМ
-        </div>
-        <p>Виртуальные очки и вымышленные коэффициенты. Реальные деньги не используются.</p>
-    </div>
-</aside>
-
-<main class="main" id="main">
-
-    <div class="breadcrumbs" id="breadcrumbs">
-        OPENBET <span>›</span> <strong>Главная</strong>
-    </div>
-
-    <!-- ГЛАВНАЯ -->
-    <section class="page active" id="page-home">
-        <div class="hero">
-            <div class="hero-content">
-                <div class="hero-kicker">● СПОРТИВНЫЙ СИМУЛЯТОР</div>
-                <h1>Твой спорт.<br><span>Твои прогнозы.</span></h1>
-                <p>
-                    Изучай рынки, наблюдай за симуляцией матчей,
-                    сравнивай коэффициенты и проверяй собственные прогнозы.
-                </p>
-                <div class="hero-buttons">
-                    <button class="primary-button" data-page="live">
-                        Открыть Live →
-                    </button>
-                    <button class="secondary-button" data-page="upcoming">
-                        Расписание
-                    </button>
-                </div>
-            </div>
-            <div class="hero-decoration">OB</div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">●</div>
-                <div><small>Live-события</small><strong id="statLive">0</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">◷</div>
-                <div><small>Предстоящие</small><strong id="statUpcoming">0</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">▤</div>
-                <div><small>Прогнозы</small><strong id="statBets">0</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">↗</div>
-                <div><small>Успешность</small><strong id="statWinRate">—</strong></div>
-            </div>
-        </div>
-
-        <div class="section-heading">
-            <div>
-                <h2>Спортивные события</h2>
-                <p>Демонстрационные матчи и виртуальные рынки</p>
-            </div>
-            <button class="text-button" data-page="upcoming">Все события →</button>
-        </div>
-
-        <div class="sport-chips" id="homeFilters">
-            <button class="chip active" data-filter="all">Все</button>
-            <button class="chip" data-filter="football">⚽ Футбол</button>
-            <button class="chip" data-filter="hockey">🏒 Хоккей</button>
-            <button class="chip" data-filter="basketball">🏀 Баскетбол</button>
-            <button class="chip" data-filter="tennis">🎾 Теннис</button>
-            <button class="chip" data-filter="volleyball">🏐 Волейбол</button>
-            <button class="chip" data-filter="mma">🥊 ММА</button>
-        </div>
-
-        <div class="event-list" id="homeEvents"></div>
-    </section>
-
-    <!-- LIVE -->
-    <section class="page" id="page-live">
-        <div class="page-heading">
-            <div>
-                <h1>Live-центр</h1>
-                <p>Симуляция игрового времени и изменения счёта.</p>
-            </div>
-            <span class="live-label">LIVE SIMULATION</span>
-        </div>
-
-        <div class="sport-chips" id="liveFilters">
-            <button class="chip active" data-filter="all">Все виды</button>
-            <button class="chip" data-filter="football">⚽ Футбол</button>
-            <button class="chip" data-filter="hockey">🏒 Хоккей</button>
-            <button class="chip" data-filter="basketball">🏀 Баскетбол</button>
-            <button class="chip" data-filter="tennis">🎾 Теннис</button>
-            <button class="chip" data-filter="volleyball">🏐 Волейбол</button>
-            <button class="chip" data-filter="mma">🥊 ММА</button>
-        </div>
-
-        <div class="event-list" id="liveEvents"></div>
-    </section>
-
-    <!-- ПРЕДСТОЯЩИЕ -->
-    <section class="page" id="page-upcoming">
-        <div class="page-heading">
-            <div>
-                <h1>Предстоящие события</h1>
-                <p>Вымышленное расписание симулятора.</p>
-            </div>
-        </div>
-
-        <div class="page-toolbar">
-            <input class="input" id="upcomingSearch"
-                   placeholder="Найти команду">
-            <select class="select" id="sortEvents">
-                <option value="time">По времени</option>
-                <option value="sport">По виду спорта</option>
-                <option value="name">По названию</option>
-            </select>
-        </div>
-
-        <div class="event-list" id="upcomingEvents"></div>
-    </section>
-
-    <!-- ИЗБРАННОЕ -->
-    <section class="page" id="page-favorites">
-        <div class="page-heading">
-            <div>
-                <h1>Избранное</h1>
-                <p>Отмеченные события.</p>
-            </div>
-        </div>
-        <div class="event-list" id="favoriteEvents"></div>
-    </section>
-
-    <!-- СПОРТ -->
-    <section class="page" id="page-sport">
-        <div class="sport-detail-banner">
-            <h1 id="sportTitle">Футбол</h1>
-            <p id="sportSubtitle">События и рынки выбранного вида спорта.</p>
-        </div>
-        <div class="event-list" id="sportEvents"></div>
-    </section>
-
-    <!-- СТРАНИЦА МАТЧА -->
-    <section class="page" id="page-match">
-        <div id="matchDetails"></div>
-    </section>
-
-    <!-- КУПОН -->
-    <section class="page" id="page-coupon">
-        <div class="page-heading">
-            <div>
-                <h1>Виртуальный купон</h1>
-                <p>Расчёт возможного результата на демонстрационных очках.</p>
-            </div>
-        </div>
-        <div class="content-card" id="fullCoupon"></div>
-    </section>
-
-    <!-- ИСТОРИЯ -->
-    <section class="page" id="page-history">
-        <div class="page-heading">
-            <div>
-                <h1>История симуляций</h1>
-                <p>Все созданные виртуальные прогнозы.</p>
-            </div>
-        </div>
-        <div class="content-card" id="historyContent"></div>
-    </section>
-
-    <!-- ПРОФИЛЬ -->
-    <section class="page" id="page-profile">
-        <div class="page-heading">
-            <div>
-                <h1>Мой профиль</h1>
-                <p>Статистика и параметры локального профиля.</p>
-            </div>
-        </div>
-        <div class="content-card" id="profileContent"></div>
-    </section>
-
-</main>
-
-<!-- ПРАВАЯ ПАНЕЛЬ КУПОНА -->
-<aside class="coupon" id="couponPanel">
-    <div class="coupon-header">
-        <h2>Виртуальный купон</h2>
-        <span class="coupon-count" id="couponCountRight">0</span>
-    </div>
-
-    <div class="coupon-tabs">
-        <button class="coupon-tab active" data-coupon-mode="single">
-            Одиночный
-        </button>
-        <button class="coupon-tab" data-coupon-mode="express">
-            Экспресс
-        </button>
-    </div>
-
-    <div id="couponSelections"></div>
-
-    <div id="couponCalculator">
-        <div class="coupon-divider"></div>
-
-        <div class="coupon-total-row">
-            <span>Общий коэффициент</span>
-            <strong id="totalOdds">—</strong>
-        </div>
-
-        <label class="stake-label" for="stakeInput">
-            Виртуальные очки для расчёта
-        </label>
-
-        <div class="stake-input-wrap">
-            <input type="number" id="stakeInput"
-                   min="1" step="1" value="100">
-            <span>очков</span>
-        </div>
-
-        <div class="stake-presets">
-            <button class="stake-preset" data-stake="100">100</button>
-            <button class="stake-preset" data-stake="500">500</button>
-            <button class="stake-preset" data-stake="1000">1 000</button>
-            <button class="stake-preset" data-stake="5000">5 000</button>
-        </div>
-
-        <div class="coupon-total-row">
-            <span>Расчётный возврат</span>
-            <strong id="possibleReturn">—</strong>
-        </div>
-
-        <div class="coupon-total-row payout">
-            <span>Условная прибыль</span>
-            <strong id="possibleProfit">—</strong>
-        </div>
-
-        <button class="place-button" id="simulateButton" disabled>
-            Рассчитать симуляцию
-        </button>
-
-        <button class="text-button" id="clearCoupon"
-                style="width:100%;margin-top:10px">
-            Очистить купон
-        </button>
-
-        <div class="coupon-note">
-            Это симулятор. Очки не имеют денежной стоимости,
-            не пополняются и не выводятся.
-        </div>
-    </div>
-</aside>
-
-</div>
+    <button class="topup-btn" id="topupBtn">Пополнить</button>
+    <div class="avatar">👤</div>
+  </div>
 </div>
 
-<div class="modal-overlay hidden" id="modalOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 id="modalTitle">Информация</h2>
-            <button class="modal-close" id="modalClose">×</button>
-        </div>
-        <div class="modal-body" id="modalBody"></div>
+<!-- ГЛАВНАЯ -->
+<div id="mainScreen">
+  <!-- ПРОМО -->
+  <div class="promo">
+    <h2>Подарок<br>за пополнение</h2>
+    <p>Получи бонус до 10 000 ₽</p>
+    <button class="promo-btn" id="promoTopup">Пополнить →</button>
+    <div class="promo-emoji">🎁</div>
+    <div class="promo-dots">
+      <span class="active"></span><span></span><span></span><span></span><span></span>
     </div>
+  </div>
+
+  <!-- LIVE ЛЕНТА -->
+  <div class="live-section">
+    <div class="live-label"><span class="live-dot"></span>LIVE</div>
+    <div class="live-scroll" id="liveScroll"></div>
+  </div>
+
+  <!-- ЗАГОЛОВОК -->
+  <div class="section-title">Игры</div>
+
+  <!-- СЕТКА ИГР -->
+  <div class="games-grid">
+    <div class="game-card wide cow" data-game="cow">
+      <div class="game-card-bg"></div>
+      <div class="game-card-overlay"></div>
+      <div class="game-emoji">🐮</div>
+      <div class="game-players"><span class="dot"></span><span id="cowPlayers">50 играют</span></div>
+      <div class="game-name">Коровка</div>
+    </div>
+
+    <div class="game-card rocket" data-game="rocket">
+      <div class="game-card-bg"></div>
+      <div class="game-card-overlay"></div>
+      <div class="game-emoji">🚀</div>
+      <div class="game-players"><span class="dot"></span><span>64 играют</span></div>
+      <div class="game-name">Ракета</div>
+    </div>
+
+    <div class="game-card mines" data-game="mines">
+      <div class="game-card-bg"></div>
+      <div class="game-card-overlay"></div>
+      <div class="game-emoji">💣</div>
+      <div class="game-players"><span class="dot"></span><span>35 играют</span></div>
+      <div class="game-name">Mines</div>
+    </div>
+
+    <div class="game-card upgrade" data-game="upgrade">
+      <div class="game-card-bg"></div>
+      <div class="game-card-overlay"></div>
+      <div class="game-emoji">🎡</div>
+      <div class="game-players"><span class="dot"></span><span>21 играют</span></div>
+      <div class="game-name">Апгрейд</div>
+    </div>
+  </div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<!-- ЭКРАН ИГРЫ -->
+<div class="game-screen" id="gameScreen">
+  <div class="game-header">
+    <button class="back-btn" id="gameBack">←</button>
+    <div class="game-title" id="gameTitle">Игра</div>
+    <div class="game-header-icons">
+      <span>🔊</span>
+      <span>🛡️</span>
+      <span>❓</span>
+    </div>
+  </div>
+  <div class="game-content" id="gameContent"></div>
+</div>
+
+<!-- ЭКРАН ПРОФИЛЯ -->
+<div class="game-screen" id="profileScreen">
+  <div class="game-header">
+    <button class="back-btn" id="profileBack">←</button>
+    <div class="game-title">Профиль</div>
+  </div>
+  <div class="profile-header">
+    <div class="profile-avatar">👤</div>
+    <div class="profile-name" id="profileName">Игрок</div>
+    <div class="profile-balance" id="profileBalance">0 ₽</div>
+    <div class="profile-balance-label">Текущий баланс</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-value" id="statGames">0</div>
+      <div class="stat-label">Игр</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value green" id="statWins">0</div>
+      <div class="stat-label">Побед</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value red" id="statLoses">0</div>
+      <div class="stat-label">Проигрышей</div>
+    </div>
+  </div>
+</div>
+
+<!-- ЭКРАН ИСТОРИИ -->
+<div class="game-screen" id="historyScreen">
+  <div class="game-header">
+    <button class="back-btn" id="historyBack">←</button>
+    <div class="game-title">История</div>
+  </div>
+  <div id="historyList" style="padding:8px 0;"></div>
+</div>
+
+<!-- НИЖНИЙ ТАБ-БАР -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" data-page="main">
+    <span class="icon">🎮</span>
+    <span>Игры</span>
+  </div>
+  <div class="nav-item" data-page="cases">
+    <span class="icon">📦</span>
+    <span class="free-tag">FREE</span>
+    <span>Кейсы</span>
+  </div>
+  <div class="nav-item" data-page="history">
+    <span class="icon">📜</span>
+    <span>История</span>
+  </div>
+  <div class="nav-item" data-page="profile">
+    <span class="icon">👤</span>
+    <span>Профиль</span>
+  </div>
+</div>
+
+<!-- МОДАЛКА -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalTitle">Заголовок</div>
+    <div class="modal-text" id="modalText">Текст</div>
+    <button class="modal-btn" id="modalBtn">ОК</button>
+    <button class="modal-btn secondary" id="modalBtn2">Отмена</button>
+  </div>
+</div>
+
+<!-- ТОСТ -->
+<div class="toast" id="toast"></div>
 
 <script>
-"use strict";
-
-/* =========================================================
-   1. НАСТРОЙКИ И СОСТОЯНИЕ
-   ========================================================= */
-
-const CONFIG = {
-    appName: "OpenBet",
-    initialBalance: 100000,
-    maxSelections: 30,
-    maxStake: 100000,
-    minStake: 1,
-    tickInterval: 5000,
-    liveDuration: {
-        football: 90,
-        hockey: 60,
-        basketball: 48,
-        tennis: 120,
-        volleyball: 90,
-        mma: 15
-    }
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+const State = {
+  balance: 1000,
+  gamesPlayed: 0,
+  wins: 0,
+  loses: 0,
+  history: [],
+  dailyTopups: 0,
+  dailyTopupAmount: 0,
+  lastTopupDate: '',
+  playerName: 'Игрок'
 };
 
-const SPORTS = {
-    football: {
-        name: "Футбол",
-        emoji: "⚽",
-        duration: 90,
-        periods: 2,
-        periodName: "тайм",
-        leagueNames: [
-            "Премьер-лига",
-            "Национальная лига",
-            "Международный кубок",
-            "Чемпионат континентов",
-            "Демо-лига A",
-            "Демо-лига B"
-        ]
-    },
-    hockey: {
-        name: "Хоккей",
-        emoji: "🏒",
-        duration: 60,
-        periods: 3,
-        periodName: "период",
-        leagueNames: [
-            "Национальная хоккейная лига",
-            "Континентальный кубок",
-            "Международная лига",
-            "Демо-хоккей A",
-            "Демо-хоккей B"
-        ]
-    },
-    basketball: {
-        name: "Баскетбол",
-        emoji: "🏀",
-        duration: 48,
-        periods: 4,
-        periodName: "четверть",
-        leagueNames: [
-            "Национальная баскетбольная лига",
-            "Международная баскетбольная лига",
-            "Кубок чемпионов",
-            "Демо-баскетбол A"
-        ]
-    },
-    tennis: {
-        name: "Теннис",
-        emoji: "🎾",
-        duration: 120,
-        periods: 3,
-        periodName: "сет",
-        leagueNames: [
-            "Открытый турнир",
-            "Международный чемпионат",
-            "Кубок мастеров",
-            "Демо-теннис A"
-        ]
-    },
-    volleyball: {
-        name: "Волейбол",
-        emoji: "🏐",
-        duration: 90,
-        periods: 5,
-        periodName: "сет",
-        leagueNames: [
-            "Национальная волейбольная лига",
-            "Международный кубок",
-            "Кубок чемпионов",
-            "Демо-волейбол A"
-        ]
-    },
-    mma: {
-        name: "ММА",
-        emoji: "🥊",
-        duration: 15,
-        periods: 5,
-        periodName: "раунд",
-        leagueNames: [
-            "Ultimate Demo Championship",
-            "International Fight Series",
-            "Open Combat League",
-            "Демо-турнир MMA"
-        ]
-    }
-};
-
-const STORAGE_KEY = "openbet_singlefile_v1";
-
-function loadSavedState() {
+/* ============================================================
+   ХРАНИЛИЩЕ
+   ============================================================ */
+const Storage = {
+  save() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-    } catch (error) {
-        console.warn("Не удалось загрузить сохранённое состояние.", error);
-        return null;
-    }
-}
-
-const savedState = loadSavedState();
-
-const state = {
-    balance: Number.isFinite(savedState?.balance)
-        ? Math.max(0, savedState.balance)
-        : CONFIG.initialBalance,
-
-    username: typeof savedState?.username === "string"
-        ? savedState.username
-        : "Гость",
-
-    favorites: new Set(
-        Array.isArray(savedState?.favorites)
-            ? savedState.favorites
-            : []
-    ),
-
-    coupon: [],
-    couponMode: "single",
-    history: Array.isArray(savedState?.history)
-        ? savedState.history
-        : [],
-
-    activePage: "home",
-    activeSport: null,
-    activeMatchId: null,
-    homeFilter: "all",
-    liveFilter: "all",
-    search: "",
-    matchMarketFilter: "all",
-    nextBetId: Number(savedState?.nextBetId) || 1,
-    nextEventId: 1,
-    lastUpdate: Date.now()
-};
-
-function saveState() {
+      localStorage.setItem('rubwin_state', JSON.stringify({
+        balance: State.balance,
+        gamesPlayed: State.gamesPlayed,
+        wins: State.wins,
+        loses: State.loses,
+        history: State.history.slice(0, 100),
+        dailyTopups: State.dailyTopups,
+        dailyTopupAmount: State.dailyTopupAmount,
+        lastTopupDate: State.lastTopupDate,
+        playerName: State.playerName
+      }));
+    } catch(e) {}
+  },
+  load() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            balance: state.balance,
-            username: state.username,
-            favorites: [...state.favorites],
-            history: state.history,
-            nextBetId: state.nextBetId
-        }));
-    } catch (error) {
-        console.warn("Сохранение недоступно.", error);
-    }
-}
-
-/* =========================================================
-   2. ДАННЫЕ КОМАНД И СПОРТСМЕНОВ
-   ========================================================= */
-
-const TEAM_DATA = {
-    football: [
-        ["Манчестер Сити", "MCI", 88],
-        ["Лондон Атлетик", "LAT", 82],
-        ["Мадрид Роял", "MDR", 91],
-        ["Каталония ФК", "CAT", 87],
-        ["Мюнхен Старс", "MST", 89],
-        ["Париж Юнайтед", "PSU", 85],
-        ["Милан Ред", "MLR", 84],
-        ["Турин Блэк", "TRB", 81],
-        ["Амстердам ФК", "AFK", 80],
-        ["Лиссабон Спорт", "LSP", 79],
-        ["Дортмунд Голд", "DRG", 83],
-        ["Северный Арсенал", "NAR", 82],
-        ["Рим Империал", "RIM", 81],
-        ["Атлантик Порту", "ATP", 78],
-        ["Восток Динамо", "VSD", 76],
-        ["Урал Феникс", "URF", 75],
-        ["Волга Стар", "VGS", 74],
-        ["Нева Атлетик", "NVA", 77],
-        ["Баку Фэлконс", "BAF", 76],
-        ["Стокгольм Норд", "STN", 75],
-        ["Осло Юнайтед", "OSU", 73],
-        ["Прага Сити", "PRC", 77],
-        ["Вена Редс", "VNR", 76],
-        ["Загреб Блю", "ZGB", 74],
-        ["Белград Уорриорс", "BGW", 78],
-        ["Афины Олимп", "ATH", 75],
-        ["Токио Драгонс", "TKD", 80],
-        ["Сеул Файр", "SLF", 79],
-        ["Сидней Уэйвс", "SDW", 77],
-        ["Рио Старс", "RST", 82],
-        ["Сан-Паулу Атлетик", "SPA", 81],
-        ["Буэнос-Айрес ФК", "BAF2", 83],
-        ["Нью-Йорк Сити", "NYC", 79],
-        ["Лос-Анджелес Голд", "LAG", 80],
-        ["Торонто Норт", "TRN", 76],
-        ["Мехико Орбит", "MKO", 77],
-        ["Каир Иглс", "KIG", 75],
-        ["Дакар Юнайтед", "DKU", 73],
-        ["Кейп Таун Блю", "CTB", 76],
-        ["Дубай Роверс", "DBR", 78]
-    ],
-
-    hockey: [
-        ["Северные Волки", "SVW", 84],
-        ["Арктик Старс", "ARS", 86],
-        ["Стальные Лисы", "STL", 82],
-        ["Полярные Медведи", "PLM", 87],
-        ["Уральские Молнии", "URM", 80],
-        ["Балтик Шторм", "BAS", 81],
-        ["Сибирский Лёд", "SBL", 83],
-        ["Западные Ястребы", "ZJ", 79],
-        ["Восточные Тигры", "VST", 85],
-        ["Горные Орлы", "GOR", 78],
-        ["Ледяные Короли", "LDK", 88],
-        ["Океан Фрост", "OCF", 80],
-        ["Гранит ХК", "GRH", 82],
-        ["Фрост Юнайтед", "FRU", 77],
-        ["Рапид Айс", "RAI", 81],
-        ["Норд Фокс", "NFX", 79],
-        ["Кристалл Рейнджерс", "KRS", 84],
-        ["Альпийские Волки", "ALW", 80],
-        ["Металл Нова", "MTN", 83],
-        ["Полюс Атлетик", "PLA", 76]
-    ],
-
-    basketball: [
-        ["Метро Тандер", "MTH", 86],
-        ["Бруклин Кометс", "BKC", 82],
-        ["Лос-Анджелес Старс", "LAS", 89],
-        ["Бостон Грин", "BSG", 88],
-        ["Майами Флэйм", "MFL", 83],
-        ["Чикаго Буллзмен", "CHB", 80],
-        ["Даллас Рейндж", "DLR", 84],
-        ["Финикс Солар", "PHS", 85],
-        ["Сиэтл Рейн", "SER", 81],
-        ["Торонто Вортекс", "TRV", 79],
-        ["Берлин Джайентс", "BLJ", 78],
-        ["Мадрид Хупс", "MDH", 83],
-        ["Париж Баскет", "PRB", 81],
-        ["Милан Данк", "MLD", 80],
-        ["Токио Флайерс", "TKF", 82],
-        ["Сеул Буллетс", "SLB", 79],
-        ["Сидней Титанс", "SDT", 81],
-        ["Вена Фокс", "VNF", 77],
-        ["Стокгольм Вулвз", "STW", 78],
-        ["Прага Дрим", "PRD", 76]
-    ],
-
-    tennis: [
-        ["Александр Волков", "AV", 88],
-        ["Максим Орлов", "MO", 82],
-        ["Даниэль Кинг", "DK", 90],
-        ["Лео Мартин", "LM", 86],
-        ["Никита Соколов", "NS", 81],
-        ["Томас Ривер", "TR", 84],
-        ["Марк Беннет", "MB", 85],
-        ["Эрик Ларсен", "EL", 80],
-        ["Рафаэль Морено", "RM", 87],
-        ["Давид Штерн", "DS", 79],
-        ["Артём Белов", "AB", 83],
-        ["Лукас Вебер", "LW", 82],
-        ["Михаил Громов", "MG", 84],
-        ["Оливер Брукс", "OB", 81],
-        ["Карл Норд", "KN", 78],
-        ["Виктор Коста", "VK", 86],
-        ["Илья Миронов", "IM", 80],
-        ["Сэмюэл Хилл", "SH", 83],
-        ["Роман Павлов", "RP", 79],
-        ["Энди Фрост", "EF", 82]
-    ],
-
-    volleyball: [
-        ["Динамо Вектор", "DV", 83],
-        ["Зенит Орбита", "ZO", 87],
-        ["Урал Спайк", "US", 80],
-        ["Нева Блок", "NB", 82],
-        ["Атлант Волей", "AV", 85],
-        ["Север Винд", "SV", 79],
-        ["Милан Воллей", "MV", 84],
-        ["Берлин Сет", "BS", 81],
-        ["Париж Спайкерс", "PS", 82],
-        ["Токио Волт", "TV", 86],
-        ["Прага Эйс", "PE", 78],
-        ["Вена Смеш", "VS", 80],
-        ["Стокгольм Нет", "SN", 79],
-        ["Рио Блокерс", "RB", 83],
-        ["Сеул Эйсес", "SA", 82],
-        ["Сидней Спайк", "SS", 81],
-        ["Осло Волей", "OV", 77],
-        ["Лиссабон Сет", "LS", 79]
-    ],
-
-    mma: [
-        ["Алекс Волков", "AV", 87],
-        ["Марко Силва", "MS", 84],
-        ["Джейк Харрис", "JH", 81],
-        ["Даниэль Круз", "DC", 89],
-        ["Марк Риверс", "MR", 83],
-        ["Тайлер Брукс", "TB", 80],
-        ["Иван Громов", "IG", 85],
-        ["Лукас Рейес", "LR", 82],
-        ["Николас Вега", "NV", 86],
-        ["Роберт Стоун", "RS", 81],
-        ["Кай Мори", "KM", 84],
-        ["Эрик Фрост", "EF", 79],
-        ["Сэм Картер", "SC", 83],
-        ["Павел Миронов", "PM", 80],
-        ["Адам Норт", "AN", 85],
-        ["Виктор Ромеро", "VR", 82],
-        ["Майкл Коул", "MC", 87],
-        ["Рико Дуарте", "RD", 84],
-        ["Оливер Кинг", "OK", 80],
-        ["Томас Грей", "TG", 83]
-    ]
+      const s = localStorage.getItem('rubwin_state');
+      if (!s) return;
+      const d = JSON.parse(s);
+      Object.assign(State, d);
+      // Проверка дня
+      const today = new Date().toDateString();
+      if (State.lastTopupDate !== today) {
+        State.dailyTopups = 0;
+        State.dailyTopupAmount = 0;
+        State.lastTopupDate = today;
+      }
+    } catch(e) {}
+  }
 };
 
-/* =========================================================
-   3. ГЕНЕРАЦИЯ ДЕМО-СОБЫТИЙ
-   ========================================================= */
-
-const events = [];
-
-function seededRandom(seed) {
-    let value = seed >>> 0;
-    return function() {
-        value = (value * 1664525 + 1013904223) >>> 0;
-        return value / 4294967296;
-    };
-}
-
-const random = seededRandom(20261011);
-
-function rand(min, max) {
-    return min + random() * (max - min);
-}
-
-function randInt(min, max) {
-    return Math.floor(rand(min, max + 1));
-}
-
-function choose(array) {
-    return array[Math.floor(random() * array.length)];
-}
-
-function shuffle(array) {
-    const copy = [...array];
-    for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-}
-
-function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
-}
-
-function round(value, digits = 2) {
-    const factor = Math.pow(10, digits);
-    return Math.round(value * factor) / factor;
-}
-
-function createEvent(sport, teamA, teamB, index, leagueIndex) {
-    const sportInfo = SPORTS[sport];
-    const strengthA = teamA[2];
-    const strengthB = teamB[2];
-
-    const strengthDifference = (strengthA - strengthB) / 100;
-    const baseA = rand(1.35, 2.65) - strengthDifference * .65;
-    const baseB = rand(1.35, 2.65) + strengthDifference * .65;
-
-    const eventId = "EV" + String(state.nextEventId++).padStart(5, "0");
-    const live = index % 5 === 0;
-
-    let minute = live
-        ? randInt(3, sportInfo.duration - 3)
-        : 0;
-
-    const scoreA = live
-        ? randInt(0, sport === "football" ? 3 : sport === "hockey" ? 4 : 90)
-        : 0;
-
-    const scoreB = live
-        ? randInt(0, sport === "football" ? 3 : sport === "hockey" ? 4 : 90)
-        : 0;
-
-    const now = Date.now();
-    const scheduled = live
-        ? now - minute * 60000
-        : now + randInt(10, 720) * 60000;
-
-    return {
-        id: eventId,
-        sport,
-        league: sportInfo.leagueNames[
-            leagueIndex % sportInfo.leagueNames.length
-        ],
-        leagueIndex,
-        home: {
-            name: teamA[0],
-            short: teamA[1],
-            strength: strengthA
-        },
-        away: {
-            name: teamB[0],
-            short: teamB[1],
-            strength: strengthB
-        },
-        strengthA,
-        strengthB,
-        live,
-        minute,
-        period: live
-            ? Math.min(
-                sportInfo.periods,
-                Math.floor(minute / (sportInfo.duration / sportInfo.periods)) + 1
-            )
-            : 0,
-        scoreA: live ? scoreA : 0,
-        scoreB: live ? scoreB : 0,
-        scheduled,
-        ended: false,
-        simulated: false,
-        stats: {
-            shotsA: randInt(0, 15),
-            shotsB: randInt(0, 15),
-            shotsOnTargetA: randInt(0, 7),
-            shotsOnTargetB: randInt(0, 7),
-            cornersA: randInt(0, 9),
-            cornersB: randInt(0, 9),
-            foulsA: randInt(1, 14),
-            foulsB: randInt(1, 14),
-            yellowA: randInt(0, 4),
-            yellowB: randInt(0, 4),
-            possessionA: randInt(35, 65)
-        },
-        strength: {
-            home: strengthA,
-            away: strengthB
-        },
-        form: {
-            home: Array.from({length:5}, () => choose(["W","W","D","L"])),
-            away: Array.from({length:5}, () => choose(["W","D","L","L"]))
-        },
-        markets: [],
-        eventsLog: [],
-        result: null,
-        probabilities: {
-            home: 0,
-            draw: 0,
-            away: 0
-        }
-    };
-}
-
-function generateEvents() {
-    for (const sport of Object.keys(TEAM_DATA)) {
-        const teams = shuffle(TEAM_DATA[sport]);
-        const matchCount = sport === "football" ? 32
-            : sport === "hockey" ? 20
-            : sport === "basketball" ? 18
-            : sport === "tennis" ? 16
-            : sport === "volleyball" ? 16
-            : 16;
-
-        for (let i = 0; i < matchCount; i++) {
-            const a = teams[i % teams.length];
-            let b = teams[(i + Math.ceil(teams.length / 2)) % teams.length];
-
-            if (a === b) {
-                b = teams[(i + 1) % teams.length];
-            }
-
-            const event = createEvent(sport, a, b, i, Math.floor(i / 4));
-            events.push(event);
-        }
-    }
-
-    events.forEach(event => {
-        generateBaseProbabilities(event);
-        event.markets = generateMarkets(event);
-    });
-}
-
-/* =========================================================
-   4. МАТЕМАТИКА И ВЕРОЯТНОСТИ
-   ========================================================= */
-
-function normalizeProbabilities(values) {
-    const sum = values.reduce((total, value) => total + value, 0);
-    if (sum <= 0) return values.map(() => 1 / values.length);
-    return values.map(value => value / sum);
-}
-
-function addMargin(probability, margin = .06) {
-    return probability * (1 + margin);
-}
-
-function probabilityToOdds(probability, margin = .06) {
-    const safeProbability = clamp(probability, .005, .995);
-    return round(1 / addMargin(safeProbability, margin));
-}
-
-function generateBaseProbabilities(event) {
-    const diff = (event.strengthA - event.strengthB) / 100;
-    const homeAdvantage = event.sport === "football" ? .12 : .04;
-
-    if (event.sport === "football") {
-        const raw = normalizeProbabilities([
-            Math.exp(diff + homeAdvantage),
-            Math.exp(-Math.abs(diff) * .4) * .82,
-            Math.exp(-diff - homeAdvantage)
-        ]);
-
-        event.probabilities = {
-            home: raw[0],
-            draw: raw[1],
-            away: raw[2]
-        };
-    } else {
-        const raw = normalizeProbabilities([
-            Math.exp(diff + homeAdvantage),
-            Math.exp(-diff - homeAdvantage)
-        ]);
-
-        event.probabilities = {
-            home: raw[0],
-            draw: 0,
-            away: raw[1]
-        };
-    }
-}
-
-/* =========================================================
-   5. ГЕНЕРАТОР РЫНКОВ
-   ========================================================= */
-
-function market(id, category, title, selections) {
-    return {
-        id,
-        category,
-        title,
-        selections: selections.map((selection, index) => ({
-            id: id + "_" + index,
-            name: selection.name,
-            odds: round(selection.odds),
-            key: selection.key || selection.name,
-            probability: selection.probability || null
-        }))
-    };
-}
-
-function threeWayMarket(event, prefix = "") {
-    const p = event.probabilities;
-    return market(
-        prefix + "result",
-        "main",
-        "Исход матча",
-        [
-            {name: "П1", key: "home", probability: p.home,
-             odds: probabilityToOdds(p.home)},
-            {name: "X", key: "draw", probability: p.draw,
-             odds: p.draw > 0 ? probabilityToOdds(p.draw) : 1.01},
-            {name: "П2", key: "away", probability: p.away,
-             odds: probabilityToOdds(p.away)}
-        ].filter(item => item.probability > 0)
-    );
-}
-
-function winnerMarket(event, prefix = "") {
-    const p = event.probabilities;
-    return market(
-        prefix + "winner",
-        "main",
-        "Победитель",
-        [
-            {name: event.home.name, key: "home",
-             probability: p.home, odds: probabilityToOdds(p.home)},
-            {name: event.away.name, key: "away",
-             probability: p.away, odds: probabilityToOdds(p.away)}
-        ]
-    );
-}
-
-function overUnderMarket(event, line, expectedTotal, idPrefix = "total") {
-    const probabilityOver = clamp(
-        .5 + (expectedTotal - line) * .22,
-        .06,
-        .94
-    );
-
-    return market(
-        idPrefix + "_" + String(line).replace(".", "_"),
-        "totals",
-        "Тотал " + line,
-        [
-            {
-                name: "Больше " + line,
-                key: "over",
-                probability: probabilityOver,
-                odds: probabilityToOdds(probabilityOver)
-            },
-            {
-                name: "Меньше " + line,
-                key: "under",
-                probability: 1 - probabilityOver,
-                odds: probabilityToOdds(1 - probabilityOver)
-            }
-        ]
-    );
-}
-
-function handicapMarket(event, line, prefix = "handicap") {
-    const diff = (event.strengthA - event.strengthB) / 20;
-    const probabilityHome = clamp(.5 + diff * .13 - line * .12, .08, .92);
-
-    return market(
-        prefix + "_" + String(line).replace("-", "m").replace(".", "_"),
-        "handicap",
-        "Фора " + line,
-        [
-            {
-                name: "П1 (" + (line >= 0 ? "+" : "") + line + ")",
-                key: "home",
-                probability: probabilityHome,
-                odds: probabilityToOdds(probabilityHome)
-            },
-            {
-                name: "П2 (" + (-line >= 0 ? "+" : "") + (-line) + ")",
-                key: "away",
-                probability: 1 - probabilityHome,
-                odds: probabilityToOdds(1 - probabilityHome)
-            }
-        ]
-    );
-}
-
-function generateMarkets(event) {
-    const result = [];
-    const sport = event.sport;
-
-    if (sport === "football") {
-        result.push(threeWayMarket(event));
-        result.push(winnerMarket(event, "90_"));
-
-        result.push(market("double_chance", "main", "Двойной шанс", [
-            {name: "1X", key: "1x", odds: probabilityToOdds(
-                event.probabilities.home + event.probabilities.draw
-            )},
-            {name: "12", key: "12", odds: probabilityToOdds(
-                event.probabilities.home + event.probabilities.away
-            )},
-            {name: "X2", key: "x2", odds: probabilityToOdds(
-                event.probabilities.draw + event.probabilities.away
-            )}
-        ]));
-
-        result.push(market("both_score", "goals", "Обе команды забьют", [
-            {name: "Да", key: "yes", odds: round(rand(1.65, 2.15))},
-            {name: "Нет", key: "no", odds: round(rand(1.65, 2.15))}
-        ]));
-
-        result.push(market("clean_sheet", "goals", "Сухая победа", [
-            {name: "Хозяева — да", key: "home_yes", odds: round(rand(2.2, 4.4))},
-            {name: "Гости — да", key: "away_yes", odds: round(rand(2.2, 4.4))},
-            {name: "Нет", key: "no", odds: round(rand(1.7, 2.4))}
-        ]));
-
-        for (const line of [0.5,1.5,2.5,3.5,4.5,5.5]) {
-            result.push(overUnderMarket(event, line, 2.7));
-        }
-
-        for (const line of [-2,-1.5,-1,-.5,0,.5,1,1.5,2]) {
-            result.push(handicapMarket(event, line));
-        }
-
-        result.push(market("first_half", "halves", "Первый тайм", [
-            {name: "П1", key: "home", odds: round(rand(1.7, 3.3))},
-            {name: "X", key: "draw", odds: round(rand(1.8, 2.9))},
-            {name: "П2", key: "away", odds: round(rand(1.7, 3.3))}
-        ]));
-
-        result.push(market("first_goal", "goals", "Первый гол", [
-            {name: "Хозяева", key: "home", odds: round(rand(1.7, 2.2))},
-            {name: "Гости", key: "away", odds: round(rand(1.8, 2.3))},
-            {name: "Не будет", key: "none", odds: round(rand(7, 15))}
-        ]));
-
-        result.push(market("corners", "statistics", "Угловые — тотал", [
-            {name: "Больше 7.5", key: "over", odds: round(rand(1.65, 2.1))},
-            {name: "Меньше 7.5", key: "under", odds: round(rand(1.7, 2.15))},
-            {name: "Больше 9.5", key: "over9", odds: round(rand(2, 2.8))},
-            {name: "Меньше 9.5", key: "under9", odds: round(rand(1.4, 1.8))}
-        ]));
-
-        result.push(market("cards", "statistics", "Жёлтые карточки", [
-            {name: "Больше 2.5", key: "over", odds: round(rand(1.5, 1.9))},
-            {name: "Меньше 2.5", key: "under", odds: round(rand(1.8, 2.3))},
-            {name: "Больше 4.5", key: "over45", odds: round(rand(2.1, 3))}
-        ]));
-
-        result.push(market("team_total_home", "team_totals", "Голы хозяев", [
-            {name: "Больше 0.5", key: "over05", odds: round(rand(1.3, 1.8))},
-            {name: "Больше 1.5", key: "over15", odds: round(rand(1.9, 2.7))},
-            {name: "Меньше 1.5", key: "under15", odds: round(rand(1.4, 1.9))}
-        ]));
-
-        result.push(market("team_total_away", "team_totals", "Голы гостей", [
-            {name: "Больше 0.5", key: "over05", odds: round(rand(1.4, 2))},
-            {name: "Больше 1.5", key: "over15", odds: round(rand(2.1, 3))},
-            {name: "Меньше 1.5", key: "under15", odds: round(rand(1.35, 1.8))}
-        ]));
-
-        result.push(market("exact_score", "special", "Точный счёт", [
-            {name: "1:0", key: "1_0", odds: round(rand(5, 9))},
-            {name: "1:1", key: "1_1", odds: round(rand(5, 8))},
-            {name: "2:0", key: "2_0", odds: round(rand(6, 11))},
-            {name: "2:1", key: "2_1", odds: round(rand(6, 10))},
-            {name: "0:0", key: "0_0", odds: round(rand(6, 10))},
-            {name: "0:1", key: "0_1", odds: round(rand(5, 9))},
-            {name: "1:2", key: "1_2", odds: round(rand(7, 12))},
-            {name: "2:2", key: "2_2", odds: round(rand(9, 16))}
-        ]));
-    }
-
-    if (sport === "hockey") {
-        result.push(threeWayMarket(event));
-        result.push(winnerMarket(event));
-
-        result.push(market("hockey_regulation", "main", "Исход в основное время", [
-            {name: "П1", key: "home", odds: round(rand(1.8, 2.7))},
-            {name: "X", key: "draw", odds: round(rand(3.4, 4.5))},
-            {name: "П2", key: "away", odds: round(rand(1.8, 2.7))}
-        ]));
-
-        for (const line of [2.5,3.5,4.5,5.5,6.5,7.5,8.5]) {
-            result.push(overUnderMarket(event, line, 5.4, "hockey_total"));
-        }
-
-        for (const line of [-2,-1.5,-1,-.5,.5,1,1.5,2]) {
-            result.push(handicapMarket(event, line, "hockey_handicap"));
-        }
-
-        result.push(market("hockey_period1", "periods", "Первый период", [
-            {name: "П1", key: "home", odds: round(rand(2, 3))},
-            {name: "X", key: "draw", odds: round(rand(2.1, 2.8))},
-            {name: "П2", key: "away", odds: round(rand(2, 3))}
-        ]));
-
-        result.push(market("hockey_period2", "periods", "Второй период — тотал", [
-            {name: "Больше 1.5", key: "over", odds: round(rand(1.6, 2.1))},
-            {name: "Меньше 1.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-
-        result.push(market("hockey_period3", "periods", "Третий период — тотал", [
-            {name: "Больше 1.5", key: "over", odds: round(rand(1.6, 2.1))},
-            {name: "Меньше 1.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-
-        result.push(market("hockey_first_goal", "special", "Первая заброшенная шайба", [
-            {name: "Хозяева", key: "home", odds: round(rand(1.8, 2.1))},
-            {name: "Гости", key: "away", odds: round(rand(1.8, 2.1))},
-            {name: "Нет голов", key: "none", odds: round(rand(30, 60))}
-        ]));
-
-        result.push(market("hockey_powerplay", "statistics", "Большинство — гол", [
-            {name: "Да", key: "yes", odds: round(rand(1.7, 2.3))},
-            {name: "Нет", key: "no", odds: round(rand(1.6, 2.2))}
-        ]));
-    }
-
-    if (sport === "basketball") {
-        result.push(winnerMarket(event));
-
-        for (const line of [145.5,155.5,165.5,175.5,185.5,195.5,205.5,215.5]) {
-            result.push(overUnderMarket(event, line, 180, "basket_total"));
-        }
-
-        for (const line of [-15.5,-10.5,-5.5,-2.5,2.5,5.5,10.5,15.5]) {
-            result.push(handicapMarket(event, line, "basket_handicap"));
-        }
-
-        result.push(market("basket_half", "periods", "Первая половина", [
-            {name: "П1", key: "home", odds: round(rand(1.7, 2.4))},
-            {name: "П2", key: "away", odds: round(rand(1.7, 2.4))}
-        ]));
-
-        result.push(market("basket_quarter1", "periods", "Первая четверть", [
-            {name: "П1", key: "home", odds: round(rand(1.7, 2.3))},
-            {name: "П2", key: "away", odds: round(rand(1.7, 2.3))}
-        ]));
-
-        result.push(market("basket_quarter_total", "periods", "Первая четверть — тотал", [
-            {name: "Больше 40.5", key: "over", odds: round(rand(1.7, 2.1))},
-            {name: "Меньше 40.5", key: "under", odds: round(rand(1.7, 2.1))}
-        ]));
-
-        result.push(market("basket_team_home", "team_totals", "Очки хозяев", [
-            {name: "Больше 85.5", key: "over", odds: round(rand(1.7, 2.2))},
-            {name: "Меньше 85.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-
-        result.push(market("basket_team_away", "team_totals", "Очки гостей", [
-            {name: "Больше 85.5", key: "over", odds: round(rand(1.7, 2.2))},
-            {name: "Меньше 85.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-    }
-
-    if (sport === "tennis") {
-        result.push(winnerMarket(event));
-
-        result.push(market("tennis_sets", "sets", "Общее количество сетов", [
-            {name: "Больше 2.5", key: "over", odds: round(rand(1.8, 2.3))},
-            {name: "Меньше 2.5", key: "under", odds: round(rand(1.6, 2))}
-        ]));
-
-        result.push(market("tennis_games", "games", "Тотал геймов", [
-            {name: "Больше 18.5", key: "over18", odds: round(rand(1.7, 2.1))},
-            {name: "Меньше 18.5", key: "under18", odds: round(rand(1.7, 2.1))},
-            {name: "Больше 22.5", key: "over22", odds: round(rand(1.8, 2.2))},
-            {name: "Меньше 22.5", key: "under22", odds: round(rand(1.6, 2))}
-        ]));
-
-        result.push(market("tennis_first_set", "sets", "Победитель первого сета", [
-            {name: "Игрок 1", key: "home", odds: round(rand(1.6, 2.5))},
-            {name: "Игрок 2", key: "away", odds: round(rand(1.6, 2.5))}
-        ]));
-
-        result.push(market("tennis_handicap", "handicap", "Фора по геймам", [
-            {name: "Игрок 1 (-2.5)", key: "home", odds: round(rand(1.8, 2.1))},
-            {name: "Игрок 2 (+2.5)", key: "away", odds: round(rand(1.7, 2))}
-        ]));
-
-        result.push(market("tennis_aces", "statistics", "Эйсы — тотал", [
-            {name: "Больше 7.5", key: "over", odds: round(rand(1.7, 2.2))},
-            {name: "Меньше 7.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-
-        result.push(market("tennis_breaks", "statistics", "Будет брейк", [
-            {name: "Да", key: "yes", odds: round(rand(1.1, 1.4))},
-            {name: "Нет", key: "no", odds: round(rand(3.1, 5))}
-        ]));
-    }
-
-    if (sport === "volleyball") {
-        result.push(winnerMarket(event));
-
-        result.push(market("volleyball_sets", "sets", "Тотал сетов", [
-            {name: "Больше 3.5", key: "over", odds: round(rand(1.7, 2.1))},
-            {name: "Меньше 3.5", key: "under", odds: round(rand(1.7, 2.1))},
-            {name: "Больше 4.5", key: "over45", odds: round(rand(2.1, 3))},
-            {name: "Меньше 4.5", key: "under45", odds: round(rand(1.3, 1.8))}
-        ]));
-
-        result.push(market("volleyball_handicap", "handicap", "Фора по очкам", [
-            {name: "Команда 1 (-5.5)", key: "home", odds: round(rand(1.8, 2.1))},
-            {name: "Команда 2 (+5.5)", key: "away", odds: round(rand(1.7, 2))}
-        ]));
-
-        result.push(market("volleyball_first_set", "sets", "Первый сет", [
-            {name: "П1", key: "home", odds: round(rand(1.7, 2.3))},
-            {name: "П2", key: "away", odds: round(rand(1.7, 2.3))}
-        ]));
-
-        result.push(market("volleyball_total_points", "points", "Тотал очков", [
-            {name: "Больше 175.5", key: "over", odds: round(rand(1.7, 2.2))},
-            {name: "Меньше 175.5", key: "under", odds: round(rand(1.7, 2.2))}
-        ]));
-
-        result.push(market("volleyball_exact_sets", "special", "Точный счёт по сетам", [
-            {name: "3:0", key: "3_0", odds: round(rand(3, 5))},
-            {name: "3:1", key: "3_1", odds: round(rand(3, 5))},
-            {name: "3:2", key: "3_2", odds: round(rand(4, 7))},
-            {name: "0:3", key: "0_3", odds: round(rand(3, 5))},
-            {name: "1:3", key: "1_3", odds: round(rand(3, 5))},
-            {name: "2:3", key: "2_3", odds: round(rand(4, 7))}
-        ]));
-    }
-
-    if (sport === "mma") {
-        result.push(winnerMarket(event));
-
-        result.push(market("mma_method", "method", "Способ победы", [
-            {name: "Победа нокаутом — 1", key: "ko_home", odds: round(rand(2, 4))},
-            {name: "Победа решением — 1", key: "dec_home", odds: round(rand(2, 4))},
-            {name: "Победа нокаутом — 2", key: "ko_away", odds: round(rand(2, 4))},
-            {name: "Победа решением — 2", key: "dec_away", odds: round(rand(2, 4))}
-        ]));
-
-        result.push(market("mma_rounds", "rounds", "Тотал раундов", [
-            {name: "Больше 1.5", key: "over15", odds: round(rand(1.6, 2.1))},
-            {name: "Меньше 1.5", key: "under15", odds: round(rand(1.7, 2.2))},
-            {name: "Больше 2.5", key: "over25", odds: round(rand(1.8, 2.4))},
-            {name: "Меньше 2.5", key: "under25", odds: round(rand(1.6, 2.1))}
-        ]));
-
-        result.push(market("mma_distance", "method", "Бой продлится всю дистанцию", [
-            {name: "Да", key: "yes", odds: round(rand(1.8, 2.6))},
-            {name: "Нет", key: "no", odds: round(rand(1.4, 2))}
-        ]));
-
-        result.push(market("mma_first_round", "rounds", "Исход первого раунда", [
-            {name: "Победа бойца 1", key: "home", odds: round(rand(3, 6))},
-            {name: "Победа бойца 2", key: "away", odds: round(rand(3, 6))},
-            {name: "Раунд завершится", key: "finish", odds: round(rand(1.7, 2.3))}
-        ]));
-
-        result.push(market("mma_decision", "method", "Решение судей", [
-            {name: "Да", key: "yes", odds: round(rand(1.9, 3))},
-            {name: "Нет", key: "no", odds: round(rand(1.4, 2))}
-        ]));
-    }
-
-    return result;
-}
-
-/* =========================================================
-   6. ПОИСК СОБЫТИЙ И РЫНКОВ
-   ========================================================= */
-
-function getEvent(id) {
-    return events.find(event => event.id === id) || null;
-}
-
-function getMarket(event, marketId) {
-    return event?.markets.find(item => item.id === marketId) || null;
-}
-
-function getSelection(event, marketId, selectionId) {
-    const selectedMarket = getMarket(event, marketId);
-    return selectedMarket?.selections.find(
-        selection => selection.id === selectionId
-    ) || null;
-}
-
-function getAllEvents() {
-    return [...events].sort((a,b) => {
-        if (a.live !== b.live) return a.live ? -1 : 1;
-        return a.scheduled - b.scheduled;
-    });
-}
-
-function searchEvents(query) {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return getAllEvents();
-
-    return getAllEvents().filter(event => [
-        event.home.name,
-        event.away.name,
-        event.league,
-        SPORTS[event.sport].name
-    ].some(value => value.toLowerCase().includes(normalized)));
-}
-
-function eventsBySport(sport) {
-    return getAllEvents().filter(event => event.sport === sport);
-}
-
-function liveEvents() {
-    return getAllEvents().filter(event => event.live && !event.ended);
-}
-
-function upcomingEvents() {
-    return getAllEvents().filter(event => !event.live && !event.ended);
-}
-
-/* =========================================================
-   7. HTML-ЭКРАНИРОВАНИЕ
-   ========================================================= */
-
-function escapeHTML(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-function formatNumber(value) {
-    return new Intl.NumberFormat("ru-RU", {
-        maximumFractionDigits: 2
-    }).format(value);
-}
-
-function formatBalance(value) {
-    return formatNumber(value) + " ₽";
-}
-
-function formatTime(timestamp) {
-    return new Intl.DateTimeFormat("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit"
-    }).format(new Date(timestamp));
-}
-
-function getEventTime(event) {
-    if (event.ended) return "Завершён";
-    if (event.live) return event.minute + "′";
-    return formatTime(event.scheduled);
-}
-
-function scoreText(event) {
-    return event.scoreA + " : " + event.scoreB;
-}
-
-function oddsButtonHTML(event, selectedMarket, selection) {
-    const selected = state.coupon.some(item =>
-        item.eventId === event.id &&
-        item.marketId === selectedMarket.id &&
-        item.selectionId === selection.id
-    );
-
-    return `
-        <button
-            class="odds-button ${selected ? "selected" : ""}"
-            data-add-selection="1"
-            data-event-id="${escapeHTML(event.id)}"
-            data-market-id="${escapeHTML(selectedMarket.id)}"
-            data-selection-id="${escapeHTML(selection.id)}"
-            title="${escapeHTML(selectedMarket.title)} — ${escapeHTML(selection.name)}"
-        >
-            <span class="odd-name">${escapeHTML(selection.name)}</span>
-            <span class="odd-value">${formatNumber(selection.odds)}</span>
-        </button>
-    `;
-}
-
-function eventRowHTML(event) {
-    const mainMarket = event.markets.find(marketItem =>
-        marketItem.id === "result" ||
-        marketItem.id === "winner"
-    );
-
-    const favorite = state.favorites.has(event.id);
-
-    const selections = mainMarket
-        ? mainMarket.selections.slice(0,3)
-        : [];
-
-    let oddsHTML = "";
-
-    if (selections.length) {
-        oddsHTML = selections.map(selection =>
-            oddsButtonHTML(event, mainMarket, selection)
-        ).join("");
-    } else {
-        oddsHTML = `
-            <button class="odds-button"
-                    data-open-event="${escapeHTML(event.id)}">
-                <span class="odd-name">Рынки</span>
-                <span class="odd-value">Открыть →</span>
-            </button>
-        `;
-    }
-
-    return `
-        <article class="event-row">
-            <div class="event-main">
-                <div class="event-meta">
-                    <span>${SPORTS[event.sport].emoji}</span>
-                    <span>${escapeHTML(event.league)}</span>
-                    <span>·</span>
-                    ${
-                        event.live
-                            ? `<span class="live-label">${getEventTime(event)}</span>`
-                            : `<span>${getEventTime(event)}</span>`
-                    }
-                    <button
-                        class="event-favorite ${favorite ? "active" : ""}"
-                        data-favorite="${escapeHTML(event.id)}"
-                        title="Избранное"
-                    >${favorite ? "★" : "☆"}</button>
-                </div>
-
-                <div class="team-line">
-                    <div class="team-info">
-                        <span class="team-logo">${escapeHTML(event.home.short)}</span>
-                        <span class="team-name">${escapeHTML(event.home.name)}</span>
-                    </div>
-                    <span class="team-score ${event.scoreA > event.scoreB ? "winner" : ""}">
-                        ${event.live || event.ended ? event.scoreA : "—"}
-                    </span>
-                </div>
-
-                <div class="team-line">
-                    <div class="team-info">
-                        <span class="team-logo">${escapeHTML(event.away.short)}</span>
-                        <span class="team-name">${escapeHTML(event.away.name)}</span>
-                    </div>
-                    <span class="team-score ${event.scoreB > event.scoreA ? "winner" : ""}">
-                        ${event.live || event.ended ? event.scoreB : "—"}
-                    </span>
-                </div>
-
-                <div class="event-details">
-                    <span>▦ ${event.markets.length} рынков</span>
-                    <span>◷ ${event.live ? "Идёт" : event.ended ? "Завершён" : "Ожидается"}</span>
-                </div>
-            </div>
-
-            <div class="event-markets">
-                <div class="market-label">
-                    ${escapeHTML(mainMarket?.title || "Основной рынок")}
-                </div>
-                <div class="odds-grid">${oddsHTML}</div>
-                <div class="event-bottom">
-                    <button class="more-markets"
-                            data-open-event="${escapeHTML(event.id)}">
-                        Все рынки (${event.markets.length}) →
-                    </button>
-                </div>
-            </div>
-        </article>
-    `;
-}
-
-function groupEventsHTML(list) {
-    if (!list.length) {
-        return `
-            <div class="empty-state">
-                <strong>События не найдены</strong>
-                <span>Попробуй изменить фильтр или поисковый запрос.</span>
-            </div>
-        `;
-    }
-
-    const groups = new Map();
-
-    for (const event of list) {
-        const key = event.sport + "::" + event.league;
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(event);
-    }
-
-    return [...groups.entries()].map(([key, group]) => {
-        const [sport, league] = key.split("::");
-
-        return `
-            <section class="league-block">
-                <header class="league-header">
-                    <span class="league-flag">${SPORTS[sport].emoji}</span>
-                    <div>
-                        <div class="league-title">${escapeHTML(league)}</div>
-                        <div class="league-subtitle">${SPORTS[sport].name} · Демо-турнир</div>
-                    </div>
-                    <span class="league-event-count">${group.length} событий</span>
-                </header>
-                ${group.map(eventRowHTML).join("")}
-            </section>
-        `;
-    }).join("");
-}
-
-/* =========================================================
-   8. РЕНДЕР ЭКРАНОВ
-   ========================================================= */
-
-function setHTML(id, html) {
-    const element = document.getElementById(id);
-    if (element) element.innerHTML = html;
-}
-
-function renderHome() {
-    let list = searchEvents(state.search);
-
-    if (state.homeFilter !== "all") {
-        list = list.filter(event => event.sport === state.homeFilter);
-    }
-
-    setHTML("homeEvents", groupEventsHTML(list.slice(0, 30)));
-}
-
-function renderLive() {
-    let list = liveEvents();
-
-    if (state.liveFilter !== "all") {
-        list = list.filter(event => event.sport === state.liveFilter);
-    }
-
-    if (state.search) {
-        list = list.filter(event =>
-            event.home.name.toLowerCase().includes(state.search.toLowerCase()) ||
-            event.away.name.toLowerCase().includes(state.search.toLowerCase())
-        );
-    }
-
-    setHTML("liveEvents", groupEventsHTML(list));
-}
-
-function renderUpcoming() {
-    let list = upcomingEvents();
-    const search = document.getElementById("upcomingSearch")?.value
-        ?.trim().toLowerCase() || "";
-
-    const sort = document.getElementById("sortEvents")?.value || "time";
-
-    if (search) {
-        list = list.filter(event =>
-            event.home.name.toLowerCase().includes(search) ||
-            event.away.name.toLowerCase().includes(search) ||
-            event.league.toLowerCase().includes(search)
-        );
-    }
-
-    if (sort === "sport") {
-        list.sort((a,b) => a.sport.localeCompare(b.sport));
-    } else if (sort === "name") {
-        list.sort((a,b) => a.home.name.localeCompare(b.home.name));
-    } else {
-        list.sort((a,b) => a.scheduled - b.scheduled);
-    }
-
-    setHTML("upcomingEvents", groupEventsHTML(list));
-}
-
-function renderFavorites() {
-    const list = getAllEvents().filter(event => state.favorites.has(event.id));
-    setHTML("favoriteEvents", groupEventsHTML(list));
-}
-
-function renderSport() {
-    const sport = state.activeSport;
-    if (!sport || !SPORTS[sport]) return;
-
-    document.getElementById("sportTitle").textContent =
-        SPORTS[sport].emoji + " " + SPORTS[sport].name;
-
-    document.getElementById("sportSubtitle").textContent =
-        "Вымышленные матчи и " +
-        eventsBySport(sport).reduce((sum,event) => sum + event.markets.length,0) +
-        " доступных рынков по всем событиям.";
-
-    setHTML("sportEvents", groupEventsHTML(eventsBySport(sport)));
-}
-
-function renderStats() {
-    const live = liveEvents().length;
-    const upcoming = upcomingEvents().length;
-
-    const settled = state.history.filter(item => item.status !== "pending");
-    const wins = settled.filter(item => item.status === "won").length;
-
-    document.getElementById("headerBalance").textContent =
-        formatBalance(state.balance);
-
-    document.getElementById("liveCount").textContent = live;
-    document.getElementById("couponCount").textContent = state.coupon.length;
-    document.getElementById("couponCountRight").textContent = state.coupon.length;
-
-    document.getElementById("statLive").textContent = live;
-    document.getElementById("statUpcoming").textContent = upcoming;
-    document.getElementById("statBets").textContent = state.history.length;
-
-    document.getElementById("statWinRate").textContent =
-        settled.length
-            ? Math.round(wins / settled.length * 100) + "%"
-            : "—";
-
-    document.getElementById("username").textContent = state.username;
-    document.getElementById("avatar").textContent =
-        state.username.slice(0,1).toUpperCase();
-
-    document.querySelectorAll("[data-sport]").forEach(button => {
-        const sport = button.dataset.sport;
-        const count = eventsBySport(sport).length;
-
-        let badge = button.querySelector(".nav-count");
-
-        if (!badge) {
-            badge = document.createElement("span");
-            badge.className = "nav-count";
-            button.appendChild(badge);
-        }
-
-        badge.textContent = count;
-    });
-}
-
-function renderAll() {
-    renderHome();
-    renderLive();
-    renderUpcoming();
-    renderFavorites();
-    renderCoupon();
-    renderStats();
-
-    if (state.activePage === "sport") renderSport();
-    if (state.activePage === "match") renderMatch();
-    if (state.activePage === "history") renderHistory();
-    if (state.activePage === "profile") renderProfile();
-}
-
-/* =========================================================
-   9. СИСТЕМА НАВИГАЦИИ
-   ========================================================= */
-
-const PAGE_NAMES = {
-    home: "Главная",
-    live: "Live",
-    upcoming: "Предстоящие события",
-    favorites: "Избранное",
-    sport: "Вид спорта",
-    match: "Матч",
-    coupon: "Купон",
-    history: "История",
-    profile: "Профиль"
+/* ============================================================
+   УТИЛИТЫ
+   ============================================================ */
+const Utils = {
+  rand(min, max) { return Math.random() * (max - min) + min; },
+  randInt(min, max) { return Math.floor(this.rand(min, max + 1)); },
+  choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
+  fmt(n) { return Math.round(n).toLocaleString('ru-RU'); },
+  uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); }
 };
 
-function navigate(page, data = {}) {
-    if (!PAGE_NAMES[page]) return;
-
-    state.activePage = page;
-
-    if (data.sport) state.activeSport = data.sport;
-    if (data.matchId) state.activeMatchId = data.matchId;
-
-    document.querySelectorAll(".page").forEach(element => {
-        element.classList.remove("active");
-    });
-
-    const target = document.getElementById("page-" + page);
-    if (target) target.classList.add("active");
-
-    document.querySelectorAll(".nav-item[data-page]").forEach(button => {
-        button.classList.toggle("active", button.dataset.page === page);
-    });
-
-    document.querySelectorAll(".nav-item[data-sport]").forEach(button => {
-        button.classList.toggle(
-            "active",
-            page === "sport" && button.dataset.sport === state.activeSport
-        );
-    });
-
-    const breadcrumbs = document.getElementById("breadcrumbs");
-    breadcrumbs.innerHTML =
-        `OPENBET <span>›</span> <strong>${escapeHTML(PAGE_NAMES[page])}</strong>`;
-
-    if (page === "sport") renderSport();
-    if (page === "match") renderMatch();
-    if (page === "coupon") renderFullCoupon();
-    if (page === "history") renderHistory();
-    if (page === "profile") renderProfile();
-
-    if (window.innerWidth <= 650) {
-        document.getElementById("sidebar").classList.remove("open");
-    }
-
-    window.scrollTo({top:0,behavior:"smooth"});
-}
-
-document.addEventListener("click", event => {
-    const pageButton = event.target.closest("[data-page]");
-    if (pageButton) {
-        event.preventDefault();
-        navigate(pageButton.dataset.page);
-        return;
-    }
-
-    const sportButton = event.target.closest("[data-sport]");
-    if (sportButton) {
-        navigate("sport", {sport:sportButton.dataset.sport});
-        return;
-    }
-
-    const openEvent = event.target.closest("[data-open-event]");
-    if (openEvent) {
-        navigate("match", {matchId:openEvent.dataset.openEvent});
-        return;
-    }
-
-    const selectionButton = event.target.closest("[data-add-selection]");
-    if (selectionButton) {
-        addSelection(
-            selectionButton.dataset.eventId,
-            selectionButton.dataset.marketId,
-            selectionButton.dataset.selectionId
-        );
-        return;
-    }
-
-    const favoriteButton = event.target.closest("[data-favorite]");
-    if (favoriteButton) {
-        toggleFavorite(favoriteButton.dataset.favorite);
-        return;
-    }
-
-    const removeButton = event.target.closest("[data-remove-selection]");
-    if (removeButton) {
-        removeSelection(removeButton.dataset.removeSelection);
-        return;
-    }
-
-    const stakeButton = event.target.closest("[data-stake]");
-    if (stakeButton) {
-        document.getElementById("stakeInput").value = stakeButton.dataset.stake;
-        renderCoupon();
-    }
-});
-
-document.getElementById("menuToggle").addEventListener("click", () => {
-    document.getElementById("sidebar").classList.toggle("open");
-});
-
-document.getElementById("openProfile").addEventListener("click", () => {
-    navigate("profile");
-});
-
-document.getElementById("globalSearch").addEventListener("input", event => {
-    state.search = event.target.value;
-    renderHome();
-    renderLive();
-});
-
-document.getElementById("upcomingSearch").addEventListener("input", renderUpcoming);
-document.getElementById("sortEvents").addEventListener("change", renderUpcoming);
-
-document.getElementById("homeFilters").addEventListener("click", event => {
-    const button = event.target.closest("[data-filter]");
-    if (!button) return;
-
-    state.homeFilter = button.dataset.filter;
-
-    document.querySelectorAll("#homeFilters [data-filter]").forEach(item => {
-        item.classList.toggle("active", item === button);
-    });
-
-    renderHome();
-});
-
-document.getElementById("liveFilters").addEventListener("click", event => {
-    const button = event.target.closest("[data-filter]");
-    if (!button) return;
-
-    state.liveFilter = button.dataset.filter;
-
-    document.querySelectorAll("#liveFilters [data-filter]").forEach(item => {
-        item.classList.toggle("active", item === button);
-    });
-
-    renderLive();
-});
-
-/* =========================================================
-   10. ИЗБРАННОЕ
-   ========================================================= */
-
-function toggleFavorite(eventId) {
-    if (state.favorites.has(eventId)) {
-        state.favorites.delete(eventId);
-        showToast("Событие удалено из избранного.");
-    } else {
-        state.favorites.add(eventId);
-        showToast("Событие добавлено в избранное.");
-    }
-
-    saveState();
-    renderAll();
-}
-
-/* =========================================================
-   11. КУПОН И ПРОВЕРКА ВЫБОРОВ
-   ========================================================= */
-
-function addSelection(eventId, marketId, selectionId) {
-    const event = getEvent(eventId);
-    if (!event) {
-        showToast("Событие не найдено.", "error");
-        return;
-    }
-
-    if (event.ended) {
-        showToast("Матч уже завершён.", "warning");
-        return;
-    }
-
-    if (event.live) {
-        showToast("В этом демо-режиме выборы Live не добавляются.", "warning");
-        return;
-    }
-
-    const selectedMarket = getMarket(event, marketId);
-    if (!selectedMarket) {
-        showToast("Рынок недоступен.", "error");
-        return;
-    }
-
-    const selection = getSelection(event, marketId, selectionId);
-    if (!selection) {
-        showToast("Вариант недоступен.", "error");
-        return;
-    }
-
-    const existingIndex = state.coupon.findIndex(item =>
-        item.eventId === eventId &&
-        item.marketId === marketId
-    );
-
-    if (existingIndex >= 0) {
-        if (state.coupon[existingIndex].selectionId === selectionId) {
-            state.coupon.splice(existingIndex,1);
-            showToast("Выбор удалён из купона.");
-        } else {
-            state.coupon.splice(existingIndex,1);
-            state.coupon.push({
-                eventId,
-                marketId,
-                selectionId,
-                odds: selection.odds,
-                eventTitle: event.home.name + " — " + event.away.name,
-                marketTitle: selectedMarket.title,
-                selectionName: selection.name,
-                status: "pending"
-            });
-            showToast("Вариант заменён.");
-        }
-    } else {
-        if (state.coupon.length >= CONFIG.maxSelections) {
-            showToast("Достигнут лимит выборов.", "warning");
-            return;
-        }
-
-        state.coupon.push({
-            eventId,
-            marketId,
-            selectionId,
-            odds: selection.odds,
-            eventTitle: event.home.name + " — " + event.away.name,
-            marketTitle: selectedMarket.title,
-            selectionName: selection.name,
-            status: "pending"
-        });
-
-        showToast("Добавлено в виртуальный купон.");
-    }
-
-    renderAll();
-}
-
-function removeSelection(eventId) {
-    state.coupon = state.coupon.filter(item => item.eventId !== eventId);
-    renderAll();
-}
-
-function clearCoupon() {
-    state.coupon = [];
-    renderAll();
-}
-
-document.getElementById("clearCoupon").addEventListener("click", clearCoupon);
-
-document.getElementById("stakeInput").addEventListener("input", renderCoupon);
-
-document.querySelectorAll("[data-stake]").forEach(button => {
-    button.addEventListener("click", () => {
-        document.getElementById("stakeInput").value = button.dataset.stake;
-        renderCoupon();
-    });
-});
-
-document.querySelectorAll("[data-coupon-mode]").forEach(button => {
-    button.addEventListener("click", () => {
-        state.couponMode = button.dataset.couponMode;
-
-        document.querySelectorAll("[data-coupon-mode]").forEach(tab => {
-            tab.classList.toggle("active", tab === button);
-        });
-
-        renderCoupon();
-    });
-});
-
-function couponOdds() {
-    if (!state.coupon.length) return 0;
-
-    if (state.couponMode === "single") {
-        return state.coupon[0].odds;
-    }
-
-    return state.coupon.reduce((total,item) => total * item.odds,1);
-}
-
-function getStake() {
-    const input = document.getElementById("stakeInput");
-    const value = Number(input.value);
-
-    if (!Number.isFinite(value)) return 0;
-    return Math.floor(value);
-}
-
-function calculateReturn(stake, odds) {
-    if (stake <= 0 || odds <= 0) return 0;
-    return Math.floor(stake * odds);
-}
-
-function renderCoupon() {
-    const selectionsContainer = document.getElementById("couponSelections");
-
-    if (!state.coupon.length) {
-        selectionsContainer.innerHTML = `
-            <div class="coupon-empty">
-                <div class="coupon-empty-icon">▤</div>
-                <strong>Купон пока пуст</strong>
-                <p>
-                    Выбери вариант в одном из демонстрационных событий.
-                    Он появится здесь автоматически.
-                </p>
-            </div>
-        `;
-    } else {
-        selectionsContainer.innerHTML = state.coupon.map(item => `
-            <div class="coupon-selection">
-                <div class="coupon-selection-top">
-                    <div class="coupon-selection-title">
-                        ${escapeHTML(item.eventTitle)}
-                    </div>
-                    <button class="coupon-remove"
-                            data-remove-selection="${escapeHTML(item.eventId)}"
-                            aria-label="Удалить">×</button>
-                </div>
-                <div class="coupon-selection-market">
-                    ${escapeHTML(item.marketTitle)} ·
-                    ${escapeHTML(item.selectionName)}
-                </div>
-                <div class="coupon-selection-odd">
-                    ${formatNumber(item.odds)}
-                </div>
-            </div>
-        `).join("");
-    }
-
-    const odds = couponOdds();
-    const stake = getStake();
-    const validStake = stake >= CONFIG.minStake &&
-        stake <= CONFIG.maxStake &&
-        stake <= state.balance;
-
-    const returnValue = calculateReturn(stake,odds);
-    const profit = Math.max(0,returnValue - stake);
-
-    document.getElementById("totalOdds").textContent =
-        odds > 0 ? formatNumber(odds) : "—";
-
-    document.getElementById("possibleReturn").textContent =
-        odds > 0 && stake > 0 ? formatBalance(returnValue) : "—";
-
-    document.getElementById("possibleProfit").textContent =
-        odds > 0 && stake > 0 ? formatBalance(profit) : "—";
-
-    document.getElementById("simulateButton").disabled =
-        !state.coupon.length || !validStake;
-
-    document.getElementById("couponCount").textContent = state.coupon.length;
-    document.getElementById("couponCountRight").textContent = state.coupon.length;
-
-    renderFullCoupon();
-}
-
-function renderFullCoupon() {
-    const container = document.getElementById("fullCoupon");
-    if (!container) return;
-
-    if (!state.coupon.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <strong>Купон пуст</strong>
-                Выбери варианты на главной странице или в карточке матча.
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = `
-        <h3>Выбранные варианты</h3>
-        ${state.coupon.map(item => `
-            <div class="history-row">
-                <div>
-                    <div class="history-title">${escapeHTML(item.eventTitle)}</div>
-                    <div class="history-description">
-                        ${escapeHTML(item.marketTitle)}:
-                        ${escapeHTML(item.selectionName)}
-                    </div>
-                </div>
-                <div class="history-amount">${formatNumber(item.odds)}</div>
-            </div>
-        `).join("")}
-    `;
-}
-
-/* =========================================================
-   12. СИМУЛЯЦИЯ РАСЧЁТА
-   ========================================================= */
-
-document.getElementById("simulateButton").addEventListener("click", () => {
-    simulateCoupon();
-});
-
-function simulateCoupon() {
-    if (!state.coupon.length) return;
-
-    const stake = getStake();
-    const odds = couponOdds();
-
-    if (!Number.isInteger(stake) ||
-        stake < CONFIG.minStake ||
-        stake > CONFIG.maxStake) {
-        showToast("Введи допустимое количество очков.", "error");
-        return;
-    }
-
-    if (stake > state.balance) {
-        showToast("Недостаточно виртуальных очков.", "error");
-        return;
-    }
-
-    if (state.coupon.some(item => {
-        const event = getEvent(item.eventId);
-        return !event || event.ended;
-    })) {
-        showToast("Некоторые события уже завершены.", "warning");
-        return;
-    }
-
-    const selections = state.coupon.map(item => ({...item}));
-    const totalReturn = calculateReturn(stake,odds);
-
-    state.balance -= stake;
-
-    const bet = {
-        id: "SIM" + String(state.nextBetId++).padStart(6,"0"),
-        createdAt: Date.now(),
-        mode: state.couponMode,
-        stake,
-        odds,
-        possibleReturn: totalReturn,
-        profit: totalReturn - stake,
-        status: "pending",
-        selections
+/* ============================================================
+   UI
+   ============================================================ */
+const UI = {
+  toast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => { t.className = 'toast ' + type; }, 2000);
+  },
+  modal(title, text, onConfirm, onCancel) {
+    const m = document.getElementById('modal');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalText').textContent = text;
+    document.getElementById('modalBtn').textContent = 'ОК';
+    document.getElementById('modalBtn2').style.display = onCancel ? 'block' : 'none';
+    m.classList.add('open');
+    document.getElementById('modalBtn').onclick = () => {
+      m.classList.remove('open');
+      if (onConfirm) onConfirm();
     };
+    document.getElementById('modalBtn2').onclick = () => {
+      m.classList.remove('open');
+      if (onCancel) onCancel();
+    };
+  },
+  updateBalance() {
+    document.getElementById('balanceText').textContent = Utils.fmt(State.balance);
+    document.getElementById('profileBalance').textContent = Utils.fmt(State.balance) + ' ₽';
+  },
+  updateProfile() {
+    document.getElementById('profileName').textContent = State.playerName;
+    document.getElementById('statGames').textContent = State.gamesPlayed;
+    document.getElementById('statWins').textContent = State.wins;
+    document.getElementById('statLoses').textContent = State.loses;
+  }
+};
 
-    state.history.unshift(bet);
+/* ============================================================
+   LIVE ЛЕНТА (фейковые игроки)
+   ============================================================ */
+const LiveFeed = {
+  names: ['Никус', '@qwak1', 'Spectrum', 'lexa', 'Erop', 'NightMors', 'Феникс', 'Лис', 'Соня', 'Кекс', 'Мурзик', 'Валера'],
+  avatars: ['🐮','🚀','💎','🔥','⭐','🎯','🍀','🎲','👑','💣'],
+  init() {
+    this.render();
+    setInterval(() => this.render(), 4000);
+  },
+  render() {
+    const el = document.getElementById('liveScroll');
+    if (!el) return;
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+      const name = Utils.choice(this.names);
+      const avatar = Utils.choice(this.avatars);
+      const amount = Utils.randInt(100, 5000);
+      html += `<div class="live-card">
+        <div class="live-avatar">${avatar}</div>
+        <div class="live-info">
+          <div class="live-name">${name}</div>
+          <div class="live-amount">${Utils.fmt(amount)} ₽</div>
+        </div>
+      </div>`;
+    }
+    el.innerHTML = html;
+  }
+};
 
-    state.coupon = [];
+/* ============================================================
+   ИГРА: КОРОВКА (Crash)
+   ============================================================ */
+const CowGame = {
+  active: false,
+  bet: 0,
+  multiplier: 1,
+  crashed: false,
+  cashouted: false,
+  interval: null,
+  history: [],
+  crashAt: 1,
+  render() {
+    return `
+      <div class="crash-arena">
+        <div class="crash-history" id="cowHistory"></div>
+        <div class="crash-multiplier" id="cowMultiplier">1.00x</div>
+        <div class="crash-emoji" id="cowEmoji">🐮</div>
+        <div class="crash-status" id="cowStatus">Сделайте ставку</div>
+      </div>
+      <div class="controls">
+        <div class="bet-input-row">
+          <input type="number" id="cowBet" value="10" min="1" step="1">
+          <button class="quick-btn" data-bet="10">10</button>
+          <button class="quick-btn" data-bet="100">100</button>
+          <button class="quick-btn" data-bet="max">МАКС</button>
+        </div>
+        <button class="play-btn" id="cowPlay">Начать игру</button>
+      </div>
+    `;
+  },
+  init() {
+    this.updateHistory();
+    const playBtn = document.getElementById('cowPlay');
+    playBtn.onclick = () => this.play();
+    document.querySelectorAll('#gameContent .quick-btn[data-bet]').forEach(b => {
+      b.onclick = () => {
+        const input = document.getElementById('cowBet');
+        if (b.dataset.bet === 'max') input.value = Math.floor(State.balance);
+        else input.value = b.dataset.bet;
+      };
+    });
+  },
+  updateHistory() {
+    const el = document.getElementById('cowHistory');
+    if (!el) return;
+    el.innerHTML = this.history.slice(0, 5).map(h =>
+      `<span class="crash-history-pill ${h < 2 ? 'red' : 'green'}">${h.toFixed(2)}x</span>`
+    ).join('');
+  },
+  play() {
+    if (this.active) {
+      // Кэшаут
+      this.cashout();
+      return;
+    }
+    const bet = parseFloat(document.getElementById('cowBet').value);
+    if (!bet || bet < 1) { UI.toast('Мин. ставка 1 ₽', 'error'); return; }
+    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
 
-    saveState();
-    renderAll();
+    this.bet = bet;
+    this.active = true;
+    this.crashed = false;
+    this.cashouted = false;
+    this.multiplier = 1.00;
+    State.balance -= bet;
+    UI.updateBalance();
+    Storage.save();
 
-    showToast("Симуляция создана. Ожидается результат.");
-}
+    // Кэф краха по распределению
+    const r = Math.random();
+    if (r < 0.05) this.crashAt = Utils.rand(1.0, 1.1);
+    else if (r < 0.5) this.crashAt = Utils.rand(1.1, 2.0);
+    else if (r < 0.85) this.crashAt = Utils.rand(2.0, 5.0);
+    else if (r < 0.97) this.crashAt = Utils.rand(5.0, 15.0);
+    else this.crashAt = Utils.rand(15.0, 50.0);
 
-/* =========================================================
-   13. СТРАНИЦА МАТЧА
-   ========================================================= */
+    const btn = document.getElementById('cowPlay');
+    btn.textContent = 'Забрать 0 ₽';
+    btn.classList.add('cashout');
 
-function renderMatch() {
-    const event = getEvent(state.activeMatchId);
-    if (!event) {
-        setHTML("matchDetails", `
-            <div class="empty-state">
-                <strong>Матч не найден</strong>
-                <button class="primary-button" data-page="home">На главную</button>
-            </div>
-        `);
-        return;
+    this.interval = setInterval(() => {
+      const elapsed = (Date.now() - this.startTime) / 1000;
+      this.multiplier = Math.pow(1.06, elapsed * 3);
+      document.getElementById('cowMultiplier').textContent = this.multiplier.toFixed(2) + 'x';
+      document.getElementById('cowStatus').textContent = 'Растёт...';
+
+      const currentWin = this.bet * this.multiplier;
+      btn.textContent = `Забрать ${Utils.fmt(currentWin)} ₽`;
+
+      if (this.multiplier >= this.crashAt) {
+        this.crash();
+      }
+    }, 50);
+    this.startTime = Date.now();
+  },
+  cashout() {
+    if (!this.active || this.crashed) return;
+    clearInterval(this.interval);
+    const win = this.bet * this.multiplier;
+    State.balance += win;
+    State.wins++;
+    State.gamesPlayed++;
+    this.history.unshift(this.multiplier);
+    if (this.history.length > 10) this.history.pop();
+    this.updateHistory();
+    UI.updateBalance();
+    UI.toast(`Забрали ${Utils.fmt(win)} ₽ при ${this.multiplier.toFixed(2)}x`, 'success');
+    this.addHistory('Коровка', `×${this.multiplier.toFixed(2)}`, win, true);
+    this.reset();
+  },
+  crash() {
+    clearInterval(this.interval);
+    this.crashed = true;
+    this.active = false;
+    this.history.unshift(this.crashAt);
+    if (this.history.length > 10) this.history.pop();
+    this.updateHistory();
+    State.loses++;
+    State.gamesPlayed++;
+    document.getElementById('cowEmoji').textContent = '💥';
+    document.getElementById('cowStatus').textContent = `Краш на ${this.crashAt.toFixed(2)}x`;
+    UI.toast(`Краш на ${this.crashAt.toFixed(2)}x`, 'error');
+    this.addHistory('Коровка', `×${this.crashAt.toFixed(2)}`, -this.bet, false);
+    Storage.save();
+    setTimeout(() => this.reset(), 2000);
+  },
+  reset() {
+    this.active = false;
+    this.crashed = false;
+    this.cashouted = false;
+    this.multiplier = 1.00;
+    clearInterval(this.interval);
+    const btn = document.getElementById('cowPlay');
+    if (btn) {
+      btn.textContent = 'Начать игру';
+      btn.classList.remove('cashout');
+    }
+    const m = document.getElementById('cowMultiplier');
+    if (m) m.textContent = '1.00x';
+    const e = document.getElementById('cowEmoji');
+    if (e) e.textContent = '🐮';
+    const s = document.getElementById('cowStatus');
+    if (s) s.textContent = 'Сделайте ставку';
+    Storage.save();
+  },
+  addHistory(game, detail, amount, win) {
+    State.history.unshift({
+      id: Utils.uid(),
+      game: game,
+      detail: detail,
+      amount: amount,
+      win: win,
+      time: Date.now()
+    });
+    if (State.history.length > 100) State.history.pop();
+  }
+};
+
+/* ============================================================
+   ИГРА: РАКЕТА (Aviator)
+   ============================================================ */
+const RocketGame = {
+  active: false,
+  bet: 0,
+  multiplier: 1,
+  crashed: false,
+  interval: null,
+  crashAt: 2,
+  startTime: 0,
+  render() {
+    return `
+      <div class="crash-arena" style="background:linear-gradient(180deg,rgba(124,58,237,.2) 0%,rgba(236,72,153,.15) 100%)">
+        <div class="crash-multiplier" id="rocketMultiplier" style="background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">1.00x</div>
+        <div class="crash-emoji" id="rocketEmoji" style="transition:transform 1s linear">🚀</div>
+        <div class="crash-status" id="rocketStatus">Готов к запуску</div>
+      </div>
+      <div class="controls">
+        <div class="bet-input-row">
+          <input type="number" id="rocketBet" value="10" min="1" step="1">
+          <button class="quick-btn" data-bet="10">10</button>
+          <button class="quick-btn" data-bet="100">100</button>
+          <button class="quick-btn" data-bet="max">МАКС</button>
+        </div>
+        <button class="play-btn" id="rocketPlay">Запустить ракету</button>
+      </div>
+    `;
+  },
+  init() {
+    const playBtn = document.getElementById('rocketPlay');
+    playBtn.onclick = () => this.play();
+    document.querySelectorAll('#gameContent .quick-btn[data-bet]').forEach(b => {
+      b.onclick = () => {
+        const input = document.getElementById('rocketBet');
+        if (b.dataset.bet === 'max') input.value = Math.floor(State.balance);
+        else input.value = b.dataset.bet;
+      };
+    });
+  },
+  play() {
+    if (this.active) { this.cashout(); return; }
+    const bet = parseFloat(document.getElementById('rocketBet').value);
+    if (!bet || bet < 1) { UI.toast('Мин. ставка 1 ₽', 'error'); return; }
+    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
+
+    this.bet = bet;
+    this.active = true;
+    this.crashed = false;
+    this.multiplier = 1.00;
+    State.balance -= bet;
+    UI.updateBalance();
+
+    const r = Math.random();
+    if (r < 0.07) this.crashAt = Utils.rand(1.0, 1.2);
+    else if (r < 0.5) this.crashAt = Utils.rand(1.2, 2.5);
+    else if (r < 0.85) this.crashAt = Utils.rand(2.5, 6.0);
+    else if (r < 0.97) this.crashAt = Utils.rand(6.0, 20.0);
+    else this.crashAt = Utils.rand(20.0, 100.0);
+
+    const btn = document.getElementById('rocketPlay');
+    btn.textContent = 'Забрать 0 ₽';
+    btn.classList.add('cashout');
+
+    this.startTime = Date.now();
+    this.interval = setInterval(() => {
+      const elapsed = (Date.now() - this.startTime) / 1000;
+      this.multiplier = Math.pow(1.08, elapsed * 3);
+      document.getElementById('rocketMultiplier').textContent = this.multiplier.toFixed(2) + 'x';
+      const rocket = document.getElementById('rocketEmoji');
+      rocket.style.transform = `translateY(${-Math.min(elapsed * 20, 80)}px) rotate(${-elapsed * 15}deg)`;
+      document.getElementById('rocketStatus').textContent = 'Летит...';
+
+      const currentWin = this.bet * this.multiplier;
+      btn.textContent = `Забрать ${Utils.fmt(currentWin)} ₽`;
+
+      if (this.multiplier >= this.crashAt) this.crash();
+    }, 50);
+  },
+  cashout() {
+    if (!this.active || this.crashed) return;
+    clearInterval(this.interval);
+    const win = this.bet * this.multiplier;
+    State.balance += win;
+    State.wins++;
+    State.gamesPlayed++;
+    UI.updateBalance();
+    UI.toast(`Успели! ${Utils.fmt(win)} ₽ при ${this.multiplier.toFixed(2)}x`, 'success');
+    this.addHistory('Ракета', `×${this.multiplier.toFixed(2)}`, win, true);
+    this.reset();
+  },
+  crash() {
+    clearInterval(this.interval);
+    this.crashed = true;
+    this.active = false;
+    State.loses++;
+    State.gamesPlayed++;
+    document.getElementById('rocketEmoji').textContent = '💥';
+    document.getElementById('rocketStatus').textContent = `Улетела на ${this.crashAt.toFixed(2)}x`;
+    UI.toast(`Ракета улетела на ${this.crashAt.toFixed(2)}x`, 'error');
+    this.addHistory('Ракета', `×${this.crashAt.toFixed(2)}`, -this.bet, false);
+    Storage.save();
+    setTimeout(() => this.reset(), 2000);
+  },
+  reset() {
+    this.active = false;
+    this.crashed = false;
+    clearInterval(this.interval);
+    const btn = document.getElementById('rocketPlay');
+    if (btn) { btn.textContent = 'Запустить ракету'; btn.classList.remove('cashout'); }
+    const m = document.getElementById('rocketMultiplier');
+    if (m) m.textContent = '1.00x';
+    const e = document.getElementById('rocketEmoji');
+    if (e) { e.textContent = '🚀'; e.style.transform = 'none'; }
+    const s = document.getElementById('rocketStatus');
+    if (s) s.textContent = 'Готов к запуску';
+    Storage.save();
+  },
+  addHistory(game, detail, amount, win) {
+    State.history.unshift({ id: Utils.uid(), game, detail, amount, win, time: Date.now() });
+    if (State.history.length > 100) State.history.pop();
+  }
+};
+
+/* ============================================================
+   ИГРА: MINES
+   ============================================================ */
+const MinesGame = {
+  active: false,
+  bet: 0,
+  mines: 3,
+  grid: [],
+  opened: 0,
+  multiplier: 1,
+  totalCells: 25,
+  render() {
+    return `
+      <div class="crash-arena" style="min-height:100px;padding:16px">
+        <div class="crash-multiplier" id="minesMultiplier" style="font-size:42px">1.00x</div>
+        <div class="crash-status" id="minesStatus">Выберите ставку и жмите Играть</div>
+      </div>
+      <div class="mines-grid" id="minesGrid"></div>
+      <div class="controls">
+        <div class="tab-btn-row" style="display:flex;gap:6px;margin-bottom:10px">
+          <button class="tab-btn" data-mines="1">1 💣</button>
+          <button class="tab-btn active" data-mines="3">3 💣</button>
+          <button class="tab-btn" data-mines="5">5 💣</button>
+          <button class="tab-btn" data-mines="10">10 💣</button>
+        </div>
+        <div class="bet-input-row">
+          <input type="number" id="minesBet" value="10" min="1" step="1">
+          <button class="quick-btn" data-bet="10">10</button>
+          <button class="quick-btn" data-bet="100">100</button>
+          <button class="quick-btn" data-bet="max">МАКС</button>
+        </div>
+        <button class="play-btn" id="minesPlay">Начать игру</button>
+      </div>
+    `;
+  },
+  init() {
+    this.renderGrid();
+    document.querySelectorAll('#gameContent .tab-btn[data-mines]').forEach(b => {
+      b.onclick = () => {
+        if (this.active) return;
+        document.querySelectorAll('#gameContent .tab-btn[data-mines]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        this.mines = parseInt(b.dataset.mines);
+      };
+    });
+    document.querySelectorAll('#gameContent .quick-btn[data-bet]').forEach(b => {
+      b.onclick = () => {
+        const input = document.getElementById('minesBet');
+        if (b.dataset.bet === 'max') input.value = Math.floor(State.balance);
+        else input.value = b.dataset.bet;
+      };
+    });
+    document.getElementById('minesPlay').onclick = () => {
+      if (this.active) this.cashout();
+      else this.play();
+    };
+  },
+  renderGrid() {
+    const grid = document.getElementById('minesGrid');
+    if (!grid) return;
+    let html = '';
+    for (let i = 0; i < 25; i++) {
+      html += `<div class="mine-cell" data-idx="${i}"></div>`;
+    }
+    grid.innerHTML = html;
+  },
+  play() {
+    const bet = parseFloat(document.getElementById('minesBet').value);
+    if (!bet || bet < 1) { UI.toast('Мин. ставка 1 ₽', 'error'); return; }
+    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
+
+    this.bet = bet;
+    this.active = true;
+    this.opened = 0;
+    this.multiplier = 1;
+    State.balance -= bet;
+    UI.updateBalance();
+    this.renderGrid();
+
+    // Генерация мин
+    this.grid = Array(25).fill(false);
+    let placed = 0;
+    while (placed < this.mines) {
+      const idx = Utils.randInt(0, 24);
+      if (!this.grid[idx]) { this.grid[idx] = true; placed++; }
     }
 
-    const status = event.ended
-        ? "Завершён"
-        : event.live
-            ? "LIVE · " + event.minute + "′"
-            : "Начало в " + formatTime(event.scheduled);
+    document.getElementById('minesPlay').textContent = 'Забрать';
+    document.getElementById('minesPlay').classList.add('cashout');
+    document.getElementById('minesStatus').textContent = 'Открывайте клетки';
 
-    const marketsHTML = event.markets.map(marketItem => `
-        <div class="market-category">
-            <div class="market-category-header">
-                <h3>${escapeHTML(marketItem.title)}</h3>
-                <span>${marketItem.selections.length} вариантов</span>
-            </div>
-            <div class="market-selection-grid">
-                ${marketItem.selections.map(selection => {
-                    const selected = state.coupon.some(item =>
-                        item.eventId === event.id &&
-                        item.marketId === marketItem.id &&
-                        item.selectionId === selection.id
-                    );
-
-                    return `
-                        <button class="market-selection ${selected ? "selected" : ""}"
-                                data-add-selection="1"
-                                data-event-id="${escapeHTML(event.id)}"
-                                data-market-id="${escapeHTML(marketItem.id)}"
-                                data-selection-id="${escapeHTML(selection.id)}">
-                            <span>${escapeHTML(selection.name)}</span>
-                            <strong>${formatNumber(selection.odds)}</strong>
-                        </button>
-                    `;
-                }).join("")}
-            </div>
-        </div>
-    `).join("");
-
-    document.getElementById("matchDetails").innerHTML = `
-        <div class="detail-event">
-            <div class="detail-event-header">
-                <span>${SPORTS[event.sport].emoji} ${escapeHTML(event.league)}</span>
-                <span class="${event.live ? "live-label" : "muted"}">${status}</span>
-            </div>
-
-            <div class="detail-event-body">
-                <div class="detail-scoreboard">
-                    <div class="detail-team">
-                        <span class="team-logo">${escapeHTML(event.home.short)}</span>
-                        <span class="detail-team-name">${escapeHTML(event.home.name)}</span>
-                        <span class="muted small">Рейтинг ${event.strengthA}</span>
-                    </div>
-
-                    <div>
-                        <div class="detail-score">
-                            ${event.live || event.ended ? scoreText(event) : "— : —"}
-                        </div>
-                        <div class="detail-period">
-                            ${event.live ? "Игровое время: " + event.minute + "′" : status}
-                        </div>
-                    </div>
-
-                    <div class="detail-team">
-                        <span class="team-logo">${escapeHTML(event.away.short)}</span>
-                        <span class="detail-team-name">${escapeHTML(event.away.name)}</span>
-                        <span class="muted small">Рейтинг ${event.strengthB}</span>
-                    </div>
-                </div>
-
-                <div class="content-card">
-                    <h3>Информация о событии</h3>
-                    <p>
-                        Это вымышленный матч, созданный локальным генератором.
-                        Коэффициенты и статистика не являются реальными данными.
-                    </p>
-                    <div class="profile-grid">
-                        <div class="profile-stat">
-                            <small>Рынков</small>
-                            <strong>${event.markets.length}</strong>
-                        </div>
-                        <div class="profile-stat">
-                            <small>Статус</small>
-                            <strong>${event.ended ? "Финиш" : event.live ? "Live" : "Ожидание"}</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <h2 style="font-size:17px;margin:23px 0 14px">Все рынки</h2>
-                ${marketsHTML}
-            </div>
-        </div>
-    `;
-}
-
-/* =========================================================
-   14. ИГРОВАЯ СИМУЛЯЦИЯ
-   ========================================================= */
-
-function advanceEvent(event) {
-    if (!event.live || event.ended) return;
-
-    const duration = SPORTS[event.sport].duration;
-    const increment = event.sport === "mma" ? 1 : randInt(1,3);
-
-    event.minute = Math.min(duration,event.minute + increment);
-
-    const scoringChance = event.sport === "football" ? .08
-        : event.sport === "hockey" ? .12
-        : event.sport === "basketball" ? .30
-        : event.sport === "tennis" ? .17
-        : event.sport === "volleyball" ? .22
-        : .08;
-
-    if (random() < scoringChance) {
-        const side = random() < .5 ? "home" : "away";
-
-        if (side === "home") {
-            event.scoreA += event.sport === "basketball" ? choose([1,2,3]) : 1;
+    document.querySelectorAll('.mine-cell').forEach(cell => {
+      cell.onclick = () => {
+        if (!this.active) return;
+        const idx = parseInt(cell.dataset.idx);
+        if (cell.classList.contains('opened') || cell.classList.contains('mine')) return;
+        if (this.grid[idx]) {
+          cell.classList.add('mine');
+          cell.textContent = '💣';
+          this.lose();
         } else {
-            event.scoreB += event.sport === "basketball" ? choose([1,2,3]) : 1;
+          cell.classList.add('opened', 'gem');
+          cell.textContent = '💎';
+          this.opened++;
+          this.updateMultiplier();
         }
-
-        event.eventsLog.unshift({
-            time: event.minute,
-            type: "score",
-            side,
-            score: scoreText(event)
-        });
-
-        event.eventsLog = event.eventsLog.slice(0,30);
+      };
+    });
+  },
+  updateMultiplier() {
+    // Формула множителя
+    const total = 25;
+    const safe = total - this.mines;
+    let mult = 1;
+    for (let i = 0; i < this.opened; i++) {
+      mult *= (total - i) / (safe - i);
     }
+    mult *= 0.97; // house edge
+    this.multiplier = mult;
+    document.getElementById('minesMultiplier').textContent = mult.toFixed(2) + 'x';
+    const win = this.bet * mult;
+    document.getElementById('minesPlay').textContent = `Забрать ${Utils.fmt(win)} ₽`;
+  },
+  cashout() {
+    if (!this.active) return;
+    if (this.opened === 0) { UI.toast('Откройте хотя бы одну клетку', 'error'); return; }
+    const win = this.bet * this.multiplier;
+    State.balance += win;
+    State.wins++;
+    State.gamesPlayed++;
+    UI.updateBalance();
+    UI.toast(`Забрали ${Utils.fmt(win)} ₽`, 'success');
+    this.addHistory('Mines', `${this.opened} клеток ×${this.multiplier.toFixed(2)}`, win, true);
+    this.reset();
+  },
+  lose() {
+    this.active = false;
+    State.loses++;
+    State.gamesPlayed++;
+    UI.toast('Попали на мину!', 'error');
+    this.addHistory('Mines', 'Мина', -this.bet, false);
+    // Показать все мины
+    document.querySelectorAll('.mine-cell').forEach(cell => {
+      const idx = parseInt(cell.dataset.idx);
+      if (this.grid[idx] && !cell.classList.contains('mine')) {
+        cell.classList.add('mine');
+        cell.textContent = '💣';
+      }
+    });
+    Storage.save();
+    setTimeout(() => this.reset(), 2200);
+  },
+  reset() {
+    this.active = false;
+    this.opened = 0;
+    this.multiplier = 1;
+    const btn = document.getElementById('minesPlay');
+    if (btn) { btn.textContent = 'Начать игру'; btn.classList.remove('cashout'); }
+    const m = document.getElementById('minesMultiplier');
+    if (m) m.textContent = '1.00x';
+    const s = document.getElementById('minesStatus');
+    if (s) s.textContent = 'Выберите ставку и жмите Играть';
+    this.renderGrid();
+    Storage.save();
+  },
+  addHistory(game, detail, amount, win) {
+    State.history.unshift({ id: Utils.uid(), game, detail, amount, win, time: Date.now() });
+    if (State.history.length > 100) State.history.pop();
+  }
+};
 
-    if (random() < .4) {
-        event.stats.shotsA += randInt(0,2);
-        event.stats.shotsB += randInt(0,2);
-    }
-
-    if (random() < .06) {
-        event.stats.cornersA += randInt(0,1);
-    }
-
-    if (random() < .06) {
-        event.stats.cornersB += randInt(0,1);
-    }
-
-    if (event.minute >= duration) {
-        event.minute = duration;
-        event.live = false;
-        event.ended = true;
-        event.simulated = true;
-        settleBetsForEvent(event);
-    }
-}
-
-function startLiveSimulation() {
-    setInterval(() => {
-        liveEvents().forEach(advanceEvent);
-        renderStats();
-
-        if (state.activePage === "live") renderLive();
-        if (state.activePage === "home") renderHome();
-        if (state.activePage === "favorites") renderFavorites();
-        if (state.activePage === "sport") renderSport();
-        if (state.activePage === "match") renderMatch();
-    }, CONFIG.tickInterval);
-}
-
-/* =========================================================
-   15. РАСЧЁТ РЕЗУЛЬТАТОВ
-   ========================================================= */
-
-function determineSelectionResult(event, selection) {
-    const key = selection.key;
-
-    if (event.sport === "football") {
-        if (key === "home") return event.scoreA > event.scoreB;
-        if (key === "away") return event.scoreB > event.scoreA;
-        if (key === "draw") return event.scoreA === event.scoreB;
-
-        if (key === "1x") return event.scoreA >= event.scoreB;
-        if (key === "12") return event.scoreA !== event.scoreB;
-        if (key === "x2") return event.scoreB >= event.scoreA;
-
-        if (key === "yes") return event.scoreA > 0 && event.scoreB > 0;
-        if (key === "no") return event.scoreA === 0 || event.scoreB === 0;
-
-        if (key === "1_0") return event.scoreA === 1 && event.scoreB === 0;
-        if (key === "1_1") return event.scoreA === 1 && event.scoreB === 1;
-        if (key === "2_0") return event.scoreA === 2 && event.scoreB === 0;
-        if (key === "2_1") return event.scoreA === 2 && event.scoreB === 1;
-        if (key === "0_0") return event.scoreA === 0 && event.scoreB === 0;
-        if (key === "0_1") return event.scoreA === 0 && event.scoreB === 1;
-        if (key === "1_2") return event.scoreA === 1 && event.scoreB === 2;
-        if (key === "2_2") return event.scoreA === 2 && event.scoreB === 2;
-
-        if (key === "over") {
-            const line = Number(selection.name.match(/[\d.]+/)?.[0] || 2.5);
-            return event.scoreA + event.scoreB > line;
-        }
-
-        if (key === "under") {
-            const line = Number(selection.name.match(/[\d.]+/)?.[0] || 2.5);
-            return event.scoreA + event.scoreB < line;
-        }
-    }
-
-    if (event.sport === "hockey" || event.sport === "basketball") {
-        if (key === "home") return event.scoreA > event.scoreB;
-        if (key === "away") return event.scoreB > event.scoreA;
-        if (key === "draw") return event.scoreA === event.scoreB;
-
-        if (key === "over") {
-            const line = Number(selection.name.match(/[\d.]+/)?.[0] || 5.5);
-            return event.scoreA + event.scoreB > line;
-        }
-
-        if (key === "under") {
-            const line = Number(selection.name.match(/[\d.]+/)?.[0] || 5.5);
-            return event.scoreA + event.scoreB < line;
-        }
-    }
-
-    if (event.sport === "tennis" ||
-        event.sport === "volleyball" ||
-        event.sport === "mma") {
-        if (key === "home") return event.scoreA > event.scoreB;
-        if (key === "away") return event.scoreB > event.scoreA;
-    }
-
-    return null;
-}
-
-function settleBetsForEvent(event) {
-    for (const bet of state.history) {
-        if (bet.status !== "pending") continue;
-
-        const relevant = bet.selections.filter(item =>
-            item.eventId === event.id
-        );
-
-        if (!relevant.length) continue;
-
-        const results = relevant.map(item => {
-            const selection = getSelection(
-                event,
-                item.marketId,
-                item.selectionId
-            );
-
-            return selection
-                ? determineSelectionResult(event,selection)
-                : null;
-        });
-
-        if (results.some(result => result === false)) {
-            bet.status = "lost";
-            bet.settledAt = Date.now();
-        } else if (results.length && results.every(result => result === true)) {
-            if (bet.selections.every(item => {
-                const target = getEvent(item.eventId);
-                return target && target.ended;
-            })) {
-                bet.status = "won";
-                bet.settledAt = Date.now();
-                bet.actualReturn = bet.possibleReturn;
-                state.balance += bet.actualReturn;
-            }
-        }
-    }
-
-    saveState();
-    renderAll();
-}
-
-/* =========================================================
-   16. ИСТОРИЯ
-   ========================================================= */
-
-function renderHistory() {
-    const container = document.getElementById("historyContent");
-
-    if (!state.history.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <strong>История пока пуста</strong>
-                Создай виртуальную симуляцию, чтобы она появилась здесь.
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = state.history.map(bet => {
-        const statusName = bet.status === "won" ? "Успех"
-            : bet.status === "lost" ? "Неудача"
-            : "Ожидает";
-
-        const statusClass = bet.status === "won" ? "status-won"
-            : bet.status === "lost" ? "status-lost"
-            : "status-pending";
-
-        return `
-            <div class="history-row">
-                <div>
-                    <div class="history-title">${escapeHTML(bet.id)}</div>
-                    <div class="history-description">
-                        ${new Date(bet.createdAt).toLocaleString("ru-RU")}
-                        · ${bet.mode === "express" ? "Экспресс" : "Одиночный"}
-                    </div>
-                    <div class="history-description">
-                        ${bet.selections.length} выборов ·
-                        Коэффициент ${formatNumber(bet.odds)}
-                    </div>
-                    <span class="history-status ${statusClass}">${statusName}</span>
-                </div>
-
-                <div class="history-amount">
-                    <div>${formatBalance(bet.stake)}</div>
-                    <div class="history-description">
-                        Возможный возврат: ${formatBalance(bet.possibleReturn)}
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join("");
-}
-
-/* =========================================================
-   17. ПРОФИЛЬ
-   ========================================================= */
-
-function renderProfile() {
-    const container = document.getElementById("profileContent");
-
-    const settled = state.history.filter(item => item.status !== "pending");
-    const wins = settled.filter(item => item.status === "won").length;
-    const losses = settled.filter(item => item.status === "lost").length;
-
-    container.innerHTML = `
-        <h3>Локальный профиль</h3>
-
-        <label class="stake-label" for="profileName">Имя пользователя</label>
-
-        <div class="page-toolbar">
-            <input class="input" id="profileName"
-                   maxlength="24"
-                   value="${escapeHTML(state.username)}">
-            <button class="primary-button" id="saveProfile">Сохранить</button>
+/* ============================================================
+   ИГРА: АПГРЕЙД (Крутилка)
+   ============================================================ */
+const UpgradeGame = {
+  active: false,
+  bet: 0,
+  targetMultiplier: 2,
+  render() {
+    return `
+      <div class="upgrade-wheel-wrap">
+        <div class="wheel-container">
+          <div class="wheel-pointer">▼</div>
+          <div class="wheel" id="upgradeWheel"></div>
+          <div class="wheel-center" id="upgradeCenter">×2</div>
         </div>
-
-        <div class="profile-grid">
-            <div class="profile-stat">
-                <small>Виртуальный баланс</small>
-                <strong>${formatBalance(state.balance)}</strong>
-            </div>
-            <div class="profile-stat">
-                <small>Всего симуляций</small>
-                <strong>${state.history.length}</strong>
-            </div>
-            <div class="profile-stat">
-                <small>Успешных</small>
-                <strong>${wins}</strong>
-            </div>
-            <div class="profile-stat">
-                <small>Неудачных</small>
-                <strong>${losses}</strong>
-            </div>
+      </div>
+      <div class="controls">
+        <div class="tab-btn-row" style="display:flex;gap:6px;margin-bottom:10px">
+          <button class="tab-btn" data-mult="1.5">×1.5</button>
+          <button class="tab-btn active" data-mult="2">×2</button>
+          <button class="tab-btn" data-mult="3">×3</button>
+          <button class="tab-btn" data-mult="5">×5</button>
+          <button class="tab-btn" data-mult="10">×10</button>
         </div>
-
-        <div class="coupon-divider"></div>
-
-        <h3>Настройки симулятора</h3>
-        <p class="muted">
-            Все данные хранятся в локальном хранилище этого браузера.
-            Они не передаются на сервер.
-        </p>
-
-        <button class="secondary-button" id="resetDemo">
-            Сбросить демо-прогресс
-        </button>
+        <div class="bet-input-row">
+          <input type="number" id="upgradeBet" value="10" min="1" step="1">
+          <button class="quick-btn" data-bet="10">10</button>
+          <button class="quick-btn" data-bet="100">100</button>
+          <button class="quick-btn" data-bet="max">МАКС</button>
+        </div>
+        <button class="play-btn" id="upgradePlay">Крутить</button>
+      </div>
     `;
-
-    document.getElementById("saveProfile").addEventListener("click", () => {
-        const value = document.getElementById("profileName").value.trim();
-
-        if (!value) {
-            showToast("Имя не может быть пустым.", "error");
-            return;
-        }
-
-        state.username = value.slice(0,24);
-        saveState();
-        renderStats();
-        renderProfile();
-        showToast("Профиль сохранён.");
+  },
+  init() {
+    document.querySelectorAll('#gameContent .tab-btn[data-mult]').forEach(b => {
+      b.onclick = () => {
+        if (this.active) return;
+        document.querySelectorAll('#gameContent .tab-btn[data-mult]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        this.targetMultiplier = parseFloat(b.dataset.mult);
+        document.getElementById('upgradeCenter').textContent = '×' + this.targetMultiplier;
+      };
     });
-
-    document.getElementById("resetDemo").addEventListener("click", () => {
-        showModal(
-            "Сброс демо-прогресса",
-            `<p>Это удалит историю и избранное и восстановит начальный виртуальный баланс.</p>
-             <button class="primary-button" id="confirmReset">Подтвердить сброс</button>`
-        );
-
-        document.getElementById("confirmReset").addEventListener("click", () => {
-            state.balance = CONFIG.initialBalance;
-            state.history = [];
-            state.favorites.clear();
-            state.coupon = [];
-            state.username = "Гость";
-
-            saveState();
-            closeModal();
-            renderAll();
-            renderProfile();
-
-            showToast("Демо-прогресс сброшен.");
-        });
+    document.querySelectorAll('#gameContent .quick-btn[data-bet]').forEach(b => {
+      b.onclick = () => {
+        const input = document.getElementById('upgradeBet');
+        if (b.dataset.bet === 'max') input.value = Math.floor(State.balance);
+        else input.value = b.dataset.bet;
+      };
     });
-}
+    document.getElementById('upgradePlay').onclick = () => this.play();
+  },
+  play() {
+    if (this.active) return;
+    const bet = parseFloat(document.getElementById('upgradeBet').value);
+    if (!bet || bet < 1) { UI.toast('Мин. ставка 1 ₽', 'error'); return; }
+    if (bet > State.balance) { UI.toast('Недостаточно средств', 'error'); return; }
 
-/* =========================================================
-   18. УВЕДОМЛЕНИЯ
-   ========================================================= */
+    this.bet = bet;
+    this.active = true;
+    State.balance -= bet;
+    UI.updateBalance();
 
-function showToast(message, type = "success") {
-    const container = document.getElementById("toastContainer");
-    const toast = document.createElement("div");
+    // Шанс = 1 / targetMultiplier (с house edge)
+    const winChance = (1 / this.targetMultiplier) * 0.97;
+    const win = Math.random() < winChance;
 
-    toast.className = "toast" +
-        (type === "error" ? " error" : "") +
-        (type === "warning" ? " warning" : "");
+    // Крутим
+    const wheel = document.getElementById('upgradeWheel');
+    const fullSpins = 5;
+    const targetAngle = win
+      ? Utils.rand(0, 30) // Попадаем в зелёный сектор (первый)
+      : Utils.rand(60, 300); // Не попадаем
+    const totalAngle = fullSpins * 360 + targetAngle;
+    wheel.style.transform = `rotate(${totalAngle}deg)`;
 
-    toast.textContent = message;
-    container.appendChild(toast);
+    document.getElementById('upgradePlay').textContent = 'Крутится...';
+    document.getElementById('upgradePlay').disabled = true;
 
     setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(6px)";
+      if (win) {
+        const winAmount = bet * this.targetMultiplier;
+        State.balance += winAmount;
+        State.wins++;
+        State.gamesPlayed++;
+        UI.updateBalance();
+        UI.toast(`Победа! +${Utils.fmt(winAmount)} ₽`, 'success');
+        this.addHistory('Апгрейд', `×${this.targetMultiplier}`, winAmount, true);
+      } else {
+        State.loses++;
+        State.gamesPlayed++;
+        UI.toast(`Не повезло. Минус ${Utils.fmt(bet)} ₽`, 'error');
+        this.addHistory('Апгрейд', `×${this.targetMultiplier}`, -bet, false);
+      }
+      this.active = false;
+      document.getElementById('upgradePlay').textContent = 'Крутить';
+      document.getElementById('upgradePlay').disabled = false;
+      Storage.save();
+    }, 4200);
+  },
+  addHistory(game, detail, amount, win) {
+    State.history.unshift({ id: Utils.uid(), game, detail, amount, win, time: Date.now() });
+    if (State.history.length > 100) State.history.pop();
+  }
+};
 
-        setTimeout(() => toast.remove(),200);
-    },2800);
-}
-
-/* =========================================================
-   19. МОДАЛЬНЫЕ ОКНА
-   ========================================================= */
-
-function showModal(title, html) {
-    document.getElementById("modalTitle").textContent = title;
-    document.getElementById("modalBody").innerHTML = html;
-    document.getElementById("modalOverlay").classList.remove("hidden");
-}
-
-function closeModal() {
-    document.getElementById("modalOverlay").classList.add("hidden");
-}
-
-document.getElementById("modalClose").addEventListener("click",closeModal);
-
-document.getElementById("modalOverlay").addEventListener("click",event => {
-    if (event.target.id === "modalOverlay") closeModal();
-});
-
-document.addEventListener("keydown",event => {
-    if (event.key === "Escape") closeModal();
-
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        document.getElementById("globalSearch").focus();
+/* ============================================================
+   ИСТОРИЯ
+   ============================================================ */
+const History = {
+  render() {
+    const el = document.getElementById('historyList');
+    if (!el) return;
+    if (State.history.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text2)">История пуста</div>';
+      return;
     }
-});
+    el.innerHTML = State.history.map(h => `
+      <div class="history-item">
+        <div class="h-left">
+          <div class="h-game">${h.game}</div>
+          <div class="h-info">${h.detail} · ${new Date(h.time).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <div class="h-amount ${h.win ? 'win' : 'lose'}">${h.win ? '+' : ''}${Utils.fmt(h.amount)} ₽</div>
+      </div>
+    `).join('');
+  }
+};
 
-/* =========================================================
-   20. ИНИЦИАЛИЗАЦИЯ
-   ========================================================= */
+/* ============================================================
+   РОУТЕР ЭКРАНОВ
+   ============================================================ */
+const Router = {
+  openGame(gameId) {
+    const screen = document.getElementById('gameScreen');
+    const content = document.getElementById('gameContent');
+    const title = document.getElementById('gameTitle');
 
-function init() {
-    generateEvents();
+    let game, titleText;
+    if (gameId === 'cow') { game = CowGame; titleText = '🐮 Коровка'; }
+    else if (gameId === 'rocket') { game = RocketGame; titleText = '🚀 Ракета'; }
+    else if (gameId === 'mines') { game = MinesGame; titleText = '💣 Mines'; }
+    else if (gameId === 'upgrade') { game = UpgradeGame; titleText = '🎡 Апгрейд'; }
 
-    renderAll();
+    title.textContent = titleText;
+    content.innerHTML = game.render();
+    screen.classList.add('open');
+    game.init();
+  },
+  closeGame() {
+    document.getElementById('gameScreen').classList.remove('open');
+    CowGame.reset();
+    RocketGame.reset();
+    MinesGame.reset();
+  },
+  openProfile() {
+    UI.updateProfile();
+    UI.updateBalance();
+    document.getElementById('profileScreen').classList.add('open');
+  },
+  openHistory() {
+    History.render();
+    document.getElementById('historyScreen').classList.add('open');
+  }
+};
 
-    startLiveSimulation();
-
-    console.log(
-        "OpenBet Demo запущен.",
-        "Событий:",events.length,
-        "Рынков:",events.reduce((sum,event) => sum + event.markets.length,0)
+/* ============================================================
+   ПОПОЛНЕНИЕ
+   ============================================================ */
+const Topup = {
+  handle() {
+    const today = new Date().toDateString();
+    if (State.lastTopupDate !== today) {
+      State.dailyTopups = 0;
+      State.dailyTopupAmount = 0;
+      State.lastTopupDate = today;
+    }
+    if (State.dailyTopups >= 3) {
+      UI.toast('Лимит пополнений на сегодня исчерпан (3/3)', 'error');
+      return;
+    }
+    if (State.dailyTopupAmount >= 10000) {
+      UI.toast('Дневной лимит 10 000 ₽ исчерпан', 'error');
+      return;
+    }
+    const remaining = 10000 - State.dailyTopupAmount;
+    const amount = Math.min(1000, remaining);
+    UI.modal(
+      'Пополнить баланс',
+      `Зачислить ${Utils.fmt(amount)} ₽?\nОсталось пополнений сегодня: ${3 - State.dailyTopups}\nОсталось суммы: ${Utils.fmt(remaining)} ₽`,
+      () => {
+        State.balance += amount;
+        State.dailyTopups++;
+        State.dailyTopupAmount += amount;
+        UI.updateBalance();
+        Storage.save();
+        UI.toast(`+${Utils.fmt(amount)} ₽ зачислено`, 'success');
+      }
     );
-}
+  }
+};
 
-init();
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  Storage.load();
+  UI.updateBalance();
+  LiveFeed.init();
+
+  // Кнопки пополнения
+  document.getElementById('topupBtn').onclick = () => Topup.handle();
+  document.getElementById('promoTopup').onclick = () => Topup.handle();
+
+  // Клик по игре
+  document.querySelectorAll('.game-card').forEach(card => {
+    card.onclick = () => {
+      const game = card.dataset.game;
+      if (game === 'rocket' || game === 'cow' || game === 'mines' || game === 'upgrade') {
+        Router.openGame(game);
+      } else {
+        UI.toast('Игра в разработке');
+      }
+    };
+  });
+
+  // Кнопка назад
+  document.getElementById('gameBack').onclick = () => Router.closeGame();
+  document.getElementById('profileBack').onclick = () => {
+    document.getElementById('profileScreen').classList.remove('open');
+  };
+  document.getElementById('historyBack').onclick = () => {
+    document.getElementById('historyScreen').classList.remove('open');
+  };
+
+  // Нижний таб-бар
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.onclick = () => {
+      const page = item.dataset.page;
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+      item.classList.add('active');
+      if (page === 'main') {
+        document.getElementById('mainScreen').style.display = 'block';
+      } else if (page === 'profile') {
+        Router.openProfile();
+      } else if (page === 'history') {
+        Router.openHistory();
+      } else if (page === 'cases') {
+        UI.toast('Кейсы в разработке');
+      }
+    };
+  });
+});
 </script>
 </body>
 </html>
