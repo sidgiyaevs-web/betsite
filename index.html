@@ -3,31 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0e1a">
-<title>Clinic Empire — Симулятор клиники</title>
+<meta name="theme-color" content="#0f0f1a">
+<title>Кюфте — Доставка</title>
 <style>
 :root{
-  --bg:#0a0e1a;--bg2:#131824;--card:#181e2f;--card2:#222a3e;--card3:#2c3550;
-  --text:#f0f4ff;--text2:#8a94b0;--text3:#525c7a;
-  --blue:#3b82f6;--blue2:#2563eb;--purple:#8b5cf6;--pink:#ec4899;
-  --green:#10b981;--green2:#059669;--red:#ef4444;--yellow:#fbbf24;--gold:#f59e0b;--cyan:#06b6d4;
-  --border:#232a3e;--border2:#323a54;
-  --grad:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);
-  --grad-green:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  --bg:#0f0f1a;--bg2:#161625;--card:#1c1c2e;--card2:#252539;
+  --text:#fff;--text2:#9294b4;--text3:#5a5c7a;
+  --orange:#ff6b35;--orange2:#e85a25;--red:#ef4444;--green:#22c55e;--yellow:#fbbf24;--gold:#f59e0b;
+  --purple:#8b5cf6;--pink:#ec4899;--cyan:#06b6d4;
+  --border:#2a2a45;--border2:#3a3a5a;
+  --grad:linear-gradient(135deg,#ff6b35 0%,#ec4899 100%);
+  --grad-green:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
   --grad-red:linear-gradient(135deg,#ef4444 0%,#dc2626 100%);
-  --grad-gold:linear-gradient(135deg,#f59e0b 0%,#ef4444 100%);
-  --grad-cyan:linear-gradient(135deg,#06b6d4 0%,#3b82f6 100%);
-  --radius-sm:8px;--radius:12px;--radius-lg:16px;--radius-xl:20px;
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;--radius-xl:20px;--radius-2xl:24px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.4;user-select:none;-webkit-font-smoothing:antialiased;padding-bottom:80px;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 10%,rgba(59,130,246,.15) 0%,transparent 40%),radial-gradient(circle at 80% 90%,rgba(139,92,246,.12) 0%,transparent 40%);z-index:-1;pointer-events:none}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 15% 10%,rgba(255,107,53,.18) 0%,transparent 40%),radial-gradient(circle at 85% 90%,rgba(236,72,153,.14) 0%,transparent 40%);z-index:-1;pointer-events:none}
 button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;outline:none;background:none;transition:transform .1s,opacity .15s,background-color .15s}
 button:active{opacity:.85;transform:scale(.98)}
 button:disabled{opacity:.5;cursor:not-allowed;transform:none}
-input,select{font-family:inherit;outline:none}
+input,textarea{font-family:inherit;outline:none}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .hidden{display:none!important}
@@ -35,249 +33,344 @@ input,select{font-family:inherit;outline:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}50%{box-shadow:0 0 0 12px rgba(16,185,129,0)}}
-@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}50%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
-@keyframes walkIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes walkOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+@keyframes drive{0%{transform:translateX(0)}100%{transform:translateX(100%)}}
+@keyframes pulseRing{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* AUTH */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 24px;overflow-y:auto}
+.auth-logo{font-size:56px;font-weight:900;letter-spacing:-2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.auth-sub{color:var(--text2);margin-bottom:32px;font-size:14px;text-align:center}
+.auth-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.auth-input{padding:16px 18px;border:1px solid var(--border2);border-radius:var(--radius);font-size:16px;background:var(--card);color:var(--text)}
+.auth-input:focus{border-color:var(--orange);background:var(--card2)}
+.auth-btn{background:var(--grad);color:#fff;padding:16px;border-radius:var(--radius);font-size:16px;font-weight:800;margin-top:8px;box-shadow:0 8px 24px rgba(255,107,53,.4)}
+.auth-switch{margin-top:12px;color:var(--text2);font-size:14px;text-align:center;cursor:pointer;padding:10px}
+.auth-switch span{color:var(--orange);font-weight:700}
+.auth-error{color:var(--red);font-size:13px;text-align:center;min-height:18px}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.95);backdrop-filter:blur(20px);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-.logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:900;letter-spacing:-.5px}
-.logo-icon{font-size:24px}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,15,26,.95);backdrop-filter:blur(20px);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:900;letter-spacing:-.5px;cursor:pointer}
+.logo-icon{font-size:26px}
 .logo-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.money-pill{background:var(--card);padding:8px 14px;border-radius:24px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;border:1px solid var(--border2);transition:transform .2s}
-.money-pill.bump{animation:bounce .5s}
-.money-pill .coin{font-size:14px}
-.money-pill.low{border-color:var(--red);color:var(--red);animation:pulse 2s infinite}
-.money-pill.high{border-color:var(--green)}
-.day-pill{background:var(--card);padding:8px 12px;border-radius:24px;font-size:12px;font-weight:700;color:var(--text2);border:1px solid var(--border2)}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.balance-pill{background:var(--card);padding:7px 14px;border-radius:24px;display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;border:1px solid var(--border2)}
+.balance-pill.bump{animation:bounce .5s}
+.balance-pill .coin{color:var(--gold);font-size:14px}
+.cart-btn{position:relative;width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+.cart-btn .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.avatar-btn{width:38px;height:38px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
 
-/* TABS */
-.tabs{display:flex;padding:12px 12px 0;gap:6px;overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{padding:9px 14px;border-radius:12px;background:var(--card);border:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap;cursor:pointer;transition:all .15s}
-.tab.active{background:var(--grad);color:#fff;border-color:transparent}
-.tab .badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;margin-left:6px}
+/* HERO */
+.hero{margin:16px;border-radius:var(--radius-2xl);background:linear-gradient(135deg,#ff6b35 0%,#ec4899 50%,#8b5cf6 100%);padding:24px;position:relative;overflow:hidden;min-height:160px}
+.hero::before{content:'';position:absolute;top:-50%;right:-30%;width:300px;height:300px;background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%)}
+.hero h1{font-size:28px;font-weight:900;letter-spacing:-1px;line-height:1.1;margin-bottom:8px;position:relative;z-index:1}
+.hero p{font-size:14px;opacity:.9;position:relative;z-index:1}
+.hero-emoji{position:absolute;right:12px;bottom:-10px;font-size:120px;opacity:.3;z-index:0}
+.hero-info{display:flex;gap:12px;margin-top:16px;position:relative;z-index:1;flex-wrap:wrap}
+.hero-badge{background:rgba(255,255,255,.2);backdrop-filter:blur(10px);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.3)}
 
-/* PAGE */
-.page{display:none;padding:16px}
-.page.active{display:block;animation:fadeIn .3s}
+/* CATEGORIES */
+.categories{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.categories::-webkit-scrollbar{display:none}
+.cat{padding:9px 16px;border-radius:20px;background:var(--card);border:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap;cursor:pointer;transition:all .15s}
+.cat.active{background:var(--grad);color:#fff;border-color:transparent}
 
-.section-title{font-size:18px;font-weight:800;margin-bottom:12px;letter-spacing:-.3px}
-.section-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+/* MENU GRID */
+.section-title{font-size:20px;font-weight:800;padding:0 16px;margin:16px 0 12px;letter-spacing:-.3px}
+.menu-grid{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.dish{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border2);display:flex;flex-direction:column;position:relative;animation:fadeIn .3s}
+.dish-img{height:120px;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;overflow:hidden}
+.dish-img.cat-kufte{background:linear-gradient(135deg,#ff6b35 0%,#ec4899 100%)}
+.dish-img.cat-shawarma{background:linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)}
+.dish-img.cat-drink{background:linear-gradient(135deg,#06b6d4 0%,#3b82f6 100%)}
+.dish-img.cat-sauce{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%)}
+.dish-img.cat-dessert{background:linear-gradient(135deg,#ec4899 0%,#8b5cf6 100%)}
+.dish-info{padding:12px;flex:1;display:flex;flex-direction:column}
+.dish-name{font-size:14px;font-weight:800;margin-bottom:4px;line-height:1.2}
+.dish-desc{font-size:11px;color:var(--text2);margin-bottom:8px;flex:1;line-height:1.3}
+.dish-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dish-price{font-size:15px;font-weight:900;color:var(--gold)}
+.dish-add{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 4px 12px rgba(255,107,53,.4)}
+.dish-add:active{transform:scale(.9)}
+.dish-badge{position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:8px;font-size:10px;font-weight:800;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);z-index:2}
+.dish-badge.hot{background:var(--grad-red);color:#fff}
+.dish-badge.new{background:var(--grad-green);color:#fff}
+.dish-badge.hit{background:var(--grad);color:#fff}
 
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
-.card-title{font-size:15px;font-weight:800;margin-bottom:8px}
-.card-desc{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.4}
+/* CART PANEL */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:400;display:none;align-items:flex-end}
+.cart-overlay.open{display:flex;animation:fadeIn .2s}
+.cart-panel{background:var(--card);border-radius:var(--radius-2xl) var(--radius-2xl) 0 0;padding:20px;width:100%;max-height:85vh;overflow-y:auto;animation:slideUp .25s;border-top:1px solid var(--border2)}
+.cart-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cart-panel-title{font-size:20px;font-weight:900}
+.cart-close{font-size:24px;color:var(--text2);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer}
+.cart-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:var(--radius);margin-bottom:8px}
+.cart-item-img{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;background:var(--bg2)}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.cart-item-price{font-size:12px;color:var(--gold);font-weight:700}
+.cart-item-qty{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cart-item-qty button{width:28px;height:28px;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800}
+.cart-item-qty span{min-width:20px;text-align:center;font-weight:800;font-size:14px}
+.cart-total{display:flex;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border);margin-top:12px;font-size:18px;font-weight:900}
+.cart-total .value{color:var(--gold)}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.cart-empty-icon{font-size:60px;margin-bottom:12px;opacity:.4}
 
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
-.stat-box{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:14px}
-.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:4px}
-.stat-value{font-size:20px;font-weight:900;letter-spacing:-.5px}
-.stat-value.green{color:var(--green)}
-.stat-value.red{color:var(--red)}
+/* CHECKOUT */
+.checkout-field{margin-bottom:12px}
+.checkout-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.checkout-input{width:100%;padding:14px 16px;border:1px solid var(--border2);border-radius:var(--radius);font-size:15px;background:var(--bg2);color:var(--text)}
+.checkout-input:focus{border-color:var(--orange)}
+.checkout-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* ORDER SCREEN */
+.order-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;flex-direction:column;overflow-y:auto;padding-bottom:20px}
+.order-screen.open{display:flex;animation:fadeIn .3s}
+.order-header{padding:16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:var(--bg)}
+.order-title{font-size:18px;font-weight:800}
+.order-status-card{margin:16px;border-radius:var(--radius-xl);padding:20px;background:linear-gradient(135deg,rgba(255,107,53,.15) 0%,rgba(236,72,153,.15) 100%);border:1px solid var(--border2);text-align:center}
+.order-status-icon{font-size:64px;margin-bottom:8px;animation:bounce 2s infinite}
+.order-status-text{font-size:18px;font-weight:900;margin-bottom:4px}
+.order-status-sub{font-size:13px;color:var(--text2)}
+.order-progress{margin:16px;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.order-progress-fill{height:100%;background:var(--grad);transition:width 1s linear;border-radius:4px}
+.order-steps{display:flex;justify-content:space-between;padding:0 16px;margin-bottom:16px}
+.order-step{flex:1;text-align:center;font-size:10px;color:var(--text3);font-weight:700;position:relative}
+.order-step .step-icon{width:36px;height:36px;border-radius:50%;background:var(--card);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;margin:0 auto 6px;transition:all .3s}
+.order-step.active .step-icon{background:var(--grad);border-color:transparent;transform:scale(1.1);box-shadow:0 0 20px rgba(255,107,53,.5)}
+.order-step.done .step-icon{background:var(--grad-green);border-color:transparent}
+.order-step.active,.order-step.done{color:var(--text)}
+
+.order-map{margin:16px;border-radius:var(--radius-xl);background:var(--card);border:1px solid var(--border2);height:200px;position:relative;overflow:hidden}
+.order-map-bg{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#1a1a30 0 40px,#161625 40px 80px),repeating-linear-gradient(90deg,#1a1a30 0 40px,#161625 40px 80px)}
+.order-map-path{position:absolute;top:50%;left:8%;right:8%;height:4px;background:repeating-linear-gradient(90deg,var(--orange) 0 10px,transparent 10px 20px);transform:translateY(-50%)}
+.order-courier{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:32px;transition:left 1s linear;z-index:3;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.order-courier::before{content:'';position:absolute;top:50%;left:50%;width:30px;height:30px;border-radius:50%;background:rgba(255,107,53,.4);transform:translate(-50%,-50%);animation:pulseRing 1.5s infinite;z-index:-1}
+.order-client{position:absolute;top:50%;right:8%;transform:translate(50%,-50%);font-size:28px;z-index:2}
+.order-restaurant{position:absolute;top:50%;left:8%;transform:translate(-50%,-50%);font-size:28px;z-index:2}
+.order-info-card{margin:16px;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px}
+.order-info-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.order-info-row:last-child{border-bottom:none}
+.order-info-row .lbl{color:var(--text2)}
+.order-info-row .val{font-weight:800}
+.order-btn-wrap{padding:16px;margin-top:auto}
+
+/* ORDERS HISTORY */
+.orders-list{padding:0 16px}
+.order-item{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;margin-bottom:10px;animation:fadeIn .3s}
+.order-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.order-item-id{font-size:12px;color:var(--text2);font-weight:700}
+.order-item-status{padding:3px 10px;border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase}
+.order-item-status.delivered{background:rgba(34,197,94,.15);color:var(--green)}
+.order-item-status.cancelled{background:rgba(239,68,68,.15);color:var(--red)}
+.order-item-dishes{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.4}
+.order-item-total{display:flex;justify-content:space-between;font-size:14px;font-weight:800}
+.order-item-total .value{color:var(--gold)}
+
+/* PROFILE */
+.profile-header{background:var(--grad);padding:32px 16px 24px;text-align:center;border-radius:0 0 24px 24px;margin-bottom:16px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px;cursor:pointer}
+.profile-name{font-size:20px;font-weight:800;margin-bottom:4px}
+.profile-balance{font-size:32px;font-weight:900;letter-spacing:-1px}
+.profile-label{font-size:12px;opacity:.8;margin-bottom:16px}
+.stat-row{display:flex;gap:12px;padding:0 16px;margin-bottom:16px}
+.stat-card{flex:1;background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border2);text-align:center}
+.stat-value{font-size:18px;font-weight:800;margin-bottom:2px}
 .stat-value.gold{color:var(--gold)}
-.stat-value.blue{color:var(--blue)}
-.stat-value.purple{color:var(--purple)}
-
-/* STAFF LIST */
-.staff-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:8px}
-.staff-avatar{width:48px;height:48px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.staff-info{flex:1;min-width:0}
-.staff-name{font-size:14px;font-weight:800;margin-bottom:2px}
-.staff-role{font-size:11px;color:var(--text2)}
-.staff-salary{font-size:13px;font-weight:800;color:var(--gold);margin-top:2px}
-.staff-status{font-size:10px;font-weight:800;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-left:8px}
-.staff-status.working{background:rgba(16,185,129,.15);color:var(--green)}
-.staff-status.tired{background:rgba(251,191,36,.15);color:var(--yellow)}
-.staff-status.rest{background:rgba(139,92,246,.15);color:var(--purple)}
-
-/* PATIENT */
-.patient-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;animation:walkIn .4s ease}
-.patient-card.leaving{animation:walkOut .4s ease forwards}
-.patient-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.patient-avatar{width:56px;height:56px;border-radius:14px;background:var(--grad-cyan);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
-.patient-info{flex:1;min-width:0}
-.patient-name{font-size:16px;font-weight:800;margin-bottom:2px}
-.patient-age{font-size:12px;color:var(--text2)}
-.patient-severity{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:800;text-transform:uppercase}
-.patient-severity.easy{background:rgba(16,185,129,.15);color:var(--green)}
-.patient-severity.medium{background:rgba(251,191,36,.15);color:var(--yellow)}
-.patient-severity.hard{background:rgba(239,68,68,.15);color:var(--red)}
-.patient-severity.vip{background:linear-gradient(135deg,#f59e0b,#ec4899);color:#fff}
-.patient-symptoms{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5}
-.patient-actions{display:flex;gap:8px;flex-wrap:wrap}
-
-.btn{padding:12px 20px;border-radius:var(--radius);font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
-.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.3)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(59,130,246,.4)}
-.btn-green{background:var(--grad-green);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3)}
-.btn-red{background:var(--grad-red);color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.3)}
-.btn-gold{background:var(--grad-gold);color:#fff;box-shadow:0 4px 12px rgba(245,158,11,.3)}
-.btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border2)}
-.btn-block{width:100%}
-.btn-sm{padding:8px 14px;font-size:12px}
-
-/* EMPTY */
-.empty{text-align:center;padding:60px 20px;color:var(--text2)}
-.empty-icon{font-size:56px;margin-bottom:12px;opacity:.5}
-.empty-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
-.empty-desc{font-size:13px}
-
-/* EVENT LOG */
-.event-log{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:12px;max-height:280px;overflow-y:auto}
-.event-item{padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;gap:8px;align-items:flex-start;animation:fadeIn .3s}
-.event-item.info{background:rgba(59,130,246,.1);border-left:3px solid var(--blue)}
-.event-item.success{background:rgba(16,185,129,.1);border-left:3px solid var(--green)}
-.event-item.warning{background:rgba(251,191,36,.1);border-left:3px solid var(--yellow)}
-.event-item.danger{background:rgba(239,68,68,.1);border-left:3px solid var(--red)}
-.event-icon{font-size:14px;flex-shrink:0}
-.event-text{flex:1;color:var(--text2);line-height:1.4}
-.event-text strong{color:var(--text)}
-
-/* SHOP */
-.shop-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:8px}
-.shop-icon{width:48px;height:48px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.shop-info{flex:1;min-width:0}
-.shop-name{font-size:14px;font-weight:800;margin-bottom:2px}
-.shop-desc{font-size:11px;color:var(--text2)}
-.shop-price{font-size:13px;font-weight:800;color:var(--gold);margin-top:2px}
-.shop-owned{font-size:10px;font-weight:800;color:var(--green);text-transform:uppercase;margin-top:2px}
-
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(19,24,36,.95);backdrop-filter:blur(20px);display:flex;justify-content:space-around;padding:10px 0 14px;border-top:1px solid var(--border2);z-index:200}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);flex:1;padding:4px 0;cursor:pointer;transition:color .15s;position:relative}
-.nav-item.active{color:var(--text)}
-.nav-item .icon{font-size:22px}
-.nav-item .dot{position:absolute;top:4px;right:50%;transform:translateX(14px);width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite}
+.stat-value.green{color:var(--green)}
+.stat-label{font-size:11px;color:var(--text2)}
+.action-btn-row{display:flex;gap:10px;padding:0 16px;margin-bottom:16px}
+.action-btn{flex:1;padding:14px;border-radius:var(--radius);font-size:14px;font-weight:800;text-align:center;cursor:pointer}
+.action-btn.primary{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(255,107,53,.3)}
+.action-btn.secondary{background:var(--card);color:var(--text);border:1px solid var(--border2)}
+.logout-btn{display:block;margin:0 auto 16px;padding:12px 32px;background:var(--card);color:var(--red);border-radius:var(--radius);font-weight:700;font-size:14px;border:1px solid var(--border2)}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex;animation:fadeIn .2s}
-.modal{background:var(--card);border-radius:var(--radius-xl);padding:24px;max-width:420px;width:100%;border:1px solid var(--border2);animation:slideUp .25s;max-height:85vh;overflow-y:auto}
+.modal{background:var(--card);border-radius:var(--radius-xl);padding:24px;max-width:400px;width:100%;border:1px solid var(--border2);animation:slideUp .25s;text-align:center}
+.modal-icon{font-size:64px;margin-bottom:12px}
 .modal-title{font-size:20px;font-weight:900;margin-bottom:8px}
-.modal-sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
-.modal-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.modal-sub{font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.5}
 .modal-actions{display:flex;gap:10px;margin-top:16px}
-.modal-actions .btn{flex:1}
+.modal-actions .btn{flex:1;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:800;cursor:pointer;text-align:center}
+.btn-primary{background:var(--grad);color:#fff}
+.btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border2)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(22,22,37,.95);backdrop-filter:blur(20px);display:flex;justify-content:space-around;padding:10px 0 14px;border-top:1px solid var(--border2);z-index:300}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text3);flex:1;padding:4px 0;cursor:pointer;transition:color .15s;position:relative}
+.nav-item.active{color:var(--text)}
+.nav-item .icon{font-size:22px;line-height:1}
+.nav-item .badge{position:absolute;top:0;right:50%;transform:translateX(14px);background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px}
 
 /* TOAST */
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--card3);color:#fff;padding:14px 22px;border-radius:var(--radius);font-size:13px;font-weight:700;z-index:1000;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;border:1px solid var(--border2);max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--card2);color:#fff;padding:14px 22px;border-radius:var(--radius);font-size:13px;font-weight:700;z-index:1000;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;border:1px solid var(--border2);max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.success{background:var(--green);border-color:transparent}
 .toast.error{background:var(--red);border-color:transparent}
-.toast.gold{background:var(--grad-gold);border-color:transparent}
 
-/* DIAGNOSE */
-.diagnose-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
-.diagnose-btn{padding:12px;border-radius:var(--radius);background:var(--card2);border:1px solid var(--border2);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
-.diagnose-btn:hover{background:var(--card3);border-color:var(--blue)}
-.diagnose-btn.correct{background:var(--grad-green);border-color:transparent;color:#fff}
-.diagnose-btn.wrong{background:var(--grad-red);border-color:transparent;color:#fff}
+/* MARQUEE */
+.marquee{background:var(--card);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:10px 0;overflow:hidden;margin:12px 0}
+.marquee-inner{display:flex;gap:40px;white-space:nowrap;animation:marquee 30s linear infinite;font-size:12px;font-weight:700;color:var(--text2)}
+.marquee-inner span{flex-shrink:0}
 
-/* WARD */
-.wards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.ward-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;text-align:center;position:relative}
-.ward-card.locked{opacity:.5}
-.ward-emoji{font-size:40px;margin-bottom:8px}
-.ward-name{font-size:14px;font-weight:800;margin-bottom:4px}
-.ward-status{font-size:11px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:8px;display:inline-block;margin-top:6px}
-.ward-status.free{background:rgba(16,185,129,.15);color:var(--green)}
-.ward-status.busy{background:rgba(251,191,36,.15);color:var(--yellow)}
-.ward-status.empty{background:rgba(239,68,68,.15);color:var(--red)}
-.ward-patient{font-size:11px;color:var(--text2);margin-top:6px}
-
-/* PROGRESS BAR */
-.progress-bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-top:8px}
-.progress-fill{height:100%;background:var(--grad-green);transition:width .3s ease;border-radius:4px}
-.progress-fill.warn{background:var(--grad-gold)}
-.progress-fill.danger{background:var(--grad-red)}
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-icon{font-size:56px;margin-bottom:12px;opacity:.4}
 
 @media(max-width:400px){
-  .stats-grid{grid-template-columns:1fr 1fr}
-  .stat-value{font-size:17px}
-  .patient-avatar,.staff-avatar{width:44px;height:44px;font-size:22px}
-  .btn{padding:10px 16px;font-size:13px}
+  .menu-grid{grid-template-columns:1fr 1fr}
+  .dish-img{height:100px;font-size:52px}
+  .dish-name{font-size:13px}
+  .dish-price{font-size:14px}
 }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">
-    <span class="logo-icon">🏥</span>
-    <span class="logo-text">Clinic Empire</span>
-  </div>
-  <div class="day-pill" id="dayPill">День 1</div>
-  <div class="money-pill" id="moneyPill">
-    <span class="coin">💰</span>
-    <span id="moneyText">10 000 ₽</span>
-  </div>
-</div>
-
-<div class="tabs" id="tabs">
-  <div class="tab active" data-page="clinic">🏥 Клиника</div>
-  <div class="tab" data-page="staff">👨‍⚕️ Персонал</div>
-  <div class="tab" data-page="shop">🛒 Магазин</div>
-  <div class="tab" data-page="log">📋 Журнал</div>
-</div>
-
-<div class="page active" id="page-clinic">
-  <div class="stats-grid">
-    <div class="stat-box">
-      <div class="stat-label">Пациентов сегодня</div>
-      <div class="stat-value blue" id="statToday">0</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Всего вылечено</div>
-      <div class="stat-value green" id="statTotal">0</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Репутация</div>
-      <div class="stat-value gold" id="statRep">⭐ 0</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Палат занято</div>
-      <div class="stat-value purple" id="statWards">0 / 0</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🚪 Приём пациентов</div>
-    <div class="card-desc" id="queueInfo">Ожидание посетителей...</div>
-    <div id="patientsList"></div>
+<div id="authScreen" class="auth-screen">
+  <div class="auth-logo">КЮФТЕ</div>
+  <div class="auth-sub">Ресторан доставки. Свежие кюфте в лаваше и напитки.</div>
+  <div class="auth-form">
+    <input type="text" id="authLogin" class="auth-input" placeholder="Ваше имя" autocomplete="off">
+    <input type="tel" id="authPhone" class="auth-input" placeholder="Телефон +7..." autocomplete="off">
+    <input type="password" id="authPassword" class="auth-input" placeholder="Пароль">
+    <div id="authError" class="auth-error"></div>
+    <button id="authBtn" class="auth-btn">Войти</button>
+    <div id="authSwitch" class="auth-switch">Нет аккаунта? <span>Зарегистрироваться</span></div>
   </div>
 </div>
 
-<div class="page" id="page-staff">
-  <div class="section-title">👨‍⚕️ Персонал</div>
-  <div class="section-sub">Врачи, медсёстры, уборщики. Зарплаты платятся каждый день.</div>
-  <div id="staffList"></div>
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="logo" onclick="Router.go('menu')">
+      <span class="logo-icon">🍽️</span>
+      <span class="logo-text">КЮФТЕ</span>
+    </div>
+    <div class="topbar-right">
+      <div class="balance-pill" id="balancePill">
+        <span class="coin">💰</span>
+        <span id="balanceText">10 000 ₽</span>
+      </div>
+      <div class="cart-btn" id="cartBtn" onclick="Cart.open()">
+        🛒
+        <span class="badge hidden" id="cartBadge">0</span>
+      </div>
+      <div class="avatar-btn" id="avatarBtn" onclick="Router.go('profile')">👤</div>
+    </div>
+  </div>
+
+  <!-- МЕНЮ -->
+  <div id="pageMenu" class="page">
+    <div class="hero">
+      <h1>Вкусные кюфте<br>с доставкой</h1>
+      <p>Готовим за 15 минут · Доставим за 30 · Свежие ингредиенты</p>
+      <div class="hero-info">
+        <div class="hero-badge">🔥 Горячие блюда</div>
+        <div class="hero-badge">⏱️ 30 мин доставка</div>
+        <div class="hero-badge">⭐ 4.9 рейтинг</div>
+      </div>
+      <div class="hero-emoji">🥙</div>
+    </div>
+
+    <div class="marquee">
+      <div class="marquee-inner">
+        <span>🔥 Сегодня скидка 10% на всё меню</span>
+        <span>🍽️ Бесплатная доставка от 500 ₽</span>
+        <span>⭐ Новая шаурма с сыром</span>
+        <span>🥤 Напитки 1+1</span>
+        <span>🔥 Сегодня скидка 10% на всё меню</span>
+        <span>🍽️ Бесплатная доставка от 500 ₽</span>
+        <span>⭐ Новая шаурма с сыром</span>
+        <span>🥤 Напитки 1+1</span>
+      </div>
+    </div>
+
+    <div class="categories" id="categories">
+      <div class="cat active" data-cat="all">Все</div>
+      <div class="cat" data-cat="kufte">🥙 Кюфте</div>
+      <div class="cat" data-cat="shawarma">🌯 Шаурма</div>
+      <div class="cat" data-cat="drink">🥤 Напитки</div>
+      <div class="cat" data-cat="sauce">🥫 Соусы</div>
+      <div class="cat" data-cat="dessert">🍰 Десерты</div>
+    </div>
+
+    <div class="section-title">Меню</div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+
+  <!-- ЗАКАЗЫ -->
+  <div id="pageOrders" class="page hidden">
+    <div class="section-title">Мои заказы</div>
+    <div class="orders-list" id="ordersList"></div>
+  </div>
+
+  <!-- ПРОФИЛЬ -->
+  <div id="pageProfile" class="page hidden">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">👤</div>
+      <div class="profile-name" id="profileName">Гость</div>
+      <div class="profile-balance" id="profileBalance">10 000 ₽</div>
+      <div class="profile-label">Баланс</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-value gold" id="statOrders">0</div><div class="stat-label">Заказов</div></div>
+      <div class="stat-card"><div class="stat-value green" id="statSpent">0 ₽</div><div class="stat-label">Потрачено</div></div>
+      <div class="stat-card"><div class="stat-value" id="statFav">—</div><div class="stat-label">Любимое</div></div>
+    </div>
+    <div class="action-btn-row">
+      <div class="action-btn primary" onclick="Profile.topup()">💰 Пополнить</div>
+      <div class="action-btn secondary" onclick="Profile.editName()">✏️ Имя</div>
+    </div>
+    <button class="logout-btn" id="logoutBtn">Выйти из аккаунта</button>
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" data-page="menu">
+      <span class="icon">🍽️</span>
+      <span>Меню</span>
+    </div>
+    <div class="nav-item" data-page="orders">
+      <span class="icon">📦</span>
+      <span>Заказы</span>
+    </div>
+    <div class="nav-item" data-page="cart">
+      <span class="icon">🛒</span>
+      <span>Корзина</span>
+    </div>
+    <div class="nav-item" data-page="profile">
+      <span class="icon">👤</span>
+      <span>Профиль</span>
+    </div>
+  </div>
 </div>
 
-<div class="page" id="page-shop">
-  <div class="section-title">🛒 Магазин</div>
-  <div class="section-sub">Оборудование, мебель, найм персонала.</div>
-  <div id="shopList"></div>
+<!-- КОРЗИНА -->
+<div class="cart-overlay" id="cartOverlay">
+  <div class="cart-panel" id="cartPanel">
+    <div class="cart-panel-header">
+      <div class="cart-panel-title">🛒 Корзина</div>
+      <div class="cart-close" onclick="Cart.close()">✕</div>
+    </div>
+    <div id="cartContent"></div>
+  </div>
 </div>
 
-<div class="page" id="page-log">
-  <div class="section-title">📋 Журнал событий</div>
-  <div class="section-sub">Что происходит в клинике</div>
-  <div class="event-log" id="eventLog"></div>
+<!-- ЭКРАН ЗАКАЗА -->
+<div class="order-screen" id="orderScreen">
+  <div class="order-header">
+    <div class="order-title">🚚 Доставка</div>
+    <button class="btn-secondary" style="padding:8px 14px;border-radius:12px;font-size:12px;font-weight:800" onclick="Order.close()">Закрыть</button>
+  </div>
+  <div id="orderContent"></div>
 </div>
 
-<div class="bottom-nav" id="bottomNav">
-  <div class="nav-item active" data-page="clinic"><span class="icon">🏥</span><span>Клиника</span></div>
-  <div class="nav-item" data-page="staff"><span class="icon">👨‍⚕️</span><span>Персонал</span></div>
-  <div class="nav-item" data-page="shop"><span class="icon">🛒</span><span>Магазин</span></div>
-  <div class="nav-item" data-page="log"><span class="icon">📋</span><span>Журнал</span></div>
-</div>
-
+<!-- МОДАЛКА -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalContent"></div>
 </div>
@@ -286,85 +379,94 @@ input,select{font-family:inherit;outline:none}
 
 <script>
 /* ============================================================
+   МЕНЮ РЕСТОРАНА
+   ============================================================ */
+const MENU = [
+  // Кюфте
+  { id:'k1', name:'Кюфте в лаваше', desc:'Сочные кюфте, свежие овощи, соус', price:290, icon:'🥙', cat:'kufte', badge:'hot' },
+  { id:'k2', name:'Кюфте с сыром', desc:'Двойная порция, сыр, зелень', price:340, icon:'🧀', cat:'kufte', badge:'hit' },
+  { id:'k3', name:'Кюфте острое', desc:'С острым соусом и перчиком', price:310, icon:'🌶️', cat:'kufte' },
+  { id:'k4', name:'Кюфте XXL', desc:'Большая порция для голодных', price:450, icon:'🥙', cat:'kufte', badge:'new' },
+  { id:'k5', name:'Кюфте-боул', desc:'Без лаваша, с рисом и овощами', price:350, icon:'🍚', cat:'kufte' },
+  // Шаурма
+  { id:'s1', name:'Шаурма классик', desc:'Курица, овощи, чесночный соус', price:250, icon:'🌯', cat:'shawarma' },
+  { id:'s2', name:'Шаурма с сыром', desc:'Курица, сыр, овощи', price:290, icon:'🌯', cat:'shawarma', badge:'new' },
+  { id:'s3', name:'Шаурма острая', desc:'С острым соусом', price:270, icon:'🌯', cat:'shawarma' },
+  // Напитки
+  { id:'d1', name:'Кола 0.5л', desc:'Классическая кола', price:120, icon:'🥤', cat:'drink' },
+  { id:'d2', name:'Айран 0.3л', desc:'Освежающий кисломолочный', price:100, icon:'🥛', cat:'drink' },
+  { id:'d3', name:'Лимонад', desc:'Домашний с мятой', price:150, icon:'🍋', cat:'drink', badge:'hit' },
+  { id:'d4', name:'Чай чёрный', desc:'Горячий чай с сахаром', price:80, icon:'🍵', cat:'drink' },
+  { id:'d5', name:'Вода 0.5л', desc:'Минеральная без газа', price:70, icon:'💧', cat:'drink' },
+  // Соусы
+  { id:'sa1', name:'Чесночный соус', desc:'Классика к кюфте', price:50, icon:'🧄', cat:'sauce' },
+  { id:'sa2', name:'Острый соус', desc:'Для любителей поострее', price:50, icon:'🌶️', cat:'sauce' },
+  { id:'sa3', name:'Сырный соус', desc:'Тёплый сырный', price:70, icon:'🧀', cat:'sauce' },
+  // Десерты
+  { id:'de1', name:'Пахлава', desc:'Сладкая, с орехами', price:180, icon:'🍯', cat:'dessert' },
+  { id:'de2', name:'Чизкейк', desc:'Классический с ягодами', price:220, icon:'🍰', cat:'dessert' },
+  { id:'de3', name:'Мороженое', desc:'Пломбир в вафельном рожке', price:120, icon:'🍦', cat:'dessert' }
+];
+
+/* ============================================================
    СОСТОЯНИЕ
    ============================================================ */
 const State = {
-  money: 10000,
-  day: 1,
-  totalHealed: 0,
-  todayHealed: 0,
-  reputation: 0,
-  patients: [],
-  staff: [],
-  equipment: [],
-  wards: [],
-  lastEventTime: 0,
-  lastPatientSpawn: 0,
-  lastPayday: 0,
-  log: [],
-  patientCounter: 0,
-  paused: false
+  user: null,
+  balance: 10000,
+  cart: [],
+  orders: [],
+  totalOrders: 0,
+  totalSpent: 0,
+  favDish: null,
+  currentFilter: 'all',
+  currentOrder: null,
+  lastTopup: ''
 };
 
 const Storage = {
-  KEY: 'clinic_empire_v1',
-  save() {
-    try {
-      localStorage.setItem(this.KEY, JSON.stringify({
-        money: State.money,
-        day: State.day,
-        totalHealed: State.totalHealed,
-        todayHealed: State.todayHealed,
-        reputation: State.reputation,
-        staff: State.staff,
-        equipment: State.equipment,
-        wards: State.wards,
-        log: State.log.slice(0, 50),
-        lastEventTime: State.lastEventTime,
-        lastPatientSpawn: State.lastPatientSpawn,
-        lastPayday: State.lastPayday,
-        patientCounter: State.patientCounter,
-        lastSaved: Date.now()
-      }));
-    } catch(e){}
-  },
-  load() {
-    try {
-      const s = localStorage.getItem(this.KEY);
-      if (!s) return;
-      const d = JSON.parse(s);
-      Object.assign(State, d);
-      // Оффлайн-прогресс
-      const now = Date.now();
-      const offline = Math.floor((now - (d.lastSaved || now)) / 1000);
-      if (offline > 60) {
-        const daysOffline = Math.floor(offline / 60);
-        State.day += daysOffline;
-        addLog('info', '🌙', 'Пока вас не было, прошло дней: <strong>' + daysOffline + '</strong>');
-        // зарплаты за оффлайн
-        const salaries = State.staff.reduce((s, st) => s + (st.salary || 0), 0);
-        State.money -= salaries * daysOffline;
-        if (State.money < 0) State.money = 0;
-      }
-    } catch(e){}
+  KU:'kyufte_users_v1', KS:'kyufte_session_v1',
+  saveUsers(u) { try { localStorage.setItem(this.KU, JSON.stringify(u)); } catch(e){} },
+  loadUsers() { try { const s=localStorage.getItem(this.KU); return s?JSON.parse(s):{}; } catch(e){ return {}; } },
+  saveSession(s) { try { localStorage.setItem(this.KS, JSON.stringify(s)); } catch(e){} },
+  loadSession() { try { const s=localStorage.getItem(this.KS); return s?JSON.parse(s):null; } catch(e){ return null; } },
+  clearSession() { try { localStorage.removeItem(this.KS); } catch(e){} },
+  saveUserData() {
+    if (!State.user) return;
+    const users = this.loadUsers();
+    if (users[State.user]) {
+      Object.assign(users[State.user], {
+        balance: State.balance,
+        cart: State.cart,
+        orders: State.orders.slice(0, 30),
+        totalOrders: State.totalOrders,
+        totalSpent: State.totalSpent,
+        favDish: State.favDish,
+        lastTopup: State.lastTopup
+      });
+      this.saveUsers(users);
+    }
   }
 };
 
 const Utils = {
-  rand(a,b) { return Math.random()*(b-a)+a; },
-  randInt(a,b) { return Math.floor(this.rand(a,b+1)); },
-  choice(arr) { return arr[Math.floor(Math.random()*arr.length)]; },
   fmt(n) { return Math.round(n).toLocaleString('ru-RU'); },
-  uid() { return Date.now().toString(36)+Math.random().toString(36).substr(2,6); }
+  randInt(a,b) { return Math.floor(Math.random()*(b-a+1))+a; },
+  uid() { return Date.now().toString(36)+Math.random().toString(36).substr(2,6); },
+  timeAgo(t) {
+    const d = Math.floor((Date.now()-t)/1000);
+    if (d<60) return 'только что';
+    if (d<3600) return Math.floor(d/60)+' мин назад';
+    if (d<86400) return Math.floor(d/3600)+' ч назад';
+    return Math.floor(d/86400)+' дн назад';
+  },
+  today() { return new Date().toDateString(); }
 };
 
-/* ============================================================
-   ЗВУКИ
-   ============================================================ */
 const Sound = {
   ctx: null,
   init() { try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} },
-  play(f, d=0.1, t='sine', v=0.05) {
+  play(f,d=0.1,t='sine',v=0.05) {
     if (!this.ctx) return;
     try {
       const o = this.ctx.createOscillator();
@@ -379,54 +481,9 @@ const Sound = {
   click() { this.play(600,0.05,'sine',0.04); },
   coin() { this.play(1200,0.08,'sine',0.06); setTimeout(()=>this.play(1600,0.08,'sine',0.06),80); },
   win() { [523,659,784].forEach((f,i)=>setTimeout(()=>this.play(f,0.1,'sine',0.08),i*100)); },
-  lose() { this.play(300,0.15,'sawtooth',0.06); setTimeout(()=>this.play(200,0.25,'sawtooth',0.06),150); },
-  patient() { this.play(880,0.08,'sine',0.05); setTimeout(()=>this.play(1100,0.08,'sine',0.05),80); }
+  doorbell() { this.play(880,0.15,'sine',0.08); setTimeout(()=>this.play(660,0.2,'sine',0.08),150); }
 };
 
-/* ============================================================
-   БАЗА ДАННЫХ
-   ============================================================ */
-const NAMES = ['Анна','Борис','Виктор','Галина','Дмитрий','Елена','Жанна','Иван','Ирина','Константин','Лариса','Максим','Наталья','Олег','Пётр','Раиса','Сергей','Татьяна','Фёдор','Юлия','Ярослав','Алексей','Мария','Николай','Ольга'];
-
-const DISEASES = [
-  { id:'flu', name:'Грипп', symptoms:'Температура 38.5°, кашель, ломота в теле', treatCost:300, cureRate:0.95, severity:'easy', icon:'🤒' },
-  { id:'cold', name:'Простуда', symptoms:'Насморк, боль в горле, слабость', treatCost:150, cureRate:0.98, severity:'easy', icon:'🤧' },
-  { id:'migraine', name:'Мигрень', symptoms:'Сильная головная боль, тошнота', treatCost:250, cureRate:0.9, severity:'easy', icon:'🤕' },
-  { id:'angina', name:'Ангина', symptoms:'Боль в горле, температура 39°, налёт на миндалинах', treatCost:400, cureRate:0.9, severity:'medium', icon:'😷' },
-  { id:'bronchitis', name:'Бронхит', symptoms:'Кашель с мокротой, хрипы, температура', treatCost:600, cureRate:0.85, severity:'medium', icon:'🫁' },
-  { id:'food_poison', name:'Пищевое отравление', symptoms:'Тошнота, рвота, боль в животе', treatCost:500, cureRate:0.9, severity:'medium', icon:'🤢' },
-  { id:'pneumonia', name:'Пневмония', symptoms:'Высокая температура, кашель, боль в груди', treatCost:1200, cureRate:0.8, severity:'hard', icon:'🫁' },
-  { id:'appendicitis', name:'Аппендицит', symptoms:'Острая боль справа внизу живота, тошнота', treatCost:2000, cureRate:0.9, severity:'hard', icon:'🚑' },
-  { id:'heart_attack', name:'Инфаркт', symptoms:'Боль за грудиной, слабость, холодный пот', treatCost:3500, cureRate:0.7, severity:'hard', icon:'💔' },
-  { id:'stroke', name:'Инсульт', symptoms:'Асимметрия лица, слабость в руке, нарушение речи', treatCost:4000, cureRate:0.65, severity:'hard', icon:'🧠' }
-];
-
-const TREATMENTS = [
-  { id:'pills', name:'Таблетки', icon:'💊', price:100, cureRate:0.7, desc:'Базовое лечение' },
-  { id:'injection', name:'Уколы', icon:'💉', price:250, cureRate:0.85, desc:'Эффективнее таблеток' },
-  { id:'iv', name:'Капельница', icon:'🩺', price:500, cureRate:0.95, desc:'Максимальная эффективность' }
-];
-
-const STAFF_ROLES = [
-  { id:'nurse', name:'Медсестра', icon:'👩‍⚕️', salary:800, skill:0.6, bonus:'+5% к лечению' },
-  { id:'doctor', name:'Врач', icon:'👨‍⚕️', salary:1500, skill:0.85, bonus:'+15% к лечению' },
-  { id:'surgeon', name:'Хирург', icon:'🥼', salary:2500, skill:0.95, bonus:'+25% к лечению' },
-  { id:'cleaner', name:'Уборщик', icon:'🧹', salary:400, skill:0.3, bonus:'Чистота в клинике' }
-];
-
-const SHOP_ITEMS = [
-  { id:'ward1', name:'Палата №1', icon:'🛏️', price:3000, desc:'Место для пациента в стационаре', type:'ward' },
-  { id:'ward2', name:'Палата №2', icon:'🛏️', price:5000, desc:'Дополнительное место', type:'ward' },
-  { id:'ward3', name:'Палата VIP', icon:'🛌', price:12000, desc:'VIP-палата, +50% к оплате', type:'ward' },
-  { id:'xray', name:'Рентген', icon:'📡', price:8000, desc:'+10% точность диагностики', type:'equipment' },
-  { id:'mri', name:'МРТ', icon:'🧲', price:25000, desc:'+25% точность диагностики', type:'equipment' },
-  { id:'ambulance', name:'Скорая помощь', icon:'🚑', price:15000, desc:'Пациенты приезжают чаще', type:'equipment' },
-  { id:'lab', name:'Лаборатория', icon:'🧪', price:10000, desc:'+15% к скорости лечения', type:'equipment' }
-];
-
-/* ============================================================
-   UI
-   ============================================================ */
 const UI = {
   _t: null,
   toast(m, type='') {
@@ -435,7 +492,7 @@ const UI = {
     e.textContent = m;
     e.className = 'toast show ' + type;
     clearTimeout(this._t);
-    this._t = setTimeout(()=>{ e.className = 'toast ' + type; }, 2400);
+    this._t = setTimeout(()=>{ e.className='toast '+type; }, 2400);
   },
   modal(html) {
     document.getElementById('modalContent').innerHTML = html;
@@ -444,429 +501,637 @@ const UI = {
   closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
   },
-  updateMoney() {
-    const el = document.getElementById('moneyText');
-    if (el) el.textContent = Utils.fmt(State.money) + ' ₽';
-    const pill = document.getElementById('moneyPill');
-    if (pill) {
-      pill.classList.remove('low','high');
-      if (State.money < 2000) pill.classList.add('low');
-      else if (State.money > 50000) pill.classList.add('high');
-      pill.classList.add('bump');
-      setTimeout(()=>pill.classList.remove('bump'), 500);
-    }
-    const dp = document.getElementById('dayPill');
-    if (dp) dp.textContent = 'День ' + State.day;
+  updateBalance() {
+    const el = document.getElementById('balanceText');
+    if (el) el.textContent = Utils.fmt(State.balance) + ' ₽';
+    const p = document.getElementById('profileBalance');
+    if (p) p.textContent = Utils.fmt(State.balance) + ' ₽';
+    const pill = document.getElementById('balancePill');
+    if (pill) { pill.classList.add('bump'); setTimeout(()=>pill.classList.remove('bump'),500); }
+    const pn = document.getElementById('profileName');
+    if (pn) pn.textContent = State.user || 'Гость';
   },
-  updateStats() {
-    const today = document.getElementById('statToday');
-    if (today) today.textContent = State.todayHealed;
-    const total = document.getElementById('statTotal');
-    if (total) total.textContent = State.totalHealed;
-    const rep = document.getElementById('statRep');
-    if (rep) rep.textContent = '⭐ ' + Math.round(State.reputation);
-    const wards = document.getElementById('statWards');
-    if (wards) {
-      const busy = State.wards.filter(w => w.patientId).length;
-      wards.textContent = busy + ' / ' + State.wards.length;
+  updateCartBadge() {
+    const b = document.getElementById('cartBadge');
+    if (!b) return;
+    const count = State.cart.reduce((s,item)=>s+item.qty,0);
+    if (count > 0) { b.textContent = count; b.classList.remove('hidden'); }
+    else b.classList.add('hidden');
+  },
+  updateProfileStats() {
+    const spent = document.getElementById('statSpent');
+    if (spent) spent.textContent = Utils.fmt(State.totalSpent) + ' ₽';
+    const ord = document.getElementById('statOrders');
+    if (ord) ord.textContent = State.totalOrders;
+    const fav = document.getElementById('statFav');
+    if (fav) {
+      const dish = MENU.find(m => m.id === State.favDish);
+      fav.textContent = dish ? dish.icon + ' ' + dish.name.split(' ')[0] : '—';
     }
   }
 };
 
-function addLog(type, icon, text) {
-  State.log.unshift({ type, icon, text, time: Date.now() });
-  if (State.log.length > 100) State.log.pop();
-  renderLog();
-}
-
 /* ============================================================
-   ГЕНЕРАЦИЯ ПАЦИЕНТА
+   АВТОРИЗАЦИЯ
    ============================================================ */
-function generatePatient() {
-  const disease = Utils.choice(DISEASES);
-  const isVip = Math.random() < 0.08;
-  const severityMult = disease.severity === 'easy' ? 1 : disease.severity === 'medium' ? 1.5 : 2.5;
-  const basePay = disease.treatCost * severityMult * (isVip ? 2.5 : 1);
-  return {
-    id: 'p_' + (++State.patientCounter) + '_' + Utils.uid(),
-    name: Utils.choice(NAMES),
-    age: Utils.randInt(18, 75),
-    disease: disease,
-    pay: Math.round(basePay),
-    isVip,
-    arrivedAt: Date.now(),
-    timeLeft: 30 + Math.floor(disease.severity === 'hard' ? 20 : 0),
-    state: 'waiting'
-  };
-}
-
-/* ============================================================
-   ИГРОВОЙ ЦИКЛ
-   ============================================================ */
-let tickTimer = null;
-
-function gameTick() {
-  const now = Date.now();
-
-  // спавн пациента раз в 5-10 секунд
-  const spawnRate = State.equipment.includes('ambulance') ? 5000 : 8000;
-  if (now - State.lastPatientSpawn > spawnRate + Utils.randInt(0, 4000)) {
-    State.lastPatientSpawn = now;
-    if (State.patients.filter(p => p.state === 'waiting').length < 5) {
-      const p = generatePatient();
-      State.patients.push(p);
-      Sound.patient();
-      addLog('info', '🚪', 'Пришёл пациент: <strong>' + p.name + '</strong>');
-      renderPatients();
-    }
-  }
-
-  // таймеры пациентов
-  let changed = false;
-  State.patients.forEach(p => {
-    if (p.state === 'waiting') {
-      p.timeLeft -= 1;
-      if (p.timeLeft <= 0) {
-        p.state = 'left';
-        State.reputation = Math.max(0, State.reputation - 2);
-        addLog('danger', '😡', '<strong>' + p.name + '</strong> ушёл не дождавшись. -2 репутации');
-        changed = true;
+const Auth = {
+  mode: 'login',
+  init() {
+    Sound.init();
+    const s = Storage.loadSession();
+    if (s && s.login) {
+      const u = Storage.loadUsers()[s.login];
+      if (u) {
+        State.user = s.login;
+        State.balance = u.balance ?? 10000;
+        State.cart = u.cart || [];
+        State.orders = u.orders || [];
+        State.totalOrders = u.totalOrders || 0;
+        State.totalSpent = u.totalSpent || 0;
+        State.favDish = u.favDish || null;
+        State.lastTopup = u.lastTopup || '';
+        this.showApp();
+        return;
       }
     }
-  });
-  State.patients = State.patients.filter(p => p.state === 'waiting');
-  if (changed) { renderPatients(); UI.updateStats(); }
-
-  // зарплаты каждый день (60 сек = 1 день)
-  if (now - State.lastPayday > 60000) {
-    State.lastPayday = now;
-    State.day++;
-    State.todayHealed = 0;
-    const salaries = State.staff.reduce((s, st) => s + st.salary, 0);
-    if (salaries > 0) {
-      State.money -= salaries;
-      addLog('warning', '💸', 'Выплачены зарплаты: <strong>-' + Utils.fmt(salaries) + ' ₽</strong>');
+    this.showAuth();
+  },
+  showAuth() {
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+  },
+  showApp() {
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    UI.updateBalance();
+    UI.updateCartBadge();
+    UI.updateProfileStats();
+    Menu.render();
+    Orders.render();
+    Router.go('menu');
+  },
+  login() {
+    const name = document.getElementById('authLogin').value.trim();
+    const phone = document.getElementById('authPhone').value.trim();
+    const pw = document.getElementById('authPassword').value.trim();
+    const err = document.getElementById('authError');
+    err.textContent = '';
+    if (!name || !phone || !pw) { err.textContent='Заполните все поля'; return; }
+    if (name.length < 2) { err.textContent='Имя минимум 2 символа'; return; }
+    if (phone.length < 5) { err.textContent='Телефон минимум 5 символов'; return; }
+    if (pw.length < 3) { err.textContent='Пароль минимум 3 символа'; return; }
+    const users = Storage.loadUsers();
+    if (this.mode === 'register') {
+      if (users[name]) { err.textContent='Такое имя уже занято'; return; }
+      users[name] = {
+        password: pw, phone, balance: 10000,
+        cart: [], orders: [], totalOrders: 0, totalSpent: 0,
+        favDish: null, lastTopup: ''
+      };
+      Storage.saveUsers(users);
+      Storage.saveSession({login:name});
+      Sound.win();
+      this.init();
+    } else {
+      if (!users[name]) { err.textContent='Аккаунт не найден'; return; }
+      if (users[name].password !== pw) { err.textContent='Неверный пароль'; return; }
+      Storage.saveSession({login:name});
+      Sound.win();
+      this.init();
     }
-    // случайное событие
-    if (Math.random() < 0.5) randomEvent();
-    UI.updateMoney();
-    UI.updateStats();
-    Storage.save();
+  },
+  logout() {
+    UI.modal(`
+      <div class="modal-icon">👋</div>
+      <div class="modal-title">Выйти из аккаунта?</div>
+      <div class="modal-sub">Корзина сохранится.</div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="UI.closeModal()">Отмена</button>
+        <button class="btn-primary" onclick="Auth.confirmLogout()">Выйти</button>
+      </div>
+    `);
+  },
+  confirmLogout() {
+    Storage.saveUserData();
+    Storage.clearSession();
+    State.user = null;
+    State.cart = [];
+    UI.closeModal();
+    this.showAuth();
   }
-
-  UI.updateMoney();
-  UI.updateStats();
-}
-
-function randomEvent() {
-  const events = [
-    { type:'success', icon:'🎉', text:'Эпидемия гриппа — приходят больше пациентов!', effect:()=>{ State.reputation += 3; } },
-    { type:'warning', icon:'🔍', text:'Проверка СЭС. Штраф <strong>-500 ₽</strong>', effect:()=>{ State.money = Math.max(0, State.money - 500); } },
-    { type:'success', icon:'💎', text:'VIP-пациент оставил чаевые <strong>+2000 ₽</strong>', effect:()=>{ State.money += 2000; } },
-    { type:'danger', icon:'⚡', text:'Отключили свет на 2 часа. Оборудование пострадало.', effect:()=>{ State.money = Math.max(0, State.money - 300); } },
-    { type:'info', icon:'📰', text:'О вас написали в газете — <strong>+5 репутации</strong>', effect:()=>{ State.reputation += 5; } },
-    { type:'warning', icon:'🦷', text:'Налоговая проверка. Заплатили <strong>-1000 ₽</strong>', effect:()=>{ State.money = Math.max(0, State.money - 1000); } }
-  ];
-  const ev = Utils.choice(events);
-  ev.effect();
-  addLog(ev.type, ev.icon, ev.text);
-}
+};
 
 /* ============================================================
-   ЛЕЧЕНИЕ
+   РОУТЕР
    ============================================================ */
-function treatPatient(patientId) {
-  const p = State.patients.find(x => x.id === patientId);
-  if (!p) return;
-  if (p.state !== 'waiting') return;
-
-  const disease = p.disease;
-  const correctDiagnose = true; // всегда правильный для простоты
-
-  UI.modal(`
-    <div class="modal-title">Лечение: ${p.name}</div>
-    <div class="modal-sub">
-      <div style="font-size:32px;text-align:center;margin-bottom:8px">${disease.icon}</div>
-      <strong>${disease.name}</strong><br>
-      <span style="font-size:12px;color:var(--text2)">${disease.symptoms}</span>
-    </div>
-    <div class="card-desc">Выберите метод лечения:</div>
-    <div class="modal-list">
-      ${TREATMENTS.map(t => `
-        <button class="btn btn-secondary btn-block" onclick="applyTreatment('${patientId}', '${t.id}')" style="justify-content:space-between;text-align:left">
-          <span>${t.icon} ${t.name}</span>
-          <span style="color:var(--gold);font-weight:800">-${Utils.fmt(t.price)} ₽</span>
-        </button>
-      `).join('')}
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="UI.closeModal()">Отмена</button>
-    </div>
-  `);
-}
-
-function applyTreatment(patientId, treatmentId) {
-  const p = State.patients.find(x => x.id === patientId);
-  const t = TREATMENTS.find(x => x.id === treatmentId);
-  if (!p || !t) return;
-  if (State.money < t.price) { UI.toast('Недостаточно денег', 'error'); return; }
-
-  State.money -= t.price;
-  UI.closeModal();
-
-  // расчёт успеха
-  const staffBonus = State.staff.reduce((s, st) => s + st.skill * 0.1, 0);
-  const treatChance = Math.min(0.98, t.cureRate * (1 + staffBonus));
-  const success = Math.random() < treatChance;
-
-  if (success) {
-    State.money += p.pay;
-    State.totalHealed++;
-    State.todayHealed++;
-    State.reputation += p.isVip ? 5 : 2;
-    Sound.win();
-    addLog('success', '✅', '<strong>' + p.name + '</strong> вылечен(а). <strong>+' + Utils.fmt(p.pay) + ' ₽</strong>');
-    UI.toast('+' + Utils.fmt(p.pay) + ' ₽ — пациент вылечен!', 'success');
-  } else {
-    State.reputation = Math.max(0, State.reputation - 3);
-    Sound.lose();
-    addLog('danger', '❌', 'Лечение <strong>' + p.name + '</strong> не удалось. -3 репутации');
-    UI.toast('Лечение не удалось!', 'error');
+const Router = {
+  go(page) {
+    Sound.click();
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    const el = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+    if (el) el.classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const nav = document.querySelector('.nav-item[data-page="'+page+'"]');
+    if (nav) nav.classList.add('active');
+    window.scrollTo(0,0);
   }
-
-  State.patients = State.patients.filter(x => x.id !== patientId);
-  renderPatients();
-  UI.updateMoney();
-  UI.updateStats();
-  Storage.save();
-}
+};
 
 /* ============================================================
-   РЕНДЕР
+   МЕНЮ
    ============================================================ */
-function renderPatients() {
-  const el = document.getElementById('patientsList');
-  if (!el) return;
-  if (State.patients.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">🏥</div><div class="empty-title">Пока нет пациентов</div><div class="empty-desc">Ожидайте — скоро придут</div></div>';
-    const qi = document.getElementById('queueInfo');
-    if (qi) qi.textContent = 'Ожидание посетителей...';
-    return;
-  }
-  const qi = document.getElementById('queueInfo');
-  if (qi) qi.textContent = 'В очереди: ' + State.patients.length;
-
-  el.innerHTML = State.patients.map(p => `
-    <div class="patient-card">
-      <div class="patient-header">
-        <div class="patient-avatar">${p.disease.icon}</div>
-        <div class="patient-info">
-          <div class="patient-name">${p.name}, ${p.age}</div>
-          <div class="patient-age">${p.disease.name}</div>
+const Menu = {
+  render() {
+    const el = document.getElementById('menuGrid');
+    if (!el) return;
+    let list = MENU;
+    if (State.currentFilter !== 'all') list = list.filter(m => m.cat === State.currentFilter);
+    el.innerHTML = list.map(d => `
+      <div class="dish">
+        ${d.badge ? `<div class="dish-badge ${d.badge}">${d.badge==='hot'?'🔥 Хит':d.badge==='new'?'✨ Новинка':'⭐ Выбор'}</div>` : ''}
+        <div class="dish-img cat-${d.cat}">${d.icon}</div>
+        <div class="dish-info">
+          <div class="dish-name">${d.name}</div>
+          <div class="dish-desc">${d.desc}</div>
+          <div class="dish-bottom">
+            <div class="dish-price">${Utils.fmt(d.price)} ₽</div>
+            <div class="dish-add" onclick="Cart.add('${d.id}')">+</div>
+          </div>
         </div>
-        <div class="patient-severity ${p.isVip ? 'vip' : p.disease.severity}">${p.isVip ? '⭐ VIP' : p.disease.severity === 'easy' ? 'Легко' : p.disease.severity === 'medium' ? 'Средне' : 'Сложно'}</div>
       </div>
-      <div class="patient-symptoms">${p.disease.symptoms}</div>
-      <div class="patient-actions">
-        <button class="btn btn-primary btn-sm" onclick="treatPatient('${p.id}')">💊 Лечить</button>
-        <span style="align-self:center;font-size:12px;color:var(--text2)">Осталось: ${p.timeLeft}с</span>
-        <span style="align-self:center;margin-left:auto;font-size:14px;font-weight:800;color:var(--gold)">+${Utils.fmt(p.pay)} ₽</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderStaff() {
-  const el = document.getElementById('staffList');
-  if (!el) return;
-  if (State.staff.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👨‍⚕️</div><div class="empty-title">Нет персонала</div><div class="empty-desc">Наймите врачей в магазине</div></div>';
-    return;
+    `).join('');
   }
-  el.innerHTML = State.staff.map(s => `
-    <div class="staff-item">
-      <div class="staff-avatar">${s.icon}</div>
-      <div class="staff-info">
-        <div class="staff-name">${s.name}</div>
-        <div class="staff-role">${s.role}</div>
-        <div class="staff-salary">${Utils.fmt(s.salary)} ₽/день</div>
-      </div>
-      <button class="btn btn-red btn-sm" onclick="fireStaff('${s.id}')">Уволить</button>
-    </div>
-  `).join('');
-}
+};
 
-function renderShop() {
-  const el = document.getElementById('shopList');
-  if (!el) return;
-  let html = '<div class="section-title" style="font-size:16px;margin-bottom:12px">👥 Найм персонала</div>';
-  html += STAFF_ROLES.map(r => {
-    const price = r.salary * 2;
-    return `<div class="shop-item">
-      <div class="shop-icon">${r.icon}</div>
-      <div class="shop-info">
-        <div class="shop-name">${r.name}</div>
-        <div class="shop-desc">${r.bonus}</div>
-        <div class="shop-price">${Utils.fmt(r.salary)} ₽/день · найм ${Utils.fmt(price)} ₽</div>
-      </div>
-      <button class="btn btn-green btn-sm" onclick="hireStaff('${r.id}')">Нанять</button>
-    </div>`;
-  }).join('');
-
-  html += '<div class="section-title" style="font-size:16px;margin:20px 0 12px">🏗️ Оборудование</div>';
-  html += SHOP_ITEMS.map(item => {
-    const owned = State.equipment.includes(item.id) || State.wards.some(w => w.id === item.id);
-    return `<div class="shop-item">
-      <div class="shop-icon">${item.icon}</div>
-      <div class="shop-info">
-        <div class="shop-name">${item.name}</div>
-        <div class="shop-desc">${item.desc}</div>
-        <div class="shop-price">${Utils.fmt(item.price)} ₽</div>
-        ${owned ? '<div class="shop-owned">✓ Куплено</div>' : ''}
-      </div>
-      ${owned ? '' : `<button class="btn btn-primary btn-sm" onclick="buyItem('${item.id}')">Купить</button>`}
-    </div>`;
-  }).join('');
-  el.innerHTML = html;
-}
-
-function renderLog() {
-  const el = document.getElementById('eventLog');
-  if (!el) return;
-  if (State.log.length === 0) {
-    el.innerHTML = '<div class="empty" style="padding:30px 10px"><div class="empty-desc">Событий пока нет</div></div>';
-    return;
-  }
-  el.innerHTML = State.log.slice(0, 30).map(l => `
-    <div class="event-item ${l.type}">
-      <span class="event-icon">${l.icon}</span>
-      <span class="event-text">${l.text}</span>
-    </div>
-  `).join('');
-}
+document.querySelectorAll('.cat').forEach(c => {
+  c.onclick = () => {
+    document.querySelectorAll('.cat').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    State.currentFilter = c.dataset.cat;
+    Menu.render();
+    Sound.click();
+  };
+});
 
 /* ============================================================
-   ДЕЙСТВИЯ
+   КОРЗИНА
    ============================================================ */
-function hireStaff(roleId) {
-  const role = STAFF_ROLES.find(r => r.id === roleId);
-  if (!role) return;
-  const price = role.salary * 2;
-  if (State.money < price) { UI.toast('Недостаточно денег', 'error'); return; }
-  State.money -= price;
-  const name = Utils.choice(NAMES);
-  State.staff.push({
-    id: Utils.uid(),
-    name: name,
-    role: role.name,
-    icon: role.icon,
-    salary: role.salary,
-    skill: role.skill
-  });
-  Sound.win();
-  addLog('success', '👥', 'Нанят сотрудник: <strong>' + name + ' (' + role.name + ')</strong>');
-  UI.toast('Нанят ' + role.name, 'success');
-  UI.updateMoney();
-  renderStaff();
-  renderShop();
-  Storage.save();
-}
-
-function fireStaff(id) {
-  const s = State.staff.find(x => x.id === id);
-  if (!s) return;
-  UI.modal(`
-    <div class="modal-title">Уволить сотрудника?</div>
-    <div class="modal-sub">${s.name} (${s.role}) покинет клинику.</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="UI.closeModal()">Отмена</button>
-      <button class="btn btn-red" onclick="confirmFire('${id}')">Уволить</button>
-    </div>
-  `);
-}
-
-function confirmFire(id) {
-  const s = State.staff.find(x => x.id === id);
-  if (!s) return;
-  State.staff = State.staff.filter(x => x.id !== id);
-  UI.closeModal();
-  addLog('warning', '👋', 'Уволен: <strong>' + s.name + '</strong>');
-  UI.toast('Сотрудник уволен');
-  renderStaff();
-  renderShop();
-  Storage.save();
-}
-
-function buyItem(itemId) {
-  const item = SHOP_ITEMS.find(i => i.id === itemId);
-  if (!item) return;
-  if (State.money < item.price) { UI.toast('Недостаточно денег', 'error'); return; }
-  State.money -= item.price;
-  if (item.type === 'ward') {
-    State.wards.push({ id: item.id, name: item.name });
-  } else {
-    State.equipment.push(item.id);
+const Cart = {
+  open() {
+    Sound.click();
+    this.render();
+    document.getElementById('cartOverlay').classList.add('open');
+  },
+  close() {
+    document.getElementById('cartOverlay').classList.remove('open');
+  },
+  add(dishId) {
+    const dish = MENU.find(m => m.id === dishId);
+    if (!dish) return;
+    const existing = State.cart.find(c => c.id === dishId);
+    if (existing) existing.qty++;
+    else State.cart.push({ id: dish.id, qty: 1 });
+    Sound.coin();
+    UI.toast(dish.name + ' добавлено', 'success');
+    UI.updateCartBadge();
+    Storage.saveUserData();
+  },
+  changeQty(dishId, delta) {
+    const item = State.cart.find(c => c.id === dishId);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) State.cart = State.cart.filter(c => c.id !== dishId);
+    Sound.click();
+    this.render();
+    UI.updateCartBadge();
+    Storage.saveUserData();
+  },
+  total() {
+    return State.cart.reduce((sum, item) => {
+      const dish = MENU.find(m => m.id === item.id);
+      return sum + (dish ? dish.price * item.qty : 0);
+    }, 0);
+  },
+  render() {
+    const el = document.getElementById('cartContent');
+    if (!el) return;
+    if (State.cart.length === 0) {
+      el.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><div style="font-size:16px;font-weight:800;color:var(--text)">Корзина пуста</div><div style="font-size:13px;margin-top:6px">Добавьте блюда из меню</div></div>';
+      return;
+    }
+    let html = '';
+    State.cart.forEach(item => {
+      const dish = MENU.find(m => m.id === item.id);
+      if (!dish) return;
+      html += `
+        <div class="cart-item">
+          <div class="cart-item-img">${dish.icon}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${dish.name}</div>
+            <div class="cart-item-price">${Utils.fmt(dish.price)} ₽</div>
+          </div>
+          <div class="cart-item-qty">
+            <button onclick="Cart.changeQty('${dish.id}', -1)">−</button>
+            <span>${item.qty}</span>
+            <button onclick="Cart.changeQty('${dish.id}', 1)">+</button>
+          </div>
+        </div>
+      `;
+    });
+    const total = this.total();
+    const delivery = total >= 500 ? 0 : 100;
+    html += `<div class="cart-total"><span>Сумма:</span><span class="value">${Utils.fmt(total)} ₽</span></div>`;
+    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)"><span>Доставка:</span><span>${delivery === 0 ? 'Бесплатно' : Utils.fmt(delivery) + ' ₽'}</span></div>`;
+    html += `<div class="cart-total"><span>Итого:</span><span class="value">${Utils.fmt(total + delivery)} ₽</span></div>`;
+    html += `<button class="btn-primary" style="width:100%;padding:16px;border-radius:12px;font-size:16px;font-weight:800;margin-top:12px;cursor:pointer" onclick="Checkout.open()">Оформить заказ</button>`;
+    el.innerHTML = html;
   }
-  Sound.win();
-  addLog('success', '🛒', 'Куплено: <strong>' + item.name + '</strong>');
-  UI.toast('Куплено: ' + item.name, 'success');
-  UI.updateMoney();
-  UI.updateStats();
-  renderShop();
-  Storage.save();
-}
+};
 
 /* ============================================================
-   НАВИГАЦИЯ
+   ОФОРМЛЕНИЕ ЗАКАЗА
    ============================================================ */
-function goToPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById('page-' + page);
-  if (el) el.classList.add('active');
-  document.querySelectorAll('.tab[data-page="' + page + '"]').forEach(t => t.classList.add('active'));
-  document.querySelectorAll('.nav-item[data-page="' + page + '"]').forEach(n => n.classList.add('active'));
-  window.scrollTo(0, 0);
-}
+const Checkout = {
+  open() {
+    if (State.cart.length === 0) { UI.toast('Корзина пуста', 'error'); return; }
+    Sound.click();
+    const total = Cart.total();
+    const delivery = total >= 500 ? 0 : 100;
+    UI.modal(`
+      <div class="modal-title">📍 Адрес доставки</div>
+      <div class="modal-sub">Куда везти заказ?</div>
+      <div class="checkout-field">
+        <div class="checkout-label">Улица</div>
+        <input class="checkout-input" id="addrStreet" placeholder="ул. Ленина">
+      </div>
+      <div class="checkout-row">
+        <div class="checkout-field">
+          <div class="checkout-label">Дом</div>
+          <input class="checkout-input" id="addrHouse" placeholder="15">
+        </div>
+        <div class="checkout-field">
+          <div class="checkout-label">Квартира</div>
+          <input class="checkout-input" id="addrFlat" placeholder="42">
+        </div>
+      </div>
+      <div class="checkout-row">
+        <div class="checkout-field">
+          <div class="checkout-label">Подъезд</div>
+          <input class="checkout-input" id="addrEntrance" placeholder="2">
+        </div>
+        <div class="checkout-field">
+          <div class="checkout-label">Этаж</div>
+          <input class="checkout-input" id="addrFloor" placeholder="5">
+        </div>
+      </div>
+      <div class="checkout-field">
+        <div class="checkout-label">Комментарий (необязательно)</div>
+        <input class="checkout-input" id="addrNote" placeholder="Позвоните в дверь">
+      </div>
+      <div class="cart-total" style="border-top:1px solid var(--border);padding-top:12px">
+        <span>К оплате:</span>
+        <span class="value">${Utils.fmt(total + delivery)} ₽</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="UI.closeModal()">Отмена</button>
+        <button class="btn-primary" onclick="Checkout.submit()">Заказать</button>
+      </div>
+    `);
+  },
+  submit() {
+    const street = document.getElementById('addrStreet').value.trim();
+    const house = document.getElementById('addrHouse').value.trim();
+    const flat = document.getElementById('addrFlat').value.trim();
+    const entrance = document.getElementById('addrEntrance').value.trim();
+    const floor = document.getElementById('addrFloor').value.trim();
+    const note = document.getElementById('addrNote').value.trim();
+    if (!street || !house) { UI.toast('Укажите улицу и дом', 'error'); return; }
+    const total = Cart.total();
+    const delivery = total >= 500 ? 0 : 100;
+    const finalTotal = total + delivery;
+    if (State.balance < finalTotal) {
+      UI.toast('Недостаточно средств. Пополните баланс.', 'error');
+      return;
+    }
+    State.balance -= finalTotal;
+    State.totalSpent += finalTotal;
+    State.totalOrders++;
+    // Любимое блюдо — самое частое
+    const favCount = {};
+    State.cart.forEach(item => { favCount[item.id] = (favCount[item.id]||0) + item.qty; });
+    const top = Object.entries(favCount).sort((a,b)=>b[1]-a[1])[0];
+    if (top) State.favDish = top[0];
+
+    const address = {
+      street, house, flat, entrance, floor, note,
+      full: `${street}, д. ${house}${flat ? ', кв. ' + flat : ''}`
+    };
+    const order = {
+      id: 'ord_' + Utils.uid(),
+      dishes: State.cart.map(item => {
+        const d = MENU.find(m => m.id === item.id);
+        return { id: item.id, name: d.name, icon: d.icon, price: d.price, qty: item.qty };
+      }),
+      total: finalTotal,
+      delivery,
+      address,
+      status: 'preparing',
+      createdAt: Date.now(),
+      deliveredAt: null,
+      progress: 0
+    };
+    State.orders.unshift(order);
+    State.currentOrder = order;
+    State.cart = [];
+    UI.updateBalance();
+    UI.updateCartBadge();
+    UI.updateProfileStats();
+    UI.closeModal();
+    Storage.saveUserData();
+    Sound.win();
+    Order.open(order);
+  }
+};
+
+/* ============================================================
+   ЭКРАН ЗАКАЗА
+   ============================================================ */
+const Order = {
+  _timer: null,
+  _courierTimer: null,
+  open(order) {
+    State.currentOrder = order;
+    document.getElementById('orderScreen').classList.add('open');
+    this.render(order);
+    this.startSimulation(order);
+  },
+  close() {
+    document.getElementById('orderScreen').classList.remove('open');
+    if (this._timer) clearInterval(this._timer);
+    if (this._courierTimer) clearInterval(this._courierTimer);
+    // Если заказ ещё не доставлен — оставляем, он доставится сам в фоне
+    Orders.render();
+  },
+  render(order) {
+    const el = document.getElementById('orderContent');
+    if (!el) return;
+    const statuses = {
+      preparing: { icon: '👨‍🍳', text: 'Готовим заказ', sub: 'Повар уже начал готовить' },
+      delivering: { icon: '🚚', text: 'Курьер в пути', sub: 'Курьер едет к вам' },
+      near: { icon: '📍', text: 'Курьер рядом', sub: 'Осталось совсем немного' },
+      delivered: { icon: '✅', text: 'Заказ доставлен', sub: 'Приятного аппетита!' }
+    };
+    const st = statuses[order.status] || statuses.preparing;
+    const dishesHtml = order.dishes.map(d => `${d.icon} ${d.name} ×${d.qty}`).join('<br>');
+
+    el.innerHTML = `
+      <div class="order-status-card">
+        <div class="order-status-icon">${st.icon}</div>
+        <div class="order-status-text">${st.text}</div>
+        <div class="order-status-sub">${st.sub}</div>
+      </div>
+      <div class="order-progress"><div class="order-progress-fill" id="orderProgress" style="width:${order.progress}%"></div></div>
+      <div class="order-steps" id="orderSteps">
+        <div class="order-step ${order.status==='preparing'?'active':(order.status!=='preparing'?'done':'')}">
+          <div class="step-icon">👨‍🍳</div>
+          <div>Готовим</div>
+        </div>
+        <div class="order-step ${order.status==='delivering'?'active':(order.status==='near'||order.status==='delivered'?'done':'')}">
+          <div class="step-icon">🚚</div>
+          <div>В пути</div>
+        </div>
+        <div class="order-step ${order.status==='near'?'active':(order.status==='delivered'?'done':'')}">
+          <div class="step-icon">📍</div>
+          <div>Рядом</div>
+        </div>
+        <div class="order-step ${order.status==='delivered'?'active done':''}">
+          <div class="step-icon">✅</div>
+          <div>Доставлено</div>
+        </div>
+      </div>
+      <div class="order-map">
+        <div class="order-map-bg"></div>
+        <div class="order-map-path"></div>
+        <div class="order-restaurant">🏪</div>
+        <div class="order-client">🏠</div>
+        <div class="order-courier" id="orderCourier" style="left:8%">🛵</div>
+      </div>
+      <div class="order-info-card">
+        <div class="order-info-row"><span class="lbl">Заказ №</span><span class="val">${order.id.substr(-6).toUpperCase()}</span></div>
+        <div class="order-info-row"><span class="lbl">Адрес</span><span class="val">${order.address.full}</span></div>
+        <div class="order-info-row"><span class="lbl">Состав</span><span class="val" style="font-size:12px;font-weight:600;text-align:right;max-width:60%">${dishesHtml}</span></div>
+        <div class="order-info-row"><span class="lbl">Сумма</span><span class="val" style="color:var(--gold)">${Utils.fmt(order.total)} ₽</span></div>
+        <div class="order-info-row"><span class="lbl">Доставка</span><span class="val">${order.delivery === 0 ? 'Бесплатно' : Utils.fmt(order.delivery) + ' ₽'}</span></div>
+      </div>
+      <div class="order-btn-wrap">
+        <button class="action-btn primary" style="width:100%" onclick="Order.close()">Закрыть</button>
+      </div>
+    `;
+  },
+  updateStatus(order) {
+    const el = document.getElementById('orderContent');
+    if (!el) return;
+    this.render(order);
+  },
+  startSimulation(order) {
+    if (this._timer) clearInterval(this._timer);
+    if (this._courierTimer) clearInterval(this._courierTimer);
+
+    // Общий прогресс: 30 секунд до доставки
+    const totalTime = 30000;
+    const startTime = Date.now();
+
+    this._timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const p = Math.min(100, (elapsed / totalTime) * 100);
+      order.progress = p;
+
+      // Смена статусов
+      if (p < 33) order.status = 'preparing';
+      else if (p < 80) order.status = 'delivering';
+      else if (p < 100) order.status = 'near';
+      else {
+        order.status = 'delivered';
+        order.deliveredAt = Date.now();
+        clearInterval(this._timer);
+        clearInterval(this._courierTimer);
+        Sound.doorbell();
+        UI.toast('🎉 Заказ доставлен!', 'success');
+        Storage.saveUserData();
+        Orders.render();
+      }
+
+      // Обновить UI, если экран открыт
+      if (document.getElementById('orderScreen').classList.contains('open')) {
+        this.render(order);
+      }
+    }, 500);
+
+    // Курьер на карте
+    let courierPos = 8;
+    this._courierTimer = setInterval(() => {
+      if (courierPos < 88) {
+        courierPos += 2;
+        const c = document.getElementById('orderCourier');
+        if (c) c.style.left = courierPos + '%';
+      }
+    }, 300);
+  }
+};
+
+/* ============================================================
+   ЗАКАЗЫ
+   ============================================================ */
+const Orders = {
+  render() {
+    const el = document.getElementById('ordersList');
+    if (!el) return;
+    if (State.orders.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📦</div><div style="font-size:16px;font-weight:800;color:var(--text)">Заказов пока нет</div><div style="font-size:13px;margin-top:6px">Оформите первый заказ</div></div>';
+      return;
+    }
+    el.innerHTML = State.orders.map(o => {
+      const statusText = {
+        preparing: 'Готовится',
+        delivering: 'В пути',
+        near: 'Рядом',
+        delivered: 'Доставлен'
+      }[o.status] || '—';
+      const statusClass = o.status === 'delivered' ? 'delivered' : (o.status === 'cancelled' ? 'cancelled' : '');
+      const dishes = o.dishes.map(d => `${d.icon} ${d.name}`).join(', ');
+      return `
+        <div class="order-item">
+          <div class="order-item-header">
+            <div class="order-item-id">Заказ #${o.id.substr(-6).toUpperCase()} · ${Utils.timeAgo(o.createdAt)}</div>
+            <div class="order-item-status ${statusClass}">${statusText}</div>
+          </div>
+          <div class="order-item-dishes">${dishes}</div>
+          <div class="order-item-total">
+            <span>${o.address.full}</span>
+            <span class="value">${Utils.fmt(o.total)} ₽</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+};
+
+/* ============================================================
+   ПРОФИЛЬ
+   ============================================================ */
+const Profile = {
+  topup() {
+    if (State.lastTopup === Utils.today()) {
+      UI.toast('Уже пополняли сегодня!', 'error');
+      return;
+    }
+    UI.modal(`
+      <div class="modal-icon">💰</div>
+      <div class="modal-title">Пополнить баланс</div>
+      <div class="modal-sub">Зачислить 5 000 ₽?\n\nСледующее пополнение — завтра.</div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="UI.closeModal()">Отмена</button>
+        <button class="btn-primary" onclick="Profile.confirmTopup()">Получить</button>
+      </div>
+    `);
+  },
+  confirmTopup() {
+    State.balance += 5000;
+    State.lastTopup = Utils.today();
+    UI.updateBalance();
+    UI.closeModal();
+    Sound.coin();
+    UI.toast('+5 000 ₽', 'success');
+    Storage.saveUserData();
+  },
+  editName() {
+    UI.modal(`
+      <div class="modal-title">Изменить имя</div>
+      <input class="checkout-input" id="newNameInput" value="${State.user}" maxlength="20" style="margin-bottom:16px">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="UI.closeModal()">Отмена</button>
+        <button class="btn-primary" onclick="Profile.saveName()">Сохранить</button>
+      </div>
+    `);
+    setTimeout(()=>document.getElementById('newNameInput').focus(), 100);
+  },
+  saveName() {
+    const v = document.getElementById('newNameInput').value.trim();
+    if (v.length < 2) { UI.toast('Минимум 2 символа', 'error'); return; }
+    if (v === State.user) { UI.closeModal(); return; }
+    const users = Storage.loadUsers();
+    if (users[v]) { UI.toast('Имя занято', 'error'); return; }
+    const data = users[State.user];
+    delete users[State.user];
+    data.password = data.password;
+    users[v] = data;
+    Storage.saveUsers(users);
+    State.user = v;
+    Storage.saveSession({login: v});
+    Storage.saveUserData();
+    UI.updateBalance();
+    UI.closeModal();
+    UI.toast('Имя изменено', 'success');
+  }
+};
 
 /* ============================================================
    ИНИЦИАЛИЗАЦИЯ
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  Sound.init();
-  Storage.load();
+  document.getElementById('authBtn').onclick = () => Auth.login();
+  document.getElementById('authSwitch').onclick = () => {
+    const b = document.getElementById('authBtn');
+    const s = document.getElementById('authSwitch');
+    document.getElementById('authError').textContent = '';
+    if (Auth.mode === 'login') {
+      Auth.mode = 'register';
+      b.textContent = 'Зарегистрироваться';
+      s.innerHTML = 'Уже есть аккаунт? <span>Войти</span>';
+    } else {
+      Auth.mode = 'login';
+      b.textContent = 'Войти';
+      s.innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
+    }
+    Sound.click();
+  };
 
-  // начальные данные
-  if (State.wards.length === 0) {
-    State.wards.push({ id:'ward_basic', name:'Базовая палата' });
-  }
-
-  renderPatients();
-  renderStaff();
-  renderShop();
-  renderLog();
-  UI.updateMoney();
-  UI.updateStats();
-
-  document.querySelectorAll('.tab').forEach(t => {
-    t.onclick = () => { Sound.click(); goToPage(t.dataset.page); };
-  });
   document.querySelectorAll('.nav-item').forEach(n => {
-    n.onclick = () => { Sound.click(); goToPage(n.dataset.page); };
+    n.onclick = () => {
+      const p = n.dataset.page;
+      if (p === 'cart') { Cart.open(); return; }
+      Router.go(p);
+    };
   });
+
+  document.getElementById('cartOverlay').onclick = (e) => {
+    if (e.target.id === 'cartOverlay') Cart.close();
+  };
+
+  document.getElementById('logoutBtn').onclick = () => Auth.logout();
+  document.getElementById('avatarBtn').onclick = () => Router.go('profile');
+
   document.getElementById('modalOverlay').onclick = (e) => {
     if (e.target.id === 'modalOverlay') UI.closeModal();
   };
 
-  // сохранение каждые 10 сек
-  setInterval(() => Storage.save(), 10000);
-  window.addEventListener('beforeunload', () => Storage.save());
+  Auth.init();
 
-  if (tickTimer) clearInterval(tickTimer);
-  tickTimer = setInterval(gameTick, 1000);
-
-  addLog('info', '🏥', 'Клиника открыта! Добро пожаловать.');
+  // Проверяем активные заказы — если был открыт экран доставки и есть заказ в пути, продолжаем
+  setInterval(() => {
+    State.orders.forEach(o => {
+      if (o.status !== 'delivered' && o.status !== 'cancelled') {
+        const elapsed = Date.now() - o.createdAt;
+        const p = Math.min(100, (elapsed / 30000) * 100);
+        o.progress = p;
+        if (p >= 100) { o.status = 'delivered'; o.deliveredAt = Date.now(); Storage.saveUserData(); Orders.render(); }
+        else if (p < 33) o.status = 'preparing';
+        else if (p < 80) o.status = 'delivering';
+        else o.status = 'near';
+      }
+    });
+    Storage.saveUserData();
+  }, 3000);
 });
 </script>
 </body>
