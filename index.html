@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>🏓 Пинг-понг онлайн</title>
+<title>🏓 Пинг-понг</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{overflow:hidden;width:100%;height:100%}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0a0e1a;color:#e8ecf5;display:flex;flex-direction:column;max-width:560px;margin:0 auto;height:100vh;position:relative}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0a0e1a;color:#e8ecf5;display:flex;flex-direction:column;max-width:900px;margin:0 auto;height:100vh;position:relative}
 
-.pp-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(10,14,26,.95);border-bottom:1px solid rgba(255,255,255,.06);z-index:50}
+.pp-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(10,14,26,.95);border-bottom:1px solid rgba(255,255,255,.06);z-index:50;flex-shrink:0}
 .pp-back{padding:8px 14px;border-radius:12px;background:#131a2e;border:1px solid #1f2946;font-size:13px;font-weight:700;color:#a3aec5;cursor:pointer}
-.pp-status{font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc}
-.pp-status.online{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#4ade80}
+.pp-status{font-size:11px;font-weight:800;padding:6px 12px;border-radius:20px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc}
 
-.pp-score{display:flex;align-items:center;justify-content:center;gap:20px;padding:8px 16px;background:#0d1424}
-.pp-score-num{font-size:38px;font-weight:900;min-width:60px;text-align:center}
+.pp-score{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 16px;background:#0d1424;flex-shrink:0}
+.pp-score-num{font-size:32px;font-weight:900;min-width:50px;text-align:center}
 .pp-score-num.me{color:#4ade80;text-shadow:0 0 20px rgba(34,197,94,.6)}
 .pp-score-num.enemy{color:#f87171;text-shadow:0 0 20px rgba(239,68,68,.6)}
-.pp-score-label{font-size:11px;color:#7c88a3;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;text-align:center}
-.pp-vs{font-size:20px;font-weight:900;color:#7c88a3}
+.pp-score-label{font-size:10px;color:#7c88a3;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;text-align:center}
+.pp-vs{font-size:18px;font-weight:900;color:#7c88a3}
 
-.pp-field-wrap{flex:1;position:relative;overflow:hidden;background:#1e3a5f;touch-action:none}
+.pp-field-wrap{flex:1;position:relative;overflow:hidden;touch-action:none;min-height:0}
 .pp-field-wrap canvas{display:block;width:100%;height:100%}
 
-.pp-help{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;font-weight:700;text-align:center;padding:8px 16px;background:rgba(13,20,36,.85);border-radius:20px;border:1px solid rgba(255,255,255,.1);white-space:nowrap;z-index:10;pointer-events:none}
+.pp-help{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff;font-weight:700;text-align:center;padding:6px 14px;background:rgba(13,20,36,.8);border-radius:20px;border:1px solid rgba(255,255,255,.1);white-space:nowrap;z-index:10;pointer-events:none;transition:opacity .5s}
+.pp-help.hide{opacity:0}
 
 .pp-final{position:absolute;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px}
 .pp-final.show{display:flex}
@@ -38,7 +38,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;backg
 
 .pp-menu{position:absolute;inset:0;background:linear-gradient(180deg,#0a0e1a,#0d1424);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;z-index:200;gap:14px;overflow-y:auto}
 .pp-menu.hidden{display:none}
-.pp-menu-icon{font-size:90px}
+.pp-menu-icon{font-size:80px}
 .pp-menu-title{font-size:32px;font-weight:900;background:linear-gradient(90deg,#818cf8,#facc15);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center}
 .pp-menu-sub{font-size:14px;color:#7c88a3;text-align:center;margin-bottom:10px}
 .pp-menu-btn{width:100%;max-width:340px;padding:18px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px}
@@ -70,7 +70,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;backg
 </div>
 
 <div class="pp-field-wrap" id="ppField">
-  <div class="pp-help" id="ppHelp" style="display:none">👆 Води пальцем по половине — ракетка следует</div>
+  <div class="pp-help" id="ppHelp" style="display:none">👆 Води пальцем по экрану</div>
 </div>
 
 <div class="pp-final" id="ppFinal">
@@ -83,7 +83,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;backg
 <div class="pp-menu" id="ppMenu">
   <div class="pp-menu-icon">🏓</div>
   <div class="pp-menu-title">Пинг-понг</div>
-  <div class="pp-menu-sub">Играй с другом онлайн или против бота</div>
+  <div class="pp-menu-sub">С другом онлайн или против бота</div>
   <button class="pp-menu-btn primary" onclick="ppCreateRoom()">🎮 Создать игру с другом</button>
   <button class="pp-menu-btn secondary" onclick="ppJoinMode()">🔗 Войти по коду</button>
   <button class="pp-menu-btn gold" onclick="ppPlayBot()">🤖 Играть с ботом</button>
@@ -95,16 +95,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;backg
 
 <div class="pp-toast" id="ppToast"></div>
 
-<!-- FIREBASE V8 (без модулей) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 /* ============================================================
-   ПИНГ-ПОНГ — Firebase v8, всё работает на iPhone
+   ПИНГ-ПОНГ v2 — вертикальный, красивые ракетки, отбой при движении
    ============================================================ */
 
-/* Firebase init */
 var firebaseConfig = {
   apiKey: "AIzaSyALlhAOBT5zQFtZuUIReR57l9xDadqBC5A",
   authDomain: "betsite-4e6e8.firebaseapp.com",
@@ -117,44 +115,44 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
-/* Константы */
+/* ===== КОНСТАНТЫ ===== */
 var WIN_SCORE = 11;
-var FIELD_W = 800;
-var FIELD_H = 1200;
-var PADDLE_W = 160;
-var PADDLE_H = 22;
-var PADDLE_MARGIN = 70;
-var BALL_R = 18;
-var BALL_SPEED_START = 10;
-var BALL_SPEED_MAX = 22;
+var FIELD_W = 1200;      // внутренняя ширина (горизонтальная)
+var FIELD_H = 700;       // внутренняя высота
+var PADDLE_H = 160;      // высота ракетки (по вертикали)
+var PADDLE_W = 22;       // толщина ракетки
+var PADDLE_MARGIN = 50;
+var BALL_R = 16;
+var BALL_SPEED_START = 9;
+var BALL_SPEED_MAX = 20;
+var BALL_SPEED_INC = 1.06;
 
-/* ID игрока */
 var MY_ID = (function(){
   var id = localStorage.getItem('pp_uid');
   if(!id){ id = 'u'+Math.random().toString(36).slice(2,10); localStorage.setItem('pp_uid', id); }
   return id;
 })();
 
-/* Состояние */
 var G = {
   mode: 'menu',
-  roomCode: null,
   role: 'host',
   running: false,
-  myY: FIELD_H - 200,
-  enemyY: FIELD_W / 2,
-  ball: { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, speed: BALL_SPEED_START },
+  myY: FIELD_H / 2,
+  enemyY: FIELD_H / 2,
+  prevMyY: FIELD_H / 2,
+  ball: { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, speed: BALL_SPEED_START, trail: [] },
   myScore: 0,
   enemyScore: 0,
   botEnabled: false,
-  botTargetY: FIELD_W/2,
+  botTargetY: FIELD_H / 2,
+  botReaction: 0.09,
   raf: null,
   pointCooldown: false,
   roomRef: null,
-  listeners: []
+  roomCode: null,
+  helpHidden: false
 };
 
-/* DOM */
 var fieldWrap = document.getElementById('ppField');
 var canvas = document.createElement('canvas');
 canvas.style.display = 'block';
@@ -165,7 +163,6 @@ var ctx = canvas.getContext('2d');
 
 function $(id){ return document.getElementById(id); }
 
-/* Canvas resize */
 function resizeCanvas(){
   var dpr = window.devicePixelRatio || 1;
   var rect = fieldWrap.getBoundingClientRect();
@@ -175,7 +172,7 @@ function resizeCanvas(){
   canvas._w = rect.width;
   canvas._h = rect.height;
 }
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', function(){ setTimeout(resizeCanvas, 50); });
 setTimeout(resizeCanvas, 100);
 
 /* Toast */
@@ -207,8 +204,8 @@ function beep(freq, dur, type, vol){
   o.connect(g); g.connect(audioCtx.destination);
   o.start(); o.stop(audioCtx.currentTime + dur);
 }
-function soundHit(){ beep(500, 0.05, 'sine', 0.06); }
-function soundWall(){ beep(350, 0.04, 'sine', 0.04); }
+function soundHit(){ beep(600, 0.05, 'square', 0.08); beep(900, 0.03, 'sine', 0.04); }
+function soundWall(){ beep(400, 0.04, 'sine', 0.05); }
 function soundGoal(){ beep(800, 0.15); setTimeout(function(){ beep(1000, 0.15); }, 100); }
 function soundLoseGoal(){ beep(300, 0.2, 'sawtooth', 0.06); }
 function soundWin(){ beep(600,0.1); setTimeout(function(){ beep(800,0.1); },80); setTimeout(function(){ beep(1000,0.2); },160); }
@@ -231,85 +228,196 @@ if(!CanvasRenderingContext2D.prototype.roundRect){
   };
 }
 
-/* Отрисовка */
+/* ===== ОТРИСОВКА ===== */
 function draw(){
   if(!canvas._w) resizeCanvas();
   var w = canvas._w, h = canvas._h;
   var scaleX = w / FIELD_W;
   var scaleY = h / FIELD_H;
 
-  var grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, '#0f4c81');
-  grad.addColorStop(0.5, '#1565a0');
-  grad.addColorStop(1, '#0f4c81');
-  ctx.fillStyle = grad;
+  // Фон — тёмное помещение
+  var bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+  bgGrad.addColorStop(0, '#0a0e1a');
+  bgGrad.addColorStop(1, '#0d1424');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.lineWidth = 2 * scaleX;
-  ctx.strokeRect(6 * scaleX, 6 * scaleY, w - 12 * scaleX, h - 12 * scaleY);
+  // Стол (синяя площадка)
+  var padX = 14 * scaleX;
+  var padY = 14 * scaleY;
+  var fieldW = w - padX * 2;
+  var fieldH = h - padY * 2;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  var tableGrad = ctx.createLinearGradient(padX, padY, padX, padY + fieldH);
+  tableGrad.addColorStop(0, '#1e40af');
+  tableGrad.addColorStop(0.5, '#2563eb');
+  tableGrad.addColorStop(1, '#1e40af');
+  ctx.fillStyle = tableGrad;
+  ctx.fillRect(padX, padY, fieldW, fieldH);
+
+  // Деревянная окантовка (тёмная)
+  ctx.strokeStyle = '#78350f';
+  ctx.lineWidth = 12 * scaleX;
+  ctx.strokeRect(padX, padY, fieldW, fieldH);
+  ctx.strokeStyle = '#a16207';
   ctx.lineWidth = 3 * scaleX;
+  ctx.strokeRect(padX + 6*scaleX, padY + 6*scaleY, fieldW - 12*scaleX, fieldH - 12*scaleY);
+
+  // Белые линии стола
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 3 * scaleX;
+
+  // Внешняя рамка (по краю стола)
+  var lineInset = 20 * scaleX;
+  ctx.strokeRect(padX + lineInset, padY + lineInset, fieldW - lineInset*2, fieldH - lineInset*2);
+
+  // Центральная продольная линия
   ctx.beginPath();
-  ctx.moveTo(0, h / 2);
-  ctx.lineTo(w, h / 2);
+  ctx.moveTo(padX + lineInset, h/2);
+  ctx.lineTo(padX + fieldW - lineInset, h/2);
   ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-  ctx.lineWidth = 2 * scaleX;
-  ctx.setLineDash([6 * scaleX, 6 * scaleX]);
+  // Сетка (вертикальная линия в центре)
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.lineWidth = 4 * scaleX;
+  var netX = w / 2;
   ctx.beginPath();
-  ctx.moveTo(0, h / 2 - 1);
-  ctx.lineTo(w, h / 2 - 1);
+  ctx.moveTo(netX, padY + lineInset);
+  ctx.lineTo(netX, padY + fieldH - lineInset);
   ctx.stroke();
-  ctx.setLineDash([]);
 
-  // Моя ракетка
-  ctx.shadowBlur = 20;
-  ctx.shadowColor = '#4ade80';
-  ctx.fillStyle = '#4ade80';
-  ctx.beginPath();
-  ctx.roundRect(
-    (FIELD_W/2 - PADDLE_W/2) * scaleX,
-    G.myY * scaleY,
+  // Узор сетки
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1 * scaleX;
+  for(var yy = padY + lineInset + 8*scaleY; yy < padY + fieldH - lineInset; yy += 10*scaleY){
+    ctx.beginPath();
+    ctx.moveTo(netX - 4*scaleX, yy);
+    ctx.lineTo(netX + 4*scaleX, yy);
+    ctx.stroke();
+  }
+
+  // Тени ракеток
+  drawPaddleShadow(
+    padX + 30 * scaleX,
+    (G.myY - PADDLE_H/2) * scaleY + padY,
+    PADDLE_W * scaleX,
+    PADDLE_H * scaleY
+  );
+  drawPaddleShadow(
+    padX + fieldW - 30 * scaleX - PADDLE_W * scaleX,
+    (G.enemyY - PADDLE_H/2) * scaleY + padY,
+    PADDLE_W * scaleX,
+    PADDLE_H * scaleY
+  );
+
+  // Моя ракетка (слева, красная)
+  drawPaddle(
+    padX + 30 * scaleX,
+    (G.myY - PADDLE_H/2) * scaleY + padY,
     PADDLE_W * scaleX,
     PADDLE_H * scaleY,
-    PADDLE_H/2 * scaleX
+    '#dc2626', '#7f1d1d', 'left'
+  );
+
+  // Ракетка соперника (справа, чёрная)
+  drawPaddle(
+    padX + fieldW - 30 * scaleX - PADDLE_W * scaleX,
+    (G.enemyY - PADDLE_H/2) * scaleY + padY,
+    PADDLE_W * scaleX,
+    PADDLE_H * scaleY,
+    '#1f2937', '#000000', 'right'
+  );
+
+  // Шлейф мяча
+  for(var i = 0; i < G.ball.trail.length; i++){
+    var pt = G.ball.trail[i];
+    var alpha = (i + 1) / G.ball.trail.length * 0.5;
+    ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(
+      pt.x * scaleX + padX,
+      pt.y * scaleY + padY,
+      BALL_R * scaleX * (0.4 + (i / G.ball.trail.length) * 0.6),
+      0, Math.PI * 2
+    );
+    ctx.fill();
+  }
+
+  // Тень мяча
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(
+    G.ball.x * scaleX + padX + 3*scaleX,
+    G.ball.y * scaleY + padY + 3*scaleY,
+    BALL_R * scaleX,
+    BALL_R * 0.7 * scaleY,
+    0, 0, Math.PI * 2
   );
   ctx.fill();
 
-  // Ракетка соперника
-  ctx.shadowColor = '#f87171';
-  ctx.fillStyle = '#f87171';
-  ctx.beginPath();
-  ctx.roundRect(
-    (G.enemyY - PADDLE_W/2) * scaleX,
-    PADDLE_MARGIN * scaleY,
-    PADDLE_W * scaleX,
-    PADDLE_H * scaleY,
-    PADDLE_H/2 * scaleX
-  );
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  // Мяч (белый с оранжевым ядром — как настоящий теннисный)
+  var bx = G.ball.x * scaleX + padX;
+  var by = G.ball.y * scaleY + padY;
 
-  // Мяч
-  var bx = G.ball.x * scaleX;
-  var by = G.ball.y * scaleY;
   ctx.shadowBlur = 25;
-  ctx.shadowColor = '#facc15';
-  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(250,204,21,.9)';
+
+  // Основа мяча — оранжевый
+  ctx.fillStyle = '#f59e0b';
   ctx.beginPath();
   ctx.arc(bx, by, BALL_R * scaleX, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#facc15';
+
+  // Белая полоса
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2 * scaleX;
   ctx.beginPath();
-  ctx.arc(bx, by, BALL_R * 0.6 * scaleX, 0, Math.PI * 2);
+  ctx.arc(bx, by, BALL_R * scaleX * 0.55, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Блик
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.beginPath();
+  ctx.arc(bx - BALL_R * 0.3 * scaleX, by - BALL_R * 0.3 * scaleY, BALL_R * 0.35 * scaleX, 0, Math.PI * 2);
   ctx.fill();
+
   ctx.shadowBlur = 0;
 }
 
-/* Управление ракеткой */
+function drawPaddle(x, y, w, h, colorLight, colorDark, side){
+  // Ручка
+  ctx.fillStyle = '#78350f';
+  if(side === 'left'){
+    ctx.fillRect(x - 30 * (w/PADDLE_W), y + h/2 - 20*(h/PADDLE_H), 30 * (w/PADDLE_W), 40 * (h/PADDLE_H));
+  } else {
+    ctx.fillRect(x + w, y + h/2 - 20*(h/PADDLE_H), 30 * (w/PADDLE_W), 40 * (h/PADDLE_H));
+  }
+
+  // Тело ракетки (круглая, но у нас вертикальная плашка)
+  var grad = ctx.createLinearGradient(x, 0, x + w, 0);
+  grad.addColorStop(0, colorDark);
+  grad.addColorStop(0.5, colorLight);
+  grad.addColorStop(1, colorDark);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, w/2);
+  ctx.fill();
+
+  // Блик
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.roundRect(x + w*0.3, y + h*0.1, w*0.4, h*0.8, w*0.2);
+  ctx.fill();
+}
+
+function drawPaddleShadow(x, y, w, h){
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.beginPath();
+  ctx.roundRect(x + 4, y + 4, w, h, w/2);
+  ctx.fill();
+}
+
+/* ===== УПРАВЛЕНИЕ ===== */
 var pointerActive = false;
 
 fieldWrap.addEventListener('pointerdown', function(e){
@@ -330,76 +438,98 @@ fieldWrap.addEventListener('pointerleave', function(){ pointerActive = false; })
 
 function movePaddle(e){
   var rect = fieldWrap.getBoundingClientRect();
-  var y = e.clientY - rect.top;
-  var fieldY = (y / rect.height) * FIELD_H;
-  var minY = FIELD_H / 2 + 30;
-  var maxY = FIELD_H - PADDLE_H - 20;
-  G.myY = Math.max(minY, Math.min(maxY, fieldY - PADDLE_H/2));
+  var padY = 14 * (rect.height / FIELD_H);
+  var innerH = rect.height - padY * 2;
+  var y = e.clientY - rect.top - padY;
+  var fieldY = (y / innerH) * FIELD_H;
+  G.prevMyY = G.myY;
+  G.myY = Math.max(PADDLE_H/2 + 20, Math.min(FIELD_H - PADDLE_H/2 - 20, fieldY));
 }
 
-/* Физика */
+/* ===== ФИЗИКА ===== */
 function resetBall(dir){
   G.ball.x = FIELD_W / 2;
   G.ball.y = FIELD_H / 2;
   G.ball.speed = BALL_SPEED_START;
-  var angle = (Math.random() * Math.PI / 3) - Math.PI / 6;
-  var speed = G.ball.speed;
-  G.ball.vx = Math.sin(angle) * speed;
-  G.ball.vy = dir * Math.cos(angle) * speed;
+  G.ball.trail = [];
+  var angle = (Math.random() - 0.5) * Math.PI / 2.5; // -36°..+36°
+  G.ball.vx = dir * Math.cos(angle) * G.ball.speed;
+  G.ball.vy = Math.sin(angle) * G.ball.speed;
 }
 
 function physicsStep(){
   if(!G.running) return;
 
+  // Движение
   G.ball.x += G.ball.vx;
   G.ball.y += G.ball.vy;
 
-  // Отскоки от боковых стен
-  if(G.ball.x < BALL_R){ G.ball.x = BALL_R; G.ball.vx = Math.abs(G.ball.vx); soundWall(); }
-  if(G.ball.x > FIELD_W - BALL_R){ G.ball.x = FIELD_W - BALL_R; G.ball.vx = -Math.abs(G.ball.vx); soundWall(); }
+  // Шлейф
+  G.ball.trail.push({ x: G.ball.x, y: G.ball.y });
+  if(G.ball.trail.length > 12) G.ball.trail.shift();
 
-  // Ракетка соперника (сверху)
-  var enemyPaddleLeft = G.enemyY - PADDLE_W / 2;
-  var enemyPaddleRight = G.enemyY + PADDLE_W / 2;
-  var enemyTop = PADDLE_MARGIN;
-  var enemyBottom = PADDLE_MARGIN + PADDLE_H;
+  // Отскок от верхней стены
+  if(G.ball.y < BALL_R){
+    G.ball.y = BALL_R;
+    G.ball.vy = Math.abs(G.ball.vy);
+    soundWall();
+  }
+  // Отскок от нижней стены
+  if(G.ball.y > FIELD_H - BALL_R){
+    G.ball.y = FIELD_H - BALL_R;
+    G.ball.vy = -Math.abs(G.ball.vy);
+    soundWall();
+  }
 
-  if(G.ball.y - BALL_R < enemyBottom && G.ball.y - BALL_R > enemyTop - 20){
-    if(G.ball.x > enemyPaddleLeft && G.ball.x < enemyPaddleRight && G.ball.vy < 0){
-      G.ball.vy = Math.abs(G.ball.vy);
-      G.ball.y = enemyBottom + BALL_R;
-      var hitPos = (G.ball.x - G.enemyY) / (PADDLE_W / 2);
-      G.ball.vx += hitPos * 3;
-      G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * 1.05);
-      var mag = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
-      G.ball.vx = G.ball.vx / mag * G.ball.speed;
-      G.ball.vy = G.ball.vy / mag * G.ball.speed;
-      soundHit();
+  // Моя ракетка (слева, X = PADDLE_MARGIN + 30)
+  var myPaddleLeft = PADDLE_MARGIN + 30;
+  var myPaddleRight = myPaddleLeft + PADDLE_W;
+  var myTop = G.myY - PADDLE_H/2;
+  var myBottom = G.myY + PADDLE_H/2;
+
+  if(G.ball.vx < 0){
+    if(G.ball.x - BALL_R < myPaddleRight && G.ball.x - BALL_R > myPaddleLeft - 30){
+      if(G.ball.y > myTop - BALL_R && G.ball.y < myBottom + BALL_R){
+        // Отбил
+        G.ball.vx = Math.abs(G.ball.vx);
+        G.ball.x = myPaddleRight + BALL_R;
+        var hitPos = (G.ball.y - G.myY) / (PADDLE_H / 2);
+        G.ball.vy += hitPos * 4;
+        // Ускорение
+        G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * BALL_SPEED_INC);
+        var mag = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
+        G.ball.vx = G.ball.vx / mag * G.ball.speed;
+        G.ball.vy = G.ball.vy / mag * G.ball.speed;
+        soundHit();
+        vibrate(15);
+      }
     }
   }
 
-  // Моя ракетка (снизу)
-  var myPaddleLeft = FIELD_W/2 - PADDLE_W/2;
-  var myPaddleRight = FIELD_W/2 + PADDLE_W/2;
-  var myTop = G.myY;
-  var myBottom = G.myY + PADDLE_H;
+  // Ракетка соперника (справа)
+  var enemyPaddleRight = FIELD_W - (PADDLE_MARGIN + 30);
+  var enemyPaddleLeft = enemyPaddleRight - PADDLE_W;
+  var enemyTop = G.enemyY - PADDLE_H/2;
+  var enemyBottom = G.enemyY + PADDLE_H/2;
 
-  if(G.ball.y + BALL_R > myTop && G.ball.y + BALL_R < myBottom + 20){
-    if(G.ball.x > myPaddleLeft && G.ball.x < myPaddleRight && G.ball.vy > 0){
-      G.ball.vy = -Math.abs(G.ball.vy);
-      G.ball.y = myTop - BALL_R;
-      var hitPos2 = (G.ball.x - FIELD_W/2) / (PADDLE_W / 2);
-      G.ball.vx += hitPos2 * 3;
-      G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * 1.05);
-      var mag2 = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
-      G.ball.vx = G.ball.vx / mag2 * G.ball.speed;
-      G.ball.vy = G.ball.vy / mag2 * G.ball.speed;
-      soundHit();
+  if(G.ball.vx > 0){
+    if(G.ball.x + BALL_R > enemyPaddleLeft && G.ball.x + BALL_R < enemyPaddleRight + 30){
+      if(G.ball.y > enemyTop - BALL_R && G.ball.y < enemyBottom + BALL_R){
+        G.ball.vx = -Math.abs(G.ball.vx);
+        G.ball.x = enemyPaddleLeft - BALL_R;
+        var hitPos2 = (G.ball.y - G.enemyY) / (PADDLE_H / 2);
+        G.ball.vy += hitPos2 * 4;
+        G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * BALL_SPEED_INC);
+        var mag2 = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
+        G.ball.vx = G.ball.vx / mag2 * G.ball.speed;
+        G.ball.vy = G.ball.vy / mag2 * G.ball.speed;
+        soundHit();
+      }
     }
   }
 
-  // Гол мне (мяч улетел вверх)
-  if(G.ball.y < -BALL_R * 2 && !G.pointCooldown){
+  // Гол мне (мяч улетел влево)
+  if(G.ball.x < -BALL_R * 3 && !G.pointCooldown){
     G.pointCooldown = true;
     G.enemyScore++;
     updateScoreUI();
@@ -412,8 +542,8 @@ function physicsStep(){
     }, 800);
   }
 
-  // Гол сопернику (мяч улетел вниз)
-  if(G.ball.y > FIELD_H + BALL_R * 2 && !G.pointCooldown){
+  // Гол сопернику (мяч улетел вправо)
+  if(G.ball.x > FIELD_W + BALL_R * 3 && !G.pointCooldown){
     G.pointCooldown = true;
     G.myScore++;
     updateScoreUI();
@@ -428,18 +558,37 @@ function physicsStep(){
 
   if(G.botEnabled) botStep();
 
-  if(G.mode === 'online'){ G.syncTick = (G.syncTick || 0) + 1; if(G.syncTick % 3 === 0) syncState(); }
+  if(G.mode === 'online'){
+    G.syncTick = (G.syncTick || 0) + 1;
+    if(G.syncTick % 3 === 0) syncState();
+  }
 
   draw();
   G.raf = requestAnimationFrame(physicsStep);
 }
 
-/* Бот */
+/* Бот — умный, следит за мячом и предсказывает */
 function botStep(){
-  var target = G.ball.x;
+  // Определяем куда летит мяч
+  var target = G.ball.y;
+  if(G.ball.vx > 0){
+    // Мяч летит к боту — предсказываем точку удара
+    var timeToArrive = (FIELD_W - G.ball.x) / Math.max(0.1, G.ball.vx);
+    var predictY = G.ball.y + G.ball.vy * timeToArrive * 0.9;
+    // Учитываем отскоки от стен
+    while(predictY < BALL_R || predictY > FIELD_H - BALL_R){
+      if(predictY < BALL_R) predictY = BALL_R + (BALL_R - predictY);
+      if(predictY > FIELD_H - BALL_R) predictY = (FIELD_H - BALL_R) - (predictY - (FIELD_H - BALL_R));
+    }
+    target = predictY;
+  } else {
+    // Мяч летит к игроку — бот возвращается в центр
+    target = FIELD_H / 2 + (Math.random() - 0.5) * 100;
+  }
+
   var diff = target - G.botTargetY;
-  G.botTargetY += diff * 0.08;
-  G.botTargetY = Math.max(PADDLE_W/2 + 10, Math.min(FIELD_W - PADDLE_W/2 - 10, G.botTargetY));
+  G.botTargetY += diff * G.botReaction;
+  G.botTargetY = Math.max(PADDLE_H/2 + 20, Math.min(FIELD_H - PADDLE_H/2 - 20, G.botTargetY));
   G.enemyY = G.botTargetY;
 }
 
@@ -479,13 +628,10 @@ function ppCreateRoom(){
       $('ppStatus').classList.add('online');
       startOnlineGame();
     }
-    // Читаем ракетку гостя
-    if(data.guestY !== undefined){
-      G.enemyY = data.guestY;
-    }
+    if(data.guestY !== undefined) G.enemyY = data.guestY;
   });
 
-  toast('Код: ' + code + ' — кинь другу', 'win');
+  toast('Код: ' + code, 'win');
 }
 
 function ppJoinMode(){
@@ -509,7 +655,7 @@ function ppJoinRoom(){
     G.role = 'guest';
     G.roomRef = roomRef;
 
-    $('ppStatus').textContent = 'Подключено';
+    $('ppStatus').textContent = 'Игра!';
     $('ppStatus').classList.add('online');
     $('ppMenu').classList.add('hidden');
 
@@ -537,7 +683,6 @@ function ppJoinRoom(){
         if(G.enemyScore >= WIN_SCORE && G.running) endGame(false);
         if(G.myScore >= WIN_SCORE && G.running) endGame(true);
       }
-      // Ракетка хоста
       if(d.hostY !== undefined) G.enemyY = d.hostY;
     });
 
@@ -555,6 +700,7 @@ function startOnlineGame(){
   updateScoreUI();
   $('ppFinal').classList.remove('show');
   $('ppHelp').style.display = 'block';
+  setTimeout(function(){ $('ppHelp').classList.add('hide'); }, 3000);
 
   if(G.raf) cancelAnimationFrame(G.raf);
   if(G.role === 'host'){
@@ -594,9 +740,9 @@ function ppPlayBot(){
   G.myScore = 0;
   G.enemyScore = 0;
   G.running = true;
-  G.myY = FIELD_H - 200;
-  G.botTargetY = FIELD_W / 2;
-  G.enemyY = FIELD_W / 2;
+  G.myY = FIELD_H / 2;
+  G.botTargetY = FIELD_H / 2;
+  G.enemyY = FIELD_H / 2;
   G.pointCooldown = false;
 
   $('ppStatus').textContent = 'Игра с ботом';
@@ -604,6 +750,7 @@ function ppPlayBot(){
   $('ppMenu').classList.add('hidden');
   $('ppFinal').classList.remove('show');
   $('ppHelp').style.display = 'block';
+  setTimeout(function(){ $('ppHelp').classList.add('hide'); }, 3000);
 
   updateScoreUI();
   resetBall(1);
@@ -629,6 +776,7 @@ function ppBackToMenu(){
   $('ppMenu').classList.remove('hidden');
   $('ppStatus').textContent = 'Готов';
   $('ppStatus').classList.remove('online');
+  $('ppHelp').classList.remove('hide');
   $('ppHelp').style.display = 'none';
   G.mode = 'menu';
   G.running = false;
@@ -645,7 +793,6 @@ function ppBackToMenu(){
   G.roomCode = null;
 }
 
-/* ===== КОД КОМНАТЫ ===== */
 function genCode(){
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var code = '';
@@ -655,7 +802,6 @@ function genCode(){
   return code;
 }
 
-/* URL hash */
 var hash = window.location.hash;
 if(hash && hash.indexOf('#room-') === 0){
   var c = hash.replace('#room-', '').toUpperCase().slice(0, 4);
@@ -664,12 +810,6 @@ if(hash && hash.indexOf('#room-') === 0){
   setTimeout(ppJoinRoom, 500);
 }
 
-/* Resize */
-window.addEventListener('resize', function(){
-  setTimeout(resizeCanvas, 50);
-});
-
-/* START */
 resizeCanvas();
 draw();
 updateScoreUI();
