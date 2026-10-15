@@ -2,192 +2,501 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>🏓 Пинг-понг</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NumGen — генератор номеров</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{overflow:hidden;width:100%;height:100%}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0a0e1a;color:#e8ecf5;display:flex;flex-direction:column;max-width:900px;margin:0 auto;height:100vh;position:relative}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3e5f5;color:#2a1a3a;min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:90px;position:relative;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:linear-gradient(180deg,#f5e8fa 0%,#e8d5f0 50%,#d8bce8 100%);z-index:-1}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;outline:none}
+input,select{font-family:inherit;outline:none}
 
-.pp-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(10,14,26,.95);border-bottom:1px solid rgba(255,255,255,.06);z-index:50;flex-shrink:0}
-.pp-back{padding:8px 14px;border-radius:12px;background:#131a2e;border:1px solid #1f2946;font-size:13px;font-weight:700;color:#a3aec5;cursor:pointer}
-.pp-status{font-size:11px;font-weight:800;padding:6px 12px;border-radius:20px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc}
+/* ТОПБАР */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;position:sticky;top:0;background:rgba(245,232,250,.95);backdrop-filter:blur(20px);z-index:80;border-bottom:1px solid rgba(150,100,180,.1)}
+.menu-btn{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#f5b6e0,#c76cba);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px -6px rgba(180,80,150,.5);cursor:pointer}
+.menu-btn::before{content:'';width:18px;height:2px;background:#fff;border-radius:2px;box-shadow:0 -6px 0 #fff,0 6px 0 #fff}
+.balance-top{font-size:16px;font-weight:900;color:#4a2a6a;font-variant-numeric:tabular-nums}
+.balance-top span{color:#c026d3}
 
-.pp-score{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 16px;background:#0d1424;flex-shrink:0}
-.pp-score-num{font-size:32px;font-weight:900;min-width:50px;text-align:center}
-.pp-score-num.me{color:#4ade80;text-shadow:0 0 20px rgba(34,197,94,.6)}
-.pp-score-num.enemy{color:#f87171;text-shadow:0 0 20px rgba(239,68,68,.6)}
-.pp-score-label{font-size:10px;color:#7c88a3;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;text-align:center}
-.pp-vs{font-size:18px;font-weight:900;color:#7c88a3}
+/* ГЛАВНЫЙ ЭКРАН */
+.page{display:none;animation:fadeIn .3s}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-.pp-field-wrap{flex:1;position:relative;overflow:hidden;touch-action:none;min-height:0}
-.pp-field-wrap canvas{display:block;width:100%;height:100%}
+.wheel-area{padding:30px 20px;text-align:center;position:relative;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
-.pp-help{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff;font-weight:700;text-align:center;padding:6px 14px;background:rgba(13,20,36,.8);border-radius:20px;border:1px solid rgba(255,255,255,.1);white-space:nowrap;z-index:10;pointer-events:none;transition:opacity .5s}
-.pp-help.hide{opacity:0}
+.number-plate{width:100%;max-width:340px;height:110px;background:linear-gradient(180deg,#fafafa,#dcdcdc);border-radius:14px;border:3px solid #333;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 20px 50px -20px rgba(80,40,120,.6),inset 0 -3px 0 rgba(0,0,0,.1);overflow:hidden;transition:transform .1s}
+.number-plate.spinning{animation:plateShake .15s infinite}
+@keyframes plateShake{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
+.number-plate.rare{box-shadow:0 20px 50px -20px rgba(120,40,220,.8),0 0 40px rgba(150,80,255,.5),inset 0 -3px 0 rgba(0,0,0,.1);border-color:#7c3aed}
+.number-plate.legendary{box-shadow:0 20px 50px -20px rgba(250,200,50,.9),0 0 60px rgba(250,204,21,.7),inset 0 -3px 0 rgba(0,0,0,.1);border-color:#f59e0b;background:linear-gradient(180deg,#fff9e0,#fde68a)}
 
-.pp-final{position:absolute;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px}
-.pp-final.show{display:flex}
-.pp-final-icon{font-size:100px}
-.pp-final-text{font-size:32px;font-weight:900;margin:20px 0 8px}
-.pp-final-text.win{color:#4ade80}
-.pp-final-text.lose{color:#f87171}
-.pp-final-sub{color:#7c88a3;font-size:16px;margin-bottom:30px;font-weight:700}
-.pp-final-btn{padding:16px 40px;border-radius:16px;background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;font-size:17px;font-weight:900;cursor:pointer;border:none}
+.number-plate .letters{font-size:52px;font-weight:900;color:#1a1a1a;font-family:'Arial Black','Inter',sans-serif;letter-spacing:-2px;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.number-plate .digits{font-size:52px;font-weight:900;color:#1a1a1a;font-family:'Arial Black','Inter',sans-serif;letter-spacing:-2px;text-shadow:0 1px 0 rgba(255,255,255,.8);margin:0 6px}
+.number-plate .region-box{position:absolute;right:0;top:0;bottom:0;width:22%;background:linear-gradient(180deg,#fafafa,#e8e8e8);border-left:2px solid #666;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.number-plate .region-code{font-size:26px;font-weight:900;color:#1a1a1a;line-height:1}
+.number-plate .region-country{font-size:10px;font-weight:900;color:#1a1a1a;margin-top:2px;letter-spacing:1px}
+.number-plate .flag{font-size:14px;margin-top:2px}
+.number-plate .content{display:flex;align-items:center;justify-content:center;padding-right:22%}
 
-.pp-menu{position:absolute;inset:0;background:linear-gradient(180deg,#0a0e1a,#0d1424);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;z-index:200;gap:14px;overflow-y:auto}
-.pp-menu.hidden{display:none}
-.pp-menu-icon{font-size:80px}
-.pp-menu-title{font-size:32px;font-weight:900;background:linear-gradient(90deg,#818cf8,#facc15);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center}
-.pp-menu-sub{font-size:14px;color:#7c88a3;text-align:center;margin-bottom:10px}
-.pp-menu-btn{width:100%;max-width:340px;padding:18px;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px}
-.pp-menu-btn:active{transform:scale(.97)}
-.pp-menu-btn.primary{background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff}
-.pp-menu-btn.secondary{background:#131a2e;color:#e8ecf5;border:1px solid #2a3555}
-.pp-menu-btn.gold{background:linear-gradient(135deg,#facc15,#f59e0b);color:#1a1408}
-.pp-input-row{width:100%;max-width:340px;display:flex;gap:8px}
-.pp-input{flex:1;padding:16px;border-radius:14px;background:#131a2e;border:1px solid #2a3555;color:#fff;font-size:20px;font-weight:900;text-align:center;letter-spacing:3px;text-transform:uppercase;outline:none}
-.pp-input::placeholder{color:#4a5573;letter-spacing:1px;font-size:14px}
+.number-plate.taxi{background:linear-gradient(180deg,#fde047,#facc15)}
+.number-plate.taxi .letters,.number-plate.taxi .digits,.number-plate.taxi .region-code,.number-plate.taxi .region-country{color:#1a1408}
+.number-plate.police{background:linear-gradient(180deg,#3b82f6,#2563eb)}
+.number-plate.police .letters,.number-plate.police .digits,.number-plate.police .region-code,.number-plate.police .region-country{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.number-plate.police .region-box{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-left-color:#1e40af}
+.number-plate.military{background:linear-gradient(180deg,#4b5563,#374151)}
+.number-plate.military .letters,.number-plate.military .digits,.number-plate.military .region-code,.number-plate.military .region-country{color:#d1d5db}
+.number-plate.military .region-box{background:linear-gradient(180deg,#374151,#1f2937);border-left-color:#111827}
 
-.pp-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-40px);padding:12px 22px;border-radius:14px;background:rgba(13,20,36,.98);border:1px solid rgba(99,102,241,.5);font-weight:800;font-size:13px;z-index:300;opacity:0;pointer-events:none;transition:.3s}
-.pp-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.pp-toast.win{border-color:rgba(34,197,94,.6);color:#4ade80}
-.pp-toast.lose{border-color:rgba(239,68,68,.6);color:#f87171}
+.result-title{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#8a6a9a;margin-bottom:12px;opacity:0;transition:opacity .3s}
+.result-title.show{opacity:1}
+.result-title.rare{color:#a855f7}
+.result-title.legendary{color:#f59e0b}
+
+.roll-btn{margin-top:24px;padding:20px 60px;border-radius:22px;background:linear-gradient(135deg,#c084fc,#a855f7,#7c3aed);color:#fff;font-size:18px;font-weight:900;letter-spacing:.5px;box-shadow:0 15px 40px -12px rgba(124,58,237,.9),inset 0 2px 0 rgba(255,255,255,.3);cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px;min-width:260px}
+.roll-btn:active:not(:disabled){transform:scale(.96)}
+.roll-btn:disabled{opacity:.6;cursor:not-allowed}
+.roll-btn .cost{font-size:13px;opacity:.9;font-weight:800}
+
+.cost-info{margin-top:14px;font-size:12px;color:#8a6a9a;font-weight:700;text-align:center;padding:8px 14px;background:rgba(255,255,255,.5);border-radius:12px;max-width:340px}
+.cost-info b{color:#4a2a6a}
+
+/* КНОПКИ ДЕЙСТВИЙ */
+.action-row{display:flex;gap:8px;margin-top:16px;padding:0 20px;max-width:400px;margin-left:auto;margin-right:auto}
+.action-btn{flex:1;padding:14px;border-radius:14px;font-size:14px;font-weight:900;cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.action-btn.sell{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;box-shadow:0 8px 25px -10px rgba(34,197,94,.8)}
+.action-btn.keep{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1408;box-shadow:0 8px 25px -10px rgba(250,204,21,.8)}
+.action-btn:active{transform:scale(.97)}
+.action-btn:disabled{opacity:.4;cursor:not-allowed}
+.action-row.hidden{display:none}
+
+/* ВЕРХНЯЯ СТАТИСТИКА */
+.quick-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-top:10px}
+.stat-card{background:rgba(255,255,255,.6);border-radius:14px;padding:10px;text-align:center;border:1px solid rgba(150,100,180,.15)}
+.stat-card .label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#8a6a9a}
+.stat-card .value{font-size:16px;font-weight:900;color:#4a2a6a;margin-top:3px;font-variant-numeric:tabular-nums}
+
+/* МЕНЮ */
+.side-menu{position:fixed;top:0;left:-100%;bottom:0;width:80%;max-width:340px;background:linear-gradient(180deg,#f5e8fa,#e8d5f0);z-index:200;transition:left .3s cubic-bezier(.34,1.56,.64,1);overflow-y:auto;padding:20px;box-shadow:20px 0 60px -20px rgba(80,40,120,.5)}
+.side-menu.show{left:0}
+.side-menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:150;display:none}
+.side-menu-overlay.show{display:block}
+.side-menu h3{font-size:22px;font-weight:900;color:#4a2a6a;margin-bottom:20px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px;background:rgba(255,255,255,.5);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.2s;border:1px solid rgba(150,100,180,.1)}
+.menu-item:active{transform:scale(.98);background:rgba(255,255,255,.7)}
+.menu-item .icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#c084fc,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.menu-item .info{flex:1}
+.menu-item .info .title{font-size:15px;font-weight:900;color:#4a2a6a}
+.menu-item .info .sub{font-size:11px;color:#8a6a9a;margin-top:2px;font-weight:700}
+
+/* СТРАНИЦА РЕГИОНОВ */
+.region-list{padding:16px}
+.region-search{width:100%;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(150,100,180,.2);color:#4a2a6a;font-size:15px;font-weight:800;margin-bottom:12px}
+.region-search::placeholder{color:#a88ab8}
+.region-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.6);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.2s;border:2px solid transparent}
+.region-item.active{border-color:#a855f7;background:rgba(168,85,247,.15);box-shadow:0 8px 25px -10px rgba(168,85,247,.6)}
+.region-item:active{transform:scale(.98)}
+.region-item .flag-icon{font-size:26px;flex-shrink:0}
+.region-item .info{flex:1}
+.region-item .info .name{font-size:14px;font-weight:900;color:#4a2a6a}
+.region-item .info .mult{font-size:11px;color:#8a6a9a;font-weight:700;margin-top:2px}
+.region-item .price-tag{font-size:12px;font-weight:900;color:#c026d3;text-align:right}
+.region-item .price-tag .label{font-size:9px;color:#8a6a9a;text-transform:uppercase;letter-spacing:1px}
+
+/* СТРАНИЦА КОЛЛЕКЦИИ */
+.collection-header{padding:16px;background:rgba(255,255,255,.5);margin:0 16px;border-radius:16px;margin-bottom:12px}
+.collection-header .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.collection-header .row:last-child{margin-bottom:0}
+.collection-header .label{font-size:12px;font-weight:900;color:#8a6a9a;text-transform:uppercase;letter-spacing:1px}
+.collection-header .value{font-size:18px;font-weight:900;color:#4a2a6a;font-variant-numeric:tabular-nums}
+.collection-list{padding:0 16px}
+.collection-item{display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,.6);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.2s}
+.collection-item:active{background:rgba(255,255,255,.85);transform:scale(.98)}
+.collection-item .mini-plate{width:110px;height:44px;border-radius:8px;background:#fafafa;border:2px solid #333;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;overflow:hidden}
+.collection-item .mini-plate.taxi{background:linear-gradient(180deg,#fde047,#facc15)}
+.collection-item .mini-plate.police{background:linear-gradient(180deg,#3b82f6,#2563eb)}
+.collection-item .mini-plate.military{background:linear-gradient(180deg,#4b5563,#374151)}
+.collection-item .mini-plate .txt{font-size:20px;font-weight:900;color:#1a1a1a;font-family:'Arial Black',sans-serif;letter-spacing:-1px}
+.collection-item .mini-plate.police .txt{color:#fff}
+.collection-item .mini-plate.military .txt{color:#d1d5db}
+.collection-item .mini-plate.taxi .txt{color:#1a1408}
+.collection-item .mini-plate .region-mini{position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:900;color:#333;writing-mode:horizontal-tb;padding:0 3px}
+.collection-item .mini-plate.police .region-mini{color:#fff}
+.collection-item .mini-plate.military .region-mini{color:#d1d5db}
+.collection-item .mini-plate.taxi .region-mini{color:#1a1408}
+.collection-item .info{flex:1;min-width:0}
+.collection-item .info .type{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#8a6a9a}
+.collection-item .info .type.taxi{color:#f59e0b}
+.collection-item .info .type.police{color:#3b82f6}
+.collection-item .info .type.military{color:#6b7280}
+.collection-item .info .rarity{font-size:14px;font-weight:900;color:#4a2a6a;margin-top:2px}
+.collection-item .price{font-size:14px;font-weight:900;color:#22c55e;text-align:right}
+.collection-item .price .rub{font-size:11px;color:#8a6a9a}
+
+/* СТРАНИЦА ЗАДАНИЙ */
+.tasks-list{padding:16px}
+.task-item{display:flex;gap:12px;padding:14px;background:rgba(255,255,255,.6);border-radius:14px;margin-bottom:10px;align-items:center}
+.task-item .icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#c084fc,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.task-item .info{flex:1;min-width:0}
+.task-item .info .name{font-size:14px;font-weight:900;color:#4a2a6a}
+.task-item .info .progress-bar{margin-top:6px;height:6px;background:rgba(150,100,180,.2);border-radius:3px;overflow:hidden}
+.task-item .info .progress-fill{height:100%;background:linear-gradient(90deg,#c084fc,#a855f7);border-radius:3px;transition:width .5s}
+.task-item .info .progress-text{font-size:10px;color:#8a6a9a;font-weight:800;margin-top:3px}
+.task-item .reward{font-size:14px;font-weight:900;color:#22c55e;text-align:right;flex-shrink:0}
+.task-item.claimed .reward{color:#8a6a9a}
+.task-item .claim-btn{padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;font-size:12px;font-weight:900;cursor:pointer;border:none}
+.task-item .claim-btn:disabled{background:#d1d5db;color:#6b7280;cursor:not-allowed}
+.task-item .claim-btn.claimed{background:rgba(150,100,180,.2);color:#8a6a9a}
+
+/* МОДАЛКА */
+.modal-bg{position:fixed;inset:0;background:rgba(40,20,60,.85);backdrop-filter:blur(8px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex;animation:fadeIn .3s}
+.modal{background:linear-gradient(180deg,#fff,#f5e8fa);border-radius:24px;padding:24px;max-width:380px;width:100%;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 40px 80px -20px rgba(80,40,120,.6)}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{font-size:22px;font-weight:900;color:#4a2a6a;margin-bottom:8px}
+.modal p{font-size:14px;color:#8a6a9a;font-weight:700;margin-bottom:18px}
+.modal .modal-plate{margin:16px 0}
+.modal .price-big{font-size:28px;font-weight:900;color:#22c55e;margin:12px 0;font-variant-numeric:tabular-nums}
+.modal .btn-row{display:flex;gap:8px;margin-top:16px}
+.modal .btn{flex:1;padding:16px;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;border:none;transition:.2s}
+.modal .btn.sell{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff}
+.modal .btn.keep{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1408}
+.modal .btn.danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.modal .btn.secondary{background:rgba(150,100,180,.2);color:#4a2a6a}
+
+/* ТОСТ */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-40px);padding:12px 22px;border-radius:14px;background:rgba(40,20,60,.95);color:#fff;font-weight:800;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.win{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.toast.lose{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.toast.gold{background:linear-gradient(135deg,#facc15,#f59e0b);color:#1a1408}
+
+/* ЭФФЕКТЫ */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:500}
+.particle{position:absolute;font-size:28px;animation:particleFly 1.5s ease-out forwards}
+@keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1) rotate(0)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3) rotate(var(--rot))}}
+
+.screen-flash{position:fixed;inset:0;pointer-events:none;z-index:450;opacity:0}
+.screen-flash.show{animation:flashAnim .7s ease-out}
+@keyframes flashAnim{0%{opacity:0}30%{opacity:.9;background:radial-gradient(circle,rgba(250,204,21,.5),transparent 60%)}100%{opacity:0}}
+
+/* БОЛЬШАЯ КНОПКА МЕНЮ ВНИЗУ */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(245,232,250,.98);border-top:1px solid rgba(150,100,180,.15);display:flex;padding:8px 4px calc(12px + env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(20px)}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;font-size:10px;font-weight:900;color:#8a6a9a;cursor:pointer;background:none;border:none;transition:.15s}
+.bottom-nav button.active{color:#7c3aed;background:rgba(168,85,247,.15)}
+.bottom-nav .nav-icon{font-size:22px;line-height:1}
+
+/* ДОСТИЖЕНИЯ */
+.badge-row{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.badge{padding:6px 12px;border-radius:10px;font-size:11px;font-weight:900;background:rgba(168,85,247,.15);color:#7c3aed}
+.badge.gold{background:rgba(250,204,21,.25);color:#b45309}
+.badge.new{background:linear-gradient(135deg,#facc15,#f59e0b);color:#1a1408;animation:pulseBadge 1.5s infinite}
+@keyframes pulseBadge{50%{transform:scale(1.08)}}
+
+/* КНОПКА НАЗАД */
+.back-top{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.6);color:#4a2a6a;font-size:13px;font-weight:900;margin:12px 16px 0;cursor:pointer;border:1px solid rgba(150,100,180,.2)}
 </style>
 </head>
 <body>
 
-<div class="pp-top">
-  <button class="pp-back" onclick="ppBackToMenu()">← Назад</button>
-  <div class="pp-status" id="ppStatus">Готов</div>
+<div class="topbar">
+  <div class="menu-btn" onclick="toggleMenu()"></div>
+  <div class="balance-top"><span id="topBalance">10 000</span> ₽</div>
 </div>
 
-<div class="pp-score">
-  <div><div class="pp-score-num me" id="ppMyScore">0</div><div class="pp-score-label">Ты</div></div>
-  <div class="pp-vs">:</div>
-  <div><div class="pp-score-num enemy" id="ppEnemyScore">0</div><div class="pp-score-label">Соперник</div></div>
-</div>
+<!-- ГЛАВНАЯ -->
+<div class="page active" id="page-main">
+  <div class="quick-stats">
+    <div class="stat-card"><div class="label">Коллекция</div><div class="value" id="statCollection">0</div></div>
+    <div class="stat-card"><div class="label">Прокруток</div><div class="value" id="statRolls">0</div></div>
+    <div class="stat-card"><div class="label">Лучший</div><div class="value" id="statBest">0₽</div></div>
+  </div>
 
-<div class="pp-field-wrap" id="ppField">
-  <div class="pp-help" id="ppHelp" style="display:none">👆 Води пальцем по экрану</div>
-</div>
+  <div class="wheel-area">
+    <div class="result-title" id="resultTitle">Нажми кнопку</div>
+    <div class="number-plate" id="plate" style="display:none"></div>
+    <button class="roll-btn" id="rollBtn" onclick="rollNumber()">
+      🎰 ПРОКРУТИТЬ
+      <span class="cost" id="rollCost">1 450 ₽</span>
+    </button>
+    <div class="cost-info" id="costInfo">Регион: <b>Москва (77)</b> · Множитель ×5.00</div>
+  </div>
 
-<div class="pp-final" id="ppFinal">
-  <div class="pp-final-icon" id="ppFinalIcon">🏆</div>
-  <div class="pp-final-text win" id="ppFinalText">Победа!</div>
-  <div class="pp-final-sub" id="ppFinalSub">11 : 7</div>
-  <button class="pp-final-btn" onclick="ppBackToMenu()">Играть снова</button>
-</div>
-
-<div class="pp-menu" id="ppMenu">
-  <div class="pp-menu-icon">🏓</div>
-  <div class="pp-menu-title">Пинг-понг</div>
-  <div class="pp-menu-sub">С другом онлайн или против бота</div>
-  <button class="pp-menu-btn primary" onclick="ppCreateRoom()">🎮 Создать игру с другом</button>
-  <button class="pp-menu-btn secondary" onclick="ppJoinMode()">🔗 Войти по коду</button>
-  <button class="pp-menu-btn gold" onclick="ppPlayBot()">🤖 Играть с ботом</button>
-  <div class="pp-input-row" id="ppJoinRow" style="display:none">
-    <input class="pp-input" id="ppJoinInput" placeholder="КОД" maxlength="4" autocomplete="off">
-    <button class="pp-menu-btn primary" style="width:auto;padding:0 24px;max-width:none" onclick="ppJoinRoom()">→</button>
+  <div class="action-row hidden" id="actionRow">
+    <button class="action-btn sell" onclick="sellCurrent()">💵 Продать <span id="sellPrice"></span></button>
+    <button class="action-btn keep" onclick="keepCurrent()">⭐ В коллекцию</button>
   </div>
 </div>
 
-<div class="pp-toast" id="ppToast"></div>
+<!-- РЕГИОНЫ -->
+<div class="page" id="page-regions">
+  <button class="back-top" onclick="showPage('main')">← Назад</button>
+  <div class="region-list">
+    <div style="font-size:22px;font-weight:900;color:#4a2a6a;margin-bottom:12px">🌍 Выбор региона</div>
+    <input class="region-search" id="regionSearch" placeholder="🔍 Поиск региона..." oninput="renderRegions()">
+    <div id="regionsContainer"></div>
+  </div>
+</div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- КОЛЛЕКЦИЯ -->
+<div class="page" id="page-collection">
+  <button class="back-top" onclick="showPage('main')">← Назад</button>
+  <div class="collection-header">
+    <div class="row"><span class="label">Всего номеров</span><span class="value" id="colTotal">0</span></div>
+    <div class="row"><span class="label">Стоимость коллекции</span><span class="value" id="colValue">0 ₽</span></div>
+  </div>
+  <div style="padding:0 16px;margin-bottom:8px;display:flex;gap:8px">
+    <button class="action-btn sell" onclick="sellAllCommon()" style="padding:10px;font-size:12px">💵 Продать обычные</button>
+    <button class="action-btn sell" onclick="sellAll()" style="padding:10px;font-size:12px">🔥 Продать всё</button>
+  </div>
+  <div class="collection-list" id="collectionList"></div>
+</div>
+
+<!-- ЗАДАНИЯ -->
+<div class="page" id="page-tasks">
+  <button class="back-top" onclick="showPage('main')">← Назад</button>
+  <div class="tasks-list">
+    <div style="font-size:22px;font-weight:900;color:#4a2a6a;margin-bottom:12px">🎯 Задания</div>
+    <div id="tasksContainer"></div>
+  </div>
+</div>
+
+<!-- МЕНЮ -->
+<div class="side-menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+<div class="side-menu" id="sideMenu">
+  <h3>🚗 NumGen</h3>
+  <div class="menu-item" onclick="showPage('main');toggleMenu()">
+    <div class="icon">🎰</div>
+    <div class="info"><div class="title">Генератор</div><div class="sub">Крутить номера</div></div>
+  </div>
+  <div class="menu-item" onclick="showPage('regions');toggleMenu()">
+    <div class="icon">🌍</div>
+    <div class="info"><div class="title">Регионы</div><div class="sub">Выбрать регион</div></div>
+  </div>
+  <div class="menu-item" onclick="showPage('collection');toggleMenu()">
+    <div class="icon">📚</div>
+    <div class="info"><div class="title">Коллекция</div><div class="sub">Все номера</div></div>
+  </div>
+  <div class="menu-item" onclick="showPage('tasks');toggleMenu()">
+    <div class="icon">🎯</div>
+    <div class="info"><div class="title">Задания</div><div class="sub">Выполни и получи</div></div>
+  </div>
+  <div class="menu-item" onclick="claimDaily();toggleMenu()">
+    <div class="icon">🎁</div>
+    <div class="info"><div class="title">Ежедневный бонус</div><div class="sub">+10 000 ₽ раз в день</div></div>
+  </div>
+  <div class="menu-item" onclick="showDeposit();toggleMenu()">
+    <div class="icon">💳</div>
+    <div class="info"><div class="title">Пополнить</div><div class="sub">+1000 ₽ быстро</div></div>
+  </div>
+  <div class="menu-item" onclick="resetAll();toggleMenu()" style="opacity:.7">
+    <div class="icon">🔄</div>
+    <div class="info"><div class="title">Сброс</div><div class="sub">Начать заново</div></div>
+  </div>
+</div>
+
+<!-- РЕЗУЛЬТАТ МОДАЛКА -->
+<div class="modal-bg" id="resultModal">
+  <div class="modal">
+    <h3 id="resultModalTitle">🎉 Выпал номер!</h3>
+    <div class="modal-plate" id="resultModalPlate"></div>
+    <p id="resultModalSub">Редкость: обычный</p>
+    <div class="price-big" id="resultModalPrice">1 500 ₽</div>
+    <div class="btn-row">
+      <button class="btn sell" onclick="sellFromModal()">💵 Продать</button>
+      <button class="btn keep" onclick="keepFromModal()">⭐ В коллекцию</button>
+    </div>
+  </div>
+</div>
+
+<!-- СБРОС МОДАЛКА -->
+<div class="modal-bg" id="resetModal">
+  <div class="modal">
+    <h3>⚠️ Сбросить прогресс?</h3>
+    <p>Все номера, баланс и прогресс удалятся. Начнёшь с нуля.</p>
+    <div class="btn-row">
+      <button class="btn danger" onclick="confirmReset()">Да, сбросить</button>
+      <button class="btn secondary" onclick="closeModal('resetModal')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="particles" id="particles"></div>
+<div class="screen-flash" id="screenFlash"></div>
+
+<nav class="bottom-nav">
+  <button class="active" onclick="showPage('main')"><div class="nav-icon">🎰</div>Генератор</button>
+  <button onclick="showPage('regions')"><div class="nav-icon">🌍</div>Регионы</button>
+  <button onclick="showPage('collection')"><div class="nav-icon">📚</div>Коллекция</button>
+  <button onclick="showPage('tasks')"><div class="nav-icon">🎯</div>Задания</button>
+</nav>
 
 <script>
 /* ============================================================
-   ПИНГ-ПОНГ v2 — вертикальный, красивые ракетки, отбой при движении
+   NUMGEN — генератор автомобильных номеров
    ============================================================ */
 
-var firebaseConfig = {
-  apiKey: "AIzaSyALlhAOBT5zQFtZuUIReR57l9xDadqBC5A",
-  authDomain: "betsite-4e6e8.firebaseapp.com",
-  databaseURL: "https://betsite-4e6e8-default-rtdb.firebaseio.com",
-  projectId: "betsite-4e6e8",
-  storageBucket: "betsite-4e6e8.firebasestorage.app",
-  messagingSenderId: "574363288522",
-  appId: "1:574363288522:web:fdcf0bb7b0bfadf6634533"
+/* ===== РЕГИОНЫ РФ ===== */
+const REGIONS = [
+  { code: '77', name: 'Москва', mult: 5.00, guar: 1.50, flag: '🏙️' },
+  { code: '99', name: 'Москва', mult: 5.00, guar: 1.50, flag: '🏙️' },
+  { code: '97', name: 'Москва', mult: 5.00, guar: 1.50, flag: '🏙️' },
+  { code: '78', name: 'Санкт-Петербург', mult: 4.00, guar: 1.30, flag: '🌉' },
+  { code: '98', name: 'Санкт-Петербург', mult: 4.00, guar: 1.30, flag: '🌉' },
+  { code: '16', name: 'Татарстан', mult: 2.00, guar: 1.10, flag: '🕌' },
+  { code: '02', name: 'Башкортостан', mult: 1.80, guar: 1.10, flag: '⛰️' },
+  { code: '23', name: 'Краснодарский край', mult: 2.20, guar: 1.15, flag: '🌊' },
+  { code: '61', name: 'Ростовская область', mult: 1.80, guar: 1.10, flag: '🌾' },
+  { code: '66', name: 'Свердловская область', mult: 2.00, guar: 1.10, flag: '🏔️' },
+  { code: '74', name: 'Челябинская область', mult: 1.80, guar: 1.10, flag: '🔩' },
+  { code: '54', name: 'Новосибирская область', mult: 1.70, guar: 1.05, flag: '🌲' },
+  { code: '24', name: 'Красноярский край', mult: 1.50, guar: 1.00, flag: '🌲' },
+  { code: '52', name: 'Нижегородская область', mult: 1.80, guar: 1.10, flag: '🏭' },
+  { code: '34', name: 'Волгоградская область', mult: 1.50, guar: 1.00, flag: '🏛️' },
+  { code: '63', name: 'Самарская область', mult: 1.60, guar: 1.05, flag: '🚀' },
+  { code: '64', name: 'Саратовская область', mult: 1.40, guar: 1.00, flag: '🌉' },
+  { code: '05', name: 'Республика Дагестан', mult: 0.60, guar: 1.10, flag: '⛰️' },
+  { code: '95', name: 'Чеченская Республика', mult: 0.80, guar: 1.15, flag: '🏔️' },
+  { code: '01', name: 'Республика Адыгея', mult: 0.70, guar: 1.00, flag: '🏞️' },
+  { code: '07', name: 'Кабардино-Балкария', mult: 0.70, guar: 1.00, flag: '🏔️' },
+  { code: '10', name: 'Республика Карелия', mult: 0.80, guar: 1.00, flag: '🌲' },
+  { code: '11', name: 'Республика Коми', mult: 0.60, guar: 1.00, flag: '❄️' },
+  { code: '12', name: 'Республика Марий Эл', mult: 0.60, guar: 1.00, flag: '🌲' },
+  { code: '13', name: 'Республика Мордовия', mult: 0.60, guar: 1.00, flag: '🌾' },
+  { code: '14', name: 'Республика Саха (Якутия)', mult: 1.20, guar: 1.20, flag: '❄️' },
+  { code: '15', name: 'Республика Северная Осетия', mult: 0.70, guar: 1.05, flag: '🏔️' },
+  { code: '17', name: 'Республика Тыва', mult: 0.80, guar: 1.10, flag: '🏞️' },
+  { code: '19', name: 'Республика Хакасия', mult: 0.70, guar: 1.00, flag: '🌾' },
+  { code: '21', name: 'Чувашская Республика', mult: 0.80, guar: 1.00, flag: '🌾' },
+  { code: '22', name: 'Алтайский край', mult: 1.00, guar: 1.05, flag: '⛰️' },
+  { code: '25', name: 'Приморский край', mult: 1.50, guar: 1.10, flag: '🌊' },
+  { code: '26', name: 'Ставропольский край', mult: 1.20, guar: 1.05, flag: '🌄' },
+  { code: '27', name: 'Хабаровский край', mult: 1.40, guar: 1.10, flag: '🌲' },
+  { code: '28', name: 'Амурская область', mult: 1.10, guar: 1.05, flag: '🌲' },
+  { code: '29', name: 'Архангельская область', mult: 1.00, guar: 1.00, flag: '❄️' },
+  { code: '30', name: 'Астраханская область', mult: 1.00, guar: 1.00, flag: '🌾' },
+  { code: '31', name: 'Белгородская область', mult: 1.10, guar: 1.00, flag: '🌾' },
+  { code: '32', name: 'Брянская область', mult: 0.90, guar: 1.00, flag: '🌲' },
+  { code: '33', name: 'Владимирская область', mult: 1.00, guar: 1.00, flag: '🏛️' },
+  { code: '35', name: 'Вологодская область', mult: 1.00, guar: 1.00, flag: '🌲' },
+  { code: '36', name: 'Воронежская область', mult: 1.30, guar: 1.05, flag: '🌾' },
+  { code: '37', name: 'Ивановская область', mult: 0.80, guar: 1.00, flag: '🏭' },
+  { code: '38', name: 'Иркутская область', mult: 1.40, guar: 1.10, flag: '🌊' },
+  { code: '39', name: 'Калининградская область', mult: 1.60, guar: 1.15, flag: '🌊' },
+  { code: '40', name: 'Калужская область', mult: 1.00, guar: 1.00, flag: '🌾' },
+  { code: '41', name: 'Камчатский край', mult: 1.30, guar: 1.15, flag: '🌋' },
+  { code: '42', name: 'Кемеровская область', mult: 1.10, guar: 1.00, flag: '⛏️' },
+  { code: '43', name: 'Кировская область', mult: 0.90, guar: 1.00, flag: '🌲' },
+  { code: '44', name: 'Костромская область', mult: 0.80, guar: 1.00, flag: '🌲' },
+  { code: '45', name: 'Курганская область', mult: 0.80, guar: 1.00, flag: '🌾' },
+  { code: '46', name: 'Курская область', mult: 0.90, guar: 1.00, flag: '🌾' },
+  { code: '47', name: 'Ленинградская область', mult: 2.00, guar: 1.20, flag: '🌲' },
+  { code: '48', name: 'Липецкая область', mult: 0.90, guar: 1.00, flag: '🌾' },
+  { code: '49', name: 'Магаданская область', mult: 1.10, guar: 1.10, flag: '❄️' },
+  { code: '50', name: 'Московская область', mult: 3.00, guar: 1.30, flag: '🌲' },
+  { code: '51', name: 'Мурманская область', mult: 1.30, guar: 1.10, flag: '❄️' },
+  { code: '53', name: 'Новгородская область', mult: 0.90, guar: 1.00, flag: '🏛️' },
+  { code: '55', name: 'Омская область', mult: 1.10, guar: 1.00, flag: '🌾' },
+  { code: '56', name: 'Оренбургская область', mult: 1.00, guar: 1.00, flag: '🌾' },
+  { code: '57', name: 'Орловская область', mult: 0.80, guar: 1.00, flag: '🌾' },
+  { code: '58', name: 'Пензенская область', mult: 0.90, guar: 1.00, flag: '🌾' },
+  { code: '59', name: 'Пермский край', mult: 1.40, guar: 1.05, flag: '🌲' },
+  { code: '60', name: 'Псковская область', mult: 0.80, guar: 1.00, flag: '🏛️' },
+  { code: '62', name: 'Рязанская область', mult: 0.90, guar: 1.00, flag: '🌾' },
+  { code: '65', name: 'Сахалинская область', mult: 1.30, guar: 1.10, flag: '🌊' },
+  { code: '67', name: 'Смоленская область', mult: 0.90, guar: 1.00, flag: '🏛️' },
+  { code: '68', name: 'Тамбовская область', mult: 0.80, guar: 1.00, flag: '🌾' },
+  { code: '69', name: 'Тверская область', mult: 0.90, guar: 1.00, flag: '🌲' },
+  { code: '70', name: 'Томская область', mult: 1.00, guar: 1.00, flag: '🌲' },
+  { code: '71', name: 'Тульская область', mult: 1.00, guar: 1.00, flag: '⚔️' },
+  { code: '72', name: 'Тюменская область', mult: 1.30, guar: 1.05, flag: '⛽' },
+  { code: '73', name: 'Ульяновская область', mult: 0.90, guar: 1.00, flag: '✈️' },
+  { code: '75', name: 'Забайкальский край', mult: 1.00, guar: 1.05, flag: '🌄' },
+  { code: '76', name: 'Ярославская область', mult: 1.00, guar: 1.00, flag: '🏛️' },
+  { code: '79', name: 'Еврейская АО', mult: 0.90, guar: 1.05, flag: '🌲' },
+  { code: '80', name: 'Донецкая Народная Республика', mult: 1.20, guar: 1.20, flag: '🏭' },
+  { code: '81', name: 'Луганская Народная Республика', mult: 1.20, guar: 1.20, flag: '🏭' },
+  { code: '82', name: 'Республика Крым', mult: 2.00, guar: 1.30, flag: '🌊' },
+  { code: '83', name: 'Ненецкий АО', mult: 0.90, guar: 1.05, flag: '❄️' },
+  { code: '84', name: 'Ханты-Мансийский АО', mult: 1.40, guar: 1.10, flag: '⛽' },
+  { code: '85', name: 'Чукотский АО', mult: 1.10, guar: 1.15, flag: '❄️' },
+  { code: '86', name: 'Ямало-Ненецкий АО', mult: 1.50, guar: 1.10, flag: '❄️' },
+  { code: '87', name: 'Республика Ингушетия', mult: 0.80, guar: 1.10, flag: '🏔️' },
+  { code: '88', name: 'Республика Калмыкия', mult: 0.70, guar: 1.05, flag: '🌾' },
+  { code: '89', name: 'Республика Бурятия', mult: 1.10, guar: 1.05, flag: '🏔️' },
+  { code: '90', name: 'Республика Алтай', mult: 1.10, guar: 1.10, flag: '⛰️' },
+  { code: '91', name: 'Республика Крым', mult: 2.00, guar: 1.30, flag: '🌊' },
+  { code: '92', name: 'Севастополь', mult: 2.50, guar: 1.40, flag: '⚓' },
+  { code: '93', name: 'Краснодарский край', mult: 2.20, guar: 1.15, flag: '🌊' },
+  { code: '94', name: 'Республика Башкортостан', mult: 1.80, guar: 1.10, flag: '⛰️' },
+];
+
+/* ===== ТИПЫ НОМЕРОВ ===== */
+const TYPES = [
+  { id: 'civil', name: 'Гражданский', chance: 95.5, css: '', basePrice: 1.0 },
+  { id: 'taxi', name: 'Такси', chance: 3.5, css: 'taxi', basePrice: 15.0 },
+  { id: 'police', name: 'Полиция', chance: 1.0, css: 'police', basePrice: 50.0 },
+];
+
+/* ===== ЭМОДЗИ ЧАСТИЦ ===== */
+const PARTICLES_WIN = ['💰','💵','⭐','✨','💫','🎉'];
+const PARTICLES_RARE = ['💎','👑','🌟','💫','✨','🎆'];
+
+/* ===== СОСТОЯНИЕ ===== */
+const S = {
+  balance: 10000,
+  collection: [],
+  rolls: 0,
+  currentRegion: '77',
+  currentNumber: null,
+  lastDailyClaim: '',
+  tasksClaimed: {},
+  bestPrice: 0,
+  rollsSince50: 0
 };
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
 
-/* ===== КОНСТАНТЫ ===== */
-var WIN_SCORE = 11;
-var FIELD_W = 1200;      // внутренняя ширина (горизонтальная)
-var FIELD_H = 700;       // внутренняя высота
-var PADDLE_H = 160;      // высота ракетки (по вертикали)
-var PADDLE_W = 22;       // толщина ракетки
-var PADDLE_MARGIN = 50;
-var BALL_R = 16;
-var BALL_SPEED_START = 9;
-var BALL_SPEED_MAX = 20;
-var BALL_SPEED_INC = 1.06;
+const BASE_FEE = 1450;
 
-var MY_ID = (function(){
-  var id = localStorage.getItem('pp_uid');
-  if(!id){ id = 'u'+Math.random().toString(36).slice(2,10); localStorage.setItem('pp_uid', id); }
-  return id;
-})();
+/* ===== ЗАГРУЗКА/СОХРАНЕНИЕ ===== */
+function save(){
+  try {
+    localStorage.setItem('numgen_save', JSON.stringify({
+      balance: S.balance,
+      collection: S.collection,
+      rolls: S.rolls,
+      currentRegion: S.currentRegion,
+      lastDailyClaim: S.lastDailyClaim,
+      tasksClaimed: S.tasksClaimed,
+      bestPrice: S.bestPrice,
+      rollsSince50: S.rollsSince50
+    }));
+  } catch(e){}
+}
+function load(){
+  try {
+    const data = localStorage.getItem('numgen_save');
+    if(data){
+      const d = JSON.parse(data);
+      S.balance = d.balance || 10000;
+      S.collection = d.collection || [];
+      S.rolls = d.rolls || 0;
+      S.currentRegion = d.currentRegion || '77';
+      S.lastDailyClaim = d.lastDailyClaim || '';
+      S.tasksClaimed = d.tasksClaimed || {};
+      S.bestPrice = d.bestPrice || 0;
+      S.rollsSince50 = d.rollsSince50 || 0;
+    }
+  } catch(e){}
+}
 
-var G = {
-  mode: 'menu',
-  role: 'host',
-  running: false,
-  myY: FIELD_H / 2,
-  enemyY: FIELD_H / 2,
-  prevMyY: FIELD_H / 2,
-  ball: { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, speed: BALL_SPEED_START, trail: [] },
-  myScore: 0,
-  enemyScore: 0,
-  botEnabled: false,
-  botTargetY: FIELD_H / 2,
-  botReaction: 0.09,
-  raf: null,
-  pointCooldown: false,
-  roomRef: null,
-  roomCode: null,
-  helpHidden: false
-};
-
-var fieldWrap = document.getElementById('ppField');
-var canvas = document.createElement('canvas');
-canvas.style.display = 'block';
-canvas.style.width = '100%';
-canvas.style.height = '100%';
-fieldWrap.appendChild(canvas);
-var ctx = canvas.getContext('2d');
-
+/* ===== УТИЛИТЫ ===== */
 function $(id){ return document.getElementById(id); }
+function fmt(n){ return Math.round(n).toLocaleString('ru'); }
 
-function resizeCanvas(){
-  var dpr = window.devicePixelRatio || 1;
-  var rect = fieldWrap.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  canvas._w = rect.width;
-  canvas._h = rect.height;
-}
-window.addEventListener('resize', function(){ setTimeout(resizeCanvas, 50); });
-setTimeout(resizeCanvas, 100);
-
-/* Toast */
-var toastT = null;
-function toast(msg, type){
-  type = type || '';
-  var t = $('ppToast');
-  t.textContent = msg;
-  t.className = 'pp-toast show ' + type;
-  clearTimeout(toastT);
-  toastT = setTimeout(function(){ t.className = 'pp-toast ' + type; }, 2200);
-}
-
-/* Звук */
-var audioCtx = null;
+/* ===== ЗВУК ===== */
+let audioCtx = null;
 function initAudio(){
   if(!audioCtx){
     try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
@@ -196,623 +505,540 @@ function initAudio(){
 function beep(freq, dur, type, vol){
   if(!audioCtx) return;
   type = type || 'sine'; vol = vol || 0.05;
-  var o = audioCtx.createOscillator();
-  var g = audioCtx.createGain();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
   o.type = type; o.frequency.value = freq;
   g.gain.setValueAtTime(vol, audioCtx.currentTime);
   g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
   o.connect(g); g.connect(audioCtx.destination);
   o.start(); o.stop(audioCtx.currentTime + dur);
 }
-function soundHit(){ beep(600, 0.05, 'square', 0.08); beep(900, 0.03, 'sine', 0.04); }
-function soundWall(){ beep(400, 0.04, 'sine', 0.05); }
-function soundGoal(){ beep(800, 0.15); setTimeout(function(){ beep(1000, 0.15); }, 100); }
-function soundLoseGoal(){ beep(300, 0.2, 'sawtooth', 0.06); }
-function soundWin(){ beep(600,0.1); setTimeout(function(){ beep(800,0.1); },80); setTimeout(function(){ beep(1000,0.2); },160); }
+function sndRoll(){ beep(300, 0.05, 'square', 0.04); }
+function sndWin(){ beep(600,0.1); setTimeout(()=>beep(800,0.1),80); setTimeout(()=>beep(1000,0.2),160); }
+function sndRare(){ beep(500,0.1); setTimeout(()=>beep(700,0.1),100); setTimeout(()=>beep(900,0.1),200); setTimeout(()=>beep(1200,0.3),300); }
+function sndLose(){ beep(200, 0.2, 'sawtooth', 0.05); }
 
+/* ===== ВИБРАЦИЯ ===== */
 function vibrate(p){ if(navigator.vibrate) navigator.vibrate(p); }
 
-/* Polyfill roundRect */
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
-    if(w < 2*r) r = w/2;
-    if(h < 2*r) r = h/2;
-    this.beginPath();
-    this.moveTo(x+r, y);
-    this.arcTo(x+w, y, x+w, y+h, r);
-    this.arcTo(x+w, y+h, x, y+h, r);
-    this.arcTo(x, y+h, x, y, r);
-    this.arcTo(x, y, x+w, y, r);
-    this.closePath();
-    return this;
-  };
+/* ===== ТОСТ ===== */
+let toastT = null;
+function toast(msg, type){
+  type = type || '';
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>{ t.className = 'toast ' + type; }, 2200);
 }
 
-/* ===== ОТРИСОВКА ===== */
-function draw(){
-  if(!canvas._w) resizeCanvas();
-  var w = canvas._w, h = canvas._h;
-  var scaleX = w / FIELD_W;
-  var scaleY = h / FIELD_H;
-
-  // Фон — тёмное помещение
-  var bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-  bgGrad.addColorStop(0, '#0a0e1a');
-  bgGrad.addColorStop(1, '#0d1424');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, w, h);
-
-  // Стол (синяя площадка)
-  var padX = 14 * scaleX;
-  var padY = 14 * scaleY;
-  var fieldW = w - padX * 2;
-  var fieldH = h - padY * 2;
-
-  var tableGrad = ctx.createLinearGradient(padX, padY, padX, padY + fieldH);
-  tableGrad.addColorStop(0, '#1e40af');
-  tableGrad.addColorStop(0.5, '#2563eb');
-  tableGrad.addColorStop(1, '#1e40af');
-  ctx.fillStyle = tableGrad;
-  ctx.fillRect(padX, padY, fieldW, fieldH);
-
-  // Деревянная окантовка (тёмная)
-  ctx.strokeStyle = '#78350f';
-  ctx.lineWidth = 12 * scaleX;
-  ctx.strokeRect(padX, padY, fieldW, fieldH);
-  ctx.strokeStyle = '#a16207';
-  ctx.lineWidth = 3 * scaleX;
-  ctx.strokeRect(padX + 6*scaleX, padY + 6*scaleY, fieldW - 12*scaleX, fieldH - 12*scaleY);
-
-  // Белые линии стола
-  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-  ctx.lineWidth = 3 * scaleX;
-
-  // Внешняя рамка (по краю стола)
-  var lineInset = 20 * scaleX;
-  ctx.strokeRect(padX + lineInset, padY + lineInset, fieldW - lineInset*2, fieldH - lineInset*2);
-
-  // Центральная продольная линия
-  ctx.beginPath();
-  ctx.moveTo(padX + lineInset, h/2);
-  ctx.lineTo(padX + fieldW - lineInset, h/2);
-  ctx.stroke();
-
-  // Сетка (вертикальная линия в центре)
-  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-  ctx.lineWidth = 4 * scaleX;
-  var netX = w / 2;
-  ctx.beginPath();
-  ctx.moveTo(netX, padY + lineInset);
-  ctx.lineTo(netX, padY + fieldH - lineInset);
-  ctx.stroke();
-
-  // Узор сетки
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1 * scaleX;
-  for(var yy = padY + lineInset + 8*scaleY; yy < padY + fieldH - lineInset; yy += 10*scaleY){
-    ctx.beginPath();
-    ctx.moveTo(netX - 4*scaleX, yy);
-    ctx.lineTo(netX + 4*scaleX, yy);
-    ctx.stroke();
+/* ===== ЧАСТИЦЫ ===== */
+function spawnParticles(rare){
+  const container = $('particles');
+  const arr = rare ? PARTICLES_RARE : PARTICLES_WIN;
+  for(let i=0;i<12;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = arr[Math.floor(Math.random()*arr.length)];
+    p.style.left = '50%';
+    p.style.top = '40%';
+    p.style.setProperty('--dx', (Math.random()-0.5)*300 + 'px');
+    p.style.setProperty('--dy', (-150 - Math.random()*250) + 'px');
+    p.style.setProperty('--rot', (Math.random()-0.5)*720 + 'deg');
+    p.style.animationDelay = (Math.random()*0.2) + 's';
+    container.appendChild(p);
+    setTimeout(()=>p.remove(), 1700);
   }
+}
+function screenFlash(){
+  const f = $('screenFlash');
+  f.classList.remove('show');
+  void f.offsetWidth;
+  f.classList.add('show');
+}
 
-  // Тени ракеток
-  drawPaddleShadow(
-    padX + 30 * scaleX,
-    (G.myY - PADDLE_H/2) * scaleY + padY,
-    PADDLE_W * scaleX,
-    PADDLE_H * scaleY
-  );
-  drawPaddleShadow(
-    padX + fieldW - 30 * scaleX - PADDLE_W * scaleX,
-    (G.enemyY - PADDLE_H/2) * scaleY + padY,
-    PADDLE_W * scaleX,
-    PADDLE_H * scaleY
-  );
-
-  // Моя ракетка (слева, красная)
-  drawPaddle(
-    padX + 30 * scaleX,
-    (G.myY - PADDLE_H/2) * scaleY + padY,
-    PADDLE_W * scaleX,
-    PADDLE_H * scaleY,
-    '#dc2626', '#7f1d1d', 'left'
-  );
-
-  // Ракетка соперника (справа, чёрная)
-  drawPaddle(
-    padX + fieldW - 30 * scaleX - PADDLE_W * scaleX,
-    (G.enemyY - PADDLE_H/2) * scaleY + padY,
-    PADDLE_W * scaleX,
-    PADDLE_H * scaleY,
-    '#1f2937', '#000000', 'right'
-  );
-
-  // Шлейф мяча
-  for(var i = 0; i < G.ball.trail.length; i++){
-    var pt = G.ball.trail[i];
-    var alpha = (i + 1) / G.ball.trail.length * 0.5;
-    ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
-    ctx.beginPath();
-    ctx.arc(
-      pt.x * scaleX + padX,
-      pt.y * scaleY + padY,
-      BALL_R * scaleX * (0.4 + (i / G.ball.trail.length) * 0.6),
-      0, Math.PI * 2
+/* ===== СТРАНИЦЫ ===== */
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = $('page-'+name);
+  if(el){ el.classList.add('active'); window.scrollTo(0,0); }
+  document.querySelectorAll('.bottom-nav button').forEach((b,i)=>{
+    b.classList.toggle('active',
+      (name==='main' && i===0) ||
+      (name==='regions' && i===1) ||
+      (name==='collection' && i===2) ||
+      (name==='tasks' && i===3)
     );
-    ctx.fill();
-  }
-
-  // Тень мяча
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath();
-  ctx.ellipse(
-    G.ball.x * scaleX + padX + 3*scaleX,
-    G.ball.y * scaleY + padY + 3*scaleY,
-    BALL_R * scaleX,
-    BALL_R * 0.7 * scaleY,
-    0, 0, Math.PI * 2
-  );
-  ctx.fill();
-
-  // Мяч (белый с оранжевым ядром — как настоящий теннисный)
-  var bx = G.ball.x * scaleX + padX;
-  var by = G.ball.y * scaleY + padY;
-
-  ctx.shadowBlur = 25;
-  ctx.shadowColor = 'rgba(250,204,21,.9)';
-
-  // Основа мяча — оранжевый
-  ctx.fillStyle = '#f59e0b';
-  ctx.beginPath();
-  ctx.arc(bx, by, BALL_R * scaleX, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Белая полоса
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2 * scaleX;
-  ctx.beginPath();
-  ctx.arc(bx, by, BALL_R * scaleX * 0.55, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Блик
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.beginPath();
-  ctx.arc(bx - BALL_R * 0.3 * scaleX, by - BALL_R * 0.3 * scaleY, BALL_R * 0.35 * scaleX, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.shadowBlur = 0;
-}
-
-function drawPaddle(x, y, w, h, colorLight, colorDark, side){
-  // Ручка
-  ctx.fillStyle = '#78350f';
-  if(side === 'left'){
-    ctx.fillRect(x - 30 * (w/PADDLE_W), y + h/2 - 20*(h/PADDLE_H), 30 * (w/PADDLE_W), 40 * (h/PADDLE_H));
-  } else {
-    ctx.fillRect(x + w, y + h/2 - 20*(h/PADDLE_H), 30 * (w/PADDLE_W), 40 * (h/PADDLE_H));
-  }
-
-  // Тело ракетки (круглая, но у нас вертикальная плашка)
-  var grad = ctx.createLinearGradient(x, 0, x + w, 0);
-  grad.addColorStop(0, colorDark);
-  grad.addColorStop(0.5, colorLight);
-  grad.addColorStop(1, colorDark);
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, w/2);
-  ctx.fill();
-
-  // Блик
-  ctx.fillStyle = 'rgba(255,255,255,0.2)';
-  ctx.beginPath();
-  ctx.roundRect(x + w*0.3, y + h*0.1, w*0.4, h*0.8, w*0.2);
-  ctx.fill();
-}
-
-function drawPaddleShadow(x, y, w, h){
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.beginPath();
-  ctx.roundRect(x + 4, y + 4, w, h, w/2);
-  ctx.fill();
-}
-
-/* ===== УПРАВЛЕНИЕ ===== */
-var pointerActive = false;
-
-fieldWrap.addEventListener('pointerdown', function(e){
-  pointerActive = true;
-  movePaddle(e);
-  e.preventDefault();
-}, { passive: false });
-
-fieldWrap.addEventListener('pointermove', function(e){
-  if(!pointerActive) return;
-  movePaddle(e);
-  e.preventDefault();
-}, { passive: false });
-
-fieldWrap.addEventListener('pointerup', function(){ pointerActive = false; });
-fieldWrap.addEventListener('pointercancel', function(){ pointerActive = false; });
-fieldWrap.addEventListener('pointerleave', function(){ pointerActive = false; });
-
-function movePaddle(e){
-  var rect = fieldWrap.getBoundingClientRect();
-  var padY = 14 * (rect.height / FIELD_H);
-  var innerH = rect.height - padY * 2;
-  var y = e.clientY - rect.top - padY;
-  var fieldY = (y / innerH) * FIELD_H;
-  G.prevMyY = G.myY;
-  G.myY = Math.max(PADDLE_H/2 + 20, Math.min(FIELD_H - PADDLE_H/2 - 20, fieldY));
-}
-
-/* ===== ФИЗИКА ===== */
-function resetBall(dir){
-  G.ball.x = FIELD_W / 2;
-  G.ball.y = FIELD_H / 2;
-  G.ball.speed = BALL_SPEED_START;
-  G.ball.trail = [];
-  var angle = (Math.random() - 0.5) * Math.PI / 2.5; // -36°..+36°
-  G.ball.vx = dir * Math.cos(angle) * G.ball.speed;
-  G.ball.vy = Math.sin(angle) * G.ball.speed;
-}
-
-function physicsStep(){
-  if(!G.running) return;
-
-  // Движение
-  G.ball.x += G.ball.vx;
-  G.ball.y += G.ball.vy;
-
-  // Шлейф
-  G.ball.trail.push({ x: G.ball.x, y: G.ball.y });
-  if(G.ball.trail.length > 12) G.ball.trail.shift();
-
-  // Отскок от верхней стены
-  if(G.ball.y < BALL_R){
-    G.ball.y = BALL_R;
-    G.ball.vy = Math.abs(G.ball.vy);
-    soundWall();
-  }
-  // Отскок от нижней стены
-  if(G.ball.y > FIELD_H - BALL_R){
-    G.ball.y = FIELD_H - BALL_R;
-    G.ball.vy = -Math.abs(G.ball.vy);
-    soundWall();
-  }
-
-  // Моя ракетка (слева, X = PADDLE_MARGIN + 30)
-  var myPaddleLeft = PADDLE_MARGIN + 30;
-  var myPaddleRight = myPaddleLeft + PADDLE_W;
-  var myTop = G.myY - PADDLE_H/2;
-  var myBottom = G.myY + PADDLE_H/2;
-
-  if(G.ball.vx < 0){
-    if(G.ball.x - BALL_R < myPaddleRight && G.ball.x - BALL_R > myPaddleLeft - 30){
-      if(G.ball.y > myTop - BALL_R && G.ball.y < myBottom + BALL_R){
-        // Отбил
-        G.ball.vx = Math.abs(G.ball.vx);
-        G.ball.x = myPaddleRight + BALL_R;
-        var hitPos = (G.ball.y - G.myY) / (PADDLE_H / 2);
-        G.ball.vy += hitPos * 4;
-        // Ускорение
-        G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * BALL_SPEED_INC);
-        var mag = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
-        G.ball.vx = G.ball.vx / mag * G.ball.speed;
-        G.ball.vy = G.ball.vy / mag * G.ball.speed;
-        soundHit();
-        vibrate(15);
-      }
-    }
-  }
-
-  // Ракетка соперника (справа)
-  var enemyPaddleRight = FIELD_W - (PADDLE_MARGIN + 30);
-  var enemyPaddleLeft = enemyPaddleRight - PADDLE_W;
-  var enemyTop = G.enemyY - PADDLE_H/2;
-  var enemyBottom = G.enemyY + PADDLE_H/2;
-
-  if(G.ball.vx > 0){
-    if(G.ball.x + BALL_R > enemyPaddleLeft && G.ball.x + BALL_R < enemyPaddleRight + 30){
-      if(G.ball.y > enemyTop - BALL_R && G.ball.y < enemyBottom + BALL_R){
-        G.ball.vx = -Math.abs(G.ball.vx);
-        G.ball.x = enemyPaddleLeft - BALL_R;
-        var hitPos2 = (G.ball.y - G.enemyY) / (PADDLE_H / 2);
-        G.ball.vy += hitPos2 * 4;
-        G.ball.speed = Math.min(BALL_SPEED_MAX, G.ball.speed * BALL_SPEED_INC);
-        var mag2 = Math.sqrt(G.ball.vx*G.ball.vx + G.ball.vy*G.ball.vy);
-        G.ball.vx = G.ball.vx / mag2 * G.ball.speed;
-        G.ball.vy = G.ball.vy / mag2 * G.ball.speed;
-        soundHit();
-      }
-    }
-  }
-
-  // Гол мне (мяч улетел влево)
-  if(G.ball.x < -BALL_R * 3 && !G.pointCooldown){
-    G.pointCooldown = true;
-    G.enemyScore++;
-    updateScoreUI();
-    soundLoseGoal();
-    vibrate([80, 40, 80]);
-    if(G.mode === 'online' && G.role === 'host') syncState();
-    setTimeout(function(){
-      if(G.enemyScore >= WIN_SCORE){ endGame(false); }
-      else { resetBall(1); G.pointCooldown = false; }
-    }, 800);
-  }
-
-  // Гол сопернику (мяч улетел вправо)
-  if(G.ball.x > FIELD_W + BALL_R * 3 && !G.pointCooldown){
-    G.pointCooldown = true;
-    G.myScore++;
-    updateScoreUI();
-    soundGoal();
-    vibrate([50]);
-    if(G.mode === 'online' && G.role === 'host') syncState();
-    setTimeout(function(){
-      if(G.myScore >= WIN_SCORE){ endGame(true); }
-      else { resetBall(-1); G.pointCooldown = false; }
-    }, 800);
-  }
-
-  if(G.botEnabled) botStep();
-
-  if(G.mode === 'online'){
-    G.syncTick = (G.syncTick || 0) + 1;
-    if(G.syncTick % 3 === 0) syncState();
-  }
-
-  draw();
-  G.raf = requestAnimationFrame(physicsStep);
-}
-
-/* Бот — умный, следит за мячом и предсказывает */
-function botStep(){
-  // Определяем куда летит мяч
-  var target = G.ball.y;
-  if(G.ball.vx > 0){
-    // Мяч летит к боту — предсказываем точку удара
-    var timeToArrive = (FIELD_W - G.ball.x) / Math.max(0.1, G.ball.vx);
-    var predictY = G.ball.y + G.ball.vy * timeToArrive * 0.9;
-    // Учитываем отскоки от стен
-    while(predictY < BALL_R || predictY > FIELD_H - BALL_R){
-      if(predictY < BALL_R) predictY = BALL_R + (BALL_R - predictY);
-      if(predictY > FIELD_H - BALL_R) predictY = (FIELD_H - BALL_R) - (predictY - (FIELD_H - BALL_R));
-    }
-    target = predictY;
-  } else {
-    // Мяч летит к игроку — бот возвращается в центр
-    target = FIELD_H / 2 + (Math.random() - 0.5) * 100;
-  }
-
-  var diff = target - G.botTargetY;
-  G.botTargetY += diff * G.botReaction;
-  G.botTargetY = Math.max(PADDLE_H/2 + 20, Math.min(FIELD_H - PADDLE_H/2 - 20, G.botTargetY));
-  G.enemyY = G.botTargetY;
-}
-
-function updateScoreUI(){
-  $('ppMyScore').textContent = G.myScore;
-  $('ppEnemyScore').textContent = G.enemyScore;
+  });
+  if(name==='regions') renderRegions();
+  if(name==='collection') renderCollection();
+  if(name==='tasks') renderTasks();
 }
 
 /* ===== МЕНЮ ===== */
-function ppCreateRoom(){
+function toggleMenu(){
+  $('sideMenu').classList.toggle('show');
+  $('menuOverlay').classList.toggle('show');
+}
+
+/* ===== РЕГИОН ===== */
+function getRegion(){
+  return REGIONS.find(r=>r.code === S.currentRegion) || REGIONS[0];
+}
+function calcCost(){
+  const r = getRegion();
+  return Math.round(BASE_FEE * r.mult * r.guar);
+}
+function updateCostDisplay(){
+  const r = getRegion();
+  const cost = calcCost();
+  $('rollCost').textContent = fmt(cost) + ' ₽';
+  $('costInfo').innerHTML = 'Регион: <b>' + r.flag + ' ' + r.name + ' (' + r.code + ')</b> · Множитель ×' + r.mult.toFixed(2);
+}
+function renderRegions(){
+  const search = ($('regionSearch').value || '').toLowerCase();
+  const container = $('regionsContainer');
+  const filtered = REGIONS.filter(r=>
+    r.name.toLowerCase().includes(search) ||
+    r.code.includes(search)
+  );
+  container.innerHTML = filtered.map(r=>{
+    const cost = Math.round(BASE_FEE * r.mult * r.guar);
+    const active = r.code === S.currentRegion ? 'active' : '';
+    return '<div class="region-item ' + active + '" onclick="selectRegion(\'' + r.code + '\')">' +
+      '<div class="flag-icon">' + r.flag + '</div>' +
+      '<div class="info">' +
+        '<div class="name">' + r.name + '</div>' +
+        '<div class="mult">Код ' + r.code + ' · Множитель ×' + r.mult.toFixed(2) + ' · Гарантия ×' + r.guar.toFixed(2) + '</div>' +
+      '</div>' +
+      '<div class="price-tag"><div class="label">Прокрутка</div>' + fmt(cost) + ' ₽</div>' +
+    '</div>';
+  }).join('');
+}
+function selectRegion(code){
+  S.currentRegion = code;
+  save();
+  toast('Регион выбран: ' + getRegion().name, 'win');
+  updateCostDisplay();
+  renderRegions();
+}
+
+/* ===== ГЕНЕРАЦИЯ НОМЕРА ===== */
+function rollNumber(){
   initAudio();
-  var code = genCode();
-  G.roomCode = code;
-  G.mode = 'online';
-  G.role = 'host';
+  const cost = calcCost();
+  if(S.balance < cost){
+    return toast('❌ Не хватает ' + fmt(cost - S.balance) + ' ₽', 'lose');
+  }
+  S.balance -= cost;
+  S.rolls++;
+  S.rollsSince50++;
+  save();
+  updateBalance();
 
-  $('ppStatus').textContent = 'Ждём игрока...';
-  $('ppMenu').classList.add('hidden');
-  $('ppFinal').classList.remove('show');
+  const rollBtn = $('rollBtn');
+  rollBtn.disabled = true;
 
-  G.roomRef = db.ref('pingpong/rooms/' + code);
-  G.roomRef.set({
-    hostId: MY_ID,
-    createdAt: Date.now(),
-    state: 'waiting',
-    hostScore: 0,
-    guestScore: 0,
-    ball: { x: FIELD_W/2, y: FIELD_H/2, vx: 0, vy: 0, speed: BALL_SPEED_START }
-  });
-  G.roomRef.onDisconnect().remove();
+  const plate = $('plate');
+  plate.style.display = 'flex';
+  plate.classList.add('spinning');
+  plate.className = 'number-plate spinning';
 
-  G.roomRef.on('value', function(snap){
-    var data = snap.val();
-    if(!data) return;
-    if(data.guestId && data.state === 'playing' && !G.running){
-      $('ppStatus').textContent = 'Игра!';
-      $('ppStatus').classList.add('online');
-      startOnlineGame();
+  const title = $('resultTitle');
+  title.textContent = 'Крутим...';
+  title.className = 'result-title show';
+  $('actionRow').classList.add('hidden');
+
+  let ticks = 0;
+  const maxTicks = 25;
+  const spinInterval = setInterval(()=>{
+    ticks++;
+    // Случайный номер для анимации
+    const r = getRegion();
+    const rnd = randomPlate(r);
+    plate.innerHTML = plateHTML(rnd, r);
+
+    if(ticks % 3 === 0) sndRoll();
+
+    if(ticks >= maxTicks){
+      clearInterval(spinInterval);
+      finalizeRoll();
     }
-    if(data.guestY !== undefined) G.enemyY = data.guestY;
-  });
-
-  toast('Код: ' + code, 'win');
+  }, 80);
 }
 
-function ppJoinMode(){
-  var row = $('ppJoinRow');
-  row.style.display = row.style.display === 'none' ? 'flex' : 'none';
-}
+function finalizeRoll(){
+  const r = getRegion();
+  // Определяем тип
+  const typeRoll = Math.random() * 100;
+  let type = TYPES[0];
+  let cum = 0;
+  for(const t of TYPES){
+    cum += t.chance;
+    if(typeRoll < cum){ type = t; break; }
+  }
+  // Генерируем номер
+  const plate = randomPlate(r, type);
+  const price = calcPrice(plate, r, type);
+  const rarity = getRarity(price);
 
-function ppJoinRoom(){
-  var code = ($('ppJoinInput').value || '').trim().toUpperCase();
-  if(code.length !== 4){ return toast('Код из 4 букв', 'lose'); }
-  initAudio();
+  S.currentNumber = { ...plate, region: r, type, price, rarity };
 
-  var roomRef = db.ref('pingpong/rooms/' + code);
-  roomRef.once('value').then(function(snap){
-    var data = snap.val();
-    if(!data){ return toast('Комната не найдена', 'lose'); }
-    if(data.guestId && data.guestId !== MY_ID){ return toast('Занято', 'lose'); }
+  const plateEl = $('plate');
+  plateEl.classList.remove('spinning');
+  plateEl.className = 'number-plate ' + type.css +
+    (rarity === 'legendary' ? ' legendary' : rarity === 'rare' ? ' rare' : '');
+  plateEl.innerHTML = plateHTML(plate, r);
 
-    G.roomCode = code;
-    G.mode = 'online';
-    G.role = 'guest';
-    G.roomRef = roomRef;
+  const title = $('resultTitle');
+  title.textContent = type.name + ' · ' + getRarityName(rarity);
+  title.className = 'result-title show ' + (rarity === 'legendary' ? 'legendary' : rarity === 'rare' ? 'rare' : '');
 
-    $('ppStatus').textContent = 'Игра!';
-    $('ppStatus').classList.add('online');
-    $('ppMenu').classList.add('hidden');
+  // Показываем кнопки
+  $('actionRow').classList.remove('hidden');
+  $('sellPrice').textContent = fmt(price) + ' ₽';
 
-    roomRef.update({
-      guestId: MY_ID,
-      state: 'playing',
-      guestJoinedAt: Date.now()
-    });
-    roomRef.child('guestId').onDisconnect().remove();
+  // Обновляем модалку
+  $('resultModalTitle').textContent = rarity === 'legendary' ? '🏆 ЛЕГЕНДАРНЫЙ!' : rarity === 'rare' ? '💎 Редкий!' : '🎉 Выпал номер!';
+  $('resultModalPlate').innerHTML = plateEl.outerHTML;
+  $('resultModalSub').textContent = type.name + ' · ' + r.name + ' (' + r.code + ')';
+  $('resultModalPrice').textContent = fmt(price) + ' ₽';
 
-    roomRef.on('value', function(s){
-      var d = s.val();
-      if(!d) return;
-      if(d.ball){
-        G.ball.x = d.ball.x;
-        G.ball.y = d.ball.y;
-        G.ball.vx = d.ball.vx;
-        G.ball.vy = d.ball.vy;
-        G.ball.speed = d.ball.speed || BALL_SPEED_START;
-      }
-      if(d.hostScore !== undefined){
-        G.enemyScore = d.hostScore;
-        G.myScore = d.guestScore || 0;
-        updateScoreUI();
-        if(G.enemyScore >= WIN_SCORE && G.running) endGame(false);
-        if(G.myScore >= WIN_SCORE && G.running) endGame(true);
-      }
-      if(d.hostY !== undefined) G.enemyY = d.hostY;
-    });
-
-    startOnlineGame();
-    toast('Подключено!', 'win');
-  }).catch(function(){
-    toast('Ошибка', 'lose');
-  });
-}
-
-function startOnlineGame(){
-  G.running = true;
-  G.myScore = 0;
-  G.enemyScore = 0;
-  updateScoreUI();
-  $('ppFinal').classList.remove('show');
-  $('ppHelp').style.display = 'block';
-  setTimeout(function(){ $('ppHelp').classList.add('hide'); }, 3000);
-
-  if(G.raf) cancelAnimationFrame(G.raf);
-  if(G.role === 'host'){
-    resetBall(1);
-    physicsStep();
+  // Эффекты
+  vibrate([30]);
+  if(rarity === 'legendary'){
+    sndRare(); vibrate([80,50,80,50,200]);
+    spawnParticles(true); screenFlash();
+  } else if(rarity === 'rare'){
+    sndWin(); vibrate([50]);
+    spawnParticles(false); screenFlash();
   } else {
-    guestRenderLoop();
+    beep(500, 0.1); vibrate([20]);
   }
+
+  $('rollBtn').disabled = false;
 }
 
-function guestRenderLoop(){
-  if(!G.running) return;
-  draw();
-  G.raf = requestAnimationFrame(guestRenderLoop);
+function randomPlate(region, forcedType){
+  const type = forcedType || TYPES[0];
+  // Формат по типу
+  if(type.id === 'civil'){
+    const l1 = randomLetter();
+    const n1 = String(Math.floor(Math.random()*1000)).padStart(3,'0');
+    const l2 = randomLetter();
+    const l3 = randomLetter();
+    return { fmt: 'civil', l1, n1, l2, l3, code: region.code };
+  } else if(type.id === 'taxi'){
+    const l1 = randomLetter();
+    const l2 = randomLetter();
+    const n1 = String(Math.floor(Math.random()*1000)).padStart(3,'0');
+    return { fmt: 'taxi', l1, l2, n1, code: region.code };
+  } else if(type.id === 'police'){
+    const l1 = randomLetter();
+    const n1 = String(Math.floor(Math.random()*10000)).padStart(4,'0');
+    return { fmt: 'police', l1, n1, code: region.code };
+  }
+  return { fmt: 'civil', l1:'А', n1:'001', l2:'А', l3:'А', code: region.code };
 }
 
-function syncState(){
-  if(!G.roomRef || G.mode !== 'online' || !G.running) return;
-  var upd = {
-    ball: { x: G.ball.x, y: G.ball.y, vx: G.ball.vx, vy: G.ball.vy, speed: G.ball.speed }
-  };
-  if(G.role === 'host'){
-    upd.hostScore = G.myScore;
-    upd.guestScore = G.enemyScore;
-    upd.hostY = G.myY;
+function randomLetter(){
+  const letters = ['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
+  return letters[Math.floor(Math.random()*letters.length)];
+}
+
+function plateHTML(p, region){
+  if(p.fmt === 'civil'){
+    return '<div class="content">' +
+      '<span class="letters">' + p.l1 + '</span>' +
+      '<span class="digits">' + p.n1 + '</span>' +
+      '<span class="letters">' + p.l2 + p.l3 + '</span>' +
+    '</div>' +
+    '<div class="region-box">' +
+      '<div class="region-code">' + p.code + '</div>' +
+      '<div class="region-country">RUS</div>' +
+      '<div class="flag">🇷🇺</div>' +
+    '</div>';
+  } else if(p.fmt === 'taxi'){
+    return '<div class="content">' +
+      '<span class="letters">' + p.l1 + p.l2 + ' ' + p.n1 + '</span>' +
+    '</div>' +
+    '<div class="region-box">' +
+      '<div class="region-code">' + p.code + '</div>' +
+      '<div class="region-country">RUS</div>' +
+      '<div class="flag">🇷🇺</div>' +
+    '</div>';
+  } else if(p.fmt === 'police'){
+    return '<div class="content">' +
+      '<span class="letters">' + p.l1 + ' ' + p.n1 + '</span>' +
+    '</div>' +
+    '<div class="region-box">' +
+      '<div class="region-code">' + p.code + '</div>' +
+      '<div class="region-country">RUS</div>' +
+      '<div class="flag">🇷🇺</div>' +
+    '</div>';
+  }
+  return '';
+}
+
+/* ===== ЦЕНА НОМЕРА ===== */
+function calcPrice(p, region, type){
+  let base = 1000;
+  // От типа
+  base *= type.basePrice;
+  // От региона
+  base *= (region.mult * 0.8 + region.guar * 0.5);
+
+  // Бонус за красивые цифры
+  if(p.fmt === 'civil' || p.fmt === 'taxi'){
+    const digits = p.n1;
+    if(digits === '777') base *= 8;
+    else if(digits === '001') base *= 5;
+    else if(digits === '007') base *= 6;
+    else if(digits[0] === digits[1] && digits[1] === digits[2]) base *= 4;
+    else if(digits[0] === digits[1] || digits[1] === digits[2]) base *= 1.8;
+  } else if(p.fmt === 'police'){
+    const digits = p.n1;
+    if(digits === '0001' || digits === '0007') base *= 6;
+    else if(digits.startsWith('000')) base *= 3;
+  }
+
+  // Бонус за одинаковые буквы
+  if(p.l1 === p.l2 && p.l1 === p.l3) base *= 3;
+  else if(p.l1 === p.l2 || p.l2 === p.l3) base *= 1.5;
+
+  // Случайный разброс
+  base *= (0.7 + Math.random()*0.6);
+
+  return Math.round(base);
+}
+
+function getRarity(price){
+  if(price >= 500000) return 'legendary';
+  if(price >= 100000) return 'rare';
+  return 'common';
+}
+function getRarityName(r){
+  if(r === 'legendary') return 'ЛЕГЕНДАРНЫЙ';
+  if(r === 'rare') return 'редкий';
+  return 'обычный';
+}
+
+/* ===== ДЕЙСТВИЯ ===== */
+function sellCurrent(){
+  if(!S.currentNumber) return;
+  S.balance += S.currentNumber.price;
+  if(S.currentNumber.price > S.bestPrice) S.bestPrice = S.currentNumber.price;
+  save();
+  updateBalance();
+  toast('💰 +' + fmt(S.currentNumber.price) + ' ₽', 'win');
+  sndWin();
+  S.currentNumber = null;
+  $('plate').style.display = 'none';
+  $('actionRow').classList.add('hidden');
+  $('resultTitle').textContent = 'Нажми кнопку';
+  $('resultTitle').className = 'result-title';
+  updateStats();
+}
+function keepCurrent(){
+  if(!S.currentNumber) return;
+  S.collection.unshift({
+    ...S.currentNumber,
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,8)
+  });
+  if(S.currentNumber.price > S.bestPrice) S.bestPrice = S.currentNumber.price;
+  save();
+  toast('⭐ В коллекцию!', 'gold');
+  S.currentNumber = null;
+  $('plate').style.display = 'none';
+  $('actionRow').classList.add('hidden');
+  $('resultTitle').textContent = 'Нажми кнопку';
+  $('resultTitle').className = 'result-title';
+  updateStats();
+}
+function sellFromModal(){ closeModal('resultModal'); sellCurrent(); }
+function keepFromModal(){ closeModal('resultModal'); keepCurrent(); }
+
+function closeModal(id){ $(id).classList.remove('show'); }
+
+/* ===== КОЛЛЕКЦИЯ ===== */
+function renderCollection(){
+  const list = $('collectionList');
+  if(S.collection.length === 0){
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#8a6a9a;font-weight:800">Коллекция пуста. Крути номера!</div>';
   } else {
-    upd.guestY = G.myY;
+    list.innerHTML = S.collection.map((item, idx)=>{
+      const r = item.region;
+      const type = item.type;
+      const plateText = getPlateMiniText(item);
+      return '<div class="collection-item" onclick="showCollectionItem(' + idx + ')">' +
+        '<div class="mini-plate ' + type.css + '">' +
+          '<span class="txt">' + plateText + '</span>' +
+          '<span class="region-mini">' + r.code + '</span>' +
+        '</div>' +
+        '<div class="info">' +
+          '<div class="type ' + type.css + '">' + type.name + '</div>' +
+          '<div class="rarity">' + getRarityName(item.rarity) + '</div>' +
+        '</div>' +
+        '<div class="price">' + fmt(item.price) + '<br><span class="rub">₽</span></div>' +
+      '</div>';
+    }).join('');
   }
-  G.roomRef.update(upd);
+  $('colTotal').textContent = S.collection.length;
+  const total = S.collection.reduce((s,i)=>s+i.price, 0);
+  $('colValue').textContent = fmt(total) + ' ₽';
 }
-
-/* ===== БОТ ===== */
-function ppPlayBot(){
-  initAudio();
-  G.mode = 'solo';
-  G.botEnabled = true;
-  G.myScore = 0;
-  G.enemyScore = 0;
-  G.running = true;
-  G.myY = FIELD_H / 2;
-  G.botTargetY = FIELD_H / 2;
-  G.enemyY = FIELD_H / 2;
-  G.pointCooldown = false;
-
-  $('ppStatus').textContent = 'Игра с ботом';
-  $('ppStatus').classList.add('online');
-  $('ppMenu').classList.add('hidden');
-  $('ppFinal').classList.remove('show');
-  $('ppHelp').style.display = 'block';
-  setTimeout(function(){ $('ppHelp').classList.add('hide'); }, 3000);
-
-  updateScoreUI();
-  resetBall(1);
-  if(G.raf) cancelAnimationFrame(G.raf);
-  physicsStep();
+function getPlateMiniText(item){
+  if(item.fmt === 'civil') return item.l1 + item.n1 + item.l2 + item.l3;
+  if(item.fmt === 'taxi') return item.l1 + item.l2 + ' ' + item.n1;
+  if(item.fmt === 'police') return item.l1 + ' ' + item.n1;
+  return '?';
 }
-
-/* ===== КОНЕЦ ===== */
-function endGame(win){
-  G.running = false;
-  if(G.raf) cancelAnimationFrame(G.raf);
-  if(win){ soundWin(); vibrate([100, 50, 100, 50, 200]); }
-  else { soundLoseGoal(); vibrate([200, 100, 200]); }
-  $('ppFinalIcon').textContent = win ? '🏆' : '😢';
-  $('ppFinalText').textContent = win ? 'Победа!' : 'Поражение';
-  $('ppFinalText').className = 'pp-final-text ' + (win ? 'win' : 'lose');
-  $('ppFinalSub').textContent = G.myScore + ' : ' + G.enemyScore;
-  $('ppFinal').classList.add('show');
-}
-
-function ppBackToMenu(){
-  $('ppFinal').classList.remove('show');
-  $('ppMenu').classList.remove('hidden');
-  $('ppStatus').textContent = 'Готов';
-  $('ppStatus').classList.remove('online');
-  $('ppHelp').classList.remove('hide');
-  $('ppHelp').style.display = 'none';
-  G.mode = 'menu';
-  G.running = false;
-  G.botEnabled = false;
-  G.myScore = 0;
-  G.enemyScore = 0;
-  updateScoreUI();
-  if(G.raf) cancelAnimationFrame(G.raf);
-  if(G.roomRef){
-    G.roomRef.off();
-    G.roomRef.remove();
-    G.roomRef = null;
+function showCollectionItem(idx){
+  const item = S.collection[idx];
+  if(!item) return;
+  if(confirm('Продать за ' + fmt(item.price) + ' ₽?\n\nНажми Cancel чтобы оставить.')){
+    S.balance += item.price;
+    if(item.price > S.bestPrice) S.bestPrice = item.price;
+    S.collection.splice(idx, 1);
+    save();
+    updateBalance();
+    toast('💰 +' + fmt(item.price) + ' ₽', 'win');
+    sndWin();
+    renderCollection();
+    updateStats();
   }
-  G.roomCode = null;
+}
+function sellAllCommon(){
+  const toSell = S.collection.filter(i => i.rarity === 'common');
+  if(toSell.length === 0) return toast('Нет обычных номеров', 'lose');
+  const total = toSell.reduce((s,i)=>s+i.price, 0);
+  if(!confirm('Продать ' + toSell.length + ' обычных номеров за ' + fmt(total) + ' ₽?')) return;
+  S.collection = S.collection.filter(i => i.rarity !== 'common');
+  S.balance += total;
+  save(); updateBalance(); renderCollection(); updateStats();
+  toast('💰 +' + fmt(total) + ' ₽', 'win');
+  sndWin();
+}
+function sellAll(){
+  if(S.collection.length === 0) return toast('Коллекция пуста', 'lose');
+  const total = S.collection.reduce((s,i)=>s+i.price, 0);
+  if(!confirm('Продать ВСЁ за ' + fmt(total) + ' ₽?')) return;
+  S.balance += total;
+  S.collection = [];
+  save(); updateBalance(); renderCollection(); updateStats();
+  toast('💰 +' + fmt(total) + ' ₽', 'win');
+  sndWin();
 }
 
-function genCode(){
-  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var code = '';
-  for(var i = 0; i < 4; i++){
-    code += chars[Math.floor(Math.random() * chars.length)];
+/* ===== ЗАДАНИЯ ===== */
+const TASKS = [
+  { id: 't1', icon: '🎰', name: 'Новичок', desc: 'Сделай 10 прокруток', target: 10, check: s=>s.rolls, reward: 5000 },
+  { id: 't2', icon: '📚', name: 'Коллекционер', desc: 'Собери 5 номеров', target: 5, check: s=>s.collection.length, reward: 10000 },
+  { id: 't3', icon: '🎰', name: 'Азартный', desc: 'Сделай 50 прокруток', target: 50, check: s=>s.rolls, reward: 25000 },
+  { id: 't4', icon: '💎', name: 'Коллекционер 2', desc: 'Собери 20 номеров', target: 20, check: s=>s.collection.length, reward: 50000 },
+  { id: 't5', icon: '🎰', name: 'Маньяк', desc: 'Сделай 200 прокруток', target: 200, check: s=>s.rolls, reward: 150000 },
+];
+function renderTasks(){
+  const c = $('tasksContainer');
+  c.innerHTML = TASKS.map(t=>{
+    const progress = Math.min(t.target, t.check(S));
+    const pct = Math.round(progress / t.target * 100);
+    const claimed = S.tasksClaimed[t.id];
+    const canClaim = progress >= t.target && !claimed;
+    return '<div class="task-item ' + (claimed ? 'claimed' : '') + '">' +
+      '<div class="icon">' + t.icon + '</div>' +
+      '<div class="info">' +
+        '<div class="name">' + t.name + '</div>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="progress-text">' + progress + ' / ' + t.target + '</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div class="reward">+' + fmt(t.reward) + ' ₽</div>' +
+        '<button class="claim-btn ' + (claimed ? 'claimed' : '') + '" onclick="claimTask(\'' + t.id + '\',' + t.reward + ')" ' + (!canClaim ? 'disabled' : '') + '>' +
+          (claimed ? '✓' : 'Забрать') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function claimTask(id, reward){
+  if(S.tasksClaimed[id]) return;
+  const task = TASKS.find(t=>t.id === id);
+  if(!task || task.check(S) < task.target) return;
+  S.tasksClaimed[id] = true;
+  S.balance += reward;
+  save(); updateBalance(); renderTasks(); updateStats();
+  toast('🎁 +' + fmt(reward) + ' ₽', 'gold');
+  sndWin();
+}
+
+/* ===== ЕЖЕДНЕВНЫЙ БОНУС ===== */
+function claimDaily(){
+  const today = new Date().toDateString();
+  if(S.lastDailyClaim === today){
+    return toast('❌ Бонус уже получен сегодня', 'lose');
   }
-  return code;
+  S.balance += 10000;
+  S.lastDailyClaim = today;
+  save(); updateBalance(); updateStats();
+  toast('🎁 +10 000 ₽', 'gold');
+  sndWin();
+  spawnParticles(false);
+}
+function showDeposit(){
+  S.balance += 1000;
+  save(); updateBalance();
+  toast('💳 +1 000 ₽', 'win');
 }
 
-var hash = window.location.hash;
-if(hash && hash.indexOf('#room-') === 0){
-  var c = hash.replace('#room-', '').toUpperCase().slice(0, 4);
-  $('ppJoinInput').value = c;
-  $('ppJoinRow').style.display = 'flex';
-  setTimeout(ppJoinRoom, 500);
+/* ===== СБРОС ===== */
+function resetAll(){
+  $('resetModal').classList.add('show');
+}
+function confirmReset(){
+  S.balance = 10000;
+  S.collection = [];
+  S.rolls = 0;
+  S.currentRegion = '77';
+  S.lastDailyClaim = '';
+  S.tasksClaimed = {};
+  S.bestPrice = 0;
+  S.rollsSince50 = 0;
+  save();
+  closeModal('resetModal');
+  updateBalance();
+  updateStats();
+  updateCostDisplay();
+  $('plate').style.display = 'none';
+  $('actionRow').classList.add('hidden');
+  toast('🔄 Прогресс сброшен', 'win');
 }
 
-resizeCanvas();
-draw();
-updateScoreUI();
+/* ===== ОБНОВЛЕНИЕ ===== */
+function updateBalance(){
+  $('topBalance').textContent = fmt(S.balance);
+}
+function updateStats(){
+  $('statCollection').textContent = S.collection.length;
+  $('statRolls').textContent = S.rolls;
+  $('statBest').textContent = fmt(S.bestPrice) + '₽';
+}
+
+/* ===== СТАРТ ===== */
+load();
+updateBalance();
+updateStats();
+updateCostDisplay();
+renderRegions();
+renderCollection();
+renderTasks();
+
+/* Клик мимо модалок */
+document.querySelectorAll('.modal-bg').forEach(m=>{
+  m.addEventListener('click', e=>{
+    if(e.target === m) m.classList.remove('show');
+  });
+});
 </script>
 </body>
 </html>
