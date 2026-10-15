@@ -7,53 +7,64 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f2dff5;color:#4a2a5a;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;position:relative}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#eedbf5;color:#4a2a5a;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;position:relative}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;outline:none}
 input{font-family:inherit;outline:none}
 
-/* ====== TOPBAR ====== */
-.topbar{padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-.burger{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#f9b8dc,#ee9bcc);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(200,100,170,.3)}
-.burger::before{content:'';width:20px;height:2px;background:#fff;border-radius:2px;box-shadow:0 -7px 0 #fff,0 7px 0 #fff}
-.balances{display:flex;gap:16px;align-items:center;font-size:15px;font-weight:900;color:#a888b8}
+/* ===== TOPBAR ===== */
+.topbar{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:20}
+.burger{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#f9b8dc,#ee9bcc);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(200,100,170,.3);cursor:pointer}
+.burger::before{content:'';width:22px;height:3px;background:#fff;border-radius:3px;box-shadow:0 -8px 0 #fff,0 8px 0 #fff}
+.balances{display:flex;gap:18px;align-items:center;font-size:16px;font-weight:900;color:#a888b8}
 .balances .rub{color:#c8a8d8}
 .balances .usd{color:#c8a8d8}
 
-/* ====== SCREENS ====== */
-.screen{display:none;padding:0 20px;min-height:calc(100vh - 60px)}
+/* ===== SCREENS ===== */
+.screen{display:none;padding:0 20px;min-height:calc(100vh - 60px);padding-bottom:120px}
 .screen.active{display:block}
 
-/* ====== ГЛАВНЫЙ ЭКРАН ====== */
-.main-screen{display:flex;flex-direction:column;justify-content:space-between;padding-bottom:20px}
+/* ===== ГЛАВНЫЙ ЭКРАН ===== */
+.main-area{display:flex;flex-direction:column;min-height:calc(100vh - 90px);position:relative}
 
-/* Плашка редкости (розовая над номером) */
-.rarity-card{margin-top:100px;padding:14px 18px;background:#ee9dcc;border-radius:12px;display:flex;justify-content:space-between;align-items:center;transition:opacity .3s;opacity:0;pointer-events:none}
-.rarity-card.show{opacity:1}
-.rarity-card.rc-uncommon{background:#ee9dcc}
-.rarity-card.rc-rare{background:#cf90e0}
-.rarity-card.rc-legendary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#4a2a0a}
-.rarity-card .left{display:flex;flex-direction:column;gap:4px}
-.rarity-card .name{font-size:14px;font-weight:700;color:#5a3a6a}
-.rarity-card.rc-legendary .name{color:#4a2a0a}
-.rarity-card .bars{display:flex;gap:3px}
-.rarity-card .bars .bar{width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,.5)}
-.rarity-card .bars .bar.filled{background:#7c3aed}
-.rarity-card.rc-legendary .bars .bar.filled{background:#4a2a0a}
-.rarity-card .price{font-size:20px;font-weight:900;color:#7c3aed}
-.rarity-card.rc-legendary .price{color:#4a2a0a}
+.tap-hint{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;cursor:pointer}
 
-/* Номер */
-.plate-wrap{margin:60px 0 60px;display:flex;justify-content:center}
-.plate{width:100%;max-width:380px;height:135px;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);border-radius:6px;border:2.5px solid #2a2a2a;display:flex;align-items:stretch;position:relative;box-shadow:0 20px 40px -20px rgba(80,40,100,.4);overflow:hidden;transition:transform .08s}
+/* Плашка редкости сверху */
+.rarity-strip{margin:20px 0 60px;padding:14px 20px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;transition:all .3s;box-shadow:0 4px 15px -8px rgba(180,80,150,.4)}
+.rarity-strip.rc-common{background:#f5c0e0}
+.rarity-strip.rc-uncommon{background:#ee9dcc}
+.rarity-strip.rc-rare{background:#cf90e0}
+.rarity-strip.rc-epic{background:linear-gradient(90deg,#a855f7,#7c3aed);color:#fff}
+.rarity-strip.rc-legendary{background:linear-gradient(90deg,#fbbf24,#f59e0b,#fbbf24);background-size:200% 100%;animation:shine 2s linear infinite;color:#4a2a0a}
+@keyframes shine{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.rarity-strip .left{display:flex;flex-direction:column;gap:5px}
+.rarity-strip .name{font-size:15px;font-weight:800;color:#5a3a6a}
+.rarity-strip.rc-epic .name{color:#fff}
+.rarity-strip.rc-legendary .name{color:#4a2a0a}
+.rarity-strip .bars{display:flex;gap:4px}
+.rarity-strip .bars .bar{width:20px;height:5px;border-radius:3px;background:rgba(255,255,255,.5)}
+.rarity-strip .bars .bar.filled{background:#7c3aed}
+.rarity-strip.rc-epic .bars .bar.filled{background:#fff}
+.rarity-strip.rc-legendary .bars .bar.filled{background:#4a2a0a}
+.rarity-strip .price{font-size:22px;font-weight:900;color:#7c3aed;font-variant-numeric:tabular-nums}
+.rarity-strip.rc-epic .price{color:#fff}
+.rarity-strip.rc-legendary .price{color:#4a2a0a}
+
+/* Номерная плашка */
+.plate-wrap{display:flex;justify-content:center;margin:20px 0}
+.plate{width:100%;max-width:400px;height:145px;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);border-radius:8px;border:3px solid #2a2a2a;display:flex;align-items:stretch;position:relative;box-shadow:0 25px 50px -20px rgba(80,40,100,.5),inset 0 -4px 0 rgba(0,0,0,.08);overflow:hidden;transition:transform .08s}
 .plate.spinning{animation:plateSh .05s infinite}
-@keyframes plateSh{50%{transform:translateX(1.5px)}}
-.plate.rare{box-shadow:0 20px 40px -20px rgba(150,80,220,.6),0 0 40px rgba(150,80,255,.35)}
-.plate.legendary{box-shadow:0 20px 40px -20px rgba(250,180,30,.7),0 0 60px rgba(250,204,21,.55)}
-.plate .body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 6px;font-family:'Arial Black','Inter',sans-serif;color:#0a0a0a;font-size:76px;font-weight:900;letter-spacing:-5px;line-height:1}
-.plate .rgn{width:31%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2.5px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);padding:8px 4px}
-.plate .rgn-code{font-size:48px;font-weight:900;color:#0a0a0a;line-height:1;font-family:'Arial Black',sans-serif;letter-spacing:-1px}
-.plate .rgn-rus{font-size:13px;font-weight:900;color:#0a0a0a;letter-spacing:2px;margin-top:2px}
-.plate .rgn-flag{font-size:24px;margin-top:4px}
+@keyframes plateSh{50%{transform:translateX(2px)}}
+.plate.rare{box-shadow:0 25px 50px -20px rgba(150,80,220,.6),0 0 50px rgba(150,80,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.plate.epic{box-shadow:0 25px 50px -20px rgba(168,85,247,.7),0 0 60px rgba(168,85,247,.6),inset 0 -4px 0 rgba(0,0,0,.08)}
+.plate.legendary{box-shadow:0 25px 50px -20px rgba(250,180,30,.8),0 0 80px rgba(250,204,21,.7),inset 0 -4px 0 rgba(0,0,0,.08)}
+
+.plate .body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 8px;font-family:'Arial Black','Inter',sans-serif;color:#0a0a0a;font-size:82px;font-weight:900;letter-spacing:-6px;line-height:1;font-style:italic}
+.plate .rgn{width:31%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:3px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);padding:8px 4px}
+.plate .rgn-code{font-size:52px;font-weight:900;color:#0a0a0a;line-height:1;font-family:'Arial Black',sans-serif;letter-spacing:-2px}
+.plate .rgn-rus{font-size:14px;font-weight:900;color:#0a0a0a;letter-spacing:2px;margin-top:3px;display:flex;align-items:center;gap:4px;justify-content:center}
+.plate .rgn-rus .flag{font-size:16px}
+.plate .empty-txt{color:#c8c8c8;font-size:22px;font-weight:800;letter-spacing:0;font-style:normal;font-family:'Inter',sans-serif}
+
 .plate.taxi{background:linear-gradient(180deg,#fde047,#eab308);border-color:#8a6300}
 .plate.taxi .rgn{background:linear-gradient(180deg,#fde047,#eab308);border-left-color:#8a6300}
 .plate.taxi .body,.plate.taxi .rgn-code,.plate.taxi .rgn-rus{color:#1a1408}
@@ -63,61 +74,60 @@ input{font-family:inherit;outline:none}
 .plate.military{background:linear-gradient(180deg,#6b7280,#374151);border-color:#1a1a1a}
 .plate.military .rgn{background:linear-gradient(180deg,#4b5563,#374151);border-left-color:#1a1a1a}
 .plate.military .body,.plate.military .rgn-code,.plate.military .rgn-rus{color:#d1d5db}
-.plate .empty{color:#c8c8c8;font-size:22px;font-weight:700;letter-spacing:0;font-family:'Inter',sans-serif}
 
-/* Подпись под номером */
-.plate-caption{text-align:center;font-size:15px;color:#8a6a9a;font-weight:800;opacity:0;transition:opacity .3s;margin-top:-40px}
-.plate-caption.show{opacity:1}
+/* Подпись */
+.plate-caption{text-align:center;font-size:16px;color:#8a6a9a;font-weight:800;margin-top:14px;transition:opacity .3s;height:24px}
 
-/* Регион-кнопка внизу */
-.region-pill{display:flex;justify-content:center;margin-bottom:100px}
-.region-pill button{display:flex;align-items:center;gap:12px;padding:14px 24px;background:#ee9dcc;border-radius:22px;font-size:15px;font-weight:900;color:#5a3a6a;box-shadow:0 6px 16px -8px rgba(200,100,170,.5)}
-.region-pill .flag{font-size:26px}
-.region-pill .cnt{font-size:13px;color:#8a6a9a;font-weight:800;background:rgba(255,255,255,.5);padding:4px 10px;border-radius:12px}
+/* Плашка региона снизу главного экрана */
+.region-strip-wrap{margin-top:auto;padding-bottom:40px;display:flex;justify-content:center}
+.region-strip{display:flex;align-items:center;gap:14px;padding:14px 26px;background:#ee9dcc;border-radius:24px;box-shadow:0 6px 20px -10px rgba(200,100,170,.5);cursor:pointer}
+.region-strip .flag{font-size:28px}
+.region-strip .name{font-size:16px;font-weight:900;color:#5a3a6a}
+.region-strip .cnt{font-size:14px;font-weight:800;color:#7c5a8a;background:rgba(255,255,255,.6);padding:5px 12px;border-radius:14px}
 
 /* Кнопка КРУТИТЬ */
-.roll-fixed{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:16px 20px calc(20px + env(safe-area-inset-bottom));z-index:90}
-.roll-btn{width:100%;padding:20px;border-radius:24px;background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#fff;font-size:19px;font-weight:900;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 15px 40px -15px rgba(139,92,246,.9);transition:.15s;min-height:70px}
-.roll-btn:active:not(:disabled){transform:scale(.98)}
-.roll-btn:disabled{opacity:.55;cursor:not-allowed}
-.roll-btn .cost{background:rgba(255,255,255,.25);padding:6px 14px;border-radius:14px;font-size:15px}
+.roll-fixed{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:20px 20px calc(24px + env(safe-area-inset-bottom));z-index:90;pointer-events:none}
+.roll-btn{width:100%;padding:22px;border-radius:26px;background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#fff;font-size:20px;font-weight:900;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:16px;box-shadow:0 18px 45px -15px rgba(139,92,246,1),inset 0 2px 0 rgba(255,255,255,.3);transition:.15s;min-height:76px;pointer-events:auto}
+.roll-btn:active:not(:disabled){transform:scale(.97)}
+.roll-btn:disabled{opacity:.55}
+.roll-btn .cost{background:rgba(255,255,255,.3);padding:8px 18px;border-radius:16px;font-size:16px;font-weight:900}
 
-/* ====== МЕНЮ ====== */
-.menu-title{font-size:28px;font-weight:900;color:#5a3a6a;padding:16px 0 24px;display:flex;align-items:center;gap:16px}
-.menu-title .back{font-size:28px;cursor:pointer;color:#8a6a9a;font-weight:900}
-.menu-item{display:flex;align-items:center;justify-content:space-between;background:#ee9dcc;border-radius:18px;margin-bottom:10px;min-height:95px;padding:0 24px;overflow:hidden;position:relative;cursor:pointer;box-shadow:0 6px 16px -10px rgba(200,100,170,.4)}
-.menu-item:active{transform:scale(.99)}
-.menu-item .name{font-size:15px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.8px;z-index:2;position:relative}
-.menu-item .sub{font-size:12px;color:#8a6a9a;font-weight:800;margin-top:4px;letter-spacing:.3px;z-index:2;position:relative}
-.menu-item .bg-img{position:absolute;right:0;top:0;bottom:0;width:60%;background-size:cover;background-position:center;opacity:.9;z-index:1}
-.menu-item .bg-emoji{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.5;z-index:1}
-.menu-item .emoji-big{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:60px;opacity:.15;z-index:1}
-.menu-item .text-wrap{position:absolute;left:24px;bottom:14px;z-index:3}
-.menu-item.full-img{height:110px;justify-content:flex-end}
-.menu-item.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;min-height:110px}
-.menu-item.two-col .half{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
-.menu-item.two-col .half:first-child{background:#ee9dcc;border-right:2px solid #f2dff5}
-.menu-item.two-col .half:last-child{background:#ee9dcc}
+/* ===== МЕНЮ ===== */
+.menu-header{display:flex;align-items:center;gap:18px;padding:20px 0 24px}
+.menu-header .back{font-size:30px;cursor:pointer;color:#8a6a9a;font-weight:900}
+.menu-header .title{font-size:26px;font-weight:900;color:#5a3a6a}
 
-/* Задания — заголовок внизу */
-.menu-task{position:relative}
-.menu-task .label{position:absolute;left:24px;bottom:14px;font-size:14px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.8px;z-index:3}
+.menu-card{display:flex;align-items:center;background:#ee9dcc;border-radius:20px;margin-bottom:12px;overflow:hidden;position:relative;cursor:pointer;box-shadow:0 6px 18px -10px rgba(200,100,170,.5);min-height:90px;padding:16px 22px;transition:transform .15s}
+.menu-card:active{transform:scale(.98)}
+.menu-card .left-icon{font-size:44px;flex-shrink:0;margin-right:16px;z-index:2}
+.menu-card .text{z-index:2}
+.menu-card .name{font-size:16px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.6px}
+.menu-card .sub{font-size:12px;color:#7c5a8a;font-weight:800;margin-top:4px}
+.menu-card .deco-emoji{position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:90px;opacity:.15;z-index:1}
 
-/* ====== РЕГИОН ЭКРАН ====== */
-.country-header{display:flex;align-items:center;gap:14px;padding:14px 0 20px}
-.country-header .back{font-size:26px;cursor:pointer;color:#8a6a9a;font-weight:900}
-.country-header .title{font-size:22px;font-weight:900;color:#5a3a6a;flex:1}
-.country-block{background:linear-gradient(90deg,#ee9dcc,#e088c4);border-radius:16px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.country-block .flag{font-size:36px}
-.country-block .name{font-size:16px;font-weight:900;color:#5a3a6a}
-.country-block .count{font-size:16px;font-weight:900;color:#5a3a6a}
+.menu-card.big{min-height:130px;padding:22px}
+.menu-card.big .name{font-size:18px}
 
-.types-title{font-size:14px;font-weight:900;color:#8a6a9a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
-.type-item{display:flex;align-items:center;gap:14px;background:#ee9dcc;border-radius:16px;padding:14px;margin-bottom:10px}
-.type-item.locked{opacity:.65}
-.type-mini{width:140px;height:56px;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);border-radius:6px;border:2px solid #2a2a2a;display:flex;align-items:stretch;flex-shrink:0;overflow:hidden;font-family:'Arial Black',sans-serif}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.menu-grid .menu-card{margin-bottom:0;min-height:130px;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:16px 18px;position:relative}
+.menu-grid .menu-card .name{font-size:13px;text-transform:uppercase;letter-spacing:.4px;line-height:1.2}
+.menu-grid .menu-card .ico{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:52px;opacity:.5;z-index:1}
+.menu-grid .menu-card .text{position:relative;z-index:2;width:100%}
+
+/* ===== НАСТРОЙКА ГЕНЕРАЦИИ ===== */
+.country-bar{background:linear-gradient(90deg,#f0a0d4,#e488c8);border-radius:18px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.country-bar .left{display:flex;align-items:center;gap:14px}
+.country-bar .flag{font-size:40px}
+.country-bar .name{font-size:17px;font-weight:900;color:#5a3a6a}
+.country-bar .cnt{font-size:17px;font-weight:900;color:#5a3a6a}
+
+.section-label{font-size:14px;font-weight:900;color:#8a6a9a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+
+.type-row{display:flex;align-items:center;gap:14px;background:#ee9dcc;border-radius:16px;padding:14px;margin-bottom:10px}
+.type-row.locked{opacity:.65}
+.type-mini{width:145px;height:60px;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);border-radius:8px;border:2.5px solid #2a2a2a;display:flex;align-items:stretch;flex-shrink:0;overflow:hidden;font-family:'Arial Black',sans-serif;font-style:italic}
 .type-mini .body{flex:1;display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-size:22px;font-weight:900;letter-spacing:-1.5px}
-.type-mini .rgn{width:32%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);padding:2px}
+.type-mini .rgn{width:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2.5px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);padding:2px}
 .type-mini .rgn-code{font-size:16px;font-weight:900;color:#0a0a0a;line-height:1}
 .type-mini .rgn-rus{font-size:7px;font-weight:900;color:#0a0a0a;letter-spacing:.8px;margin-top:1px}
 .type-mini.taxi{background:linear-gradient(180deg,#fde047,#eab308);border-color:#8a6300}
@@ -131,119 +141,121 @@ input{font-family:inherit;outline:none}
 .type-mini.military .body,.type-mini.military .rgn-code,.type-mini.military .rgn-rus{color:#d1d5db}
 
 .type-info{flex:1;text-align:right}
-.type-info .tname{font-size:14px;font-weight:900;color:#5a3a6a}
-.type-info .chance{font-size:13px;color:#8a6a9a;font-weight:800;margin-top:3px}
-.type-info .locked-txt{font-size:12px;color:#8a6a9a;font-weight:800;margin-top:3px}
+.type-info .tname{font-size:15px;font-weight:900;color:#5a3a6a}
+.type-info .chance{font-size:13px;color:#7c5a8a;font-weight:800;margin-top:4px}
+.type-info .locked-txt{font-size:12px;color:#8a6a9a;font-weight:800;margin-top:4px}
 
-/* Стоимость */
-.cost-title{font-size:14px;font-weight:900;color:#8a6a9a;text-transform:uppercase;letter-spacing:1.5px;margin:24px 0 12px}
-.cost-block{background:#ee9dcc;border-radius:16px;padding:20px}
+.cost-block{background:#ee9dcc;border-radius:18px;padding:22px;margin-top:12px}
 .cost-block .total{display:flex;justify-content:space-between;font-size:17px;font-weight:900;color:#5a3a6a;margin-bottom:14px}
 .cost-block .total .val{color:#7c3aed}
 .cost-block .row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#8a6a9a;font-weight:800}
-.cost-block .row .v{color:#5a3a6a}
+.cost-block .row .v{color:#5a3a6a;font-weight:900}
 
-/* Страна/регион внизу настройки */
-.bottom-2btn{display:flex;gap:10px;margin:16px 0 30px}
-.bottom-2btn button{flex:1;padding:18px;background:#ee9dcc;border-radius:18px;font-size:14px;font-weight:900;color:#5a3a6a;box-shadow:0 6px 16px -10px rgba(200,100,170,.5)}
+.bottom-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 30px}
+.bottom-btns button{padding:18px;background:#ee9dcc;border-radius:18px;font-size:14px;font-weight:900;color:#5a3a6a;box-shadow:0 6px 16px -10px rgba(200,100,170,.5)}
 
-/* ====== УЛУЧШЕНИЯ ====== */
-.upgrade-block{background:#ee9dcc;border-radius:18px;padding:20px;margin-bottom:12px}
-.upgrade-block .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.upgrade-block .head .name{font-size:15px;font-weight:900;color:#5a3a6a}
-.upgrade-block .head .count{font-size:15px;font-weight:900;color:#5a3a6a}
-.upgrade-block .prog{height:8px;background:rgba(255,255,255,.5);border-radius:4px;margin:12px 0;overflow:hidden}
-.upgrade-block .prog-fill{height:100%;background:linear-gradient(90deg,#c898e8,#8b5cf6);border-radius:4px;transition:width .5s}
-.upgrade-block .desc{font-size:12px;color:#8a6a9a;font-weight:700;line-height:1.5;margin-bottom:14px}
-.upgrade-block .btn-full{width:100%;padding:16px;background:rgba(255,255,255,.6);border-radius:14px;font-size:14px;font-weight:900;color:#7c3aed;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-.upgrade-block .btn-full.disabled{opacity:.5;color:#8a6a9a}
-.upgrade-block .row-simple{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;font-weight:800;color:#5a3a6a;cursor:pointer;align-items:center}
-.upgrade-block .row-simple .val{color:#8a6a9a}
-
-/* ====== КОЛЛЕКЦИЯ ====== */
-.coll-head{text-align:right;padding:6px 0 14px}
+/* ===== КОЛЛЕКЦИЯ ===== */
+.coll-head{text-align:right;padding:6px 0 16px}
 .coll-head .c1{font-size:14px;font-weight:900;color:#8a6a9a}
-.coll-head .c2{font-size:13px;font-weight:800;color:#a888b8;margin-top:3px}
+.coll-head .c2{font-size:13px;font-weight:800;color:#a888b8;margin-top:4px}
 .coll-filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .coll-filter{padding:10px 16px;background:#ee9dcc;border-radius:14px;font-size:12px;font-weight:800;color:#5a3a6a;cursor:pointer;border:none}
 .coll-filter.active{background:#c898e8;color:#fff}
 .coll-search{width:100%;padding:14px 18px;background:#ee9dcc;border-radius:14px;font-size:14px;font-weight:800;color:#5a3a6a;border:none;margin-bottom:14px}
 .coll-search::placeholder{color:#a888b8}
-.coll-item{display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(90deg,#ee9dcc,#e888c4);border-radius:16px;margin-bottom:10px;cursor:pointer}
+
+.coll-item{display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(90deg,#f0b0d8,#e8a0c8);border-radius:16px;margin-bottom:10px;cursor:pointer;transition:.15s}
 .coll-item:active{transform:scale(.99)}
-.coll-mini{width:130px;height:58px;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);border-radius:6px;border:2px solid #2a2a2a;flex-shrink:0;display:flex;align-items:stretch;overflow:hidden;font-family:'Arial Black',sans-serif}
-.coll-mini .body{flex:1;display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-size:22px;font-weight:900;letter-spacing:-1.5px}
-.coll-mini .rgn{width:32%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e6e6e6);padding:2px}
+.coll-mini{width:140px;height:62px;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);border-radius:8px;border:2.5px solid #2a2a2a;flex-shrink:0;display:flex;align-items:stretch;overflow:hidden;font-family:'Arial Black',sans-serif;font-style:italic;position:relative}
+.coll-mini .body{flex:1;display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-size:22px;font-weight:900;letter-spacing:-1.5px;padding-right:30%}
+.coll-mini .rgn{position:absolute;right:0;top:0;bottom:0;width:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:2.5px solid #2a2a2a;background:linear-gradient(180deg,#fbfbfb,#e2e2e2);padding:2px}
 .coll-mini .rgn-code{font-size:16px;font-weight:900;color:#0a0a0a;line-height:1}
-.coll-mini .rgn-flag{font-size:12px;margin-top:1px}
+.coll-mini .rgn-flag{font-size:12px;margin-top:2px}
 .coll-mini.taxi{background:linear-gradient(180deg,#fde047,#eab308);border-color:#8a6300}
 .coll-mini.taxi .rgn{background:linear-gradient(180deg,#fde047,#eab308);border-left-color:#8a6300}
 .coll-mini.taxi .body,.coll-mini.taxi .rgn-code{color:#1a1408}
 .coll-mini.police{background:linear-gradient(180deg,#3b82f6,#1e40af);border-color:#0a1a4a}
 .coll-mini.police .rgn{background:linear-gradient(180deg,#2563eb,#1e40af);border-left-color:#0a1a4a}
 .coll-mini.police .body,.coll-mini.police .rgn-code{color:#fff}
-.coll-info{flex:1;text-align:right;min-width:0}
-.coll-info .row1{font-size:11px;color:#8a6a9a;font-weight:800}
-.coll-info .bars{display:flex;gap:3px;justify-content:flex-end;margin:4px 0}
-.coll-info .bars .b{width:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.5)}
-.coll-info .bars .b.f{background:#7c3aed}
-.coll-info .price{font-size:16px;font-weight:900;color:#5a3a6a;font-variant-numeric:tabular-nums}
-.coll-bottom{display:flex;gap:8px;margin:20px 0 30px}
-.coll-bottom button{flex:1;padding:14px;border-radius:16px;font-size:13px;font-weight:900;background:#c898e8;color:#fff;border:none;cursor:pointer}
+.coll-mini.military{background:linear-gradient(180deg,#6b7280,#374151);border-color:#1a1a1a}
+.coll-mini.military .rgn{background:linear-gradient(180deg,#4b5563,#374151);border-left-color:#1a1a1a}
+.coll-mini.military .body,.coll-mini.military .rgn-code{color:#d1d5db}
 
-/* ====== МОДАЛКИ ====== */
+.coll-info{flex:1;text-align:right;min-width:0}
+.coll-info .row1{font-size:11px;color:#7c5a8a;font-weight:800}
+.coll-info .rarity-lbl{font-size:12px;font-weight:900;margin:4px 0;padding:3px 8px;border-radius:8px;display:inline-block}
+.rl-common{background:rgba(255,255,255,.6);color:#7c5a8a}
+.rl-uncommon{background:#f5c0e0;color:#a030a0}
+.rl-rare{background:#cf90e0;color:#fff}
+.rl-epic{background:linear-gradient(90deg,#a855f7,#7c3aed);color:#fff}
+.rl-legendary{background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#4a2a0a}
+.coll-info .price{font-size:17px;font-weight:900;color:#5a3a6a;font-variant-numeric:tabular-nums;margin-top:2px}
+
+.coll-bottom{display:flex;gap:10px;margin:20px 0 30px}
+.coll-bottom button{flex:1;padding:16px;border-radius:16px;font-size:13px;font-weight:900;background:#c898e8;color:#fff;border:none;cursor:pointer;box-shadow:0 6px 16px -10px rgba(200,100,170,.5)}
+.coll-bottom button.danger{background:#e080c0}
+
+/* ===== УЛУЧШЕНИЯ ===== */
+.up-block{background:#ee9dcc;border-radius:18px;padding:20px;margin-bottom:14px}
+.up-block .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.up-block .head .name{font-size:16px;font-weight:900;color:#5a3a6a}
+.up-block .head .count{font-size:16px;font-weight:900;color:#5a3a6a}
+.up-block .prog{height:8px;background:rgba(255,255,255,.5);border-radius:4px;margin:12px 0;overflow:hidden}
+.up-block .prog-fill{height:100%;background:linear-gradient(90deg,#c898e8,#8b5cf6);border-radius:4px;transition:width .5s}
+.up-block .desc{font-size:12px;color:#7c5a8a;font-weight:700;line-height:1.5;margin-bottom:14px}
+.up-block .btn-full{width:100%;padding:16px;background:rgba(255,255,255,.6);border-radius:14px;font-size:14px;font-weight:900;color:#7c3aed;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:none}
+.up-block .btn-full.disabled{opacity:.5;color:#8a6a9a}
+.up-block .row-simple{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:800;color:#5a3a6a;cursor:pointer;align-items:center}
+.up-block .row-simple .val{color:#8a6a9a}
+
+/* ===== РЕГИОНЫ ===== */
+.region-row{padding:16px 22px;background:#ee9dcc;border-radius:16px;margin-bottom:8px;font-size:15px;font-weight:900;color:#5a3a6a;cursor:pointer;transition:.15s;display:flex;justify-content:space-between;align-items:center}
+.region-row.active{background:#c898e8;color:#fff}
+.region-row:active{transform:scale(.99)}
+.region-row .mult{font-size:12px;color:#7c5a8a;font-weight:800}
+.region-row.active .mult{color:rgba(255,255,255,.8)}
+
+/* ===== МОДАЛКИ ===== */
 .modal-bg{position:fixed;inset:0;background:rgba(60,30,80,.8);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
 .modal-bg.show{display:flex;animation:fadeIn .25s}
-.modal{background:#f8ebfc;border-radius:26px;padding:26px;max-width:380px;width:100%;text-align:center;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
+.modal{background:#f8ebfc;border-radius:26px;padding:26px;max-width:390px;width:100%;text-align:center;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-.modal h3{font-size:22px;font-weight:900;color:#5a3a6a;margin-bottom:8px}
+.modal h3{font-size:22px;font-weight:900;color:#5a3a6a;margin-bottom:6px}
 .modal .subtxt{font-size:14px;color:#8a6a9a;font-weight:800;margin-bottom:16px}
-.modal .plate-preview{display:flex;justify-content:center;margin:14px 0}
-.modal .plate-preview .plate{max-width:280px;height:105px}
-.modal .plate-preview .plate .body{font-size:56px}
-.modal .plate-preview .plate .rgn-code{font-size:34px}
-.modal .plate-preview .plate .rgn-rus{font-size:10px}
-.modal .plate-preview .plate .rgn-flag{font-size:16px}
-.modal .price-big{font-size:28px;font-weight:900;color:#7c3aed;margin:14px 0 20px}
-.modal .btn{width:100%;padding:16px;border-radius:16px;font-size:15px;font-weight:900;margin-bottom:8px;cursor:pointer;border:none}
+.modal .preview{display:flex;justify-content:center;margin:14px 0}
+.modal .preview .plate{max-width:300px;height:115px}
+.modal .preview .plate .body{font-size:62px}
+.modal .preview .plate .rgn-code{font-size:40px}
+.modal .preview .plate .rgn-rus{font-size:11px}
+.modal .rarity-line{display:inline-block;padding:6px 16px;border-radius:12px;font-size:13px;font-weight:900;margin:8px 0 4px}
+.modal .price-big{font-size:32px;font-weight:900;color:#7c3aed;margin:14px 0 20px;font-variant-numeric:tabular-nums}
+.modal .btn{width:100%;padding:17px;border-radius:16px;font-size:16px;font-weight:900;margin-bottom:8px;cursor:pointer;border:none;transition:.15s}
 .modal .btn:active{transform:scale(.98)}
-.modal .btn.green{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff}
-.modal .btn.yellow{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#4a2a0a}
+.modal .btn.green{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;box-shadow:0 8px 20px -8px rgba(34,197,94,.7)}
+.modal .btn.yellow{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#4a2a0a;box-shadow:0 8px 20px -8px rgba(250,204,21,.7)}
 .modal .btn.primary{background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#fff}
 .modal .btn.gray{background:#ee9dcc;color:#5a3a6a}
 .modal .btn.red{background:#ef4444;color:#fff}
-
-/* ====== РЕГИОН МОДАЛКА ====== */
-.region-modal-bg{position:fixed;inset:0;background:#f2dff5;z-index:400;display:none;padding:20px;overflow-y:auto}
-.region-modal-bg.show{display:block}
-.region-hd{display:flex;align-items:center;gap:14px;padding:14px 0 20px}
-.region-hd .back{font-size:26px;cursor:pointer;color:#8a6a9a;font-weight:900}
-.region-hd .title{font-size:22px;font-weight:900;color:#5a3a6a}
-.region-search{width:100%;padding:16px 20px;background:#ee9dcc;border-radius:16px;font-size:14px;font-weight:800;color:#5a3a6a;border:none;margin-bottom:14px}
-.region-search::placeholder{color:#a888b8}
-.region-row{padding:16px 20px;background:#ee9dcc;border-radius:14px;margin-bottom:8px;font-size:15px;font-weight:900;color:#5a3a6a;cursor:pointer;transition:.15s}
-.region-row.active{background:#c898e8;color:#fff}
-.region-row:active{transform:scale(.99)}
 
 /* Тост */
 .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-40px);padding:14px 24px;border-radius:16px;background:rgba(90,58,106,.95);color:#fff;font-weight:800;font-size:13px;z-index:600;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap;max-width:92vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.win{background:linear-gradient(135deg,#22c55e,#16a34a)}
 .toast.gold{background:linear-gradient(135deg,#facc15,#f59e0b);color:#1a1408}
+.toast.lose{background:linear-gradient(135deg,#ef4444,#dc2626)}
 
 /* Частицы */
 .particles{position:fixed;inset:0;pointer-events:none;z-index:550}
-.particle{position:absolute;font-size:28px;animation:pfly 1.3s ease-out forwards}
+.particle{position:absolute;font-size:30px;animation:pfly 1.4s ease-out forwards}
 @keyframes pfly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
 .screen-flash{position:fixed;inset:0;pointer-events:none;z-index:530;opacity:0}
-.screen-flash.show{animation:fl .6s ease-out}
-@keyframes fl{0%{opacity:0}30%{opacity:.8;background:radial-gradient(circle,rgba(250,204,21,.55),transparent 70%)}100%{opacity:0}}
+.screen-flash.show{animation:fl .7s ease-out}
+@keyframes fl{0%{opacity:0}30%{opacity:.85;background:radial-gradient(circle,rgba(250,204,21,.55),transparent 70%)}100%{opacity:0}}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="burger" onclick="openMenu()"></div>
   <div class="balances">
@@ -252,36 +264,36 @@ input{font-family:inherit;outline:none}
   </div>
 </div>
 
-<!-- ГЛАВНЫЙ ЭКРАН -->
+<!-- ГЛАВНЫЙ -->
 <div class="screen active" id="screen-main">
-  <div class="main-screen">
-    <div>
-      <div class="rarity-card" id="rarityCard">
-        <div class="left">
-          <div class="name" id="rarityName">Необычный</div>
-          <div class="bars" id="rarityBars">
-            <div class="bar filled"></div><div class="bar filled"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-          </div>
-        </div>
-        <div class="price" id="rarityPrice">20 679 ₽</div>
-      </div>
+  <div class="main-area">
+    <div class="tap-hint" onclick="doRoll()"></div>
 
-      <div class="plate-wrap">
-        <div class="plate" id="mainPlate">
-          <div class="body"><span class="empty">Нажми «Крутить»</span></div>
+    <div class="rarity-strip rc-common" id="rarityStrip">
+      <div class="left">
+        <div class="name" id="rarityName">Обычный</div>
+        <div class="bars" id="rarityBars">
+          <div class="bar filled"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
         </div>
       </div>
-
-      <div class="plate-caption" id="plateCaption">Зеркальные цифры</div>
+      <div class="price" id="rarityPrice">0 ₽</div>
     </div>
 
-    <div class="region-pill">
-      <button onclick="openRegions()">
-        <span class="flag">🇷🇺</span>
-        <span>Россия</span>
-        <span class="cnt" id="regionCnt">3 типа</span>
-      </button>
+    <div class="plate-wrap">
+      <div class="plate" id="mainPlate">
+        <div class="body"><span class="empty-txt">Тапни по экрану</span></div>
+      </div>
+    </div>
+
+    <div class="plate-caption" id="plateCaption">— — —</div>
+
+    <div class="region-strip-wrap">
+      <div class="region-strip" onclick="event.stopPropagation();openRegions()">
+        <div class="flag">🇷🇺</div>
+        <div class="name">Россия</div>
+        <div class="cnt" id="regionCnt">3 типа</div>
+      </div>
     </div>
   </div>
 </div>
@@ -296,126 +308,116 @@ input{font-family:inherit;outline:none}
 
 <!-- МЕНЮ -->
 <div class="screen" id="screen-menu">
-  <div class="menu-title">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('main')">←</div>
-    <div>Меню</div>
+    <div class="title">Меню</div>
   </div>
 
-  <div class="menu-item full-img" onclick="showScreen('generator')" style="height:130px">
-    <div class="bg-emoji" style="left:50%;transform:translate(-50%,-50%);opacity:.35;font-size:80px">🚗</div>
-    <div class="text-wrap" style="left:20px"><div class="name">Генератор</div></div>
+  <div class="menu-card big" onclick="showScreen('generator')">
+    <div class="left-icon">🚗</div>
+    <div class="text"><div class="name">Генератор</div></div>
+    <div class="deco-emoji">🎰</div>
   </div>
 
-  <div class="menu-item full-img" onclick="showScreen('tasks')">
-    <div class="bg-emoji" style="left:50%;transform:translate(-50%,-50%);opacity:.35;font-size:60px">📋</div>
-    <div class="text-wrap" style="left:20px"><div class="name">Ежедневные задания</div></div>
+  <div class="menu-card big" onclick="showScreen('tasks')">
+    <div class="left-icon">📋</div>
+    <div class="text"><div class="name">Ежедневные задания</div></div>
+    <div class="deco-emoji">✅</div>
   </div>
 
-  <div class="menu-item two-col" onclick="showScreen('collection')">
-    <div class="half">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">📚</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Коллекция</div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="showScreen('collection')">
+      <div class="ico">📚</div>
+      <div class="text"><div class="name">Коллекция</div></div>
     </div>
-    <div class="half">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">🔒</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Сейф</div>
-    </div>
-  </div>
-
-  <div class="menu-item two-col" onclick="showScreen('upgrades')">
-    <div class="half">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">💵</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Автопродажа</div>
-    </div>
-    <div class="half">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">⚙️</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Улучшения</div>
+    <div class="menu-card" onclick="toast('Скоро!')">
+      <div class="ico">🔒</div>
+      <div class="text"><div class="name">Сейф</div></div>
     </div>
   </div>
 
-  <div class="menu-item two-col" onclick="showScreen('collection')">
-    <div class="half">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">⭐</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Каталог редкостей</div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="showScreen('upgrades')">
+      <div class="ico">💵</div>
+      <div class="text"><div class="name">Автопродажа</div></div>
     </div>
-    <div class="half" onclick="showScreen('stats');event.stopPropagation()">
-      <div class="bg-emoji" style="opacity:.5;font-size:44px;position:relative;left:0;top:0;transform:none">📊</div>
-      <div class="label" style="position:absolute;left:12px;bottom:10px;font-size:12px;font-weight:900;color:#5a3a6a;text-transform:uppercase;letter-spacing:.5px">Статистика</div>
+    <div class="menu-card" onclick="showScreen('upgrades')">
+      <div class="ico">⚙️</div>
+      <div class="text"><div class="name">Улучшения</div></div>
+    </div>
+  </div>
+
+  <div class="menu-grid">
+    <div class="menu-card" onclick="showScreen('collection')">
+      <div class="ico">⭐</div>
+      <div class="text"><div class="name">Каталог</div></div>
+    </div>
+    <div class="menu-card" onclick="showScreen('stats')">
+      <div class="ico">📊</div>
+      <div class="text"><div class="name">Статистика</div></div>
     </div>
   </div>
 </div>
 
-<!-- ЭКРАН ЗАДАНИЙ -->
+<!-- ЗАДАНИЯ -->
 <div class="screen" id="screen-tasks">
-  <div class="menu-title">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('menu')">←</div>
-    <div>Задания</div>
+    <div class="title">Задания</div>
   </div>
   <div id="tasksList"></div>
 </div>
 
-<!-- ЭКРАН ГЕНЕРАТОРА -->
+<!-- ГЕНЕРАТОР (настройка) -->
 <div class="screen" id="screen-generator">
-  <div class="country-header">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('menu')">←</div>
     <div class="title">Настройка генерации</div>
   </div>
 
-  <div class="country-block">
-    <div style="display:flex;align-items:center;gap:14px">
+  <div class="country-bar">
+    <div class="left">
       <div class="flag">🇷🇺</div>
       <div class="name">Россия</div>
     </div>
-    <div class="count">3 / 4</div>
+    <div class="cnt">3 / 4</div>
   </div>
 
-  <div class="types-title">Типы номеров</div>
+  <div class="section-label">Типы номеров</div>
 
-  <div class="type-item">
+  <div class="type-row">
     <div class="type-mini">
       <div class="body">А001АА</div>
       <div class="rgn"><div class="rgn-code">01</div><div class="rgn-rus">RUS</div></div>
     </div>
-    <div class="type-info">
-      <div class="tname">Гражданский</div>
-      <div class="chance">95,5%</div>
-    </div>
+    <div class="type-info"><div class="tname">Гражданский</div><div class="chance">95,5%</div></div>
   </div>
 
-  <div class="type-item">
+  <div class="type-row">
     <div class="type-mini taxi">
       <div class="body" style="font-size:20px">АА 001</div>
       <div class="rgn"><div class="rgn-code">01</div><div class="rgn-rus">RUS</div></div>
     </div>
-    <div class="type-info">
-      <div class="tname">Такси</div>
-      <div class="chance">3,5%</div>
-    </div>
+    <div class="type-info"><div class="tname">Такси</div><div class="chance">3,5%</div></div>
   </div>
 
-  <div class="type-item">
+  <div class="type-row">
     <div class="type-mini police">
       <div class="body" style="font-size:20px">А 0001</div>
       <div class="rgn"><div class="rgn-code">01</div><div class="rgn-rus">RUS</div></div>
     </div>
-    <div class="type-info">
-      <div class="tname">Полиция</div>
-      <div class="chance">1,0%</div>
-    </div>
+    <div class="type-info"><div class="tname">Полиция</div><div class="chance">1,0%</div></div>
   </div>
 
-  <div class="type-item locked">
+  <div class="type-row locked">
     <div class="type-mini military">
       <div class="body" style="font-size:20px">0001АА</div>
       <div class="rgn"><div class="rgn-code">09</div><div class="rgn-rus">RUS</div></div>
     </div>
-    <div class="type-info">
-      <div class="tname" style="color:#8a6a9a">Военный</div>
-      <div class="locked-txt">Закрыт 🔒</div>
-    </div>
+    <div class="type-info"><div class="tname" style="color:#8a6a9a">Военный</div><div class="locked-txt">Закрыт 🔒</div></div>
   </div>
 
-  <div class="cost-title">Стоимость генерации</div>
+  <div class="section-label" style="margin-top:24px">Стоимость генерации</div>
   <div class="cost-block">
     <div class="total"><span>Стоимость генерации</span><span class="val" id="genCost">10 875 ₽</span></div>
     <div class="row"><span>Базовая пошлина</span><span class="v">1 450 ₽</span></div>
@@ -423,15 +425,15 @@ input{font-family:inherit;outline:none}
     <div class="row"><span>Гарантия региона</span><span class="v" id="genGuar">×1.50</span></div>
   </div>
 
-  <div class="bottom-2btn">
+  <div class="bottom-btns">
     <button onclick="showScreen('regions')">Выбрать страну</button>
-    <button onclick="openRegions()"><span id="genRegionBtn">Москва</span> ▼</button>
+    <button onclick="openRegions()"><span id="genRegName">Москва</span> ▼</button>
   </div>
 </div>
 
-<!-- ЭКРАН РЕГИОНОВ (список) -->
+<!-- РЕГИОНЫ -->
 <div class="screen" id="screen-regions">
-  <div class="country-header">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('generator')">←</div>
     <div class="title">Выбор региона</div>
   </div>
@@ -439,44 +441,11 @@ input{font-family:inherit;outline:none}
   <div id="regionsList"></div>
 </div>
 
-<!-- ЭКРАН УЛУЧШЕНИЙ -->
-<div class="screen" id="screen-upgrades">
-  <div class="menu-title">
-    <div class="back" onclick="showScreen('menu')">←</div>
-    <div>Улучшения</div>
-  </div>
-
-  <div class="upgrade-block">
-    <div class="head">
-      <div class="name">Коллекция</div>
-      <div class="count"><span id="upColCount">0</span> / 1500</div>
-    </div>
-    <div class="prog"><div class="prog-fill" id="upColProg" style="width:0%"></div></div>
-    <div class="desc">Здесь хранятся выпавшие номера. Когда место кончится, прокрутить не получится, пока не продашь что-нибудь.</div>
-    <button class="btn-full" onclick="toast('Скоро!')">Расширить до 2500 · 10 000 000 ₽</button>
-  </div>
-
-  <div class="upgrade-block">
-    <div class="head">
-      <div class="name">Сейф</div>
-      <div class="count">0 / 5</div>
-    </div>
-    <div class="prog"><div class="prog-fill" style="width:0%"></div></div>
-    <div class="desc">Номера в сейфе нельзя продать ни случайно, ни автопродажей.</div>
-    <button class="btn-full disabled" onclick="toast('Скоро!')">Расширить до 10 · 25 $</button>
-  </div>
-
-  <div class="upgrade-block">
-    <div class="head"><div class="name">Автопродажа</div></div>
-    <div class="row-simple" onclick="toast('Скоро!')"><span>Не приобретено</span><span class="val">›</span></div>
-  </div>
-</div>
-
-<!-- ЭКРАН КОЛЛЕКЦИИ -->
+<!-- КОЛЛЕКЦИЯ -->
 <div class="screen" id="screen-collection">
-  <div class="menu-title">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('menu')">←</div>
-    <div>Коллекция</div>
+    <div class="title">Коллекция</div>
   </div>
 
   <div class="coll-head">
@@ -493,52 +462,78 @@ input{font-family:inherit;outline:none}
   </div>
 
   <input class="coll-search" id="collSearch" placeholder="Поиск номера" oninput="renderCollection()">
-
   <div id="collectionList"></div>
 
   <div class="coll-bottom">
     <button onclick="sellAllCommon()">Быстрая продажа</button>
-    <button onclick="sellAll()">Продать всё</button>
+    <button class="danger" onclick="sellAll()">Продать всё</button>
   </div>
 </div>
 
-<!-- ЭКРАН СТАТИСТИКИ -->
-<div class="screen" id="screen-stats">
-  <div class="menu-title">
+<!-- УЛУЧШЕНИЯ -->
+<div class="screen" id="screen-upgrades">
+  <div class="menu-header">
     <div class="back" onclick="showScreen('menu')">←</div>
-    <div>Статистика</div>
+    <div class="title">Улучшения</div>
   </div>
-  <div class="upgrade-block">
+
+  <div class="up-block">
+    <div class="head"><div class="name">Коллекция</div><div class="count"><span id="upColCount">0</span> / 1500</div></div>
+    <div class="prog"><div class="prog-fill" id="upColProg" style="width:0%"></div></div>
+    <div class="desc">Здесь хранятся выпавшие номера. Когда место кончится, прокрутить не получится.</div>
+    <button class="btn-full" onclick="toast('Скоро!')">Расширить до 2500 · 10 000 000 ₽</button>
+  </div>
+
+  <div class="up-block">
+    <div class="head"><div class="name">Сейф</div><div class="count">0 / 5</div></div>
+    <div class="prog"><div class="prog-fill" style="width:0%"></div></div>
+    <div class="desc">Номера в сейфе нельзя продать ни случайно, ни автопродажей.</div>
+    <button class="btn-full disabled" onclick="toast('Скоро!')">Расширить до 10 · 25 $</button>
+  </div>
+
+  <div class="up-block">
+    <div class="head"><div class="name">Автопродажа</div></div>
+    <div class="row-simple" onclick="toast('Скоро!')"><span>Не приобретено</span><span class="val">›</span></div>
+  </div>
+</div>
+
+<!-- СТАТИСТИКА -->
+<div class="screen" id="screen-stats">
+  <div class="menu-header">
+    <div class="back" onclick="showScreen('menu')">←</div>
+    <div class="title">Статистика</div>
+  </div>
+  <div class="up-block">
     <div class="row-simple"><span>Прокруток</span><span class="val" id="statRolls">0</span></div>
     <div class="row-simple"><span>Номеров</span><span class="val" id="statCollected">0</span></div>
     <div class="row-simple"><span>Лучший номер</span><span class="val" id="statBest">0 ₽</span></div>
     <div class="row-simple"><span>Баланс</span><span class="val" id="statBal">10 000 ₽</span></div>
   </div>
-  <button class="btn-full" style="background:#ef4444;color:#fff;margin-top:20px" onclick="showReset()">Сбросить прогресс</button>
+  <button class="btn-full" style="background:#ef4444;color:#fff;margin-top:20px;padding:18px;border-radius:16px;font-weight:900" onclick="showReset()">Сбросить прогресс</button>
 </div>
 
-<!-- РЕГИОН МОДАЛКА (поверх всего) -->
-<div class="region-modal-bg" id="regionModal">
-  <div class="region-hd">
-    <div class="back" onclick="closeRegions()">←</div>
-    <div class="title">Все регионы</div>
+<!-- МОДАЛКА РЕГИОНОВ -->
+<div class="modal-bg" id="regionModal">
+  <div class="modal" style="max-height:80vh;overflow-y:auto;text-align:left">
+    <h3 style="text-align:center;margin-bottom:14px">Все регионы</h3>
+    <div id="regionModalList"></div>
   </div>
-  <div id="regionModalList"></div>
 </div>
 
 <!-- МОДАЛКА РЕЗУЛЬТАТА -->
 <div class="modal-bg" id="resultModal">
   <div class="modal">
     <h3 id="resTitle">🎉 Выпал номер!</h3>
-    <div class="plate-preview" id="resPlateWrap"></div>
-    <div class="subtxt" id="resSub">Гражданский · Москва 77</div>
+    <div class="preview" id="resPlate"></div>
+    <div class="rarity-line" id="resRarity">Обычный</div>
+    <div class="subtxt" id="resSub" style="margin-top:8px">Гражданский · Москва 77</div>
     <div class="price-big" id="resPrice">1 500 ₽</div>
     <button class="btn green" onclick="sellCurrent()">💵 Продать</button>
     <button class="btn yellow" onclick="keepCurrent()">⭐ В коллекцию</button>
   </div>
 </div>
 
-<!-- МОДАЛКА СБРОСА -->
+<!-- СБРОС -->
 <div class="modal-bg" id="resetModal">
   <div class="modal">
     <h3>⚠️ Сбросить?</h3>
@@ -554,12 +549,12 @@ input{font-family:inherit;outline:none}
 
 <script>
 /* ============================================================
-   NUMGEN v2 — точный дизайн
+   NUMGEN v3 — финальная версия с тапом по экрану
    ============================================================ */
 
 const BASE_FEE = 1450;
 
-/* 89 регионов РФ с гарантией как на скрине */
+/* 89 регионов РФ */
 const REGIONS = [
   { code:'77', name:'Москва', mult:5.00, guar:1.50, flag:'🏙️' },
   { code:'99', name:'Москва', mult:5.00, guar:1.50, flag:'🏙️' },
@@ -660,6 +655,15 @@ const TYPES = [
   { id:'police', name:'Полиция', chance:1.0, css:'police', basePrice:80.0 },
 ];
 
+/* Редкости — теперь ВСЕГДА показывается */
+const RARITIES = {
+  common:    { name:'Обычный',     min:0,       max:50000,    bars:1, cls:'rc-common',    labelCls:'rl-common' },
+  uncommon:  { name:'Необычный',   min:50000,   max:200000,   bars:2, cls:'rc-uncommon',  labelCls:'rl-uncommon' },
+  rare:      { name:'Редкий',      min:200000,  max:500000,   bars:3, cls:'rc-rare',      labelCls:'rl-rare' },
+  epic:      { name:'Эпический',   min:500000,  max:2000000,  bars:4, cls:'rc-epic',      labelCls:'rl-epic' },
+  legendary: { name:'Легендарный', min:2000000, max:999999999, bars:5, cls:'rc-legendary', labelCls:'rl-legendary' },
+};
+
 const LETTERS = ['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
 
 const S = {
@@ -671,7 +675,7 @@ const S = {
   tasksClaimed: {},
   bestPrice: 0,
   filter: 'all',
-  sortMode: 'default'
+  rolling: false
 };
 
 function $(id){ return document.getElementById(id); }
@@ -694,6 +698,7 @@ function beep(f, d, t, v){
 function sndTick(){ beep(500, 0.02, 'square', 0.02); }
 function sndWin(){ beep(600, 0.08); setTimeout(()=>beep(800, 0.08), 60); setTimeout(()=>beep(1000, 0.15), 130); }
 function sndRare(){ beep(500,0.08); setTimeout(()=>beep(700,0.08),70); setTimeout(()=>beep(900,0.08),140); setTimeout(()=>beep(1200,0.25),220); }
+function sndEpic(){ beep(400,0.1); setTimeout(()=>beep(600,0.1),80); setTimeout(()=>beep(900,0.1),160); setTimeout(()=>beep(1400,0.3),240); }
 function vibrate(p){ if(navigator.vibrate) navigator.vibrate(p); }
 
 let toastT = null;
@@ -708,17 +713,17 @@ function toast(msg, type){
 
 function spawnParticles(rare){
   const c = $('particles');
-  const arr = rare ? ['💎','👑','🌟','✨','💫'] : ['💰','💵','⭐','✨'];
-  for(let i=0;i<12;i++){
+  const arr = rare ? ['💎','👑','🌟','✨','💫','🎆'] : ['💰','💵','⭐','✨','💫'];
+  for(let i=0;i<14;i++){
     const p = document.createElement('div');
     p.className = 'particle';
     p.textContent = rnd(arr);
     p.style.left = '50%'; p.style.top = '40%';
-    p.style.setProperty('--dx', (Math.random()-0.5)*300 + 'px');
-    p.style.setProperty('--dy', (-180 - Math.random()*250) + 'px');
+    p.style.setProperty('--dx', (Math.random()-0.5)*350 + 'px');
+    p.style.setProperty('--dy', (-180 - Math.random()*300) + 'px');
     p.style.animationDelay = (Math.random()*0.15) + 's';
     c.appendChild(p);
-    setTimeout(()=>p.remove(), 1500);
+    setTimeout(()=>p.remove(), 1600);
   }
 }
 function screenFlash(){
@@ -726,7 +731,7 @@ function screenFlash(){
   f.classList.remove('show'); void f.offsetWidth; f.classList.add('show');
 }
 
-/* Переключение экранов */
+/* Навигация */
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el = $('screen-'+name);
@@ -743,39 +748,29 @@ function openMenu(){ showScreen('menu'); }
 function openRegions(){ renderRegionsModal(); $('regionModal').classList.add('show'); }
 function closeRegions(){ $('regionModal').classList.remove('show'); }
 
-/* ===== Регион ===== */
+/* Регион */
 function getRegion(){ return REGIONS.find(r=>r.code === S.currentRegion) || REGIONS[0]; }
-function calcCost(){
-  const r = getRegion();
-  return Math.round(BASE_FEE * r.mult * r.guar);
-}
-function updateCostDisplay(){
-  const cost = calcCost();
-  $('rollCost').textContent = fmt(cost) + ' ₽';
-}
+function calcCost(){ const r = getRegion(); return Math.round(BASE_FEE * r.mult * r.guar); }
+function updateCostDisplay(){ $('rollCost').textContent = fmt(calcCost()) + ' ₽'; }
 function updateGenCost(){
-  const cost = calcCost();
   const r = getRegion();
-  $('genCost').textContent = fmt(cost) + ' ₽';
+  $('genCost').textContent = fmt(calcCost()) + ' ₽';
   $('genMult').textContent = '×' + r.mult.toFixed(2);
   $('genGuar').textContent = '×' + r.guar.toFixed(2);
-  $('genRegionBtn').textContent = r.name.split(' ')[0];
+  $('genRegName').textContent = r.name.split(' ')[0];
 }
 
 function renderRegionsList(){
   const search = ($('regionSearch').value || '').toLowerCase();
-  const list = $('regionsList');
-  const filtered = REGIONS.filter(r => r.name.toLowerCase().includes(search) || r.code.includes(search));
-  list.innerHTML = filtered.map(r=>{
+  $('regionsList').innerHTML = REGIONS.filter(r => r.name.toLowerCase().includes(search) || r.code.includes(search)).map(r=>{
     const active = r.code === S.currentRegion ? 'active' : '';
-    return '<div class="region-row ' + active + '" onclick="selectRegion(\'' + r.code + '\')">' + r.name + ' (' + r.code + ')</div>';
+    return '<div class="region-row ' + active + '" onclick="selectRegion(\'' + r.code + '\')"><span>' + r.name + ' (' + r.code + ')</span><span class="mult">×' + (r.mult*r.guar).toFixed(2) + '</span></div>';
   }).join('');
 }
 function renderRegionsModal(){
-  const list = $('regionModalList');
-  list.innerHTML = REGIONS.map(r=>{
+  $('regionModalList').innerHTML = REGIONS.map(r=>{
     const active = r.code === S.currentRegion ? 'active' : '';
-    return '<div class="region-row ' + active + '" onclick="selectRegion(\'' + r.code + '\');closeRegions()">' + r.name + ' (' + r.code + ')</div>';
+    return '<div class="region-row ' + active + '" onclick="selectRegion(\'' + r.code + '\');closeRegions()"><span>' + r.name + ' (' + r.code + ')</span><span class="mult">×' + (r.mult*r.guar).toFixed(2) + '</span></div>';
   }).join('');
 }
 function selectRegion(code){
@@ -786,29 +781,27 @@ function selectRegion(code){
   toast('Регион: ' + getRegion().name, 'win');
 }
 
-/* ===== Крутить ===== */
+/* Крутить */
 function doRoll(){
   initAudio();
-  if(S.collection.length >= 1500){
-    return toast('❌ Коллекция заполнена', 'lose');
-  }
+  if(S.rolling) return;
+  if(S.collection.length >= 1500) return toast('❌ Коллекция заполнена', 'lose');
   const cost = calcCost();
-  if(S.balance < cost){
-    return toast('❌ Не хватает ' + fmt(cost - S.balance) + ' ₽', 'lose');
-  }
+  if(S.balance < cost) return toast('❌ Не хватает ' + fmt(cost - S.balance) + ' ₽', 'lose');
   S.balance -= cost;
   S.rolls++;
+  S.rolling = true;
   save();
   updateBalance();
-
-  const btn = $('rollBtn');
-  btn.disabled = true;
 
   const plate = $('mainPlate');
   plate.className = 'plate spinning';
 
-  $('rarityCard').classList.remove('show');
-  $('plateCaption').classList.remove('show');
+  // Плашка редкости на время прокрутки — серая пустая
+  const strip = $('rarityStrip');
+  strip.className = 'rarity-strip rc-common';
+  $('rarityName').textContent = 'Крутим...';
+  $('rarityPrice').textContent = '...';
 
   let ticks = 0;
   const maxTicks = 30;
@@ -816,12 +809,11 @@ function doRoll(){
     ticks++;
     plate.innerHTML = renderPlateBody(randomPlate(getRegion()));
     if(ticks % 3 === 0) sndTick();
-
     if(ticks >= maxTicks){
       clearInterval(iv);
       finalizeRoll();
     }
-  }, 35);
+  }, 30); // 30 тиков по 30мс = 0.9 сек — быстро!
 }
 
 function finalizeRoll(){
@@ -834,42 +826,50 @@ function finalizeRoll(){
   const plate = randomPlate(r, type);
   const price = calcPrice(plate, r, type);
   const rarity = getRarity(price);
-  const ri = getRarityInfo(price);
+  const ri = RARITIES[rarity];
 
   const plateEl = $('mainPlate');
   plateEl.classList.remove('spinning');
-  plateEl.className = 'plate ' + type.css + (rarity === 'legendary' ? ' legendary' : rarity === 'rare' ? ' rare' : '');
+  plateEl.className = 'plate ' + type.css + (rarity === 'legendary' ? ' legendary' : rarity === 'epic' ? ' epic' : rarity === 'rare' ? ' rare' : '');
   plateEl.innerHTML = renderPlateBody(plate);
 
   const cap = $('plateCaption');
   cap.textContent = getCaption(plate);
-  if(cap.textContent){ cap.classList.add('show'); }
 
-  const rc = $('rarityCard');
-  rc.className = 'rarity-card show rc-' + rarity;
+  const strip = $('rarityStrip');
+  strip.className = 'rarity-strip ' + ri.cls;
   $('rarityName').textContent = ri.name;
   $('rarityPrice').textContent = fmt(price) + ' ₽';
-  const bars = rc.querySelectorAll('.bar');
+  const bars = strip.querySelectorAll('.bar');
   bars.forEach((b, i)=> b.classList.toggle('filled', i < ri.bars));
 
   vibrate([30]);
   if(rarity === 'legendary'){
-    sndRare(); vibrate([80,50,80,50,200]);
+    sndEpic(); vibrate([100,50,100,50,300]);
+    spawnParticles(true); screenFlash();
+  } else if(rarity === 'epic'){
+    sndRare(); vibrate([80,50,100]);
     spawnParticles(true); screenFlash();
   } else if(rarity === 'rare'){
-    sndWin(); vibrate([50]); spawnParticles(false); screenFlash();
+    sndWin(); vibrate([60]);
+    spawnParticles(false); screenFlash();
   } else {
     beep(500, 0.08);
+    spawnParticles(false);
   }
 
-  $('resTitle').textContent = rarity === 'legendary' ? '🏆 ЛЕГЕНДАРНЫЙ!' : rarity === 'rare' ? '💎 Редкий!' : (rarity === 'uncommon' ? '⭐ Необычный!' : '🎉 Выпал номер!');
-  $('resPlateWrap').innerHTML = '<div class="plate ' + type.css + '">' + renderPlateBody(plate) + '</div>';
+  // Модалка
+  const titles = { common:'🎉 Выпал номер!', uncommon:'⭐ Необычный!', rare:'💎 Редкий!', epic:'🔥 ЭПИЧЕСКИЙ!', legendary:'🏆 ЛЕГЕНДАРНЫЙ!' };
+  $('resTitle').textContent = titles[rarity];
+  $('resPlate').innerHTML = '<div class="plate ' + type.css + (rarity === 'legendary' ? ' legendary' : rarity === 'epic' ? ' epic' : rarity === 'rare' ? ' rare' : '') + '">' + renderPlateBody(plate) + '</div>';
+  $('resRarity').textContent = ri.name;
+  $('resRarity').className = 'rarity-line ' + ri.labelCls;
   $('resSub').textContent = type.name + ' · ' + r.name + ' (' + r.code + ')';
   $('resPrice').textContent = fmt(price) + ' ₽';
   $('resultModal').classList.add('show');
 
   window._cur = { ...plate, region: r, type, price, rarity };
-  $('rollBtn').disabled = false;
+  S.rolling = false;
 }
 
 function randomPlate(region, forcedType){
@@ -884,61 +884,53 @@ function randomPlate(region, forcedType){
 }
 
 function renderPlateBody(p){
+  const rgnHTML = '<div class="rgn"><div class="rgn-code">' + p.code + '</div><div class="rgn-rus">RUS<span class="flag">🇷🇺</span></div></div>';
   if(p.fmt === 'civil'){
-    return '<div class="body">' + p.l1 + p.n1 + p.l2 + p.l3 + '</div>' +
-      '<div class="rgn"><div class="rgn-code">' + p.code + '</div><div class="rgn-rus">RUS</div><div class="rgn-flag">🇷🇺</div></div>';
+    return '<div class="body">' + p.l1 + p.n1 + p.l2 + p.l3 + '</div>' + rgnHTML;
   } else if(p.fmt === 'taxi'){
-    return '<div class="body" style="font-size:58px">' + p.l1 + p.l2 + ' ' + p.n1 + '</div>' +
-      '<div class="rgn"><div class="rgn-code">' + p.code + '</div><div class="rgn-rus">RUS</div><div class="rgn-flag">🇷🇺</div></div>';
+    return '<div class="body" style="font-size:62px">' + p.l1 + p.l2 + ' ' + p.n1 + '</div>' + rgnHTML;
   } else {
-    return '<div class="body" style="font-size:56px">' + p.l1 + ' ' + p.n1 + '</div>' +
-      '<div class="rgn"><div class="rgn-code">' + p.code + '</div><div class="rgn-rus">RUS</div><div class="rgn-flag">🇷🇺</div></div>';
+    return '<div class="body" style="font-size:58px">' + p.l1 + ' ' + p.n1 + '</div>' + rgnHTML;
   }
 }
 
 function getCaption(p){
   if(p.fmt === 'civil'){
     const d = p.n1;
-    if(d === '777') return 'Красивые цифры';
-    if(d[0] === d[1] || d[1] === d[2]) return 'Зеркальные цифры';
+    if(d === '777' || d === '001' || d === '007') return 'Красивые цифры';
+    if(d[0] === d[1] || d[1] === d[2]) return 'Повтор цифр';
     if(p.l1 === p.l2 && p.l2 === p.l3) return 'Одинаковые буквы';
+    if(p.l1 === p.l2 || p.l2 === p.l3) return 'Совпадение букв';
   }
-  return '';
+  return 'Случайный номер';
 }
 
-/* Цены — подвышены */
+/* Цены подвышены */
 function calcPrice(p, region, type){
   let base = 5000;
   base *= type.basePrice;
-  base *= (region.mult * 1.2 + region.guar * 0.8);
-
+  base *= (region.mult * 1.3 + region.guar * 0.9);
   if(p.n1){
     const d = p.n1;
-    if(d === '777') base *= 12;
-    else if(d === '001') base *= 8;
-    else if(d === '007') base *= 10;
-    else if(d === '666') base *= 9;
-    else if(d[0] === d[1] && d[1] === d[2]) base *= 6;
-    else if(d[0] === d[1] || d[1] === d[2]) base *= 2.5;
+    if(d === '777') base *= 15;
+    else if(d === '001') base *= 10;
+    else if(d === '007') base *= 12;
+    else if(d === '666') base *= 11;
+    else if(d[0] === d[1] && d[1] === d[2]) base *= 7;
+    else if(d[0] === d[1] || d[1] === d[2]) base *= 3;
   }
-  if(p.l1 === p.l2 && p.l1 === p.l3) base *= 4;
-  else if(p.l1 === p.l2 || p.l2 === p.l3) base *= 2;
-
-  base *= (0.75 + Math.random()*0.7);
+  if(p.l1 === p.l2 && p.l1 === p.l3) base *= 5;
+  else if(p.l1 === p.l2 || p.l2 === p.l3) base *= 2.5;
+  base *= (0.75 + Math.random()*0.8);
   return Math.round(base);
 }
 
 function getRarity(price){
-  if(price >= 2000000) return 'legendary';
-  if(price >= 500000) return 'rare';
-  if(price >= 100000) return 'uncommon';
+  if(price >= RARITIES.legendary.min) return 'legendary';
+  if(price >= RARITIES.epic.min) return 'epic';
+  if(price >= RARITIES.rare.min) return 'rare';
+  if(price >= RARITIES.uncommon.min) return 'uncommon';
   return 'common';
-}
-function getRarityInfo(price){
-  if(price >= 2000000) return { name:'Легендарный', bars:5 };
-  if(price >= 500000) return { name:'Редкий', bars:4 };
-  if(price >= 100000) return { name:'Необычный', bars:2 };
-  return { name:'Обычный', bars:1 };
 }
 
 function sellCurrent(){
@@ -963,13 +955,16 @@ function keepCurrent(){
   window._cur = null;
   resetPlate();
 }
-
 function resetPlate(){
   const p = $('mainPlate');
   p.className = 'plate';
-  p.innerHTML = '<div class="body"><span class="empty">Нажми «Крутить»</span></div>';
-  $('plateCaption').classList.remove('show');
-  $('rarityCard').classList.remove('show');
+  p.innerHTML = '<div class="body"><span class="empty-txt">Тапни по экрану</span></div>';
+  $('plateCaption').textContent = '— — —';
+  const strip = $('rarityStrip');
+  strip.className = 'rarity-strip rc-common';
+  $('rarityName').textContent = 'Обычный';
+  $('rarityPrice').textContent = '0 ₽';
+  strip.querySelectorAll('.bar').forEach((b,i)=> b.classList.toggle('filled', i < 1));
 }
 
 /* Коллекция */
@@ -977,16 +972,16 @@ function renderCollection(){
   const search = ($('collSearch').value || '').toLowerCase();
   let list = S.collection.filter(i => !search || getPlateText(i).toLowerCase().includes(search));
 
-  if(S.filter === 'rarity') list.sort((a,b)=>b.price-a.price);
-  else if(S.filter === 'price') list.sort((a,b)=>b.price-a.price);
+  if(S.filter === 'price') list.sort((a,b)=>b.price-a.price);
+  else if(S.filter === 'rarity'){ const order = { legendary:0, epic:1, rare:2, uncommon:3, common:4 }; list.sort((a,b)=>order[a.rarity]-order[b.rarity]); }
   else if(S.filter === 'az') list.sort((a,b)=>getPlateText(a).localeCompare(getPlateText(b)));
 
   const c = $('collectionList');
   if(list.length === 0){
-    c.innerHTML = '<div style="text-align:center;padding:50px;color:#a888b8;font-weight:800">Коллекция пуста</div>';
+    c.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#a888b8;font-weight:800;font-size:15px">Коллекция пуста<br><span style="font-size:13px">Крути номера и добавляй их</span></div>';
   } else {
     c.innerHTML = list.map(item=>{
-      const ri = getRarityInfo(item.price);
+      const ri = RARITIES[item.rarity];
       return '<div class="coll-item" onclick="sellById(\'' + item.id + '\')">' +
         '<div class="coll-mini ' + item.type.css + '">' +
           '<div class="body">' + getPlateText(item) + '</div>' +
@@ -994,13 +989,12 @@ function renderCollection(){
         '</div>' +
         '<div class="coll-info">' +
           '<div class="row1">Россия · ' + item.type.name + '</div>' +
-          '<div class="bars">' + [0,1,2,3,4].map(i=>'<div class="b '+(i<ri.bars?'f':'')+'"></div>').join('') + '</div>' +
+          '<div class="rarity-lbl ' + ri.labelCls + '">' + ri.name + '</div>' +
           '<div class="price">' + fmt(item.price) + ' ₽</div>' +
         '</div>' +
       '</div>';
     }).join('');
   }
-
   $('collCount').textContent = S.collection.length + ' / 1500';
   const total = S.collection.reduce((s,i)=>s+i.price, 0);
   $('collValue').textContent = 'Стоимость коллекции ' + fmt(total) + ' ₽';
@@ -1015,7 +1009,7 @@ function setFilter(f){
   S.filter = f;
   document.querySelectorAll('.coll-filter').forEach((b,i)=>{
     b.classList.toggle('active',
-      (f==='all' && i===0)||(f==='date' && i===1)||(f==='price' && i===2)||(f==='rarity' && i===3)||(f==='az' && i===4));
+      (f==='all'&&i===0)||(f==='date'&&i===1)||(f==='price'&&i===2)||(f==='rarity'&&i===3)||(f==='az'&&i===4));
   });
   renderCollection();
 }
@@ -1023,7 +1017,6 @@ function sellById(id){
   const i = S.collection.findIndex(x=>x.id===id);
   if(i < 0) return;
   const item = S.collection[i];
-  if(!confirm('Продать за ' + fmt(item.price) + ' ₽?')) return;
   S.balance += item.price;
   if(item.price > S.bestPrice) S.bestPrice = item.price;
   S.collection.splice(i, 1);
@@ -1039,15 +1032,16 @@ function sellAllCommon(){
   S.balance += total;
   save(); updateBalance(); renderCollection();
   toast('💰 +' + fmt(total) + ' ₽', 'win');
+  sndWin();
 }
 function sellAll(){
   if(S.collection.length === 0) return toast('Пусто', 'lose');
   const total = S.collection.reduce((s,i)=>s+i.price, 0);
-  if(!confirm('Продать всё за ' + fmt(total) + ' ₽?')) return;
   S.collection = [];
   S.balance += total;
   save(); updateBalance(); renderCollection();
   toast('💰 +' + fmt(total) + ' ₽', 'win');
+  sndWin();
 }
 
 /* Улучшения */
@@ -1068,7 +1062,7 @@ function renderTasks(){
     const prog = Math.min(t.target, t.check(S));
     const claimed = S.tasksClaimed[t.id];
     const can = prog >= t.target && !claimed;
-    return '<div class="upgrade-block">' +
+    return '<div class="up-block">' +
       '<div class="head"><div class="name">' + t.name + '</div><div class="count">' + prog + ' / ' + t.target + '</div></div>' +
       '<div class="prog"><div class="prog-fill" style="width:' + Math.round(prog/t.target*100) + '%"></div></div>' +
       '<div class="desc">' + t.desc + ' · награда ' + fmt(t.reward) + ' ₽</div>' +
@@ -1087,7 +1081,6 @@ function claimTask(id, reward){
   sndWin();
 }
 
-/* Статистика */
 function renderStats(){
   $('statRolls').textContent = S.rolls;
   $('statCollected').textContent = S.collection.length;
@@ -1095,28 +1088,16 @@ function renderStats(){
   $('statBal').textContent = fmt(S.balance) + ' ₽';
 }
 
-/* Сброс */
 function showReset(){ $('resetModal').classList.add('show'); }
 function confirmReset(){
-  S.balance = 10000;
-  S.collection = [];
-  S.rolls = 0;
-  S.currentRegion = '77';
-  S.lastDaily = '';
-  S.tasksClaimed = {};
-  S.bestPrice = 0;
-  save();
-  closeModal('resetModal');
-  updateBalance();
-  toast('🔄 Сброшено', 'win');
-  resetPlate();
-  showScreen('main');
+  S.balance = 10000; S.collection = []; S.rolls = 0; S.currentRegion = '77';
+  S.lastDaily = ''; S.tasksClaimed = {}; S.bestPrice = 0;
+  save(); closeModal('resetModal'); updateBalance();
+  toast('🔄 Сброшено', 'win'); resetPlate(); showScreen('main');
 }
 function closeModal(id){ $(id).classList.remove('show'); }
 
-function updateBalance(){
-  $('balRub').textContent = fmt(S.balance);
-}
+function updateBalance(){ $('balRub').textContent = fmt(S.balance); }
 
 function save(){
   try {
@@ -1152,6 +1133,7 @@ updateCostDisplay();
 updateGenCost();
 renderCollection();
 renderTasks();
+resetPlate();
 </script>
 </body>
 </html>
