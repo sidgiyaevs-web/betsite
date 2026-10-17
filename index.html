@@ -3,47 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🏎️ Race Master 3D Clone</title>
+<title>🏎️ RACE MASTER 3D CLONE</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #1a0033; font-family: 'Segoe UI', Arial, sans-serif; user-select: none; touch-action: none; }
+  /* ========================================================= */
+  /* CSS СТИЛИ (UI, кнопки, меню)                              */
+  /* ========================================================= */
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: none; }
+  body { overflow: hidden; background: #090014; font-family: 'Arial Black', Impact, sans-serif; }
   canvas { display: block; }
   
-  /* UI */
   #ui { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+  .top-bar { display: flex; justify-content: space-between; padding: 20px; }
+  .panel { background: rgba(15,0,30,0.85); padding: 10px 20px; border-radius: 12px; border: 2px solid rgba(0,255,255,0.3); color: white; text-align: center; box-shadow: 0 0 15px rgba(0,255,255,0.2); min-width: 90px; }
+  .panel span.lbl { display: block; font-size: 11px; color: #00ffff; margin-bottom: 3px; letter-spacing: 1px; text-shadow: 0 0 5px #00ffff; }
+  .panel span.val { font-size: 26px; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .speed-val { color: #00ff00; text-shadow: 0 0 10px #00ff00 !important; }
   
-  /* Верхняя панель (как на скрине) */
-  .top-bar { display: flex; justify-content: center; padding: 20px; gap: 10px; }
-  .panel { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); color: white; font-weight: 900; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); text-align: center; }
-  .panel span { display: block; font-size: 14px; color: #aaa; margin-bottom: 5px; }
-  
-  /* Кнопки управления */
-  .controls { display: flex; justify-content: space-between; padding: 30px; pointer-events: auto; }
-  .ctrl-btn { width: 90px; height: 90px; background: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; margin: 0 10px; backdrop-filter: blur(10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-  .ctrl-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.9); }
-  #btn-gas { border-color: #00ff00; background: rgba(0,255,0,0.2); }
-  #btn-left { border-color: #00ccff; }
-  #btn-right { border-color: #00ccff; }
+  .controls { display: flex; justify-content: space-between; padding: 40px 30px; pointer-events: auto; }
+  .ctrl-btn { width: 100px; height: 100px; background: rgba(0,0,0,0.6); border: 4px solid #00ccff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 45px; color: white; backdrop-filter: blur(10px); box-shadow: 0 0 25px rgba(0,204,255,0.5), inset 0 0 20px rgba(0,204,255,0.2); transition: transform 0.1s; }
+  .ctrl-btn:active { transform: scale(0.9); background: rgba(0,204,255,0.3); }
+  #btn-gas { border-color: #00ff00; box-shadow: 0 0 25px rgba(0,255,0,0.5), inset 0 0 20px rgba(0,255,0,0.2); }
+  #btn-gas:active { background: rgba(0,255,0,0.3); }
 
-  /* Меню */
-  #menu { position: absolute; inset: 0; background: linear-gradient(135deg, #1a0033, #330066); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; pointer-events: auto; }
-  h1 { font-size: 50px; margin-bottom: 10px; font-style: italic; background: linear-gradient(45deg, #00ffff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(255,0,255,0.5); font-weight: 900; }
-  .btn { padding: 20px 60px; font-size: 24px; font-weight: 900; background: linear-gradient(90deg, #ff00ff, #00ffff); color: white; border: none; border-radius: 50px; cursor: pointer; margin-top: 30px; box-shadow: 0 10px 30px rgba(255,0,255,0.5); text-transform: uppercase; letter-spacing: 3px; }
+  #menu { position: absolute; inset: 0; background: linear-gradient(135deg, #090014, #1a0033); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; pointer-events: auto; }
+  h1 { font-size: 60px; margin-bottom: 10px; font-style: italic; background: linear-gradient(45deg, #00ffff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(255,0,255,0.8)); font-weight: 900; letter-spacing: -2px; text-align: center; line-height: 0.9; }
+  .btn { padding: 25px 70px; font-size: 28px; font-weight: 900; background: linear-gradient(90deg, #ff00ff, #00ffff); color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 40px; box-shadow: 0 0 40px rgba(255,0,255,0.8); text-transform: uppercase; letter-spacing: 3px; }
   .btn:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
 
 <div id="menu">
-  <h1>RACE MASTER 3D</h1>
-  <p style="opacity: 0.7; font-size: 18px; letter-spacing: 2px;">WEB CLONE</p>
-  <button class="btn" id="btn-start">СТАРТ</button>
+  <h1>RACE<br>MASTER</h1>
+  <p style="opacity: 0.6; margin-top: 20px; font-size: 16px; letter-spacing: 4px; font-family: Arial; text-transform: uppercase;">3D Web Clone</p>
+  <button class="btn" id="btn-start">PLAY</button>
 </div>
 
 <div id="ui" style="display:none;">
   <div class="top-bar">
-    <div class="panel"><span>LAP</span>1/3</div>
-    <div class="panel" style="color:#00ff00;"><span>SPEED</span><span id="ui-speed" style="color:#00ff00; font-size:24px;">0</span></div>
-    <div class="panel"><span>DISTANCE</span><span id="ui-dist" style="font-size:24px;">0</span>m</div>
+    <div class="panel"><span class="lbl">LAP</span><span class="val" id="ui-lap">1/3</span></div>
+    <div class="panel"><span class="lbl">SPEED</span><span class="val speed-val" id="ui-speed">0</span></div>
+    <div class="panel"><span class="lbl">DIST</span><span class="val" id="ui-dist">0</span></div>
   </div>
   
   <div class="controls">
@@ -68,319 +68,588 @@
 <script type="module">
 import * as THREE from 'three';
 
-// ==========================================
-// 1. НАСТРОЙКА СЦЕНЫ (НЕОНОВЫЙ ГОРОД)
-// ==========================================
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a0033); // Темно-фиолетовый
-scene.fog = new THREE.Fog(0x1a0033, 50, 200);
+// =========================================================
+// 1. АУДИО-ДВИЖОК (Web Audio API - без файлов)
+// =========================================================
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.engineOsc = null;
+    this.engineGain = null;
+    this.isStarted = false;
+  }
+  
+  init() {
+    if (this.isStarted) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Осциллятор двигателя (пила для рокота)
+    this.engineOsc = this.ctx.createOscillator();
+    this.engineOsc.type = 'sawtooth';
+    this.engineOsc.frequency.value = 50;
+    
+    // Фильтр нижних частот (чтобы звучало глухо)
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+    
+    // Громкость
+    this.engineGain = this.ctx.createGain();
+    this.engineGain.gain.value = 0.05;
+    
+    this.engineOsc.connect(filter);
+    filter.connect(this.engineGain);
+    this.engineGain.connect(this.ctx.destination);
+    this.engineOsc.start();
+    this.isStarted = true;
+  }
+  
+  updateEngine(speed, maxSpeed) {
+    if (!this.isStarted) return;
+    // Меняем частоту в зависимости от скорости
+    const baseFreq = 40;
+    const maxFreq = 200;
+    const ratio = speed / maxSpeed;
+    this.engineOsc.frequency.setTargetAtTime(baseFreq + (maxFreq - baseFreq) * ratio, this.ctx.currentTime, 0.1);
+    this.engineGain.gain.setTargetAtTime(0.02 + 0.08 * ratio, this.ctx.currentTime, 0.1);
+  }
 
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+  playCrash() {
+    if (!this.isStarted) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.5);
+  }
+}
+const audio = new AudioEngine();
+
+// =========================================================
+// 2. НАСТРОЙКА THREE.JS СЦЕНЫ
+// =========================================================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x090014);
+scene.fog = new THREE.FogExp2(0x090014, 0.012);
+
+const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Защита от лагов на телефонах
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
 
-// Свет
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-scene.add(ambientLight);
+// Освещение
+const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+scene.add(ambient);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-dirLight.position.set(10, 20, 10);
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
+dirLight.position.set(20, 40, 20);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.camera.left = -20;
-dirLight.shadow.camera.right = 20;
-dirLight.shadow.camera.top = 20;
-dirLight.shadow.camera.bottom = -20;
+dirLight.shadow.camera.left = -50;
+dirLight.shadow.camera.right = 50;
+dirLight.shadow.camera.top = 50;
+dirLight.shadow.camera.bottom = -50;
+dirLight.shadow.camera.near = 1;
+dirLight.shadow.camera.far = 100;
 scene.add(dirLight);
 
-// Неоновый свет снизу
-const neonLight = new THREE.PointLight(0xff00ff, 5, 50);
-neonLight.position.set(0, -2, 0);
+// Динамический неоновый свет (следует за игроком)
+const neonLight = new THREE.PointLight(0xff00ff, 5, 25);
 scene.add(neonLight);
+const neonLight2 = new THREE.PointLight(0x00ffff, 5, 25);
+scene.add(neonLight2);
 
-// ==========================================
-// 2. МОДЕЛЬ СПОРТКАРА (ЖЕЛТЫЙ)
-// ==========================================
-function createSportsCar() {
-  const carGroup = new THREE.Group();
+// =========================================================
+// 3. ГЕНЕРАЦИЯ 3D МОДЕЛИ МАШИНЫ (ДЕТАЛИЗИРОВАННАЯ)
+// =========================================================
+function createSportsCar(colorHex) {
+  const car = new THREE.Group();
   
-  // Материалы
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.8, roughness: 0.2 }); // Желтый
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 1, roughness: 0.1, transparent: true, opacity: 0.8 });
-  const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
-  const tireMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 1 });
-  const rimMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 1, roughness: 0.1 });
-  const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  const frontLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  // Красители
+  const paint = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.8, roughness: 0.15 });
+  const darkGlass = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 1, roughness: 0.05 });
+  const carbon = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+  const chrome = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.1 });
+  const tireMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1 });
+  const brakeLight = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  
+  // 1. Основной кузов (нижняя часть)
+  const chassisGeo = new THREE.BoxGeometry(2.0, 0.5, 4.2);
+  const chassis = new THREE.Mesh(chassisGeo, paint);
+  chassis.position.y = 0.55;
+  chassis.castShadow = true;
+  chassis.receiveShadow = true;
+  car.add(chassis);
 
-  // Кузов (сглаженный параллелепипед)
-  const bodyGeo = new THREE.BoxGeometry(2.2, 0.7, 4.5);
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.6;
-  body.castShadow = true;
-  carGroup.add(body);
+  // 2. Капот и багажник (создают эффект обтекаемости)
+  const hoodGeo = new THREE.BoxGeometry(1.9, 0.3, 1.5);
+  const hood = new THREE.Mesh(hoodGeo, paint);
+  hood.position.set(0, 0.8, 1.3);
+  hood.castShadow = true;
+  car.add(hood);
 
-  // Капот (сзади)
-  const rearGeo = new THREE.BoxGeometry(2, 0.4, 1.5);
-  const rear = new THREE.Mesh(rearGeo, bodyMat);
-  rear.position.set(0, 0.9, -1.5);
-  rear.castShadow = true;
-  carGroup.add(rear);
+  const trunkGeo = new THREE.BoxGeometry(1.9, 0.35, 1.0);
+  const trunk = new THREE.Mesh(trunkGeo, paint);
+  trunk.position.set(0, 0.8, -1.6);
+  trunk.castShadow = true;
+  car.add(trunk);
 
-  // Кабина (стекло)
-  const cabinGeo = new THREE.BoxGeometry(1.8, 0.6, 1.8);
-  const cabin = new THREE.Mesh(cabinGeo, glassMat);
-  cabin.position.set(0, 1.25, 0.2);
+  // 3. Кабина (стекла)
+  const cabinGeo = new THREE.BoxGeometry(1.75, 0.65, 2.0);
+  const cabin = new THREE.Mesh(cabinGeo, darkGlass);
+  cabin.position.set(0, 1.25, 0.1);
   cabin.castShadow = true;
-  carGroup.add(cabin);
+  car.add(cabin);
 
-  // Крыша (желтая)
-  const roofGeo = new THREE.BoxGeometry(1.6, 0.1, 1.2);
-  const roof = new THREE.Mesh(roofGeo, bodyMat);
-  roof.position.set(0, 1.55, 0.2);
-  carGroup.add(roof);
+  // 4. Крыша (в цвет кузова)
+  const roofGeo = new THREE.BoxGeometry(1.6, 0.08, 1.6);
+  const roof = new THREE.Mesh(roofGeo, paint);
+  roof.position.set(0, 1.6, 0.1);
+  roof.castShadow = true;
+  car.add(roof);
 
-  // Задние фары (неоновые)
-  const tailLightL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.1), lightMat);
-  tailLightL.position.set(-0.6, 0.8, -2.26);
-  carGroup.add(tailLightL);
+  // 5. Задние фары (горят красным)
+  const tailGeo = new THREE.BoxGeometry(0.6, 0.15, 0.05);
+  const tailL = new THREE.Mesh(tailGeo, brakeLight);
+  tailL.position.set(-0.6, 0.85, -2.11);
+  car.add(tailL);
   
-  const tailLightR = tailLightL.clone();
-  tailLightR.position.x = 0.6;
-  carGroup.add(tailLightR);
+  const tailR = tailL.clone();
+  tailR.position.x = 0.6;
+  car.add(tailR);
 
-  // Передние фары
-  const headLightL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.1), frontLightMat);
-  headLightL.position.set(-0.6, 0.7, 2.26);
-  carGroup.add(headLightL);
-  
-  const headLightR = headLightL.clone();
-  headLightR.position.x = 0.6;
-  carGroup.add(headLightR);
-
-  // Задний бампер
-  const bumperGeo = new THREE.BoxGeometry(2.2, 0.3, 0.3);
-  const bumper = new THREE.Mesh(bumperGeo, blackMat);
-  bumper.position.set(0, 0.3, -2.2);
-  carGroup.add(bumper);
-
-  // Выхлопные трубы
-  const exhaustGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.3, 8);
+  // 6. Выхлопные трубы
+  const exhaustGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 8);
   exhaustGeo.rotateX(Math.PI / 2);
-  const exhaustMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 1 });
-  const ex1 = new THREE.Mesh(exhaustGeo, exhaustMat);
-  ex1.position.set(-0.4, 0.3, -2.3);
-  carGroup.add(ex1);
-  const ex2 = ex1.clone();
-  ex2.position.x = 0.4;
-  carGroup.add(ex2);
+  const exhaustL = new THREE.Mesh(exhaustGeo, chrome);
+  exhaustL.position.set(-0.4, 0.3, -2.15);
+  car.add(exhaustL);
+  const exhaustR = exhaustL.clone();
+  exhaustR.position.x = 0.4;
+  car.add(exhaustR);
 
-  // Колеса
+  // 7. Антикрыло (спойлер)
+  const wingGeo = new THREE.BoxGeometry(2.1, 0.06, 0.4);
+  const wing = new THREE.Mesh(wingGeo, carbon);
+  wing.position.set(0, 1.15, -2.0);
+  wing.castShadow = true;
+  car.add(wing);
+  
+  const wingStandGeo = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+  const wingStandL = new THREE.Mesh(wingStandGeo, carbon);
+  wingStandL.position.set(-0.7, 1.0, -2.0);
+  car.add(wingStandL);
+  const wingStandR = wingStandL.clone();
+  wingStandR.position.x = 0.7;
+  car.add(wingStandR);
+
+  // 8. Колеса
   const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.4, 24);
   wheelGeo.rotateZ(Math.PI / 2);
   
   const wheels = [];
   const wheelPositions = [
-    [-1.1, 0.45, 1.4], [1.1, 0.45, 1.4],   // Передние
-    [-1.1, 0.45, -1.4], [1.1, 0.45, -1.4]  // Задние
+    [-1.05, 0.45, 1.3], [1.05, 0.45, 1.3],   // Передние
+    [-1.05, 0.45, -1.3], [1.05, 0.45, -1.3]  // Задние
   ];
 
-  wheelPositions.forEach(pos => {
-    const wheel = new THREE.Group();
+  wheelPositions.forEach((pos) => {
+    const wheelGroup = new THREE.Group();
     
+    // Резина
     const tire = new THREE.Mesh(wheelGeo, tireMat);
     tire.castShadow = true;
-    wheel.add(tire);
+    wheelGroup.add(tire);
     
-    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.42, 12).rotateZ(Math.PI/2), rimMat);
-    wheel.add(rim);
+    // Диск (хром)
+    const rimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.42, 8);
+    rimGeo.rotateZ(Math.PI / 2);
+    const rim = new THREE.Mesh(rimGeo, chrome);
+    wheelGroup.add(rim);
 
-    wheel.position.set(...pos);
-    carGroup.add(wheel);
-    wheels.push(wheel);
+    wheelGroup.position.set(...pos);
+    car.add(wheelGroup);
+    wheels.push(wheelGroup);
   });
 
-  carGroup.userData = { wheels };
-  return carGroup;
+  car.userData = { wheels };
+  return car;
 }
 
-const carMesh = createSportsCar();
-scene.add(carMesh);
+// =========================================================
+// 4. ГЕНЕРАЦИЯ БЕСКОНЕЧНОЙ ТРАССЫ
+// =========================================================
+const ROAD_WIDTH = 16;
+const SEGMENT_LENGTH = 20;
+const NUM_SEGMENTS = 30; // Сколько сегментов держим в памяти
 
-// ==========================================
-// 3. ДОРОГА И ОКРУЖЕНИЕ
-// ==========================================
-const roadWidth = 12;
-const roadLength = 1000;
-let roadOffset = 0;
-let currentCurveX = 0;
-let targetCurveX = 0;
+let trackZ = 0;
+const trackGroup = new THREE.Group();
+scene.add(trackGroup);
 
-// Материал асфальта
-const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.6, metalness: 0.4 });
+const curbMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00aaaa, emissiveIntensity: 0.5, roughness: 0.3 });
+const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-// Две части дороги (для бесконечной прокрутки)
-const road1 = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, roadLength), roadMat);
-road1.rotation.x = -Math.PI / 2;
-road1.position.z = -roadLength / 2 + 10;
-road1.receiveShadow = true;
-scene.add(road1);
-
-const road2 = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, roadLength), roadMat);
-road2.rotation.x = -Math.PI / 2;
-road2.position.z = -roadLength * 1.5 + 10;
-road2.receiveShadow = true;
-scene.add(road2);
-
-// Разметка (неоновая)
-const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-const lineGeo = new THREE.PlaneGeometry(0.3, 3);
-
-for (let i = 0; i < 100; i++) {
-  const line = new THREE.Mesh(lineGeo, lineMat);
-  line.rotation.x = -Math.PI / 2;
-  line.position.set(0, 0.02, -i * 10 + 5);
-  scene.add(line);
+// Функция изгиба трассы
+function getCurveX(z) {
+  return Math.sin(z * 0.015) * 12 + Math.cos(z * 0.03) * 6;
 }
 
-// Фонари по бокам
-const poleMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-const lampMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
-
-for (let i = 0; i < 50; i++) {
-  const z = -i * 20;
+// Создание одного сегмента дороги
+function createRoadSegment(z) {
+  const seg = new THREE.Group();
   
-  // Левый
-  const poleL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), poleMat);
-  poleL.position.set(-roadWidth/2 - 1, 2, z);
-  scene.add(poleL);
-  const lampL = new THREE.Mesh(new THREE.SphereGeometry(0.3), lampMat);
-  lampL.position.set(-roadWidth/2 - 1, 4, z);
-  scene.add(lampL);
+  // Асфальт
+  const roadGeo = new THREE.BoxGeometry(ROAD_WIDTH, 0.5, SEGMENT_LENGTH);
+  const road = new THREE.Mesh(roadGeo, roadMaterial);
+  road.position.y = -0.25;
+  road.receiveShadow = true;
+  seg.add(road);
 
-  // Правый
-  const poleR = poleL.clone();
-  poleR.position.x = roadWidth/2 + 1;
-  scene.add(poleR);
-  const lampR = lampL.clone();
-  lampR.position.x = roadWidth/2 + 1;
-  scene.add(lampR);
+  // Неоновые бордюры по бокам
+  const curbGeo = new THREE.BoxGeometry(0.5, 0.6, SEGMENT_LENGTH);
+  const curbL = new THREE.Mesh(curbGeo, curbMaterial);
+  curbL.position.set(-ROAD_WIDTH/2, 0, 0);
+  seg.add(curbL);
+  
+  const curbR = curbL.clone();
+  curbR.position.x = ROAD_WIDTH/2;
+  seg.add(curbR);
+
+  // Центральная разметка (пунктир)
+  const lineGeo = new THREE.BoxGeometry(0.3, 0.52, SEGMENT_LENGTH/2);
+  const line = new THREE.Mesh(lineGeo, lineMaterial);
+  line.position.y = 0;
+  seg.add(line);
+
+  // Фонари (каждый второй сегмент)
+  if (Math.abs(z) % 40 < 1) {
+    const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 6);
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    
+    const poleL = new THREE.Mesh(poleGeo, poleMat);
+    poleL.position.set(-ROAD_WIDTH/2 - 2, 3, 0);
+    seg.add(poleL);
+    
+    const lampMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+    const lampL = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), lampMat);
+    lampL.position.set(-ROAD_WIDTH/2 - 2, 6, 0);
+    seg.add(lampL);
+
+    const poleR = poleL.clone();
+    poleR.position.x = ROAD_WIDTH/2 + 2;
+    seg.add(poleR);
+    
+    const lampR = lampL.clone();
+    lampR.position.x = ROAD_WIDTH/2 + 2;
+    seg.add(lampR);
+  }
+
+  // Неоновые арки (каждый 4-й сегмент)
+  if (Math.abs(z) % 80 < 1) {
+    const archMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 });
+    const archGeo = new THREE.TorusGeometry(ROAD_WIDTH/2 + 2, 0.5, 8, 20, Math.PI);
+    const arch = new THREE.Mesh(archGeo, archMat);
+    arch.position.set(0, 0, 0);
+    seg.add(arch);
+  }
+
+  // Деревья снаружи
+  if (Math.random() > 0.5) {
+    const treeGeo = new THREE.ConeGeometry(2, 8, 8);
+    const treeMat = new THREE.MeshStandardMaterial({ color: 0x0a2a10 });
+    
+    const treeL = new THREE.Mesh(treeGeo, treeMat);
+    treeL.position.set(-ROAD_WIDTH/2 - 8, 4, 0);
+    treeL.castShadow = true;
+    seg.add(treeL);
+    
+    if (Math.random() > 0.5) {
+      const treeR = treeL.clone();
+      treeR.position.x = ROAD_WIDTH/2 + 8;
+      seg.add(treeR);
+    }
+  }
+
+  seg.position.set(getCurveX(z), 0, z);
+  return seg;
 }
 
-// ==========================================
-// 4. УПРАВЛЕНИЕ И ЛОГИКА
-// ==========================================
+// =========================================================
+// 5. ИГРОВАЯ ЛОГИКА (Игрок, ИИ, Столкновения)
+// =========================================================
+const playerCar = createSportsCar(0xffcc00);
+scene.add(playerCar);
+
+// Массив соперников
+const enemies = [];
+const ENEMY_COLORS = [0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xff8800];
+
+function spawnEnemy() {
+  const color = ENEMY_COLORS[Math.floor(Math.random() * ENEMY_COLORS.length)];
+  const enemy = createSportsCar(color);
+  
+  // Спавн впереди (дальше по Z)
+  const spawnZ = -150 - Math.random() * 100;
+  const lane = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
+  const x = getCurveX(spawnZ) + lane * (ROAD_WIDTH / 3);
+  
+  enemy.position.set(x, 0, spawnZ);
+  enemy.userData = {
+    speed: 30 + Math.random() * 20,
+    lane: lane,
+    targetLane: lane,
+    laneChangeTimer: 0
+  };
+  
+  scene.add(enemy);
+  enemies.push(enemy);
+}
+
+// Состояние игры
+const gameState = {
+  speed: 0,
+  maxSpeed: 80,
+  acceleration: 25,
+  brakePower: 40,
+  distance: 0,
+  lap: 1,
+  maxLaps: 3,
+  isPlaying: false,
+  playerX: 0,
+  targetPlayerX: 0,
+  crashTimer: 0
+};
+
+// Ввод
 const keys = {};
 window.addEventListener('keydown', e => keys[e.key] = true);
 window.addEventListener('keyup', e => keys[e.key] = false);
 
-const touchState = { left: false, right: false, gas: false };
+const touch = { left: false, right: false, gas: false };
 const bindBtn = (id, prop) => {
   const el = document.getElementById(id);
-  el.addEventListener('touchstart', e => { e.preventDefault(); touchState[prop] = true; });
-  el.addEventListener('touchend', e => { e.preventDefault(); touchState[prop] = false; });
-  el.addEventListener('mousedown', () => touchState[prop] = true);
-  el.addEventListener('mouseup', () => touchState[prop] = false);
+  el.addEventListener('touchstart', e => { e.preventDefault(); touch[prop] = true; }, {passive: false});
+  el.addEventListener('touchend', e => { e.preventDefault(); touch[prop] = false; }, {passive: false});
+  el.addEventListener('touchcancel', e => { e.preventDefault(); touch[prop] = false; }, {passive: false});
+  el.addEventListener('mousedown', () => touch[prop] = true);
+  el.addEventListener('mouseup', () => touch[prop] = false);
 };
 bindBtn('btn-left', 'left');
 bindBtn('btn-right', 'right');
 bindBtn('btn-gas', 'gas');
 
-let speed = 0;
-const maxSpeed = 60;
-const acceleration = 30;
-const turnSpeed = 15;
-let distance = 0;
-let isPlaying = false;
+// Управление камерой
+let cameraShake = 0;
 
+// Основной цикл обновления
+function updateGame(dt) {
+  if (!gameState.isPlaying) return;
+
+  // --- 1. Физика игрока ---
+  const isGas = keys['ArrowUp'] || keys['w'] || keys['W'] || touch.gas;
+  const isLeft = keys['ArrowLeft'] || keys['a'] || keys['A'] || touch.left;
+  const isRight = keys['ArrowRight'] || keys['d'] || keys['D'] || touch.right;
+
+  if (isGas) {
+    gameState.speed += gameState.acceleration * dt;
+  } else {
+    gameState.speed -= gameState.acceleration * 0.5 * dt;
+  }
+  gameState.speed = Math.max(0, Math.min(gameState.speed, gameState.maxSpeed));
+
+  // Поворот руля (смещение по X)
+  const steerSpeed = 25;
+  if (isLeft) gameState.targetPlayerX -= steerSpeed * dt * (gameState.speed / 30 + 0.3);
+  if (isRight) gameState.targetPlayerX += steerSpeed * dt * (gameState.speed / 30 + 0.3);
+
+  // Ограничение дороги
+  const currentTrackX = getCurveX(-gameState.distance);
+  const roadLeft = currentTrackX - ROAD_WIDTH / 2 + 1.2;
+  const roadRight = currentTrackX + ROAD_WIDTH / 2 - 1.2;
+  gameState.targetPlayerX = Math.max(roadLeft, Math.min(roadRight, gameState.targetPlayerX));
+
+  // Плавное следование за целью
+  gameState.playerX += (gameState.targetPlayerX - gameState.playerX) * 12 * dt;
+
+  // Движение вперед
+  gameState.distance += gameState.speed * dt;
+  if (gameState.distance > 500) {
+    gameState.distance = 0;
+    gameState.lap++;
+    if (gameState.lap > gameState.maxLaps) gameState.lap = 1;
+  }
+
+  // Обновление позиции машины
+  playerCar.position.x = gameState.playerX;
+  playerCar.position.z = -gameState.distance;
+  
+  // Наклон кузова в поворотах
+  const tilt = (gameState.targetPlayerX - gameState.playerX) * 0.15;
+  playerCar.rotation.z += (-tilt - playerCar.rotation.z) * 10 * dt;
+  playerCar.rotation.y = (gameState.targetPlayerX - gameState.playerX) * 0.05;
+
+  // Вращение колес
+  playerCar.userData.wheels.forEach(w => {
+    w.rotation.x += gameState.speed * dt * 2;
+  });
+
+  // --- 2. Обновление соперников ---
+  enemies.forEach((enemy, index) => {
+    // ИИ едет вперед
+    enemy.position.z -= enemy.userData.speed * dt;
+    
+    // ИИ меняет полосу
+    enemy.userData.laneChangeTimer += dt;
+    if (enemy.userData.laneChangeTimer > 2) {
+      enemy.userData.laneChangeTimer = 0;
+      if (Math.random() > 0.5) {
+        enemy.userData.targetLane = Math.max(-1, Math.min(1, enemy.userData.targetLane + (Math.random() > 0.5 ? 1 : -1)));
+      }
+    }
+
+    // Плавное смещение
+    const targetX = getCurveX(enemy.position.z) + enemy.userData.targetLane * (ROAD_WIDTH / 3);
+    enemy.position.x += (targetX - enemy.position.x) * 2 * dt;
+    
+    // Вращение колес ИИ
+    enemy.userData.wheels.forEach(w => {
+      w.rotation.x += enemy.userData.speed * dt * 2;
+    });
+
+    // Проверка столкновений с игроком
+    const dx = playerCar.position.x - enemy.position.x;
+    const dz = playerCar.position.z - enemy.position.z;
+    const dist = Math.sqrt(dx*dx + dz*dz);
+
+    if (dist < 2.5 && gameState.crashTimer <= 0) {
+      // Столкновение!
+      gameState.speed *= 0.5;
+      gameState.crashTimer = 0.5;
+      audio.playCrash();
+      cameraShake = 1.0;
+    }
+
+    // Удаление уехавших далеко вперед
+    if (enemy.position.z < playerCar.position.z - 200) {
+      scene.remove(enemy);
+      enemies.splice(index, 1);
+    }
+  });
+
+  // Спавн новых врагов
+  if (enemies.length < 5 && Math.random() < 0.02) {
+    spawnEnemy();
+  }
+
+  // Таймеры
+  if (gameState.crashTimer > 0) gameState.crashTimer -= dt;
+  if (cameraShake > 0) cameraShake -= dt;
+
+  // --- 3. Камера ---
+  const camTargetX = playerCar.position.x * 0.6;
+  const camTargetY = 6;
+  const camTargetZ = playerCar.position.z + 12;
+  
+  camera.position.x += (camTargetX - camera.position.x) * 5 * dt;
+  camera.position.y += (camTargetY - camera.position.y) * 5 * dt;
+  camera.position.z += (camTargetZ - camera.position.z) * 8 * dt;
+  
+  // Тряска при аварии
+  if (cameraShake > 0) {
+    camera.position.x += (Math.random() - 0.5) * cameraShake;
+    camera.position.y += (Math.random() - 0.5) * cameraShake;
+  }
+  
+  camera.lookAt(playerCar.position.x * 0.5, 2, playerCar.position.z - 10);
+
+  // --- 4. Свет (Неон) ---
+  neonLight.position.set(playerCar.position.x, 1, playerCar.position.z);
+  neonLight2.position.set(playerCar.position.x, 1, playerCar.position.z - 30);
+
+  // --- 5. Обновление дороги ---
+  // Перемещаем сегменты, которые уехали далеко назад
+  for (let i = trackGroup.children.length - 1; i >= 0; i--) {
+    const seg = trackGroup.children[i];
+    if (seg.position.z > playerCar.position.z + 100) {
+      trackGroup.remove(seg);
+    }
+  }
+
+  // Спавн новых сегментов впереди
+  let minZ = Infinity;
+  trackGroup.children.forEach(s => { if (s.position.z < minZ) minZ = s.position.z; });
+  
+  while (minZ > playerCar.position.z - 300) {
+    minZ -= SEGMENT_LENGTH;
+    const seg = createRoadSegment(minZ);
+    trackGroup.add(seg);
+  }
+
+  // --- 6. Аудио и HUD ---
+  audio.updateEngine(gameState.speed, gameState.maxSpeed);
+  
+  document.getElementById('ui-speed').textContent = Math.floor(gameState.speed * 3.6);
+  document.getElementById('ui-dist').textContent = Math.floor(gameState.distance);
+  document.getElementById('ui-lap').textContent = gameState.lap + '/' + gameState.maxLaps;
+}
+
+// =========================================================
+// 6. ЦИКЛ РЕНДЕРА (requestAnimationFrame)
+// =========================================================
 const clock = new THREE.Clock();
 
-function update() {
-  requestAnimationFrame(update);
+function animate() {
+  requestAnimationFrame(animate);
   
   const dt = Math.min(clock.getDelta(), 0.1);
   
-  if (isPlaying) {
-    // Газ
-    if (keys['ArrowUp'] || keys['w'] || touchState.gas) {
-      speed += acceleration * dt;
-    } else {
-      speed -= acceleration * 0.5 * dt; // Замедление
-    }
-    speed = Math.max(0, Math.min(speed, maxSpeed));
-    
-    // Движение
-    distance += speed * dt;
-    
-    // Руль (смещение по X)
-    if (keys['ArrowLeft'] || keys['a'] || touchState.left) {
-      carMesh.position.x -= turnSpeed * dt * (speed / maxSpeed + 0.2);
-    }
-    if (keys['ArrowRight'] || keys['d'] || touchState.right) {
-      carMesh.position.x += turnSpeed * dt * (speed / maxSpeed + 0.2);
-    }
-    
-    // Ограничение дороги
-    carMesh.position.x = Math.max(-roadWidth/2 + 1.2, Math.min(roadWidth/2 - 1.2, carMesh.position.x));
-    
-    // Наклон машины при повороте (визуальный эффект)
-    const targetRoll = ((keys['ArrowRight'] || keys['d'] || touchState.right) ? -0.2 : 0) + 
-                       ((keys['ArrowLeft'] || keys['a'] || touchState.left) ? 0.2 : 0);
-    carMesh.rotation.z += (targetRoll - carMesh.rotation.z) * 10 * dt;
-
-    // Вращение колес
-    carMesh.userData.wheels.forEach(w => {
-      w.rotation.x += speed * dt * 2;
-    });
-
-    // Прокрутка дороги и окружения (иллюзия движения)
-    road1.position.z += speed * dt;
-    road2.position.z += speed * dt;
-    
-    if (road1.position.z > roadLength / 2 + 10) road1.position.z -= roadLength * 2;
-    if (road2.position.z > roadLength / 2 + 10) road2.position.z -= roadLength * 2;
-
-    // Прокрутка разметки
-    scene.children.forEach(c => {
-      if (c.geometry && c.geometry.type === 'PlaneGeometry' && c !== road1 && c !== road2) {
-        c.position.z += speed * dt;
-        if (c.position.z > 20) c.position.z -= 1000;
-      }
-    });
-
-    // Прокрутка фонарей
-    scene.children.forEach(c => {
-      if (c.position.z > 20 && !c.geometry.type.includes('Plane')) {
-        c.position.z -= 1000;
-      }
-    });
-
-    // Камера (плавно следует за машиной)
-    camera.position.x += (carMesh.position.x * 0.5 - camera.position.x) * 5 * dt;
-    camera.position.y = 4;
-    camera.position.z = 8;
-    camera.lookAt(carMesh.position.x * 0.3, 1, -10);
-
-    // HUD
-    document.getElementById('ui-speed').textContent = Math.floor(speed * 3);
-    document.getElementById('ui-dist').textContent = Math.floor(distance);
-  }
-
+  updateGame(dt);
+  
   renderer.render(scene, camera);
 }
 
-// Старт
+// =========================================================
+// 7. ИНИЦИАЛИЗАЦИЯ И СТАРТ
+// =========================================================
+// Начальная генерация трассы
+for (let z = 20; z > -300; z -= SEGMENT_LENGTH) {
+  trackGroup.add(createRoadSegment(z));
+}
+
+// Позиция камеры по умолчанию
+camera.position.set(0, 6, 12);
+camera.lookAt(0, 2, -10);
+
+// Старт по кнопке
 document.getElementById('btn-start').addEventListener('click', () => {
   document.getElementById('menu').style.display = 'none';
   document.getElementById('ui').style.display = 'flex';
-  isPlaying = true;
+  
+  audio.init(); // Аудио можно запустить только по клику
+  
+  gameState.isPlaying = true;
   clock.getDelta(); // Сброс таймера
+  
+  // Сразу спавним пару врагов
+  for (let i = 0; i < 3; i++) spawnEnemy();
 });
 
-update();
+animate();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
