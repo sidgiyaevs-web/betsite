@@ -1,477 +1,82 @@
-// setup.mjs — запусти: node setup.mjs
-import fs from 'node:fs';
-import path from 'node:path';
-
-const files = {};
-
-files['package.json'] = JSON.stringify({
-  name: "casino-platform",
-  version: "1.0.0",
-  type: "module",
-  scripts: { start: "node server/index.js", dev: "node --watch server/index.js" },
-  dependencies: {
-    express: "^4.19.2",
-    "better-sqlite3": "^11.3.0",
-    bcryptjs: "^2.4.3",
-    jsonwebtoken: "^9.0.2",
-    "cookie-parser": "^1.4.6",
-    dotenv: "^16.4.5",
-    helmet: "^7.1.0",
-    "express-rate-limit": "^7.4.0"
-  }
-}, null, 2);
-
-files['.env'] = `PORT=3000
-JWT_SECRET=${[...Array(64)].map(() => Math.random().toString(36)[2]).join('')}
-DAILY_BONUS=10000
-NODE_ENV=production
-`;
-
-files['server/db.js'] = `import Database from 'better-sqlite3';
-const db = new Database('casino.db');
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-db.exec(\`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    balance REAL NOT NULL DEFAULT 1000,
-    is_admin INTEGER NOT NULL DEFAULT 0,
-    last_bonus_at INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    banned INTEGER NOT NULL DEFAULT 0
-  );
-  CREATE TABLE IF NOT EXISTS bets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    game TEXT NOT NULL,
-    amount REAL NOT NULL,
-    payout REAL NOT NULL,
-    details TEXT,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-  );
-  CREATE INDEX IF NOT EXISTS idx_bets_user ON bets(user_id, created_at DESC);
-  CREATE TABLE IF NOT EXISTS audit_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    action TEXT NOT NULL,
-    meta TEXT,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
-  );
-\`);
-export default db;
-`;
-
-files['server/rng.js'] = `import crypto from 'node:crypto';
-export function randomInt(min, max) {
-  const range = max - min + 1;
-  const bytes = Math.ceil(Math.log2(range) / 8) || 1;
-  const maxValid = 256 ** bytes - (256 ** bytes % range);
-  while (true) {
-    const buf = crypto.randomBytes(bytes);
-    let val = 0;
-    for (let i = 0; i < bytes; i++) val = val * 256 + buf[i];
-    if (val < maxValid) return min + (val % range);
-  }
-}
-export function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = randomInt(0, i);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-`;
-
-files['server/auth.js'] = `import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import db from './db.js';
-const SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
-
-export function registerUser(username, password) {
-  if (!username || username.length < 3 || username.length > 32) throw new Error('Логин: 3–32 символа');
-  if (!password || password.length < 6) throw new Error('Пароль: минимум 6 символов');
-  const hash = bcrypt.hashSync(password, 10);
-  try {
-    const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
-    return info.lastInsertRowid;
-  } catch (e) {
-    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new Error('Логин занят');
-    throw e;
-  }
-}
-
-export function loginUser(username, password) {
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-  if (!user) throw new Error('Неверный логин или пароль');
-  if (user.banned) throw new Error('Аккаунт заблокирован');
-  if (!bcrypt.compareSync(password, user.password_hash)) throw new Error('Неверный логин или пароль');
-  const token = jwt.sign({ id: user.id, username: user.username, isAdmin: !!user.is_admin }, SECRET, { expiresIn: '7d' });
-  return { token, user: { id: user.id, username: user.username, isAdmin: !!user.is_admin } };
-}
-
-export function authMiddleware(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Не авторизован' });
-  try {
-    req.user = jwt.verify(token, SECRET);
-    const dbUser = db.prepare('SELECT banned FROM users WHERE id = ?').get(req.user.id);
-    if (!dbUser || dbUser.banned) return res.status(403).json({ error: 'Аккаунт заблокирован' });
-    next();
-  } catch { res.status(401).json({ error: 'Токен недействителен' }); }
-}
-
-export function adminMiddleware(req, res, next) {
-  if (!req.user?.isAdmin) return res.status(403).json({ error: 'Только для админа' });
-  next();
-}
-`;
-
-files['server/games.js'] = `import { randomInt, shuffle } from './rng.js';
-
-const SLOT_SYMBOLS = [
-  { s: '🍒', weight: 30, pay3: 5, pay2: 1 },
-  { s: '🍋', weight: 25, pay3: 8, pay2: 1 },
-  { s: '⭐', weight: 18, pay3: 15, pay2: 2 },
-  { s: '💎', weight: 12, pay3: 30, pay2: 3 },
-  { s: '7️⃣', weight: 7, pay3: 100, pay2: 5 },
-  { s: '🎰', weight: 3, pay3: 500, pay2: 10 },
-];
-const TOTAL_WEIGHT = SLOT_SYMBOLS.reduce((a, s) => a + s.weight, 0);
-
-function pickSymbol() {
-  let r = randomInt(1, TOTAL_WEIGHT);
-  for (const sym of SLOT_SYMBOLS) { r -= sym.weight; if (r <= 0) return sym; }
-  return SLOT_SYMBOLS[0];
-}
-
-export function playSlots(bet) {
-  const reels = [pickSymbol(), pickSymbol(), pickSymbol()];
-  if (reels[0].s === reels[1].s && reels[1].s === reels[2].s)
-    return { reels: reels.map(r => r.s), payout: bet * reels[0].pay3, win: true, type: 'jackpot' };
-  const counts = {};
-  reels.forEach(r => counts[r.s] = (counts[r.s] || 0) + 1);
-  const maxMatch = Math.max(...Object.values(counts));
-  if (maxMatch >= 2) {
-    const sym = reels.find(r => counts[r.s] >= 2);
-    return { reels: reels.map(r => r.s), payout: bet * sym.pay2, win: true, type: 'pair' };
-  }
-  return { reels: reels.map(r => r.s), payout: 0, win: false, type: 'lose' };
-}
-
-export const RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-
-export function playRoulette(bet, betType) {
-  const result = randomInt(0, 36);
-  const isRed = RED_NUMBERS.includes(result);
-  const isBlack = result !== 0 && !isRed;
-  const isEven = result !== 0 && result % 2 === 0;
-  const isOdd = result % 2 === 1;
-  let payout = 0, win = false;
-  switch (betType) {
-    case 'red': if (isRed) { payout = bet * 2; win = true; } break;
-    case 'black': if (isBlack) { payout = bet * 2; win = true; } break;
-    case 'even': if (isEven) { payout = bet * 2; win = true; } break;
-    case 'odd': if (isOdd) { payout = bet * 2; win = true; } break;
-    case 'zero': if (result === 0) { payout = bet * 36; win = true; } break;
-    case '1-12': if (result >= 1 && result <= 12) { payout = bet * 3; win = true; } break;
-    case '13-24': if (result >= 13 && result <= 24) { payout = bet * 3; win = true; } break;
-    case '25-36': if (result >= 25 && result <= 36) { payout = bet * 3; win = true; } break;
-    default: if (parseInt(betType) === result) { payout = bet * 36; win = true; }
-  }
-  return { result, color: result === 0 ? 'green' : (isRed ? 'red' : 'black'), payout, win };
-}
-
-export function newDeck() {
-  const suits = ['♠','♥','♦','♣'];
-  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-  const deck = [];
-  for (const s of suits) for (const r of ranks) deck.push({ r, s });
-  return shuffle(deck);
-}
-
-export function cardValue(card) {
-  if (['J','Q','K'].includes(card.r)) return 10;
-  if (card.r === 'A') return 11;
-  return parseInt(card.r);
-}
-
-export function handValue(hand) {
-  let total = hand.reduce((a, c) => a + cardValue(c), 0);
-  let aces = hand.filter(c => c.r === 'A').length;
-  while (total > 21 && aces > 0) { total -= 10; aces--; }
-  return total;
-}
-`;
-
-files['server/index.js'] = `import express from 'express';
-import cookieParser from 'cookie-parser';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import 'dotenv/config';
-import db from './db.js';
-import { registerUser, loginUser, authMiddleware, adminMiddleware } from './auth.js';
-import { playSlots, playRoulette, newDeck, handValue } from './games.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
-const DAILY_BONUS = parseInt(process.env.DAILY_BONUS || '10000');
-const COOLDOWN = 24 * 60 * 60 * 1000;
-
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
-
-const betLimiter = rateLimit({ windowMs: 1000, max: 10 });
-
-function getUser(id) {
-  return db.prepare('SELECT id, username, balance, is_admin, last_bonus_at FROM users WHERE id = ?').get(id);
-}
-
-function placeBet(userId, game, amount, payoutFn, details) {
-  const tx = db.transaction(() => {
-    const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(userId);
-    if (user.balance < amount) throw new Error('Недостаточно средств');
-    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(amount, userId);
-    const result = payoutFn();
-    if (result.payout > 0) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(result.payout, userId);
-    db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
-      .run(userId, game, amount, result.payout, JSON.stringify({ ...result, ...details }));
-    return result;
-  });
-  return tx();
-}
-
-app.post('/api/register', (req, res) => {
-  try {
-    const { username, password } = req.body;
-    registerUser(username, password);
-    const { token, user } = loginUser(username, password);
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7*24*3600*1000 });
-    res.json({ user });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-});
-
-app.post('/api/login', (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const { token, user } = loginUser(username, password);
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7*24*3600*1000 });
-    res.json({ user });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-});
-
-app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok: true }); });
-
-app.get('/api/me', authMiddleware, (req, res) => {
-  const u = getUser(req.user.id);
-  const now = Date.now();
-  res.json({ ...u, bonusAvailable: now - u.last_bonus_at >= COOLDOWN, nextBonusIn: Math.max(0, COOLDOWN - (now - u.last_bonus_at)) });
-});
-
-app.post('/api/bonus', authMiddleware, (req, res) => {
-  const u = getUser(req.user.id);
-  const now = Date.now();
-  if (now - u.last_bonus_at < COOLDOWN) return res.status(400).json({ error: 'Бонус уже получен' });
-  db.prepare('UPDATE users SET balance = balance + ?, last_bonus_at = ? WHERE id = ?').run(DAILY_BONUS, now, u.id);
-  res.json({ ok: true, amount: DAILY_BONUS, balance: getUser(u.id).balance });
-});
-
-app.post('/api/slots', authMiddleware, betLimiter, (req, res) => {
-  try {
-    const bet = Math.floor(Number(req.body.bet));
-    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
-    const result = placeBet(req.user.id, 'slots', bet, () => playSlots(bet), { bet });
-    res.json({ ...result, balance: getUser(req.user.id).balance });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-});
-
-app.post('/api/roulette', authMiddleware, betLimiter, (req, res) => {
-  try {
-    const bet = Math.floor(Number(req.body.bet));
-    const betType = String(req.body.betType);
-    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
-    const result = placeBet(req.user.id, 'roulette', bet, () => playRoulette(bet, betType), { betType });
-    res.json({ ...result, balance: getUser(req.user.id).balance });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-});
-
-const blackjackGames = new Map();
-
-app.post('/api/blackjack/start', authMiddleware, betLimiter, (req, res) => {
-  try {
-    const bet = Math.floor(Number(req.body.bet));
-    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
-    const user = getUser(req.user.id);
-    if (user.balance < bet) return res.status(400).json({ error: 'Недостаточно средств' });
-    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(bet, req.user.id);
-    const deck = newDeck();
-    const player = [deck.pop(), deck.pop()];
-    const dealer = [deck.pop(), deck.pop()];
-    const pv = handValue(player), dv = handValue(dealer);
-    if (pv === 21 || dv === 21) {
-      let payout = 0;
-      if (pv === 21 && dv === 21) payout = bet;
-      else if (pv === 21) payout = Math.floor(bet * 2.5);
-      if (payout) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(payout, req.user.id);
-      db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
-        .run(req.user.id, 'blackjack', bet, payout, JSON.stringify({ player, dealer, pv, dv }));
-      return res.json({ done: true, player, dealer, pv, dv, payout, balance: getUser(req.user.id).balance });
-    }
-    const gameId = req.user.id + '-' + Date.now();
-    blackjackGames.set(gameId, { userId: req.user.id, bet, deck, player, dealer });
-    res.json({ gameId, player, dealer: [dealer[0], { r: '?', s: '?' }], pv });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-});
-
-app.post('/api/blackjack/hit', authMiddleware, (req, res) => {
-  const g = blackjackGames.get(req.body.gameId);
-  if (!g || g.userId !== req.user.id) return res.status(400).json({ error: 'Игра не найдена' });
-  g.player.push(g.deck.pop());
-  const pv = handValue(g.player);
-  if (pv > 21) {
-    blackjackGames.delete(req.body.gameId);
-    db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
-      .run(req.user.id, 'blackjack', g.bet, 0, JSON.stringify({ player: g.player, dealer: g.dealer, bust: true }));
-    return res.json({ done: true, player: g.player, dealer: g.dealer, pv, bust: true, payout: 0, balance: getUser(req.user.id).balance });
-  }
-  res.json({ player: g.player, pv });
-});
-
-app.post('/api/blackjack/stand', authMiddleware, (req, res) => {
-  const g = blackjackGames.get(req.body.gameId);
-  if (!g || g.userId !== req.user.id) return res.status(400).json({ error: 'Игра не найдена' });
-  while (handValue(g.dealer) < 17) g.dealer.push(g.deck.pop());
-  const pv = handValue(g.player), dv = handValue(g.dealer);
-  let payout = 0;
-  if (dv > 21 || pv > dv) payout = g.bet * 2;
-  else if (pv === dv) payout = g.bet;
-  if (payout) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(payout, req.user.id);
-  db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
-    .run(req.user.id, 'blackjack', g.bet, payout, JSON.stringify({ player: g.player, dealer: g.dealer, pv, dv }));
-  blackjackGames.delete(req.body.gameId);
-  res.json({ done: true, player: g.player, dealer: g.dealer, pv, dv, payout, balance: getUser(req.user.id).balance });
-});
-
-app.get('/api/history', authMiddleware, (req, res) => {
-  res.json(db.prepare('SELECT * FROM bets WHERE user_id = ? ORDER BY created_at DESC LIMIT 50').all(req.user.id));
-});
-
-app.get('/api/admin/users', authMiddleware, adminMiddleware, (req, res) => {
-  res.json(db.prepare('SELECT id, username, balance, is_admin, banned, created_at, last_bonus_at FROM users ORDER BY id').all());
-});
-
-app.post('/api/admin/ban', authMiddleware, adminMiddleware, (req, res) => {
-  db.prepare('UPDATE users SET banned = ? WHERE id = ?').run(req.body.banned ? 1 : 0, req.body.userId);
-  res.json({ ok: true });
-});
-
-app.get('/api/admin/stats', authMiddleware, adminMiddleware, (req, res) => {
-  const s = {
-    users: db.prepare('SELECT COUNT(*) as c FROM users').get().c,
-    totalBets: db.prepare('SELECT COUNT(*) as c FROM bets').get().c,
-    totalWagered: db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM bets').get().s,
-    totalPaid: db.prepare('SELECT COALESCE(SUM(payout),0) as s FROM bets').get().s,
-  };
-  s.rtp = s.totalWagered ? (s.totalPaid / s.totalWagered * 100).toFixed(2) + '%' : '—';
-  res.json(s);
-});
-
-app.listen(process.env.PORT || 3000, () => {
-  console.log('🎰 Сервер запущен: http://localhost:' + (process.env.PORT || 3000));
-  const admins = db.prepare('SELECT COUNT(*) as c FROM users WHERE is_admin = 1').get().c;
-  if (admins === 0) console.log('⚠️  Админа нет. Запусти: node create-admin.mjs');
-});
-`;
-
-files['create-admin.mjs'] = `import 'dotenv/config';
-import { registerUser } from './server/auth.js';
-import db from './server/db.js';
-
-try {
-  registerUser('admin', 'admin123456');
-  db.prepare('UPDATE users SET is_admin = 1 WHERE username = ?').run('admin');
-  console.log('✅ Админ создан: логин admin / пароль admin123456');
-} catch (e) {
-  console.log('ℹ️  ' + e.message);
-  db.prepare('UPDATE users SET is_admin = 1 WHERE username = ?').run('admin');
-  console.log('✅ Права админа выданы пользователю admin');
-}
-process.exit(0);
-`;
-
-files['public/index.html'] = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lucky Casino — Play Money</title>
+<title>🎰 LUCKY CASINO — Play Money</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background:#0a0a14; color:#eee; min-height:100vh; }
-.topbar { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:#12121f; border-bottom:1px solid #2a2a3f; position:sticky; top:0; z-index:10; }
-.brand { font-size:22px; font-weight:800; background:linear-gradient(90deg,#ffd700,#ff6b6b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.balance { font-size:20px; font-weight:700; color:#ffd700; }
-.container { max-width:1100px; margin:0 auto; padding:24px; }
-.notice { padding:12px 16px; background:#1e2a1e; border-left:3px solid #4ade80; border-radius:6px; margin-bottom:24px; font-size:14px; color:#a7f3d0; }
-.bonus-box { background:#1a1a2e; border:1px solid #ffd700; border-radius:12px; padding:20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
-.btn { padding:12px 24px; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:all .15s; }
-.btn:disabled { opacity:.4; cursor:not-allowed; }
-.btn-gold { background:linear-gradient(135deg,#ffd700,#ff9500); color:#000; }
-.btn-gold:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,215,0,.4); }
-.btn-outline { background:transparent; border:1px solid #444; color:#eee; }
-.btn-outline:hover { border-color:#ffd700; color:#ffd700; }
-.tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-.tab { padding:10px 20px; background:#12121f; border:1px solid #2a2a3f; border-radius:8px; cursor:pointer; font-weight:600; color:#aaa; }
-.tab.active { background:#ffd700; color:#000; border-color:#ffd700; }
-.panel { display:none; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:24px; }
-.panel.active { display:block; }
-.bet-row { display:flex; gap:12px; align-items:center; margin:20px 0; flex-wrap:wrap; }
-input[type=number] { padding:12px; border:1px solid #2a2a3f; background:#0a0a14; color:#fff; border-radius:8px; font-size:16px; width:140px; }
-.reels { display:flex; gap:16px; justify-content:center; margin:32px 0; }
-.reel { width:110px; height:110px; background:linear-gradient(135deg,#1e1e34,#0f0f1e); border:2px solid #ffd700; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:60px; }
-.roulette-result { width:140px; height:140px; border-radius:50%; margin:24px auto; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:800; border:4px solid #333; }
-.roulette-result.red { background:#c00; }
-.roulette-result.black { background:#000; }
-.roulette-result.green { background:#0a0; }
-.result-msg { font-size:20px; font-weight:700; text-align:center; margin-top:16px; min-height:32px; }
-.win { color:#4ade80; } .lose { color:#f87171; }
-.history { margin-top:24px; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:16px; max-height:300px; overflow-y:auto; }
-.history-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #1a1a2e; font-size:14px; }
-.history-item:last-child { border-bottom:none; }
-.auth-form { max-width:360px; margin:80px auto; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:32px; }
-.auth-form h2 { margin-bottom:24px; text-align:center; }
-.auth-form input { width:100%; margin-bottom:12px; padding:12px; border:1px solid #2a2a3f; background:#0a0a14; color:#fff; border-radius:8px; font-size:16px; }
-.auth-form .btn { width:100%; margin-top:8px; }
-.error { color:#f87171; font-size:14px; margin:12px 0; min-height:18px; }
-.hidden { display:none !important; }
-.cards { display:flex; gap:8px; justify-content:center; margin:16px 0; flex-wrap:wrap; }
-.card { padding:16px 12px; background:#fff; color:#000; border-radius:8px; font-weight:800; font-size:20px; min-width:56px; text-align:center; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:radial-gradient(ellipse at top,#1a0033 0%,#0a0a14 40%,#001a33 100%);color:#eee;min-height:100vh;padding-bottom:40px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:rgba(18,18,31,.9);backdrop-filter:blur(12px);border-bottom:1px solid #2a2a3f;position:sticky;top:0;z-index:100}
+.brand{font-size:24px;font-weight:900;background:linear-gradient(90deg,#ffd700,#ff6b6b,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shine 3s infinite}
+@keyframes shine{0%,100%{background-position:0%}50%{background-position:100%}}
+.balance{font-size:22px;font-weight:800;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,.5)}
+.container{max-width:1150px;margin:0 auto;padding:24px}
+.notice{padding:12px 16px;background:linear-gradient(90deg,rgba(74,222,128,.15),rgba(74,222,128,.05));border-left:3px solid #4ade80;border-radius:8px;margin-bottom:20px;font-size:14px;color:#a7f3d0}
+.bonus-box{background:linear-gradient(135deg,#1a1a2e,#12121f);border:1px solid rgba(255,215,0,.5);border-radius:16px;padding:20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;box-shadow:0 0 30px rgba(255,215,0,.15)}
+.btn{padding:12px 24px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;transition:all .2s;font-family:inherit}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,#ffd700,#ff9500);color:#000;box-shadow:0 4px 15px rgba(255,215,0,.3)}
+.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,.5)}
+.btn-outline{background:transparent;border:1px solid #444;color:#eee}
+.btn-outline:hover:not(:disabled){border-color:#ffd700;color:#ffd700}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:12px 24px;background:#12121f;border:1px solid #2a2a3f;border-radius:10px;cursor:pointer;font-weight:700;color:#aaa;transition:all .2s;font-family:inherit;font-size:15px}
+.tab.active{background:linear-gradient(135deg,#ffd700,#ff9500);color:#000;border-color:transparent;box-shadow:0 4px 15px rgba(255,215,0,.4)}
+.panel{display:none;background:linear-gradient(135deg,#12121f,#0e0e1a);border:1px solid #2a2a3f;border-radius:16px;padding:28px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.panel.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.panel h2{text-align:center;margin-bottom:20px;font-size:26px}
+.bet-row{display:flex;gap:12px;align-items:center;margin:20px 0;flex-wrap:wrap;justify-content:center}
+input[type=number]{padding:12px 16px;border:2px solid #2a2a3f;background:#0a0a14;color:#fff;border-radius:10px;font-size:16px;width:160px;text-align:center;font-family:inherit;font-weight:700}
+input[type=number]:focus{outline:none;border-color:#ffd700}
+.reels{display:flex;gap:20px;justify-content:center;margin:36px 0}
+.reel{width:120px;height:120px;background:linear-gradient(135deg,#2a2a4a,#0f0f1e);border:3px solid #ffd700;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:64px;box-shadow:inset 0 0 30px rgba(0,0,0,.8),0 0 20px rgba(255,215,0,.2);transition:transform .1s}
+.reel.spin{animation:spin .1s infinite}
+@keyframes spin{50%{transform:scale(.92)}}
+.roulette-wheel{width:180px;height:180px;border-radius:50%;margin:24px auto;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;border:6px solid #333;box-shadow:0 0 40px rgba(0,0,0,.6);transition:all .4s}
+.roulette-wheel.red{background:radial-gradient(circle,#e00,#900);box-shadow:0 0 50px rgba(255,0,0,.5)}
+.roulette-wheel.black{background:radial-gradient(circle,#222,#000);box-shadow:0 0 50px rgba(0,0,0,.8)}
+.roulette-wheel.green{background:radial-gradient(circle,#0a0,#060);box-shadow:0 0 50px rgba(0,255,0,.4)}
+.result-msg{font-size:22px;font-weight:800;text-align:center;margin-top:16px;min-height:34px}
+.win{color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.6)}
+.lose{color:#f87171}
+.history{margin-top:24px;background:#12121f;border:1px solid #2a2a3f;border-radius:16px;padding:20px;max-height:320px;overflow-y:auto}
+.history h3{margin-bottom:16px;color:#ffd700}
+.history-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a2e;font-size:14px}
+.history-item:last-child{border-bottom:none}
+.cards{display:flex;gap:8px;justify-content:center;margin:16px 0;flex-wrap:wrap;min-height:100px}
+.card{padding:20px 14px;background:linear-gradient(135deg,#fff,#ddd);color:#000;border-radius:10px;font-weight:800;font-size:22px;min-width:60px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.4);animation:dealIn .3s}
+@keyframes dealIn{from{transform:translateY(-20px) rotate(-10deg);opacity:0}to{transform:translateY(0) rotate(0);opacity:1}}
+.card.red{color:#c00}
+.auth-form{max-width:380px;margin:60px auto;background:linear-gradient(135deg,#12121f,#0e0e1a);border:1px solid #2a2a3f;border-radius:20px;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.auth-form h2{margin-bottom:24px;text-align:center;font-size:24px}
+.auth-form input{width:100%;margin-bottom:14px;padding:14px 18px;border:2px solid #2a2a3f;background:#0a0a14;color:#fff;border-radius:10px;font-size:16px;font-family:inherit}
+.auth-form input:focus{outline:none;border-color:#ffd700}
+.auth-form .btn{width:100%;margin-top:8px;padding:14px}
+.error{color:#f87171;font-size:14px;margin:12px 0;min-height:20px;text-align:center}
+.hidden{display:none!important}
+.payout-info{text-align:center;color:#888;font-size:13px;margin-top:8px}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="brand">🎰 LUCKY CASINO</div>
-  <div style="display:flex; gap:16px; align-items:center;">
+  <div style="display:flex;gap:16px;align-items:center">
     <div class="balance" id="balanceEl">— ₽</div>
     <button class="btn btn-outline hidden" id="logoutBtn" onclick="logout()">Выйти</button>
   </div>
 </div>
 
 <div class="auth-form" id="authView">
-  <h2>Вход / Регистрация</h2>
+  <h2 id="authTitle">Вход в казино</h2>
   <input type="text" id="username" placeholder="Логин (3-32 символа)" autocomplete="username">
-  <input type="password" id="password" placeholder="Пароль (мин. 6)" autocomplete="current-password">
+  <input type="password" id="password" placeholder="Пароль (мин. 6 символов)" autocomplete="current-password">
   <div class="error" id="authError"></div>
-  <button class="btn btn-gold" onclick="login()">Войти</button>
-  <button class="btn btn-outline" onclick="register()">Регистрация</button>
+  <button class="btn btn-gold" onclick="doAuth('login')">Войти</button>
+  <button class="btn btn-outline" onclick="doAuth('register')">Регистрация</button>
+  <div style="text-align:center;margin-top:16px;color:#666;font-size:13px">Новым игрокам — 1000 ₽ приветственный бонус</div>
 </div>
 
 <div class="container hidden" id="appView">
@@ -479,20 +84,20 @@ input[type=number] { padding:12px; border:1px solid #2a2a3f; background:#0a0a14;
 
   <div class="bonus-box">
     <div>
-      <div style="font-weight:700; font-size:17px;">🎁 Ежедневный бонус</div>
-      <div style="color:#aaa; font-size:14px; margin-top:4px;" id="bonusInfo">Загрузка...</div>
+      <div style="font-weight:800;font-size:18px">🎁 Ежедневный бонус</div>
+      <div style="color:#aaa;font-size:14px;margin-top:6px" id="bonusInfo">Загрузка...</div>
     </div>
     <button class="btn btn-gold" id="bonusBtn" onclick="claimBonus()">Получить 10 000 ₽</button>
   </div>
 
   <div class="tabs">
-    <div class="tab active" data-game="slots" onclick="switchTab('slots')">🎰 Слоты</div>
-    <div class="tab" data-game="roulette" onclick="switchTab('roulette')">🎡 Рулетка</div>
-    <div class="tab" data-game="bj" onclick="switchTab('bj')">🃏 Блэкджек</div>
+    <button class="tab active" data-game="slots" onclick="switchTab('slots')">🎰 Слоты</button>
+    <button class="tab" data-game="roulette" onclick="switchTab('roulette')">🎡 Рулетка</button>
+    <button class="tab" data-game="bj" onclick="switchTab('bj')">🃏 Блэкджек</button>
   </div>
 
   <div class="panel active" id="panel-slots">
-    <h2>Слоты</h2>
+    <h2>🎰 Слоты</h2>
     <div class="reels">
       <div class="reel" id="r0">🍒</div>
       <div class="reel" id="r1">🍋</div>
@@ -502,28 +107,34 @@ input[type=number] { padding:12px; border:1px solid #2a2a3f; background:#0a0a14;
       <input type="number" id="slotsBet" value="100" min="1" max="100000">
       <button class="btn btn-gold" id="slotsBtn" onclick="playSlots()">Крутить</button>
     </div>
+    <div class="payout-info">3 одинаковых: x5–x500 · 2 одинаковых: x1–x10</div>
     <div class="result-msg" id="slotsMsg"></div>
   </div>
 
   <div class="panel" id="panel-roulette">
-    <h2>Рулетка</h2>
-    <div class="roulette-result" id="rlResult">?</div>
+    <h2>🎡 Рулетка</h2>
+    <div class="roulette-wheel" id="rlResult">?</div>
     <div class="bet-row">
       <input type="number" id="rlBet" value="100" min="1" max="100000">
-      <button class="btn btn-outline" onclick="playRoulette('red')" style="color:#f87171;border-color:#f87171;">Красное x2</button>
+    </div>
+    <div class="bet-row">
+      <button class="btn btn-outline" onclick="playRoulette('red')" style="color:#f87171;border-color:#f87171">Красное x2</button>
       <button class="btn btn-outline" onclick="playRoulette('black')">Чёрное x2</button>
       <button class="btn btn-outline" onclick="playRoulette('even')">Чёт x2</button>
       <button class="btn btn-outline" onclick="playRoulette('odd')">Нечет x2</button>
-      <button class="btn btn-outline" onclick="playRoulette('zero')">Зеро x36</button>
+      <button class="btn btn-outline" onclick="playRoulette('1-12')">1-12 x3</button>
+      <button class="btn btn-outline" onclick="playRoulette('13-24')">13-24 x3</button>
+      <button class="btn btn-outline" onclick="playRoulette('25-36')">25-36 x3</button>
+      <button class="btn btn-outline" onclick="playRoulette('zero')" style="color:#4ade80;border-color:#4ade80">Зеро x36</button>
     </div>
     <div class="result-msg" id="rlMsg"></div>
   </div>
 
   <div class="panel" id="panel-bj">
-    <h2>Блэкджек</h2>
-    <div><strong>Дилер</strong></div>
+    <h2>🃏 Блэкджек</h2>
+    <div style="text-align:center;color:#aaa;margin-bottom:8px">Дилер</div>
     <div class="cards" id="bjDealer"></div>
-    <div><strong>Вы</strong></div>
+    <div style="text-align:center;color:#ffd700;margin:16px 0 8px;font-weight:700">Вы</div>
     <div class="cards" id="bjPlayer"></div>
     <div class="bet-row">
       <input type="number" id="bjBet" value="100" min="1" max="100000">
@@ -531,217 +142,473 @@ input[type=number] { padding:12px; border:1px solid #2a2a3f; background:#0a0a14;
       <button class="btn btn-outline" id="bjHit" onclick="bjHit()" disabled>Взять</button>
       <button class="btn btn-outline" id="bjStand" onclick="bjStand()" disabled>Стоп</button>
     </div>
+    <div class="payout-info">Блэкджек: x2.5 · Победа: x2 · Ничья: возврат</div>
     <div class="result-msg" id="bjMsg"></div>
   </div>
 
   <div class="history">
-    <h3 style="margin-bottom:12px;">📜 История ставок</h3>
+    <h3>📜 История ставок</h3>
     <div id="historyList"></div>
   </div>
 </div>
 
 <script>
-const api = async (url, opts = {}) => {
-  const res = await fetch(url, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-    credentials: 'include',
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Ошибка');
-  return data;
-};
+'use strict';
 
-let currentUser = null, bjGameId = null, bonusTimer = null;
+// ==================== ХРАНИЛИЩЕ ====================
+const STORAGE_KEY = 'lucky_casino_db';
+const DAILY_BONUS = 10000;
+const COOLDOWN = 24 * 60 * 60 * 1000;
 
-function show(view) {
-  document.getElementById('authView').classList.toggle('hidden', view !== 'auth');
-  document.getElementById('appView').classList.toggle('hidden', view !== 'app');
-  document.getElementById('logoutBtn').classList.toggle('hidden', view !== 'app');
-}
-
-async function login() {
+function loadDB() {
   try {
-    await api('/api/login', { method:'POST', body: JSON.stringify({
-      username: document.getElementById('username').value,
-      password: document.getElementById('password').value,
-    })});
-    await onAuthed();
-  } catch (e) { document.getElementById('authError').textContent = e.message; }
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { users: {}, currentUser: null };
+  } catch { return { users: {}, currentUser: null }; }
+}
+function saveDB(db) { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+let DB = loadDB();
+
+function currentUser() {
+  if (!DB.currentUser) return null;
+  return DB.users[DB.currentUser] || null;
+}
+function saveUser(u) {
+  DB.users[u.username] = u;
+  saveDB(DB);
 }
 
-async function register() {
-  try {
-    await api('/api/register', { method:'POST', body: JSON.stringify({
-      username: document.getElementById('username').value,
-      password: document.getElementById('password').value,
-    })});
-    await onAuthed();
-  } catch (e) { document.getElementById('authError').textContent = e.message; }
+// ==================== АВТОРИЗАЦИЯ ====================
+function hashPass(s) {
+  // Простейший хеш — на клиенте серьёзнее нельзя без сервера
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return 'h' + h.toString(36);
 }
 
-async function logout() { await api('/api/logout', { method:'POST' }); location.reload(); }
+function doAuth(mode) {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('authError');
+  err.textContent = '';
 
-async function onAuthed() {
-  const me = await api('/api/me');
-  currentUser = me;
-  show('app');
-  document.getElementById('balanceEl').textContent = fmt(me.balance) + ' ₽';
-  updateBonusUI(me);
-  loadHistory();
-}
+  if (username.length < 3 || username.length > 32) return err.textContent = 'Логин: 3-32 символа';
+  if (password.length < 6) return err.textContent = 'Пароль: минимум 6 символов';
 
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
-
-function updateBonusUI(me) {
-  const btn = document.getElementById('bonusBtn'), info = document.getElementById('bonusInfo');
-  if (bonusTimer) clearInterval(bonusTimer);
-  if (me.bonusAvailable) {
-    btn.disabled = false; btn.textContent = 'Получить 10 000 ₽'; info.textContent = 'Бонус доступен!';
-  } else {
-    btn.disabled = true;
-    const start = Date.now();
-    const tick = () => {
-      const left = Math.max(0, me.nextBonusIn - (Date.now() - start));
-      if (left <= 0) { btn.disabled = false; btn.textContent = 'Получить 10 000 ₽'; info.textContent = 'Бонус доступен!'; clearInterval(bonusTimer); return; }
-      const h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
-      info.textContent = 'Следующий бонус через ' + h + 'ч ' + m + 'м ' + s + 'с';
-      btn.textContent = 'Через ' + h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (mode === 'register') {
+    if (DB.users[username]) return err.textContent = 'Логин уже занят';
+    const user = {
+      username,
+      passHash: hashPass(password),
+      balance: 1000,
+      lastBonusAt: 0,
+      bets: [],
+      createdAt: Date.now(),
+      banned: false,
     };
-    tick(); bonusTimer = setInterval(tick, 1000);
+    saveUser(user);
+    DB.currentUser = username;
+    saveDB(DB);
+    onAuthed();
+  } else {
+    const user = DB.users[username];
+    if (!user || user.passHash !== hashPass(password)) return err.textContent = 'Неверный логин или пароль';
+    if (user.banned) return err.textContent = 'Аккаунт заблокирован';
+    DB.currentUser = username;
+    saveDB(DB);
+    onAuthed();
   }
 }
 
-async function claimBonus() {
-  try {
-    await api('/api/bonus', { method:'POST' });
-    currentUser = await api('/api/me');
-    document.getElementById('balanceEl').textContent = fmt(currentUser.balance) + ' ₽';
-    updateBonusUI(currentUser);
-  } catch (e) { alert(e.message); }
+function logout() {
+  DB.currentUser = null;
+  saveDB(DB);
+  location.reload();
 }
 
+function onAuthed() {
+  const u = currentUser();
+  if (!u) return showAuth();
+  document.getElementById('authView').classList.add('hidden');
+  document.getElementById('appView').classList.remove('hidden');
+  document.getElementById('logoutBtn').classList.remove('hidden');
+  updateBalanceUI();
+  updateBonusUI();
+  renderHistory();
+}
+
+function showAuth() {
+  document.getElementById('authView').classList.remove('hidden');
+  document.getElementById('appView').classList.add('hidden');
+  document.getElementById('logoutBtn').classList.add('hidden');
+}
+
+// ==================== БАЛАНС / БОНУС ====================
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
+
+function updateBalanceUI() {
+  const u = currentUser();
+  document.getElementById('balanceEl').textContent = fmt(u.balance) + ' ₽';
+}
+
+let bonusTimer = null;
+function updateBonusUI() {
+  const u = currentUser();
+  const btn = document.getElementById('bonusBtn');
+  const info = document.getElementById('bonusInfo');
+  if (bonusTimer) clearInterval(bonusTimer);
+
+  const now = Date.now();
+  const elapsed = now - u.lastBonusAt;
+
+  if (elapsed >= COOLDOWN) {
+    btn.disabled = false;
+    btn.textContent = 'Получить 10 000 ₽';
+    info.textContent = '✅ Бонус доступен!';
+    return;
+  }
+
+  btn.disabled = true;
+  const tick = () => {
+    const u2 = currentUser();
+    const left = Math.max(0, COOLDOWN - (Date.now() - u2.lastBonusAt));
+    if (left <= 0) {
+      btn.disabled = false;
+      btn.textContent = 'Получить 10 000 ₽';
+      info.textContent = '✅ Бонус доступен!';
+      clearInterval(bonusTimer);
+      return;
+    }
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    info.textContent = `Следующий бонус через ${h}ч ${m}м ${s}с`;
+    btn.textContent = `Через ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  tick();
+  bonusTimer = setInterval(tick, 1000);
+}
+
+function claimBonus() {
+  const u = currentUser();
+  const now = Date.now();
+  if (now - u.lastBonusAt < COOLDOWN) return alert('Бонус ещё не готов');
+  u.balance += DAILY_BONUS;
+  u.lastBonusAt = now;
+  saveUser(u);
+  updateBalanceUI();
+  updateBonusUI();
+  alert(`🎁 Получено ${fmt(DAILY_BONUS)} ₽!`);
+}
+
+// ==================== ИСТОРИЯ ====================
+function addBet(game, amount, payout) {
+  const u = currentUser();
+  u.bets.unshift({ game, amount, payout, at: Date.now() });
+  if (u.bets.length > 50) u.bets.length = 50;
+  saveUser(u);
+  renderHistory();
+}
+
+function renderHistory() {
+  const u = currentUser();
+  const games = { slots: '🎰 Слоты', roulette: '🎡 Рулетка', blackjack: '🃏 Блэкджек' };
+  const list = document.getElementById('historyList');
+  if (!u.bets.length) {
+    list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">Пока нет ставок</div>';
+    return;
+  }
+  list.innerHTML = u.bets.map(b => {
+    const diff = b.payout - b.amount;
+    const cls = diff >= 0 ? 'win' : 'lose';
+    const sign = diff >= 0 ? '+' : '';
+    return `<div class="history-item"><span>${games[b.game] || b.game} · ставка ${fmt(b.amount)} ₽</span><span class="${cls}">${sign}${fmt(diff)} ₽</span></div>`;
+  }).join('');
+}
+
+// ==================== ИГРЫ ====================
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.game === name));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
 }
 
-async function playSlots() {
-  const bet = parseInt(document.getElementById('slotsBet').value);
-  const btn = document.getElementById('slotsBtn'), msg = document.getElementById('slotsMsg');
-  msg.textContent = ''; btn.disabled = true;
-  try {
-    const r = await api('/api/slots', { method:'POST', body: JSON.stringify({ bet }) });
-    const symbols = ['🍒','🍋','⭐','💎','7️⃣','🎰'];
-    let ticks = 0;
-    const int = setInterval(() => {
-      for (let i = 0; i < 3; i++) document.getElementById('r' + i).textContent = symbols[Math.floor(Math.random()*symbols.length)];
-      if (++ticks > 15) {
-        clearInterval(int);
-        r.reels.forEach((s, i) => document.getElementById('r' + i).textContent = s);
-        msg.textContent = r.win ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽!' : '😢 Проигрыш';
-        msg.className = 'result-msg ' + (r.win ? 'win' : 'lose');
-        document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
-        btn.disabled = false; loadHistory();
-      }
-    }, 60);
-  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; btn.disabled = false; }
+// === СЛОТЫ ===
+const SLOT_SYMBOLS = [
+  { s: '🍒', weight: 30, pay3: 5,   pay2: 1 },
+  { s: '🍋', weight: 25, pay3: 8,   pay2: 1 },
+  { s: '⭐', weight: 18, pay3: 15,  pay2: 2 },
+  { s: '💎', weight: 12, pay3: 30,  pay2: 3 },
+  { s: '7️⃣', weight: 7,  pay3: 100, pay2: 5 },
+  { s: '🎰', weight: 3,  pay3: 500, pay2: 10 },
+];
+const TOTAL_WEIGHT = SLOT_SYMBOLS.reduce((a, s) => a + s.weight, 0);
+
+function pickSymbol() {
+  let r = Math.random() * TOTAL_WEIGHT;
+  for (const sym of SLOT_SYMBOLS) { r -= sym.weight; if (r <= 0) return sym; }
+  return SLOT_SYMBOLS[0];
 }
 
-async function playRoulette(betType) {
-  const bet = parseInt(document.getElementById('rlBet').value);
+function playSlots() {
+  const u = currentUser();
+  const bet = Math.floor(Number(document.getElementById('slotsBet').value));
+  const msg = document.getElementById('slotsMsg');
+  const btn = document.getElementById('slotsBtn');
+  msg.textContent = '';
+
+  if (!bet || bet < 1) return alert('Ставка минимум 1 ₽');
+  if (bet > 100000) return alert('Ставка максимум 100 000 ₽');
+  if (u.balance < bet) return alert('Недостаточно средств');
+
+  u.balance -= bet;
+  saveUser(u);
+  updateBalanceUI();
+  btn.disabled = true;
+
+  // Анимация
+  const reels = [document.getElementById('r0'), document.getElementById('r1'), document.getElementById('r2')];
+  reels.forEach(r => r.classList.add('spin'));
+  let ticks = 0;
+  const int = setInterval(() => {
+    reels.forEach(r => r.textContent = SLOT_SYMBOLS[Math.floor(Math.random()*SLOT_SYMBOLS.length)].s);
+    if (++ticks >= 18) {
+      clearInterval(int);
+      reels.forEach(r => r.classList.remove('spin'));
+
+      // Реальный результат
+      const result = [pickSymbol(), pickSymbol(), pickSymbol()];
+      result.forEach((sym, i) => reels[i].textContent = sym.s);
+
+      let payout = 0, win = false;
+      if (result[0].s === result[1].s && result[1].s === result[2].s) {
+        payout = bet * result[0].pay3;
+        win = true;
+      } else {
+        const counts = {};
+        result.forEach(r => counts[r.s] = (counts[r.s] || 0) + 1);
+        const maxM = Math.max(...Object.values(counts));
+        if (maxM >= 2) {
+          const sym = result.find(r => counts[r.s] >= 2);
+          payout = bet * sym.pay2;
+          win = true;
+        }
+      }
+
+      if (payout > 0) {
+        u.balance += payout;
+        saveUser(u);
+      }
+      addBet('slots', bet, payout);
+      updateBalanceUI();
+
+      msg.textContent = win ? `🎉 Выигрыш ${fmt(payout)} ₽!` : `😢 Проигрыш ${fmt(bet)} ₽`;
+      msg.className = 'result-msg ' + (win ? 'win' : 'lose');
+      btn.disabled = false;
+    }
+  }, 70);
+}
+
+// === РУЛЕТКА ===
+const RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+function playRoulette(betType) {
+  const u = currentUser();
+  const bet = Math.floor(Number(document.getElementById('rlBet').value));
   const msg = document.getElementById('rlMsg');
   msg.textContent = '';
-  try {
-    const r = await api('/api/roulette', { method:'POST', body: JSON.stringify({ bet, betType }) });
-    const el = document.getElementById('rlResult');
-    el.className = 'roulette-result ' + r.color;
-    el.textContent = r.result;
-    msg.textContent = r.win ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽!' : '😢 Проигрыш';
-    msg.className = 'result-msg ' + (r.win ? 'win' : 'lose');
-    document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
-    loadHistory();
-  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; }
+
+  if (!bet || bet < 1) return alert('Ставка минимум 1 ₽');
+  if (bet > 100000) return alert('Ставка максимум 100 000 ₽');
+  if (u.balance < bet) return alert('Недостаточно средств');
+
+  u.balance -= bet;
+  saveUser(u);
+  updateBalanceUI();
+
+  const result = Math.floor(Math.random() * 37); // 0-36
+  const isRed = RED_NUMBERS.includes(result);
+  const isBlack = result !== 0 && !isRed;
+  const isEven = result !== 0 && result % 2 === 0;
+  const isOdd = result % 2 === 1;
+
+  let payout = 0, win = false;
+  switch (betType) {
+    case 'red':   if (isRed)   { payout = bet*2; win = true; } break;
+    case 'black': if (isBlack) { payout = bet*2; win = true; } break;
+    case 'even':  if (isEven)  { payout = bet*2; win = true; } break;
+    case 'odd':   if (isOdd)   { payout = bet*2; win = true; } break;
+    case '1-12':  if (result >= 1 && result <= 12)  { payout = bet*3; win = true; } break;
+    case '13-24': if (result >= 13 && result <= 24) { payout = bet*3; win = true; } break;
+    case '25-36': if (result >= 25 && result <= 36) { payout = bet*3; win = true; } break;
+    case 'zero':  if (result === 0) { payout = bet*36; win = true; } break;
+  }
+
+  if (payout > 0) {
+    u.balance += payout;
+    saveUser(u);
+  }
+  addBet('roulette', bet, payout);
+  updateBalanceUI();
+
+  const wheel = document.getElementById('rlResult');
+  wheel.className = 'roulette-wheel ' + (result === 0 ? 'green' : (isRed ? 'red' : 'black'));
+  wheel.textContent = result;
+
+  msg.textContent = win ? `🎉 Выигрыш ${fmt(payout)} ₽!` : `😢 Проигрыш ${fmt(bet)} ₽`;
+  msg.className = 'result-msg ' + (win ? 'win' : 'lose');
 }
 
-function cardHTML(c) { return '<div class="card">' + c.r + c.s + '</div>'; }
+// === БЛЭКДЖЕК ===
+let bjState = null;
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 
-async function bjStart() {
-  const bet = parseInt(document.getElementById('bjBet').value);
-  const msg = document.getElementById('bjMsg'); msg.textContent = '';
-  try {
-    const r = await api('/api/blackjack/start', { method:'POST', body: JSON.stringify({ bet }) });
-    document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
-    document.getElementById('bjDealer').innerHTML = r.dealer.map(cardHTML).join('');
-    document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
-    if (r.done) finishBJ(r);
-    else {
-      bjGameId = r.gameId;
-      document.getElementById('bjStart').disabled = true;
-      document.getElementById('bjHit').disabled = false;
-      document.getElementById('bjStand').disabled = false;
-    }
-  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; }
+function newDeck() {
+  const deck = [];
+  for (const s of SUITS) for (const r of RANKS) deck.push({ r, s });
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
 }
 
-async function bjHit() {
-  try {
-    const r = await api('/api/blackjack/hit', { method:'POST', body: JSON.stringify({ gameId: bjGameId }) });
-    document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
-    if (r.done) finishBJ(r);
-  } catch (e) { alert(e.message); }
+function cardValue(c) {
+  if (['J','Q','K'].includes(c.r)) return 10;
+  if (c.r === 'A') return 11;
+  return parseInt(c.r);
+}
+function handValue(hand) {
+  let total = hand.reduce((a, c) => a + cardValue(c), 0);
+  let aces = hand.filter(c => c.r === 'A').length;
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return total;
 }
 
-async function bjStand() {
-  try {
-    const r = await api('/api/blackjack/stand', { method:'POST', body: JSON.stringify({ gameId: bjGameId }) });
-    finishBJ(r);
-  } catch (e) { alert(e.message); }
+function cardHTML(c) {
+  if (!c) return '';
+  const isRed = ['♥','♦'].includes(c.s);
+  if (c.r === '?') return '<div class="card">?</div>';
+  return `<div class="card ${isRed ? 'red' : ''}">${c.r}${c.s}</div>`;
 }
 
-function finishBJ(r) {
-  document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
-  document.getElementById('bjDealer').innerHTML = r.dealer.map(cardHTML).join('');
+function renderBJ(hideDealer = false) {
+  document.getElementById('bjPlayer').innerHTML = bjState.player.map(cardHTML).join('');
+  document.getElementById('bjDealer').innerHTML = hideDealer
+    ? cardHTML(bjState.dealer[0]) + cardHTML({ r: '?', s: '?' })
+    : bjState.dealer.map(cardHTML).join('');
+}
+
+function bjStart() {
+  const u = currentUser();
+  const bet = Math.floor(Number(document.getElementById('bjBet').value));
   const msg = document.getElementById('bjMsg');
-  msg.textContent = r.payout > 0 ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽' : '😢 Проигрыш';
-  msg.className = 'result-msg ' + (r.payout > 0 ? 'win' : 'lose');
-  document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
+  msg.textContent = '';
+
+  if (!bet || bet < 1) return alert('Ставка минимум 1 ₽');
+  if (bet > 100000) return alert('Ставка максимум 100 000 ₽');
+  if (u.balance < bet) return alert('Недостаточно средств');
+
+  u.balance -= bet;
+  saveUser(u);
+  updateBalanceUI();
+
+  const deck = newDeck();
+  bjState = {
+    bet,
+    deck,
+    player: [deck.pop(), deck.pop()],
+    dealer: [deck.pop(), deck.pop()],
+    done: false,
+  };
+
+  const pv = handValue(bjState.player);
+  const dv = handValue(bjState.dealer);
+
+  if (pv === 21 || dv === 21) {
+    bjState.done = true;
+    let payout = 0;
+    if (pv === 21 && dv === 21) payout = bet;
+    else if (pv === 21) payout = Math.floor(bet * 2.5);
+    if (payout > 0) { u.balance += payout; saveUser(u); }
+    addBet('blackjack', bet, payout);
+    updateBalanceUI();
+    renderBJ(false);
+    msg.textContent = pv === 21 && dv === 21 ? `Ничья. Возврат ${fmt(payout)} ₽`
+      : pv === 21 ? `🎉 БЛЭКДЖЕК! +${fmt(payout)} ₽`
+      : `😢 Блэкджек у дилера. -${fmt(bet)} ₽`;
+    msg.className = 'result-msg ' + (payout > 0 ? 'win' : 'lose');
+    document.getElementById('bjStart').disabled = false;
+    document.getElementById('bjHit').disabled = true;
+    document.getElementById('bjStand').disabled = true;
+    return;
+  }
+
+  renderBJ(true);
+  document.getElementById('bjStart').disabled = true;
+  document.getElementById('bjHit').disabled = false;
+  document.getElementById('bjStand').disabled = false;
+}
+
+function bjHit() {
+  if (!bjState || bjState.done) return;
+  bjState.player.push(bjState.deck.pop());
+  const pv = handValue(bjState.player);
+  renderBJ(true);
+
+  if (pv > 21) {
+    bjState.done = true;
+    addBet('blackjack', bjState.bet, 0);
+    renderBJ(false);
+    const msg = document.getElementById('bjMsg');
+    msg.textContent = `💥 Перебор! -${fmt(bjState.bet)} ₽`;
+    msg.className = 'result-msg lose';
+    document.getElementById('bjStart').disabled = false;
+    document.getElementById('bjHit').disabled = true;
+    document.getElementById('bjStand').disabled = true;
+  }
+}
+
+function bjStand() {
+  if (!bjState || bjState.done) return;
+  while (handValue(bjState.dealer) < 17) bjState.dealer.push(bjState.deck.pop());
+  const pv = handValue(bjState.player);
+  const dv = handValue(bjState.dealer);
+  const u = currentUser();
+
+  let payout = 0;
+  if (dv > 21 || pv > dv) payout = bjState.bet * 2;
+  else if (pv === dv) payout = bjState.bet;
+
+  if (payout > 0) { u.balance += payout; saveUser(u); }
+  addBet('blackjack', bjState.bet, payout);
+  updateBalanceUI();
+  renderBJ(false);
+
+  const msg = document.getElementById('bjMsg');
+  if (payout === 0) {
+    msg.textContent = `😢 Проигрыш ${fmt(bjState.bet)} ₽`;
+    msg.className = 'result-msg lose';
+  } else if (payout === bjState.bet) {
+    msg.textContent = `🤝 Ничья. Возврат ${fmt(payout)} ₽`;
+    msg.className = 'result-msg';
+    msg.style.color = '#ffd700';
+  } else {
+    msg.textContent = `🎉 Выигрыш ${fmt(payout)} ₽!`;
+    msg.className = 'result-msg win';
+  }
+  msg.style.color = payout === bjState.bet ? '#ffd700' : '';
+  bjState.done = true;
   document.getElementById('bjStart').disabled = false;
   document.getElementById('bjHit').disabled = true;
   document.getElementById('bjStand').disabled = true;
-  bjGameId = null;
-  loadHistory();
 }
 
-async function loadHistory() {
-  try {
-    const rows = await api('/api/history');
-    const games = { slots: '🎰 Слоты', roulette: '🎡 Рулетка', blackjack: '🃏 Блэкджек' };
-    document.getElementById('historyList').innerHTML = rows.map(r => {
-      const diff = r.payout - r.amount;
-      return '<div class="history-item"><span>' + (games[r.game] || r.game) + ' · ставка ' + fmt(r.amount) + ' ₽</span><span class="' + (diff >= 0 ? 'win' : 'lose') + '">' + (diff >= 0 ? '+' : '') + fmt(diff) + ' ₽</span></div>';
-    }).join('') || '<div style="color:#666;">Пока нет ставок</div>';
-  } catch {}
-}
-
-(async () => {
-  try { await api('/api/me'); await onAuthed(); } catch { show('auth'); }
+// ==================== СТАРТ ====================
+(function init() {
+  const u = currentUser();
+  if (u) onAuthed();
+  else showAuth();
 })();
 </script>
 </body>
 </html>
-`;
-
-// Создаём все файлы
-for (const [filepath, content] of Object.entries(files)) {
-  const full = path.resolve(filepath);
-  fs.mkdirSync(path.dirname(full), { recursive: true });
-  fs.writeFileSync(full, content);
-  console.log('✅ ' + filepath);
-}
-
-console.log('\n📦 Все файлы созданы. Теперь выполни:\n');
-console.log('  npm install');
-console.log('  node create-admin.mjs');
-console.log('  npm start\n');
-console.log('Затем открой: http://localhost:3000\n');
