@@ -1,250 +1,747 @@
-<!DOCTYPE html>
-<html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Арена</title>
+// setup.mjs — запусти: node setup.mjs
+import fs from 'node:fs';
+import path from 'node:path';
+
+const files = {};
+
+files['package.json'] = JSON.stringify({
+  name: "casino-platform",
+  version: "1.0.0",
+  type: "module",
+  scripts: { start: "node server/index.js", dev: "node --watch server/index.js" },
+  dependencies: {
+    express: "^4.19.2",
+    "better-sqlite3": "^11.3.0",
+    bcryptjs: "^2.4.3",
+    jsonwebtoken: "^9.0.2",
+    "cookie-parser": "^1.4.6",
+    dotenv: "^16.4.5",
+    helmet: "^7.1.0",
+    "express-rate-limit": "^7.4.0"
+  }
+}, null, 2);
+
+files['.env'] = `PORT=3000
+JWT_SECRET=${[...Array(64)].map(() => Math.random().toString(36)[2]).join('')}
+DAILY_BONUS=10000
+NODE_ENV=production
+`;
+
+files['server/db.js'] = `import Database from 'better-sqlite3';
+const db = new Database('casino.db');
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+db.exec(\`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 1000,
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    last_bonus_at INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    banned INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS bets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    game TEXT NOT NULL,
+    amount REAL NOT NULL,
+    payout REAL NOT NULL,
+    details TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_bets_user ON bets(user_id, created_at DESC);
+  CREATE TABLE IF NOT EXISTS audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    meta TEXT,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+\`);
+export default db;
+`;
+
+files['server/rng.js'] = `import crypto from 'node:crypto';
+export function randomInt(min, max) {
+  const range = max - min + 1;
+  const bytes = Math.ceil(Math.log2(range) / 8) || 1;
+  const maxValid = 256 ** bytes - (256 ** bytes % range);
+  while (true) {
+    const buf = crypto.randomBytes(bytes);
+    let val = 0;
+    for (let i = 0; i < bytes; i++) val = val * 256 + buf[i];
+    if (val < maxValid) return min + (val % range);
+  }
+}
+export function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = randomInt(0, i);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+`;
+
+files['server/auth.js'] = `import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import db from './db.js';
+const SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
+
+export function registerUser(username, password) {
+  if (!username || username.length < 3 || username.length > 32) throw new Error('Логин: 3–32 символа');
+  if (!password || password.length < 6) throw new Error('Пароль: минимум 6 символов');
+  const hash = bcrypt.hashSync(password, 10);
+  try {
+    const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
+    return info.lastInsertRowid;
+  } catch (e) {
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new Error('Логин занят');
+    throw e;
+  }
+}
+
+export function loginUser(username, password) {
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user) throw new Error('Неверный логин или пароль');
+  if (user.banned) throw new Error('Аккаунт заблокирован');
+  if (!bcrypt.compareSync(password, user.password_hash)) throw new Error('Неверный логин или пароль');
+  const token = jwt.sign({ id: user.id, username: user.username, isAdmin: !!user.is_admin }, SECRET, { expiresIn: '7d' });
+  return { token, user: { id: user.id, username: user.username, isAdmin: !!user.is_admin } };
+}
+
+export function authMiddleware(req, res, next) {
+  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Не авторизован' });
+  try {
+    req.user = jwt.verify(token, SECRET);
+    const dbUser = db.prepare('SELECT banned FROM users WHERE id = ?').get(req.user.id);
+    if (!dbUser || dbUser.banned) return res.status(403).json({ error: 'Аккаунт заблокирован' });
+    next();
+  } catch { res.status(401).json({ error: 'Токен недействителен' }); }
+}
+
+export function adminMiddleware(req, res, next) {
+  if (!req.user?.isAdmin) return res.status(403).json({ error: 'Только для админа' });
+  next();
+}
+`;
+
+files['server/games.js'] = `import { randomInt, shuffle } from './rng.js';
+
+const SLOT_SYMBOLS = [
+  { s: '🍒', weight: 30, pay3: 5, pay2: 1 },
+  { s: '🍋', weight: 25, pay3: 8, pay2: 1 },
+  { s: '⭐', weight: 18, pay3: 15, pay2: 2 },
+  { s: '💎', weight: 12, pay3: 30, pay2: 3 },
+  { s: '7️⃣', weight: 7, pay3: 100, pay2: 5 },
+  { s: '🎰', weight: 3, pay3: 500, pay2: 10 },
+];
+const TOTAL_WEIGHT = SLOT_SYMBOLS.reduce((a, s) => a + s.weight, 0);
+
+function pickSymbol() {
+  let r = randomInt(1, TOTAL_WEIGHT);
+  for (const sym of SLOT_SYMBOLS) { r -= sym.weight; if (r <= 0) return sym; }
+  return SLOT_SYMBOLS[0];
+}
+
+export function playSlots(bet) {
+  const reels = [pickSymbol(), pickSymbol(), pickSymbol()];
+  if (reels[0].s === reels[1].s && reels[1].s === reels[2].s)
+    return { reels: reels.map(r => r.s), payout: bet * reels[0].pay3, win: true, type: 'jackpot' };
+  const counts = {};
+  reels.forEach(r => counts[r.s] = (counts[r.s] || 0) + 1);
+  const maxMatch = Math.max(...Object.values(counts));
+  if (maxMatch >= 2) {
+    const sym = reels.find(r => counts[r.s] >= 2);
+    return { reels: reels.map(r => r.s), payout: bet * sym.pay2, win: true, type: 'pair' };
+  }
+  return { reels: reels.map(r => r.s), payout: 0, win: false, type: 'lose' };
+}
+
+export const RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+export function playRoulette(bet, betType) {
+  const result = randomInt(0, 36);
+  const isRed = RED_NUMBERS.includes(result);
+  const isBlack = result !== 0 && !isRed;
+  const isEven = result !== 0 && result % 2 === 0;
+  const isOdd = result % 2 === 1;
+  let payout = 0, win = false;
+  switch (betType) {
+    case 'red': if (isRed) { payout = bet * 2; win = true; } break;
+    case 'black': if (isBlack) { payout = bet * 2; win = true; } break;
+    case 'even': if (isEven) { payout = bet * 2; win = true; } break;
+    case 'odd': if (isOdd) { payout = bet * 2; win = true; } break;
+    case 'zero': if (result === 0) { payout = bet * 36; win = true; } break;
+    case '1-12': if (result >= 1 && result <= 12) { payout = bet * 3; win = true; } break;
+    case '13-24': if (result >= 13 && result <= 24) { payout = bet * 3; win = true; } break;
+    case '25-36': if (result >= 25 && result <= 36) { payout = bet * 3; win = true; } break;
+    default: if (parseInt(betType) === result) { payout = bet * 36; win = true; }
+  }
+  return { result, color: result === 0 ? 'green' : (isRed ? 'red' : 'black'), payout, win };
+}
+
+export function newDeck() {
+  const suits = ['♠','♥','♦','♣'];
+  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  const deck = [];
+  for (const s of suits) for (const r of ranks) deck.push({ r, s });
+  return shuffle(deck);
+}
+
+export function cardValue(card) {
+  if (['J','Q','K'].includes(card.r)) return 10;
+  if (card.r === 'A') return 11;
+  return parseInt(card.r);
+}
+
+export function handValue(hand) {
+  let total = hand.reduce((a, c) => a + cardValue(c), 0);
+  let aces = hand.filter(c => c.r === 'A').length;
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return total;
+}
+`;
+
+files['server/index.js'] = `import express from 'express';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import 'dotenv/config';
+import db from './db.js';
+import { registerUser, loginUser, authMiddleware, adminMiddleware } from './auth.js';
+import { playSlots, playRoulette, newDeck, handValue } from './games.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
+const DAILY_BONUS = parseInt(process.env.DAILY_BONUS || '10000');
+const COOLDOWN = 24 * 60 * 60 * 1000;
+
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, '../public')));
+
+const betLimiter = rateLimit({ windowMs: 1000, max: 10 });
+
+function getUser(id) {
+  return db.prepare('SELECT id, username, balance, is_admin, last_bonus_at FROM users WHERE id = ?').get(id);
+}
+
+function placeBet(userId, game, amount, payoutFn, details) {
+  const tx = db.transaction(() => {
+    const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(userId);
+    if (user.balance < amount) throw new Error('Недостаточно средств');
+    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(amount, userId);
+    const result = payoutFn();
+    if (result.payout > 0) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(result.payout, userId);
+    db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
+      .run(userId, game, amount, result.payout, JSON.stringify({ ...result, ...details }));
+    return result;
+  });
+  return tx();
+}
+
+app.post('/api/register', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    registerUser(username, password);
+    const { token, user } = loginUser(username, password);
+    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7*24*3600*1000 });
+    res.json({ user });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const { token, user } = loginUser(username, password);
+    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7*24*3600*1000 });
+    res.json({ user });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok: true }); });
+
+app.get('/api/me', authMiddleware, (req, res) => {
+  const u = getUser(req.user.id);
+  const now = Date.now();
+  res.json({ ...u, bonusAvailable: now - u.last_bonus_at >= COOLDOWN, nextBonusIn: Math.max(0, COOLDOWN - (now - u.last_bonus_at)) });
+});
+
+app.post('/api/bonus', authMiddleware, (req, res) => {
+  const u = getUser(req.user.id);
+  const now = Date.now();
+  if (now - u.last_bonus_at < COOLDOWN) return res.status(400).json({ error: 'Бонус уже получен' });
+  db.prepare('UPDATE users SET balance = balance + ?, last_bonus_at = ? WHERE id = ?').run(DAILY_BONUS, now, u.id);
+  res.json({ ok: true, amount: DAILY_BONUS, balance: getUser(u.id).balance });
+});
+
+app.post('/api/slots', authMiddleware, betLimiter, (req, res) => {
+  try {
+    const bet = Math.floor(Number(req.body.bet));
+    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
+    const result = placeBet(req.user.id, 'slots', bet, () => playSlots(bet), { bet });
+    res.json({ ...result, balance: getUser(req.user.id).balance });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/roulette', authMiddleware, betLimiter, (req, res) => {
+  try {
+    const bet = Math.floor(Number(req.body.bet));
+    const betType = String(req.body.betType);
+    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
+    const result = placeBet(req.user.id, 'roulette', bet, () => playRoulette(bet, betType), { betType });
+    res.json({ ...result, balance: getUser(req.user.id).balance });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+const blackjackGames = new Map();
+
+app.post('/api/blackjack/start', authMiddleware, betLimiter, (req, res) => {
+  try {
+    const bet = Math.floor(Number(req.body.bet));
+    if (!bet || bet < 1 || bet > 100000) return res.status(400).json({ error: 'Ставка: 1–100000' });
+    const user = getUser(req.user.id);
+    if (user.balance < bet) return res.status(400).json({ error: 'Недостаточно средств' });
+    db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(bet, req.user.id);
+    const deck = newDeck();
+    const player = [deck.pop(), deck.pop()];
+    const dealer = [deck.pop(), deck.pop()];
+    const pv = handValue(player), dv = handValue(dealer);
+    if (pv === 21 || dv === 21) {
+      let payout = 0;
+      if (pv === 21 && dv === 21) payout = bet;
+      else if (pv === 21) payout = Math.floor(bet * 2.5);
+      if (payout) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(payout, req.user.id);
+      db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
+        .run(req.user.id, 'blackjack', bet, payout, JSON.stringify({ player, dealer, pv, dv }));
+      return res.json({ done: true, player, dealer, pv, dv, payout, balance: getUser(req.user.id).balance });
+    }
+    const gameId = req.user.id + '-' + Date.now();
+    blackjackGames.set(gameId, { userId: req.user.id, bet, deck, player, dealer });
+    res.json({ gameId, player, dealer: [dealer[0], { r: '?', s: '?' }], pv });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/blackjack/hit', authMiddleware, (req, res) => {
+  const g = blackjackGames.get(req.body.gameId);
+  if (!g || g.userId !== req.user.id) return res.status(400).json({ error: 'Игра не найдена' });
+  g.player.push(g.deck.pop());
+  const pv = handValue(g.player);
+  if (pv > 21) {
+    blackjackGames.delete(req.body.gameId);
+    db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
+      .run(req.user.id, 'blackjack', g.bet, 0, JSON.stringify({ player: g.player, dealer: g.dealer, bust: true }));
+    return res.json({ done: true, player: g.player, dealer: g.dealer, pv, bust: true, payout: 0, balance: getUser(req.user.id).balance });
+  }
+  res.json({ player: g.player, pv });
+});
+
+app.post('/api/blackjack/stand', authMiddleware, (req, res) => {
+  const g = blackjackGames.get(req.body.gameId);
+  if (!g || g.userId !== req.user.id) return res.status(400).json({ error: 'Игра не найдена' });
+  while (handValue(g.dealer) < 17) g.dealer.push(g.deck.pop());
+  const pv = handValue(g.player), dv = handValue(g.dealer);
+  let payout = 0;
+  if (dv > 21 || pv > dv) payout = g.bet * 2;
+  else if (pv === dv) payout = g.bet;
+  if (payout) db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(payout, req.user.id);
+  db.prepare('INSERT INTO bets (user_id, game, amount, payout, details) VALUES (?, ?, ?, ?, ?)')
+    .run(req.user.id, 'blackjack', g.bet, payout, JSON.stringify({ player: g.player, dealer: g.dealer, pv, dv }));
+  blackjackGames.delete(req.body.gameId);
+  res.json({ done: true, player: g.player, dealer: g.dealer, pv, dv, payout, balance: getUser(req.user.id).balance });
+});
+
+app.get('/api/history', authMiddleware, (req, res) => {
+  res.json(db.prepare('SELECT * FROM bets WHERE user_id = ? ORDER BY created_at DESC LIMIT 50').all(req.user.id));
+});
+
+app.get('/api/admin/users', authMiddleware, adminMiddleware, (req, res) => {
+  res.json(db.prepare('SELECT id, username, balance, is_admin, banned, created_at, last_bonus_at FROM users ORDER BY id').all());
+});
+
+app.post('/api/admin/ban', authMiddleware, adminMiddleware, (req, res) => {
+  db.prepare('UPDATE users SET banned = ? WHERE id = ?').run(req.body.banned ? 1 : 0, req.body.userId);
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/stats', authMiddleware, adminMiddleware, (req, res) => {
+  const s = {
+    users: db.prepare('SELECT COUNT(*) as c FROM users').get().c,
+    totalBets: db.prepare('SELECT COUNT(*) as c FROM bets').get().c,
+    totalWagered: db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM bets').get().s,
+    totalPaid: db.prepare('SELECT COALESCE(SUM(payout),0) as s FROM bets').get().s,
+  };
+  s.rtp = s.totalWagered ? (s.totalPaid / s.totalWagered * 100).toFixed(2) + '%' : '—';
+  res.json(s);
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log('🎰 Сервер запущен: http://localhost:' + (process.env.PORT || 3000));
+  const admins = db.prepare('SELECT COUNT(*) as c FROM users WHERE is_admin = 1').get().c;
+  if (admins === 0) console.log('⚠️  Админа нет. Запусти: node create-admin.mjs');
+});
+`;
+
+files['create-admin.mjs'] = `import 'dotenv/config';
+import { registerUser } from './server/auth.js';
+import db from './server/db.js';
+
+try {
+  registerUser('admin', 'admin123456');
+  db.prepare('UPDATE users SET is_admin = 1 WHERE username = ?').run('admin');
+  console.log('✅ Админ создан: логин admin / пароль admin123456');
+} catch (e) {
+  console.log('ℹ️  ' + e.message);
+  db.prepare('UPDATE users SET is_admin = 1 WHERE username = ?').run('admin');
+  console.log('✅ Права админа выданы пользователю admin');
+}
+process.exit(0);
+`;
+
+files['public/index.html'] = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Casino — Play Money</title>
 <style>
-:root{--bg:#0d1b24;--p:#142632;--l:#223a49;--tx:#e9f0f4;--m:#8aa3b3;--ac:#ffb227;--ok:#3ecf8e;--bad:#ff6b6b;--b:#1c3544}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.35 "Trebuchet MS",system-ui,sans-serif;padding-bottom:80px}
-#app{max-width:520px;margin:0 auto}
-header{position:sticky;top:0;z-index:5;background:var(--p);border-bottom:2px solid var(--ac);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
-h1{margin:0;font-size:20px}.bal{color:var(--ac);font-weight:700}
-button{font:inherit;color:var(--tx);background:var(--b);border:1px solid var(--l);border-radius:6px;padding:7px 10px;cursor:pointer}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac)}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--p);border-top:1px solid var(--l);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;color:var(--m)}
-nav button.on{color:var(--ac);font-weight:700}
-nav i{font-style:normal;background:var(--ac);color:#1a1200;border-radius:9px;padding:0 6px;font-size:12px}
-.pad{padding:12px}.chips{display:flex;gap:6px;overflow-x:auto;padding:12px}.chips button{white-space:nowrap}
-button.on{border-color:var(--ac);color:var(--ac)}
-.lg h3{margin:0;padding:8px 14px;background:#102029;font-size:14px;border-top:1px solid var(--l)}
-.m{display:flex;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid var(--l);cursor:pointer}
-.tm{flex:1;min-width:0}.tm div{display:flex;justify-content:space-between;gap:6px}
-.t{color:var(--m);font-size:13px}.lv{color:var(--bad);font-weight:700}.tm b{color:var(--ac)}
-.od{display:flex;gap:4px}
-.od button{min-width:54px;padding:6px 2px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
-button span{display:block;font-size:10px;color:var(--m);font-weight:400}
-.mh{padding:14px;background:var(--p)}.mh h2{margin:6px 0}.big{font-size:22px;font-weight:700;color:var(--ac)}
-.tabs{display:flex;gap:6px;padding:10px 12px}.tabs button{flex:1}
-.bk{margin:0 12px 12px;background:var(--p);border:1px solid var(--l);border-radius:8px;padding:10px}
-.bk h3{margin:0 0 8px;font-size:15px}
-.g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.g.two{grid-template-columns:1fr 1fr}
-.g button{display:flex;justify-content:space-between;padding:10px;font-weight:700;font-variant-numeric:tabular-nums}
-.g button span{display:inline;font-size:13px;color:var(--tx);font-weight:400}
-.ch{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px}.ch button{flex:0 0 auto}
-button.sel{background:var(--ac);color:#1a1200;border-color:var(--ac)}button.sel span{color:#4a3500}
-button.up{box-shadow:inset 0 -3px var(--ok)}button.dn{box-shadow:inset 0 -3px var(--bad)}
-.leg{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 0;border-bottom:1px solid var(--l);font-size:13px}
-.leg b{color:var(--ac)}.leg button{grid-row:span 2;align-self:center}
-.row{display:flex;justify-content:space-between;margin:8px 0}
-input[type=number],select{width:100%;background:#0a141b;border:1px solid var(--l);color:var(--tx);border-radius:6px;padding:9px;font:inherit}
-.quick{display:flex;gap:5px;margin:8px 0}.quick button{flex:1;padding:5px 0}
-.go{width:100%;background:var(--ac);color:#1a1200;font-weight:700;border-color:var(--ac);padding:11px}.go:disabled{opacity:.4}
-.bet{background:var(--p);border:1px solid var(--l);border-left:4px solid var(--m);border-radius:8px;padding:12px;margin-bottom:10px}
-.bet.won{border-left-color:var(--ok)}.bet.lost{border-left-color:var(--bad)}
-.hd{display:flex;justify-content:space-between;margin-bottom:6px}.won .st{color:var(--ok)}.lost .st{color:var(--bad)}.pending .st{color:var(--ac)}
-.empty{color:var(--m);padding:14px 0}.danger{border-color:var(--bad);color:var(--bad);margin-top:14px}
-label{display:block;margin:12px 0 5px;color:var(--m);font-size:13px}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ac);color:#1a1200;padding:10px 16px;border-radius:8px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;max-width:90vw}
-#toast.show{opacity:1}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
-</style></head>
-<body><div id="app">
-<header><h1>Арена</h1><div class="bal" id="bal"></div></header>
-<main id="view"></main>
-<nav><button data-tab="home">Линия</button><button data-tab="cp">Купон <i id="cpn"></i></button><button data-tab="bets">Ставки</button><button data-tab="set">Меню</button></nav>
-</div><div id="toast" role="status"></div>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background:#0a0a14; color:#eee; min-height:100vh; }
+.topbar { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:#12121f; border-bottom:1px solid #2a2a3f; position:sticky; top:0; z-index:10; }
+.brand { font-size:22px; font-weight:800; background:linear-gradient(90deg,#ffd700,#ff6b6b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.balance { font-size:20px; font-weight:700; color:#ffd700; }
+.container { max-width:1100px; margin:0 auto; padding:24px; }
+.notice { padding:12px 16px; background:#1e2a1e; border-left:3px solid #4ade80; border-radius:6px; margin-bottom:24px; font-size:14px; color:#a7f3d0; }
+.bonus-box { background:#1a1a2e; border:1px solid #ffd700; border-radius:12px; padding:20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+.btn { padding:12px 24px; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:all .15s; }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-gold { background:linear-gradient(135deg,#ffd700,#ff9500); color:#000; }
+.btn-gold:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,215,0,.4); }
+.btn-outline { background:transparent; border:1px solid #444; color:#eee; }
+.btn-outline:hover { border-color:#ffd700; color:#ffd700; }
+.tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.tab { padding:10px 20px; background:#12121f; border:1px solid #2a2a3f; border-radius:8px; cursor:pointer; font-weight:600; color:#aaa; }
+.tab.active { background:#ffd700; color:#000; border-color:#ffd700; }
+.panel { display:none; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:24px; }
+.panel.active { display:block; }
+.bet-row { display:flex; gap:12px; align-items:center; margin:20px 0; flex-wrap:wrap; }
+input[type=number] { padding:12px; border:1px solid #2a2a3f; background:#0a0a14; color:#fff; border-radius:8px; font-size:16px; width:140px; }
+.reels { display:flex; gap:16px; justify-content:center; margin:32px 0; }
+.reel { width:110px; height:110px; background:linear-gradient(135deg,#1e1e34,#0f0f1e); border:2px solid #ffd700; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:60px; }
+.roulette-result { width:140px; height:140px; border-radius:50%; margin:24px auto; display:flex; align-items:center; justify-content:center; font-size:48px; font-weight:800; border:4px solid #333; }
+.roulette-result.red { background:#c00; }
+.roulette-result.black { background:#000; }
+.roulette-result.green { background:#0a0; }
+.result-msg { font-size:20px; font-weight:700; text-align:center; margin-top:16px; min-height:32px; }
+.win { color:#4ade80; } .lose { color:#f87171; }
+.history { margin-top:24px; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:16px; max-height:300px; overflow-y:auto; }
+.history-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #1a1a2e; font-size:14px; }
+.history-item:last-child { border-bottom:none; }
+.auth-form { max-width:360px; margin:80px auto; background:#12121f; border:1px solid #2a2a3f; border-radius:12px; padding:32px; }
+.auth-form h2 { margin-bottom:24px; text-align:center; }
+.auth-form input { width:100%; margin-bottom:12px; padding:12px; border:1px solid #2a2a3f; background:#0a0a14; color:#fff; border-radius:8px; font-size:16px; }
+.auth-form .btn { width:100%; margin-top:8px; }
+.error { color:#f87171; font-size:14px; margin:12px 0; min-height:18px; }
+.hidden { display:none !important; }
+.cards { display:flex; gap:8px; justify-content:center; margin:16px 0; flex-wrap:wrap; }
+.card { padding:16px 12px; background:#fff; color:#000; border-radius:8px; font-weight:800; font-size:20px; min-width:56px; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">🎰 LUCKY CASINO</div>
+  <div style="display:flex; gap:16px; align-items:center;">
+    <div class="balance" id="balanceEl">— ₽</div>
+    <button class="btn btn-outline hidden" id="logoutBtn" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<div class="auth-form" id="authView">
+  <h2>Вход / Регистрация</h2>
+  <input type="text" id="username" placeholder="Логин (3-32 символа)" autocomplete="username">
+  <input type="password" id="password" placeholder="Пароль (мин. 6)" autocomplete="current-password">
+  <div class="error" id="authError"></div>
+  <button class="btn btn-gold" onclick="login()">Войти</button>
+  <button class="btn btn-outline" onclick="register()">Регистрация</button>
+</div>
+
+<div class="container hidden" id="appView">
+  <div class="notice">⚠️ Игра на виртуальные рубли. Пополнение и вывод невозможны. Ежедневный бонус — 10 000 ₽.</div>
+
+  <div class="bonus-box">
+    <div>
+      <div style="font-weight:700; font-size:17px;">🎁 Ежедневный бонус</div>
+      <div style="color:#aaa; font-size:14px; margin-top:4px;" id="bonusInfo">Загрузка...</div>
+    </div>
+    <button class="btn btn-gold" id="bonusBtn" onclick="claimBonus()">Получить 10 000 ₽</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-game="slots" onclick="switchTab('slots')">🎰 Слоты</div>
+    <div class="tab" data-game="roulette" onclick="switchTab('roulette')">🎡 Рулетка</div>
+    <div class="tab" data-game="bj" onclick="switchTab('bj')">🃏 Блэкджек</div>
+  </div>
+
+  <div class="panel active" id="panel-slots">
+    <h2>Слоты</h2>
+    <div class="reels">
+      <div class="reel" id="r0">🍒</div>
+      <div class="reel" id="r1">🍋</div>
+      <div class="reel" id="r2">⭐</div>
+    </div>
+    <div class="bet-row">
+      <input type="number" id="slotsBet" value="100" min="1" max="100000">
+      <button class="btn btn-gold" id="slotsBtn" onclick="playSlots()">Крутить</button>
+    </div>
+    <div class="result-msg" id="slotsMsg"></div>
+  </div>
+
+  <div class="panel" id="panel-roulette">
+    <h2>Рулетка</h2>
+    <div class="roulette-result" id="rlResult">?</div>
+    <div class="bet-row">
+      <input type="number" id="rlBet" value="100" min="1" max="100000">
+      <button class="btn btn-outline" onclick="playRoulette('red')" style="color:#f87171;border-color:#f87171;">Красное x2</button>
+      <button class="btn btn-outline" onclick="playRoulette('black')">Чёрное x2</button>
+      <button class="btn btn-outline" onclick="playRoulette('even')">Чёт x2</button>
+      <button class="btn btn-outline" onclick="playRoulette('odd')">Нечет x2</button>
+      <button class="btn btn-outline" onclick="playRoulette('zero')">Зеро x36</button>
+    </div>
+    <div class="result-msg" id="rlMsg"></div>
+  </div>
+
+  <div class="panel" id="panel-bj">
+    <h2>Блэкджек</h2>
+    <div><strong>Дилер</strong></div>
+    <div class="cards" id="bjDealer"></div>
+    <div><strong>Вы</strong></div>
+    <div class="cards" id="bjPlayer"></div>
+    <div class="bet-row">
+      <input type="number" id="bjBet" value="100" min="1" max="100000">
+      <button class="btn btn-gold" id="bjStart" onclick="bjStart()">Раздать</button>
+      <button class="btn btn-outline" id="bjHit" onclick="bjHit()" disabled>Взять</button>
+      <button class="btn btn-outline" id="bjStand" onclick="bjStand()" disabled>Стоп</button>
+    </div>
+    <div class="result-msg" id="bjMsg"></div>
+  </div>
+
+  <div class="history">
+    <h3 style="margin-bottom:12px;">📜 История ставок</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
 <script>
-const $=s=>document.querySelector(s),KEY='arena_v2',DAILY=20000,today=new Date().toISOString().slice(0,10);
-let S=JSON.parse(localStorage.getItem(KEY)||'null')||{bal:0,last:'',bets:[],fmt:'dec',stake:100};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
-let tab='home',sport='all',cur=null,mtab=0,mode='single',cp={},stake=S.stake,lines={},prev={};
+const api = async (url, opts = {}) => {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    credentials: 'include',
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Ошибка');
+  return data;
+};
 
-/* команды (рейтинги условные) */
-const LG=[
-{id:'khl',sp:'hockey',n:'Хоккей · КХЛ',tot:5.5,teams:{'ЦСКА':88,'СКА':86,'Ак Барс':84,'Локомотив':83,'Металлург Мг':84,'Авангард':82,'Салават Юлаев':80,'Динамо Москва':79,'Спартак':76,'Трактор':77,'Торпедо':75,'Сибирь':70,'Нефтехимик':72,'Автомобилист':78,'Северсталь':73,'Витязь':68,'Амур':66,'Адмирал':65,'Лада':67,'Барыс':71}},
-{id:'rpl',sp:'football',n:'Футбол · Россия, Премьер-лига',tot:2.5,teams:{'Зенит':85,'Краснодар':84,'Спартак':78,'ЦСКА':79,'Динамо Москва':80,'Локомотив':79,'Рубин':72,'Ахмат':70,'Крылья Советов':68,'Ростов':70}},
-{id:'epl',sp:'football',n:'Футбол · Англия, Премьер-лига',tot:2.5,teams:{'Манчестер Сити':92,'Арсенал':90,'Ливерпуль':89,'Челси':82,'Манчестер Юнайтед':80,'Тоттенхэм':80,'Ньюкасл':79,'Астон Вилла':78,'Лидс':74}},
-{id:'vtb',sp:'basket',n:'Баскетбол · Лига ВТБ',tot:158.5,T:158,teams:{'ЦСКА':88,'УНИКС':82,'Зенит':80,'Парма':76,'Локомотив-Кубань':74,'Автодор':70,'МБА':68,'Нижний Новгород':66,'Енисей':64,'Самара':62}},
-{id:'nba',sp:'basket',n:'Баскетбол · НБА',tot:224.5,T:224,teams:{'Бостон':90,'Оклахома-Сити':88,'Денвер':86,'Миннесота':83,'Нью-Йорк':82,'Милуоки':82,'Лейкерс':80,'Голден Стэйт':80,'Даллас':80,'Финикс':78,'Филадельфия':77,'Майами':76}}];
-const SP=[['all','Всё'],['live','Live'],['football','Футбол'],['hockey','Хоккей'],['basket','Баскетбол']];
+let currentUser = null, bjGameId = null, bonusTimer = null;
 
-/* математика */
-const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
-const poisson=l=>{let L=Math.exp(-l),k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1};
-const gauss=()=>Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.random());
-const pois=(l,n=13)=>{let p=Math.exp(-l),a=[p];for(let k=1;k<n;k++){p*=l/k;a.push(p)}return a};
-const Phi=x=>{const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p};
-/* исход рынка при счёте h:a (число от 0 до 1; дробное только для «итоговой победы» при ничьей) */
-function test(mk,s,ln,h,a,q){
-  if(mk==='1x2')return({'1':h>a,X:h==a,'2':h<a,'1X':h>=a,'12':h!=a,X2:h<=a})[s]?1:0;
-  if(mk==='tot')return(s==='O'?h+a>ln:h+a<ln)?1:0;
-  if(mk==='hcp')return(s==='1'?h+ln>a:h+ln<a)?1:0;
-  return h>a?(s==='1'?1:0):h<a?(s==='2'?1:0):(s==='1'?q:1-q)}
-function prob(m,mk,sc,s,ln){
-  if(m.L.sp==='basket'){
-    if(mk==='tot'){const u=Phi((ln-m.T)/17);return s==='U'?u:1-u}
-    const p=Phi((m.mu+(mk==='hcp'?ln:0))/12);return s==='2'?1-p:p}
-  const lv=m.live&&sc==='m'?m.live:null,f=sc==='p1'?m.f1:lv?(m.T-lv.min)/m.T:1;
-  const ph=pois(m.lh*f),pa=pois(m.la*f),bh=lv?lv.h:0,ba=lv?lv.a:0;let r=0;
-  for(let i=0;i<13;i++)for(let j=0;j<13;j++)r+=ph[i]*pa[j]*test(mk,s,ln,bh+i,ba+j,m.q);
-  return r}
-const odd=(m,mk,sc,s,ln)=>Math.max(1.01,+(1/(Math.max(prob(m,mk,sc,s,ln),.012)*1.06)).toFixed(2));
-const fmtN=n=>Math.round(n).toLocaleString('ru-RU');
-const fo=o=>S.fmt==='us'?(o>=2?'+'+Math.round((o-1)*100):String(Math.round(-100/(o-1)))):o.toFixed(2);
-const sg=n=>(n>0?'+':'')+n;
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),3200)}
+function show(view) {
+  document.getElementById('authView').classList.toggle('hidden', view !== 'auth');
+  document.getElementById('appView').classList.toggle('hidden', view !== 'app');
+  document.getElementById('logoutBtn').classList.toggle('hidden', view !== 'app');
+}
 
-/* линия на день */
-function build(){
-  const R=rng([...today].reduce((a,c)=>a*31+c.charCodeAt(0),7)),out=[];
-  LG.forEach(L=>{
-    const nm=Object.keys(L.teams);
-    for(let i=nm.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[nm[i],nm[j]]=[nm[j],nm[i]]}
-    const n=Math.min(L.sp==='hockey'?5:4,nm.length>>1);
-    for(let i=0;i<n;i++){
-      const h=nm[2*i],a=nm[2*i+1],rh=L.teams[h],ra=L.teams[a],d=(rh-ra)/100;
-      const m={id:L.id+i,L,h,a,rh,ra,q:.5+(rh-ra)/200,time:String(12+Math.floor(R()*11)).padStart(2,'0')+':'+['00','15','30','45'][Math.floor(R()*4)]};
-      if(L.sp==='hockey'){m.lh=2.9*Math.exp((d+.03)*1.2);m.la=2.9*Math.exp(-(d+.03)*1.2);m.T=60;m.f1=.33}
-      else if(L.sp==='football'){m.lh=1.4*Math.exp((d+.04)*1.8);m.la=1.2*Math.exp(-(d+.04)*1.8);m.T=90;m.f1=.45}
-      else{m.mu=(rh-ra+2.5)*.9;m.T=L.T}
-      if(i===0&&L.sp!=='basket')m.live={min:10+Math.floor(R()*40),h:Math.floor(R()*3),a:Math.floor(R()*2)};
-      out.push(m)}});
-  return out}
-const MATCHES=build();
+async function login() {
+  try {
+    await api('/api/login', { method:'POST', body: JSON.stringify({
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value,
+    })});
+    await onAuthed();
+  } catch (e) { document.getElementById('authError').textContent = e.message; }
+}
 
-/* кнопка коэффициента */
-function ob(m,mk,sc,s,ln,lab){
-  const key=[m.id,mk,sc,s,ln].join('|'),o=odd(m,mk,sc,s,ln),pv=prev[key];prev[key]=o;
-  const c=(cp[m.id]&&cp[m.id].key===key?'sel ':'')+(pv&&o>pv?'up':pv&&o<pv?'dn':'');
-  return `<button class="${c}" data-o="${key}"><span>${lab}</span>${fo(o)}</button>`}
-function pick(key){
-  const[id,mk,sc,s,l]=key.split('|'),m=MATCHES.find(x=>x.id===id);
-  if(cp[id]&&cp[id].key===key)delete cp[id];else cp[id]={key,m,mk,sc,sel:s,ln:l===''?null:+l}}
-function lab(m,mk,sc,s,ln){
-  const p=sc==='p1'?(m.L.sp==='hockey'?'1-й период: ':'1-й тайм: '):'';
-  const t={'1':m.h,'2':m.a,X:'Ничья','1X':m.h+' или ничья','12':'Победа любой','X2':m.a+' или ничья'};
-  if(mk==='tot')return p+'Тотал '+(s==='O'?'больше ':'меньше ')+ln;
-  if(mk==='hcp')return 'Фора '+(s==='1'?m.h:m.a)+' ('+sg(s==='1'?ln:-ln)+')';
-  return p+(mk==='win'?'Победа с ОТ: ':'')+t[s]}
+async function register() {
+  try {
+    await api('/api/register', { method:'POST', body: JSON.stringify({
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value,
+    })});
+    await onAuthed();
+  } catch (e) { document.getElementById('authError').textContent = e.message; }
+}
 
-/* экраны */
-function row(m){
-  const k=m.L.sp==='basket'?['1','2']:['1','X','2'],lv=m.live;
-  return `<div class="m" data-go="${m.id}"><div class="tm"><div class="t">${lv?`<span class="lv">● ${lv.min}'</span>`:m.time}</div>
-  <div><span>${m.h}</span>${lv?`<b>${lv.h}</b>`:''}</div><div><span>${m.a}</span>${lv?`<b>${lv.a}</b>`:''}</div></div>
-  <div class="od">${k.map(x=>ob(m,'1x2','m',x,'',x==='X'?'Х':x)).join('')}</div></div>`}
-function home(){
-  let h=`<div class="chips">${SP.map(([k,n])=>`<button data-sp="${k}" class="${sport===k?'on':''}">${n}</button>`).join('')}</div>`;
-  LG.forEach(L=>{
-    const ms=MATCHES.filter(m=>m.L===L&&(sport==='all'||sport===L.sp||(sport==='live'&&m.live)));
-    if(ms.length)h+=`<div class="lg"><h3>${L.n}</h3>${ms.map(row).join('')}</div>`});
-  return h}
-function matchPage(m){
-  const sp=m.L.sp,per=sp==='hockey'?'период':'тайм',lv=m.live;
-  let h=`<div class="mh"><button data-back>‹ Назад</button><div class="t" style="margin-top:8px">${m.L.n}</div><h2>${m.h} — ${m.a}</h2>
-  <div class="big">${lv?lv.h+':'+lv.a+" · "+lv.min+"'":m.time}</div></div>`;
-  const tabs=(!lv&&sp!=='basket')?['Популярное','1-й '+per]:['Популярное'];
-  h+=`<div class="tabs">${tabs.map((t,i)=>`<button data-mt="${i}" class="${i==mtab?'on':''}">${t}</button>`).join('')}</div>`;
-  const sc=mtab?'p1':'m',bk=(t,b)=>`<div class="bk"><h3>${t}</h3>${b}</div>`;
-  if(sp==='basket')h+=bk('Исход',`<div class="g two">${ob(m,'1x2','m','1','',m.h)}${ob(m,'1x2','m','2','',m.a)}</div>`);
-  else{
-    h+=bk(mtab?'Исход 1-го '+per+'а':'Исход'+(sp==='football'?' (основное время)':''),
-      `<div class="g">${[['1','1'],['X','Х'],['2','2'],['1X','1Х'],['12','12'],['X2','Х2']].map(([s,l])=>ob(m,'1x2',sc,s,'',l)).join('')}</div>`);
-    if(sp==='hockey'&&!mtab)h+=bk('Итоговая победа (с овертаймом)',`<div class="g two">${ob(m,'win','m','1','',m.h)}${ob(m,'win','m','2','',m.a)}</div>`)}
-  /* тотал с выбором линии */
-  let arr=sp==='basket'?[-6,-4,-2,0,2,4,6].map(d=>m.L.tot+d):mtab?[.5,1.5,2.5]:(sp==='hockey'?[3.5,4.5,5.5,6.5,7.5]:[.5,1.5,2.5,3.5,4.5]);
-  if(lv)arr=arr.map(x=>x+lv.h+lv.a);
-  const lk=m.id+'t'+sc,tl=arr.includes(lines[lk])?lines[lk]:arr[arr.length>>1];
-  h+=bk(sp==='basket'?'Тотал очков':'Тотал голов',`<div class="ch">${arr.map(l=>`<button data-ln="t${sc}|${l}" class="${l==tl?'on':''}">${l}</button>`).join('')}</div>
-    <div class="g two">${ob(m,'tot',sc,'O',tl,'Больше')}${ob(m,'tot',sc,'U',tl,'Меньше')}</div>`);
-  /* фора */
-  if(!mtab){
-    const ha=sp==='basket'?[-9.5,-7.5,-5.5,-3.5,-1.5,1.5,3.5,5.5,7.5,9.5]:sp==='hockey'?[-3.5,-2.5,-1.5,-.5,.5,1.5,2.5,3.5]:[-1.5,-.5,.5,1.5];
-    const fair=sp==='basket'?-m.mu:-(m.lh-m.la),hk=m.id+'h',
-      hl=ha.includes(lines[hk])?lines[hk]:ha.reduce((b,x)=>Math.abs(x-fair)<Math.abs(b-fair)?x:b);
-    h+=bk('Исход с учётом форы',`<div class="ch">${ha.map(l=>`<button data-ln="h|${l}" class="${l==hl?'on':''}">${sg(l)}</button>`).join('')}</div>
-      <div class="g two">${ob(m,'hcp','m','1',hl,m.h+' ('+sg(hl)+')')}${ob(m,'hcp','m','2',hl,m.a+' ('+sg(-hl)+')')}</div>`)}
-  return h}
-const lo=x=>odd(x.m,x.mk,x.sc,x.sel,x.ln);
-function couponView(){
-  const L=Object.values(cp),n=L.length,tot=L.reduce((a,x)=>a*lo(x),1);
-  const cost=mode==='express'?stake:stake*n,win=mode==='express'?stake*tot:L.reduce((a,x)=>a+stake*lo(x),0);
-  const bad=!n||stake<1||cost>S.bal||(mode==='express'&&n<2);
-  return `<div class="pad"><h2 style="margin-top:0">Купон (${n})</h2>
-  <div class="tabs" style="padding:0 0 8px"><button data-mode="single" class="${mode==='single'?'on':''}">Одиночные</button><button data-mode="express" class="${mode==='express'?'on':''}">Экспресс</button></div>
-  ${n?L.map(x=>`<div class="leg"><span>${x.m.h} — ${x.m.a}</span><button data-rm="${x.m.id}" aria-label="Убрать">✕</button><span>${lab(x.m,x.mk,x.sc,x.sel,x.ln)} <b>${fo(lo(x))}</b></span></div>`).join(''):'<div class="empty">Нажмите на коэффициент в линии или на странице матча.</div>'}
-  <label for="st">Сумма ставки</label><input id="st" type="number" min="1" value="${stake}">
-  <div class="quick">${[100,500,1000,5000].map(v=>`<button data-q="${v}">${fmtN(v)}</button>`).join('')}<button data-q="max">Макс</button></div>
-  ${mode==='express'&&n>1?`<div class="row"><span>Общий коэффициент</span><b>${fo(tot)}</b></div>`:''}
-  <div class="row"><span>Спишется</span><b>${fmtN(cost)}</b></div>
-  <div class="row"><span>Возможный выигрыш</span><b style="color:var(--ok)">${fmtN(win)}</b></div>
-  <button class="go" id="place" ${bad?'disabled':''}>${mode==='express'&&n<2?'Для экспресса нужно 2+ исхода':cost>S.bal?'Не хватает очков':'Сделать ставку'}</button></div>`}
-function betsView(){
-  const b=S.bets.slice().reverse();
-  return '<div class="pad"><h2 style="margin-top:0">Мои ставки</h2>'+(b.length?b.map(x=>`<div class="bet ${x.status}"><div class="hd"><b>${x.legs.length>1?'Экспресс':'Одиночная'} · ${fo(x.odd)}</b>
-  <span class="st">${x.status==='pending'?'Идёт расчёт…':x.status==='won'?'Выигрыш +'+fmtN(x.payout):'Проигрыш'}</span></div>
-  ${x.legs.map(l=>`<div class="t">${l.h} — ${l.a}${l.score?' ('+l.score[0]+':'+l.score[1]+')':''}: <span style="color:var(--tx)">${l.name}</span> @ ${fo(l.odd)}${l.res===undefined?'':l.res?' ✔':' ✘'}</div>`).join('')}
-  <div class="t" style="margin-top:6px">Ставка ${fmtN(x.stake)} · ${new Date(x.t).toLocaleString('ru-RU')}</div></div>`).join(''):'<div class="empty">Ставок пока нет.</div>')+'</div>'}
-function setView(){
-  return `<div class="pad"><h2 style="margin-top:0">Меню</h2>
-  <label for="fmt">Формат коэффициентов</label><select id="fmt"><option value="dec" ${S.fmt==='dec'?'selected':''}>Десятичный (2.50)</option><option value="us" ${S.fmt==='us'?'selected':''}>Американский (+150)</option></select>
-  <label for="dst">Сумма ставки по умолчанию</label><input id="dst" type="number" min="1" value="${S.stake}">
-  <p class="t">Каждый день при первом заходе начисляется ${fmtN(DAILY)} виртуальных очков. Данные хранятся только в этом браузере. Вывода нет.</p>
-  <button class="danger" id="reset">Сбросить прогресс</button></div>`}
-function render(){
-  $('#bal').textContent=fmtN(S.bal)+' очков';
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
-  $('#cpn').textContent=Object.keys(cp).length||'';
-  $('#view').innerHTML=tab==='home'?(cur?matchPage(cur):home()):tab==='cp'?couponView():tab==='bets'?betsView():setView()}
+async function logout() { await api('/api/logout', { method:'POST' }); location.reload(); }
 
-/* расчёт ставок */
-function simRes(st,sc){
-  if(st.sp==='basket'){const tt=st.T+17*gauss(),df=st.mu+12*gauss();let h=Math.round((tt+df)/2),a=Math.round((tt-df)/2);if(h==a)Math.random()<.5?h++:a++;return{h,a}}
-  const f=sc==='p1'?st.f1:st.lv?(st.T-st.lv.min)/st.T:1,b=sc==='m'&&st.lv?st.lv:{h:0,a:0};
-  return{h:b.h+poisson(st.lh*f),a:b.a+poisson(st.la*f)}}
-function settle(b){
-  b.legs.forEach(l=>{const r=simRes(l.st,l.sc),v=test(l.mk,l.sel,l.ln,r.h,r.a,l.st.q);l.score=[r.h,r.a];l.res=v===1||(v>0&&v<1&&Math.random()<v)});
-  const ok=b.legs.every(l=>l.res);b.status=ok?'won':'lost';b.payout=ok?Math.round(b.stake*b.odd):0;
-  if(ok)S.bal+=b.payout;save();toast(ok?'Ставка сыграла! +'+fmtN(b.payout):'Ставка не сыграла');render()}
-setInterval(()=>S.bets.filter(b=>b.status==='pending'&&b.settleAt<=Date.now()).forEach(settle),1000);
-function place(){
-  const L=Object.values(cp);if(!L.length)return;
-  const mk=x=>({h:x.m.h,a:x.m.a,mk:x.mk,sc:x.sc,sel:x.sel,ln:x.ln,name:lab(x.m,x.mk,x.sc,x.sel,x.ln),odd:lo(x),
-    st:{sp:x.m.L.sp,lh:x.m.lh,la:x.m.la,mu:x.m.mu,T:x.m.T,q:x.m.q,f1:x.m.f1,lv:x.m.live?{...x.m.live}:null}});
-  const g=mode==='express'?[L]:L.map(x=>[x]),cost=stake*g.length;if(cost>S.bal)return;
-  S.bal-=cost;
-  g.forEach((a,i)=>S.bets.push({id:Date.now()+i,t:Date.now(),stake,legs:a.map(mk),odd:a.reduce((p,x)=>p*lo(x),1),status:'pending',settleAt:Date.now()+6000+i*800}));
-  cp={};save();toast('Ставка принята, результат через несколько секунд')}
+async function onAuthed() {
+  const me = await api('/api/me');
+  currentUser = me;
+  show('app');
+  document.getElementById('balanceEl').textContent = fmt(me.balance) + ' ₽';
+  updateBonusUI(me);
+  loadHistory();
+}
 
-/* live: время идёт, голы падают, коэффициенты меняются */
-setInterval(()=>{
-  MATCHES.forEach(m=>{const v=m.live;if(!v)return;
-    if(++v.min>=m.T){v.min=1;v.h=0;v.a=0}
-    if(Math.random()<(m.lh+m.la)/m.T)Math.random()<m.lh/(m.lh+m.la)?v.h++:v.a++});
-  if(tab==='home'&&(!cur||cur.live))render()},2500);
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
 
-/* события */
-document.addEventListener('click',e=>{
-  const b=e.target.closest('button,[data-go]');if(!b)return;const d=b.dataset;
-  if(d.o)pick(d.o);
-  else if(d.go){cur=MATCHES.find(x=>x.id===d.go);mtab=0;scrollTo(0,0)}
-  else if('back' in d)cur=null;
-  else if(d.mt)mtab=+d.mt;
-  else if(d.ln){const[k,l]=d.ln.split('|');lines[cur.id+k]=+l}
-  else if(d.sp)sport=d.sp;
-  else if(d.tab){tab=d.tab;cur=null}
-  else if(d.mode)mode=d.mode;
-  else if(d.rm)delete cp[d.rm];
-  else if(d.q)stake=d.q==='max'?Math.max(1,Math.floor(S.bal/(mode==='express'?1:Math.max(1,Object.keys(cp).length)))):+d.q;
-  else if(b.id==='place')place();
-  else if(b.id==='reset'){if(confirm('Удалить баланс и историю ставок?')){localStorage.removeItem(KEY);location.reload()}return}
-  render()});
-document.addEventListener('input',e=>{
-  if(e.target.id==='st'){stake=Math.max(0,Math.floor(+e.target.value||0));const p=e.target.selectionStart;render();const i=$('#st');i.focus();i.setSelectionRange(p,p)}});
-document.addEventListener('change',e=>{
-  if(e.target.id==='fmt'){S.fmt=e.target.value;save()}
-  if(e.target.id==='dst'){S.stake=Math.max(1,Math.floor(+e.target.value||100));stake=S.stake;save()}});
-if(S.last!==today){S.bal+=DAILY;S.last=today;save();setTimeout(()=>toast('Ежедневный бонус: +'+fmtN(DAILY)+' очков'),400)}
-render();
-</script></body></html>
+function updateBonusUI(me) {
+  const btn = document.getElementById('bonusBtn'), info = document.getElementById('bonusInfo');
+  if (bonusTimer) clearInterval(bonusTimer);
+  if (me.bonusAvailable) {
+    btn.disabled = false; btn.textContent = 'Получить 10 000 ₽'; info.textContent = 'Бонус доступен!';
+  } else {
+    btn.disabled = true;
+    const start = Date.now();
+    const tick = () => {
+      const left = Math.max(0, me.nextBonusIn - (Date.now() - start));
+      if (left <= 0) { btn.disabled = false; btn.textContent = 'Получить 10 000 ₽'; info.textContent = 'Бонус доступен!'; clearInterval(bonusTimer); return; }
+      const h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+      info.textContent = 'Следующий бонус через ' + h + 'ч ' + m + 'м ' + s + 'с';
+      btn.textContent = 'Через ' + h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    };
+    tick(); bonusTimer = setInterval(tick, 1000);
+  }
+}
+
+async function claimBonus() {
+  try {
+    await api('/api/bonus', { method:'POST' });
+    currentUser = await api('/api/me');
+    document.getElementById('balanceEl').textContent = fmt(currentUser.balance) + ' ₽';
+    updateBonusUI(currentUser);
+  } catch (e) { alert(e.message); }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.game === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+}
+
+async function playSlots() {
+  const bet = parseInt(document.getElementById('slotsBet').value);
+  const btn = document.getElementById('slotsBtn'), msg = document.getElementById('slotsMsg');
+  msg.textContent = ''; btn.disabled = true;
+  try {
+    const r = await api('/api/slots', { method:'POST', body: JSON.stringify({ bet }) });
+    const symbols = ['🍒','🍋','⭐','💎','7️⃣','🎰'];
+    let ticks = 0;
+    const int = setInterval(() => {
+      for (let i = 0; i < 3; i++) document.getElementById('r' + i).textContent = symbols[Math.floor(Math.random()*symbols.length)];
+      if (++ticks > 15) {
+        clearInterval(int);
+        r.reels.forEach((s, i) => document.getElementById('r' + i).textContent = s);
+        msg.textContent = r.win ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽!' : '😢 Проигрыш';
+        msg.className = 'result-msg ' + (r.win ? 'win' : 'lose');
+        document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
+        btn.disabled = false; loadHistory();
+      }
+    }, 60);
+  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; btn.disabled = false; }
+}
+
+async function playRoulette(betType) {
+  const bet = parseInt(document.getElementById('rlBet').value);
+  const msg = document.getElementById('rlMsg');
+  msg.textContent = '';
+  try {
+    const r = await api('/api/roulette', { method:'POST', body: JSON.stringify({ bet, betType }) });
+    const el = document.getElementById('rlResult');
+    el.className = 'roulette-result ' + r.color;
+    el.textContent = r.result;
+    msg.textContent = r.win ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽!' : '😢 Проигрыш';
+    msg.className = 'result-msg ' + (r.win ? 'win' : 'lose');
+    document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
+    loadHistory();
+  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; }
+}
+
+function cardHTML(c) { return '<div class="card">' + c.r + c.s + '</div>'; }
+
+async function bjStart() {
+  const bet = parseInt(document.getElementById('bjBet').value);
+  const msg = document.getElementById('bjMsg'); msg.textContent = '';
+  try {
+    const r = await api('/api/blackjack/start', { method:'POST', body: JSON.stringify({ bet }) });
+    document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
+    document.getElementById('bjDealer').innerHTML = r.dealer.map(cardHTML).join('');
+    document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
+    if (r.done) finishBJ(r);
+    else {
+      bjGameId = r.gameId;
+      document.getElementById('bjStart').disabled = true;
+      document.getElementById('bjHit').disabled = false;
+      document.getElementById('bjStand').disabled = false;
+    }
+  } catch (e) { msg.textContent = e.message; msg.className = 'result-msg lose'; }
+}
+
+async function bjHit() {
+  try {
+    const r = await api('/api/blackjack/hit', { method:'POST', body: JSON.stringify({ gameId: bjGameId }) });
+    document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
+    if (r.done) finishBJ(r);
+  } catch (e) { alert(e.message); }
+}
+
+async function bjStand() {
+  try {
+    const r = await api('/api/blackjack/stand', { method:'POST', body: JSON.stringify({ gameId: bjGameId }) });
+    finishBJ(r);
+  } catch (e) { alert(e.message); }
+}
+
+function finishBJ(r) {
+  document.getElementById('bjPlayer').innerHTML = r.player.map(cardHTML).join('');
+  document.getElementById('bjDealer').innerHTML = r.dealer.map(cardHTML).join('');
+  const msg = document.getElementById('bjMsg');
+  msg.textContent = r.payout > 0 ? '🎉 Выигрыш ' + fmt(r.payout) + ' ₽' : '😢 Проигрыш';
+  msg.className = 'result-msg ' + (r.payout > 0 ? 'win' : 'lose');
+  document.getElementById('balanceEl').textContent = fmt(r.balance) + ' ₽';
+  document.getElementById('bjStart').disabled = false;
+  document.getElementById('bjHit').disabled = true;
+  document.getElementById('bjStand').disabled = true;
+  bjGameId = null;
+  loadHistory();
+}
+
+async function loadHistory() {
+  try {
+    const rows = await api('/api/history');
+    const games = { slots: '🎰 Слоты', roulette: '🎡 Рулетка', blackjack: '🃏 Блэкджек' };
+    document.getElementById('historyList').innerHTML = rows.map(r => {
+      const diff = r.payout - r.amount;
+      return '<div class="history-item"><span>' + (games[r.game] || r.game) + ' · ставка ' + fmt(r.amount) + ' ₽</span><span class="' + (diff >= 0 ? 'win' : 'lose') + '">' + (diff >= 0 ? '+' : '') + fmt(diff) + ' ₽</span></div>';
+    }).join('') || '<div style="color:#666;">Пока нет ставок</div>';
+  } catch {}
+}
+
+(async () => {
+  try { await api('/api/me'); await onAuthed(); } catch { show('auth'); }
+})();
+</script>
+</body>
+</html>
+`;
+
+// Создаём все файлы
+for (const [filepath, content] of Object.entries(files)) {
+  const full = path.resolve(filepath);
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, content);
+  console.log('✅ ' + filepath);
+}
+
+console.log('\n📦 Все файлы созданы. Теперь выполни:\n');
+console.log('  npm install');
+console.log('  node create-admin.mjs');
+console.log('  npm start\n');
+console.log('Затем открой: http://localhost:3000\n');
