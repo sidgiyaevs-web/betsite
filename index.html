@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -131,8 +130,6 @@ const dayN=t=>Math.floor((t+MO)/864e5),hm=t=>{const x=md(t);return pad(x.H)+':'+
 let NOW=Date.now(),TS=Math.floor(NOW/1000);
 const whenS=t=>{const dd=dayN(t)-dayN(NOW),x=md(t);return(dd<=0?'Сегодня':dd===1?'Завтра':x.d+' '+MON[x.m])+' в '+hm(t)};
 const mmss=s=>pad(Math.floor(s/60))+':'+pad(Math.floor(s%60));
-
-/* ================= ДАННЫЕ: команды ================= */
 const T=s=>s.split(',').map(x=>{const q=x.split('|');return{n:q[0],w:q[1],r:+q[2]}});
 const TS_={
 rpl:'Краснодар|FC Krasnodar|86,Зенит|FC Zenit Saint Petersburg|85,Локомотив|FC Lokomotiv Moscow|79,ЦСКА|PFC CSKA Moscow|79,Динамо|FC Dynamo Moscow|78,Спартак|FC Spartak Moscow|77,Балтика|FC Baltika Kaliningrad|72,Ростов|FC Rostov|69,Крылья Советов|PFC Krylia Sovetov Samara|70,Рубин|FC Rubin Kazan|68,Ахмат|FC Akhmat Grozny|66,Динамо Махачкала|FC Dynamo Makhachkala|64,Пари НН|FC Nizhny Novgorod|65,Акрон|FC Akron Tolyatti|66,Сочи|PFC Sochi|62,Оренбург|FC Orenburg|60',
@@ -347,12 +344,11 @@ const TC={f:'#5b9a2f',h:'#6f8697',u:'#b45a5a'};
 function mb(e,st,lr,key,lab){const p=price(e,st,key);if(!p.o)return`<div class="mb lk"><span>${esc(lab)}</span><b>—</b></div>`;const sel=SLP.some(b=>b.ek===e.k&&b.key===key),a=arw(e.k+key,p.o);
  return`<div class="mb${sel?' sel':''}${lr?' lk':''}${lr?'':a.f}" data-act="odd" data-ek="${e.k}" data-key="${key}"><span>${esc(lab)}</span><b>${lr?'🔒':p.o.toFixed(2)}${lr?'':a.h}</b></div>`}
 function cardsOf(e,st) {
-    const f = e.sp === 'f', hk = e.sp === 'h', uf = e.sp === 'u';
+    const f = e.sp === 'f', uf = e.sp === 'u';
     const H_ = e.h.n, A = e.a.n, lr = lockR(e, st);
     const B = (k, l) => mb(e, st, lr, k, l);
     const G = (a, c) => `<div class="mg" style="grid-template-columns:repeat(${c},1fr)">${a.map(x => B(x[0], x[1])).join('')}</div>`;
     const D = (id, t, h, open) => ({id, t, h, open});
-    
     const out3 = sc => G([[sc + '|1', '1'], [sc + '|X', 'X'], [sc + '|2', '2']], 3) + G([[sc + '|1X', '1X'], [sc + '|12', '12'], [sc + '|X2', 'X2']], 3);
     const ls = (id, arr, ok) => {
         const av = arr.filter(ok);
@@ -385,7 +381,6 @@ function cardsOf(e,st) {
         const l = s.c, L0 = l === 0;
         return s.h + `<div class="sub2"><div class="sub">${esc(H_)}</div><div class="sub">${esc(A)}</div></div>` + G([[`m|h1|${-l}`, `Фора (${sg(-l)})`], [`m|h2|${l}`, `Фора (${sg(l)})`]], 2) + (L0 ? '' : G([[`m|h1|${l}`, `Фора (${sg(l)})`], [`m|h2|${-l}`, `Фора (${sg(-l)})`]], 2))
     };
-    
     const A_ = {pop: [], match: [], t1: [], t2: [], t3: [], pen: []};
     if (uf) { 
         const O = D('o', 'Исход', G([['m|1', e.h.n], ['m|X', 'X'], ['m|2', e.a.n]], 3), 1);
@@ -395,7 +390,6 @@ function cardsOf(e,st) {
         A_.match = [O, TT, D('me', 'Способ победы', G([['m|me|KO', 'Нокаут/ТКО'], ['m|me|SUB', 'Сабмишен'], ['m|me|DEC', 'Решение']], 3), 1), D('rw', 'Победа в раунде', G([...Array(e.R)].map((_, i) => [`m|rw|${i + 1}`, 'Раунд ' + (i + 1)]).concat([['m|rw|DEC', 'Решением']]), 3), 0), D('dec', 'Бой дойдёт до решения', G([['m|dec|y', 'Да'], ['m|dec|n', 'Нет']], 2), 0)];
         return A_;
     }
-    
     const lines = f ? [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5] : [3.5, 4.5, 5, 5.5, 6, 6.5, 7.5, 8.5];
     const il = f ? [.5, 1.5, 2.5, 3.5] : [1.5, 2.5, 3.5, 4.5];
     const OM = D('o', f ? 'Исход матча (основное время)' : 'Исход', out3('m'), 1);
@@ -408,11 +402,9 @@ function cardsOf(e,st) {
     const HC = D('hc', 'Исход матча с учётом форы', hcp(f ? [0, 1, 1.5, 2, 2.5] : [.5, 1.5, 2.5, 3.5]), 0);
     const SC = f ? D('sn', 'Забьют - не забьют', [['bt', 'Обе забьют'], ['sc1', H_ + ' забьёт'], ['sc2', A + ' забьёт'], ['on1', 'Только ' + H_ + ' забьёт'], ['on2', 'Только ' + A + ' забьёт'], ['one', 'Только одна забьёт'], ['nb', 'Никто не забьёт']].map(x => `<div class="tr"><span>${esc(x[1])}</span>${B('m|' + x[0] + '|y', 'Да')}${B('m|' + x[0] + '|n', 'Нет')}</div>`).join(''), 0) : D('sn', 'Обе команды забьют', G([['m|bt|y', 'Да'], ['m|bt|n', 'Нет']], 2), 0);
     const IT = D('it', 'Индивидуальные тоталы голов', indiv('i', il), 0);
-    
     const cs = [];
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) cs.push([`m|cs|${i}-${j}`, i + ':' + j]);
     const NG = D('ng', st.ph === 'pre' ? 'Первый гол' : 'Следующий гол', G([['m|ng|h', H_], ['m|ng|n', 'Никто'], ['m|ng|a', A]], 3), 0);
-    
     if (f) {
         A_.pop = [OM].concat(st.per < 2 && !st.brk ? [O1] : [], [TP]);
         A_.match = [OM, TB, HC, SC, IT, D('cs', 'Точный счёт', G(cs, 4), 0), NG];
@@ -454,7 +446,7 @@ function ovH(e,st){if(st.ph==='pre')return'<div class="no">События поя
  m.pen.forEach(p=>{if(p.g<=st.gt&&inc({p:p.p,g:p.g},st))L.push({p:p.p,g:p.g,t:mmss(p.g),x:`⏱ Удаление 2 мин — ${esc(p.s?e.a.n:e.h.n)}`})});L.sort((a,b)=>a.p-b.p||a.g-b.g);
  return`<div class="mkb" style="margin:10px">${L.length?L.map(x=>`<div class="ev"><b>${x.t}</b><span>${x.x}</span></div>`).join(''):'<div class="no" style="padding:18px">Пока без событий</div>'}</div>`}
 function openMatch(k){CE=k;MT='pop';MS='';MSO=0;MST=0;MBO=0;OVV=0;const e=getEv(k);if(!e)return;$('#mp').className='full on';$('#mp').scrollTop=0;
- $('#mp').innerHTML=`<div class="top">${topH().split('<div class="tabs">')[0].split('<div class="sports">')[0]}<div class="mhead"><div class="bk" data-act="back">‹</div><div class="bt0">${esc(e.sp==='u'?'Единоборства / '+e.L.ct:e.L.cr)}<b>${esc(e.sp==='u'?e.sub:e.L.ct)}</b></div><div class="nx" data-act="nx">⇅</div></div></div><div id="mban"></div><div id="mtabs"></div><div id="msr"></div><div id="mbody"></div>`;mbH='';mpTick()
+ $('#mp').innerHTML=`<div class="top">${topH().split('<div class="tabs">')[0].split('<div class="sports">')[0]}<div class="mhead"><div class="bk" data-act="back">‹</div><div class="bt0">${esc(e.sp==='u'?'Единоборства / '+e.L.ct:e.L.cr)}<b>${esc(e.sp==='u'?e.sub:e.L.ct)}</b></div><div class="nx" data-act="nx">⇅</div></div></div><div id="mban"></div><div id="mtabs"></div><div id="msr"></div><div id="mbody"></div>`;mbH='';mpTick()}
 let mbH='',mtH='';
 function mpTick() {
     if (!CE) return;
@@ -462,22 +454,18 @@ function mpTick() {
     if (!e) return;
     const st = state(e), bh = banH(e, st);
     if (bh !== mbH) { $('#mban').innerHTML = bh; mbH = bh }
-    
     const th = `<div class="mt" style="--tc:${TC[e.sp]}">
         <div class="ic${MSO?' on':''}" data-act="srch">🔍</div>
         <div class="ic${MST?' on':''}" data-act="stat">📊</div>
         <div class="ic${MBO?' on':''}" data-act="bmf">🔖</div>
         ${TABN[e.sp].map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}
     </div>`;
-    
     if (th !== mtH) { $('#mtabs').innerHTML = th; mtH = th }
-    
     const sb = $('#msr');
     if (MSO && !sb.firstChild) {
         sb.innerHTML = `<div class="msr"><input id="msq" placeholder="Поиск по рынкам" value="${esc(MS)}"></div>`;
         $('#msq').oninput = ev => { MS = ev.target.value.toLowerCase().trim(); mpTick() }
     } else if (!MSO && sb.firstChild) sb.innerHTML = '';
-    
     let items;
     if (OVV) items = [{id:'ov', html:ovH(e,st)}];
     else if (MST) items = [{id:'st', html:statsH(e,st)}];
@@ -529,7 +517,6 @@ function spin(){if(Date.now()<(U.lastSpin||0)+WEEK)return toast('Ещё рано
 function openSearch(){$('#sr').className='full on';$('#sr').innerHTML=`<div class="gh"><span data-act="srclose">‹</span><input id="srq" placeholder="Поиск команды или бойца"><span data-act="srclose">✕</span></div><div id="srl"></div>`;
  const f=()=>{const q=$('#srq').value.toLowerCase().trim(),l=evs().filter(e=>!q||(e.h.n+' '+e.a.n+' '+e.L.n).toLowerCase().includes(q)).slice(0,40);$('#srl').innerHTML=l.length?l.map(e=>`<div class="sri" data-act="srgo" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${whenS(e.st)}</small></div>`).join(''):'<div class="no">Ничего не найдено</div>'};$('#srq').oninput=f;f();$('#srq').focus()}
 
-/* ================= ДЕЙСТВИЯ ================= */
 const ACT = {
     am(d){am=d.v;$('#tL').className=am==='login'?'on':'';$('#tR').className=am==='reg'?'on':'';$('#pi2').style.display=am==='reg'?'block':'none';$('#sb').textContent=am==='reg'?'Зарегистрироваться':'Войти';$('#amsg').className='amsg'},
     submit, tab(d){go(d.v)}, dep(){deposit()},
@@ -580,8 +567,6 @@ const ACT = {
     srgo(d){$('#sr').className='full';openMatch(d.ek)},
     fab(){openSearch()}
 };
-
-/* ================= ЦИКЛ ================= */
 let lastT=0,lastSettle=0,lastRender=0;
 function tick(){const n=Date.now();TS=Math.floor(n/1000);NOW=n;
  if(n-lastSettle>1000){lastSettle=n;settleAll()}
@@ -590,14 +575,10 @@ function tick(){const n=Date.now();TS=Math.floor(n/1000);NOW=n;
  if(dirty&&n-lastT>400){lastT=n;dirty=0;saveDB();renderList();if(CE)mpTick()}
 }
 setInterval(tick,500);
-
-/* маршрутизация кликов */
 document.addEventListener('click',ev=>{const t=ev.target.closest('[data-act]');if(!t)return;const a=ACT[t.dataset.act];if(!a)return;ev.stopPropagation();a(t.dataset)});
 $('#sb').addEventListener('click',submit);
 $('#pi').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
 $('#pi2').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
-
-/* старт */
 if(cur&&DB[cur])login(cur);
 window.addEventListener('beforeunload',saveDB);
 </script>
