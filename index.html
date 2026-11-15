@@ -170,8 +170,8 @@ function genDay(d){if(GD[d])return GD[d];const L=[],ds=d*864e5-MO,x=md(ds+36e5),
  for(const c of LG){const o=c.sch[wd];if(!o||(c.off&&c.off(x.m,x.d)))continue;const r=rng(c.k+d),sl=o.filter(()=>r()<(c.kp?c.kp[wd]:1)),tm=c.t.slice();
   for(let i=tm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[tm[i],tm[j]]=[tm[j],tm[i]]}
   sl.slice(0,tm.length>>1).forEach((s,i)=>{const p=s.split(':');L.push({k:c.k+'.'+d+'.'+i,sp:c.sp,L:c,h:tm[2*i],a:tm[2*i+1],st:ds+p[0]*36e5+p[1]*6e4})})}
- if(wd===0||wd===6){const r=rng('ufc'+d),st=wd===0?['00:00','00:25','00:50','01:15','01:40','02:05','03:05','03:35','04:05','04:35','05:15']:['21:00','21:25','21:50','22:15','22:45','23:20'],wk=Math.floor(d/7),nm=wd===0?'UFC '+(300+wk%90):'UFC Fight Night',lg={k:'ufc'+wd,sp:'u',n:'MMA. '+nm+'. '+CITY[wk%7],cr:'Единоборства',ct:'MMA. '+nm+'. '+CITY[wk%7],w:'Ultimate Fighting Championship',top:1},used=new Set();
-  st.forEach((s,i)=>{let cl,pool;for(let z=0;z<9;z++){cl=CLS[Math.floor(r()*8)];pool=FF.filter(f=>f.c===cl&&!used.has(f.n));if(pool.length>1)break}
+ if(true){const r=rng('ufc'+d),st=['01:30','01:55','02:20','02:45','03:10','03:35','04:05','04:35','05:05','05:35','06:15'],wk=Math.floor(d/7),nm='UFC '+(300+wk%90),lg={k:'ufc'+wd,sp:'u',n:'MMA. '+nm+'. '+CITY[wk%7],cr:'Единоборства',ct:'MMA. '+nm+'. '+CITY[wk%7],w:'Ultimate Fighting Championship',top:1},used=new Set();
+st.forEach((s,i)=>{let cl,pool;for(let z=0;z<9;z++){cl=CLS[Math.floor(r()*8)];pool=FF.filter(f=>f.c===cl&&!used.has(f.n));if(pool.length>1)break}
    if(pool.length<2)return;const a=pool.splice(Math.floor(r()*pool.length),1)[0],b=pool.splice(Math.floor(r()*pool.length),1)[0];used.add(a.n);used.add(b.n);const R=i===st.length-1?5:3,p=s.split(':');
    L.push({k:'ufc.'+d+'.'+i,sp:'u',L:lg,h:a,a:b,R,st:ds+p[0]*36e5+p[1]*6e4,sub:'Рейтинговый бой. '+cl+' вес. '+R+(R===3?' раунда':' раундов')})})}
  return GD[d]=L}
