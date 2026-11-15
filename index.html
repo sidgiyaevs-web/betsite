@@ -454,6 +454,7 @@ function mpTick() {
     if (!e) return;
     const st = state(e), bh = banH(e, st);
     if (bh !== mbH) { $('#mban').innerHTML = bh; mbH = bh }
+    
     const th = `<div class="mt" style="--tc:${TC[e.sp]}">
         <div class="ic${MSO?' on':''}" data-act="srch">🔍</div>
         <div class="ic${MST?' on':''}" data-act="stat">📊</div>
@@ -461,11 +462,13 @@ function mpTick() {
         ${TABN[e.sp].map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}
     </div>`;
     if (th !== mtH) { $('#mtabs').innerHTML = th; mtH = th }
+    
     const sb = $('#msr');
     if (MSO && !sb.firstChild) {
         sb.innerHTML = `<div class="msr"><input id="msq" placeholder="Поиск по рынкам" value="${esc(MS)}"></div>`;
         $('#msq').oninput = ev => { MS = ev.target.value.toLowerCase().trim(); mpTick() }
     } else if (!MSO && sb.firstChild) sb.innerHTML = '';
+    
     let items;
     if (OVV) items = [{id:'ov', html:ovH(e,st)}];
     else if (MST) items = [{id:'st', html:statsH(e,st)}];
@@ -530,15 +533,15 @@ const ACT = {
     open(d){openMatch(d.ek)},
     back(){CE=null;$('#mp').className='full'},
     nx(){const e=getEv(CE),l=evs().filter(x=>x.L.n===e.L.n),i=l.findIndex(x=>x.k===CE);if(l.length>1)openMatch(l[(i+1)%l.length].k)},
-    mtab(d){MT=d.v;MST=0;MSO=0;OVV=0;mpTick()},
-    srch(){MSO=!MSO;mpTick();if(MSO&&$('#msq'))$('#msq').focus()},
-    stat(){MST=!MST;mpTick()},
-    bmf(){MBO=!MBO;mpTick()},
-    ovv(d){OVV=+d.v;mpTick()},
+    mtab(d){MT=d.v;MST=0;MSO=0;OVV=0;mtH='';mpTick()},
+    srch(){MSO=!MSO;mtH='';mpTick();if(MSO&&$('#msq'))$('#msq').focus()},
+    stat(){MST=!MST;mtH='';mpTick()},
+    bmf(){MBO=!MBO;mtH='';mpTick()},
+    ovv(d){OVV=+d.v;mtH='';mpTick()},
     mk(d){COL[d.id]=d.d?0:1;mpTick()},
     bm(d){BM.has(d.t)?BM.delete(d.t):BM.add(d.t);U.bm=[...BM];saveDB();mpTick()},
-    line(d){TLN[d.k]=d.v;mpTick();},
-    seg(d){TLN[d.k]=+d.v;mpTick()},
+    line(d){TLN[d.k]=d.v;mtH='';mpTick();},
+    seg(d){TLN[d.k]=+d.v;mtH='';mpTick()},
     bell(){HID.has('bell'+CE)?HID.delete('bell'+CE):HID.add('bell'+CE);mpTick()},
     favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();renderList();mpTick()},
     odd(d){
@@ -548,11 +551,11 @@ const ACT = {
         else{const g=grp(d.key),c=SLP.find(b=>b.ek===d.ek&&grp(b.key)===g);if(c){c.key=d.key;c.odds=p.o;c.lab=lab(e,d.key);c.n0=(d.key.split('|')[2]?+d.key.split('|')[2]:0);toast('Исход заменён')}
         else{const n0=/^cs\|/.test(d.key)?parseInt(d.key.split('|')[2].split('-')[0]+d.key.split('|')[2].split('-')[1]):0;SLP.push({ek:d.ek,key:d.key,odds:p.o,lab:lab(e,d.key),h:e.h.n,a:e.a.n,n0})}}
         if(SLP.length>1&&SM==='ex'&&new Set(SLP.map(x=>x.ek)).size<SLP.length){SM='sg';toast('Разные исходы одного матча — включены одинары')}
-        renderTop();mpTick();if($('#slip').classList.contains('on'))slipTick(1)
+        renderTop();mtH='';mpTick();if($('#slip').classList.contains('on'))slipTick(1)
     },
     slipopen(){slipOpen()},
     slipclose(){$('#slip').classList.remove('on')},
-    rm(d){SLP.splice(+d.i,1);renderTop();slipTick(1);mpTick()},
+    rm(d){SLP.splice(+d.i,1);renderTop();mtH='';slipTick(1);mpTick()},
     smode(){SM=SM==='ex'?'sg':'ex';slipTick(1)},
     usefb(){FBU=!FBU;slipTick(1)},
     q(d){STK=+d.v;slipTick(1)},
