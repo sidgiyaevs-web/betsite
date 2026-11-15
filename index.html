@@ -442,7 +442,7 @@ function slipTick(force){if(!$('#slip').classList.contains('on'))return;
  const h=SLP.length?SLP.map((it,i)=>{const e=getEv(it.ek);if(!e)return'';const st=state(e),lr=lockR(e,st),p=price(e,st,it.key);if(p.o)it.odds=p.o;const off=lr||!p.o,ic={f:'⚽',h:'🏒',u:'🥊'}[e.sp];
   return`<div class="si${off?' off':''}"><span class="x" data-act="rm" data-i="${i}">×</span><div class="m1">${ic} ${st.ph==='pre'?whenS(e.st):st.fin?'Завершён':'<i class="clk"></i>'+clkS(e,st)}</div><div class="m2">${e.sp==='u'||st.ph==='pre'?'':'<em>'+st.sc[0]+':'+st.sc[1]+'</em>'}${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="m3"><span>${esc(it.lab)}</span><span>${off?(lr||'Закрыт'):it.odds.toFixed(2)}</span></div></div>`}).join(''):'<div class="no">Купон пуст.<br>Нажмите на коэффициент, чтобы добавить исход.</div>';
  if(h!==sbH||force){$('#sbody').innerHTML=h;sbH=h}
- if(document.activeElement&&document.activeElement.id==='stk'&&!force){}else{const n=SLP.length,single=SM==='sg',tot=STK*(single?n:1),pot=single?SLP.reduce((a,b)=>a+STK*b.odds,0):STK*combo(),er=tot>U.balance&&n>0;
+if(document.activeElement&&document.activeElement.id==='stk'&&!force){}else{const n=SLP.length,single=SM==='sg',tot=STK*(single?n:1),pot=single?SLP.reduce((a,b)=>a+STK*b.odds,0):STK*combo(),er=tot>U.balance&&n>0;
   $('#sfoot').innerHTML=n?`<div class="srow"><div class="sel2" data-act="smode">${single?'Одинар':'Экспресс'} ⌄</div><div class="tot">⇅ ${single?'—':combo().toFixed(2)}</div></div>${U.freebet>0?`<div class="fbt${FBU?' on':''}" data-act="usefb">${FBU?'✅ Фрибет применяется':'🎁 Использовать фрибет ('+money(U.freebet)+')'}</div>`:''}<div class="inb${er?' er':''}"><div class="l"><input id="stk" type="number" inputmode="numeric" value="${STK}"><span class="pot">→ ${Math.round(pot).toLocaleString('ru-RU')}</span></div><div class="r">Баланс<b>${Math.round(U.balance).toLocaleString('ru-RU')}</b></div></div>${er?'<div class="err">Недостаточно средств</div>':''}<div class="qr">${[['20','min'],['50'],['500'],['1000'],['2000'],[String(Math.max(0,Math.floor(Math.min(U.balance,700000)))),'max']].map(q=>`<div class="qb" data-act="q" data-v="${q[0]}">${q[1]?'<small style="display:block;font-size:10px;color:#8a929c">'+q[1]+'</small>':''}${Number(q[0]).toLocaleString('ru-RU')}</div>`).join('')}</div><button class="btn" data-act="${er?'topup':'place'}" style="padding:15px">${er?'Пополнить на '+Math.ceil(tot-U.balance):'Сделать ставку'}</button>`:'';
   const s=$('#stk');if(s)s.oninput=()=>{STK=+s.value||0;slipTick()}}}
 function place(){if(!SLP.length)return toast('Купон пуст',0);const st=+STK||0;if(st<20)return toast('Минимальная ставка 20 ₽',0);let ch=0;
@@ -475,104 +475,52 @@ mode(d){MODE=d.v;renderTop();renderList()},spf(d){SPF=d.v;renderTop();renderList
 golive(){MODE='live';SPF='all';go('sport')},lg(d){HID.has(d.k)?HID.delete(d.k):HID.add(d.k);renderList()},
 open(d){openMatch(d.ek)},back(){CE=null;$('#mp').className='full'},
 nx(){const e=getEv(CE),l=evs().filter(x=>x.L.n===e.L.n),i=l.findIndex(x=>x.k===CE);if(l.length>1)openMatch(l[(i+1)%l.length].k)},
-mtab(d){MT=d.v;MST=0;MSO=0;OVV=0;mpTick()},srch(){MSO=!MSO;mpTick();if(MSO&&$('#msq'))$('#
-const lab=(e,key)=>{const[sc,t,x]=key.split('|'),f=e.sp==='f',pf=sc==='m'?'':sc+(f?' Т ':'П ');
- const M={'1':'Поб 1',X:'Ничья','2':'Поб 2','1X':'1X','12':'12',X2:'X2',w1:'Поб 1 (с ОТ)',w2:'Поб 2 (с ОТ)',
-  ov:'Тотал Б '+x,un:'Тотал М '+x,h1:'Фора 1 ('+sg(+x)+')',h2:'Фора 2 ('+sg(+x)+')',
-  o1:'ИТ1 Б '+x,u1:'ИТ1 М '+x,o2:'ИТ2 Б '+x,u2:'ИТ2 М '+x,
-  bt:'ОЗ '+(x==='y'?'Да':'Нет'),sc1:'Забьёт 1 '+(x==='y'?'Да':'Нет'),sc2:'Забьёт 2 '+(x==='y'?'Да':'Нет'),
-  on1:'Только 1 '+(x==='y'?'Да':'Нет'),on2:'Только 2 '+(x==='y'?'Да':'Нет'),one:'Только одна '+(x==='y'?'Да':'Нет'),
-  nb:'Никто '+(x==='y'?'Да':'Нет'),cs:'Счёт '+(x||'').replace('-',':'),
-  ng:'След. гол: '+({h:'1',a:'2',n:'нет'})[x],ot:'ОТ '+(x==='y'?'Да':'Нет'),
-  po:'Удал. Б '+x,pu:'Удал. М '+x,pn:'След. удал.: '+({h:'1',a:'2',n:'нет'})[x],
-  me:({KO:'Нокаут/ТКО',SUB:'Сабмишен',DEC:'Решение'})[x],
-  rw:x==='DEC'?'Решением':'Победа в раунде '+x,dec:'До решения '+(x==='y'?'Да':'Нет')};
- if(e.sp==='u'&&(t==='1'||t==='2'))return'Поб '+(t==='1'?'1':'2');
- if(e.sp==='u'&&t==='ov')return'Тотал раундов Б '+x;
- if(e.sp==='u'&&t==='un')return'Тотал раундов М '+x;
- return pf+(M[t]||key)};
-
-/* ================= КУПОН ================= */
-function slipH(){
- if(!SLP.length)return`<div class="sheet"><div class="hnd"></div><div class="sh"><span class="on">Купон</span><div class="x2" data-act="slipclose">✕</div></div><div class="sb2"><div class="no" style="padding:40px 10px">Купон пуст.<br>Выберите коэффициент в линии.</div></div></div>`;
- return'';
-}
-function slipOpen(){$('#slip').classList.add('on');$('#slip').innerHTML=`<div class="sheet"><div class="hnd"></div><div class="sh">⚙<span class="on">Купон</span><span>Прогнозы</span><span>Промо</span><div class="x2" data-act="slipclose">⌄</div></div><div class="sb2" id="sbody"></div><div class="sf" id="sfoot"></div></div>`;sbH='';slipTick(1)}
-let sbH='';
-function slipTick(force){if(!$('#slip').classList.contains('on'))return;
- const h=SLP.length?SLP.map((it,i)=>{const e=getEv(it.ek);if(!e)return'';const st=state(e),lr=lockR(e,st),p=price(e,st,it.key);if(p.o)it.odds=p.o;const off=lr||!p.o,ic={f:'⚽',h:'🏒',u:'🥊'}[e.sp];
-  return`<div class="si${off?' off':''}"><span class="x" data-act="rm" data-i="${i}">×</span><div class="m1">${ic} ${st.ph==='pre'?whenS(e.st):st.fin?'Завершён':'<i class="clk"></i>'+clkS(e,st)}</div><div class="m2">${e.sp==='u'||st.ph==='pre'?'':'<em>'+st.sc[0]+':'+st.sc[1]+'</em>'}${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="m3"><span>${esc(it.lab)}</span><span>${off?(lr||'Закрыт'):it.odds.toFixed(2)}</span></div></div>`}).join(''):'<div class="no">Купон пуст.<br>Нажмите на коэффициент, чтобы добавить исход.</div>';
- if(h!==sbH||force){$('#sbody').innerHTML=h;sbH=h}
- if(document.activeElement&&document.activeElement.id==='stk'&&!force){}else{const n=SLP.length,single=SM==='sg',tot=STK*(single?n:1),pot=single?SLP.reduce((a,b)=>a+STK*b.odds,0):STK*combo(),er=tot>U.balance&&n>0;
-  $('#sfoot').innerHTML=n?`<div class="srow"><div class="sel2" data-act="smode">${single?'Одинар':'Экспресс'} ⌄</div><div class="tot">⇅ ${single?'—':combo().toFixed(2)}</div></div>${U.freebet>0?`<div class="fbt${FBU?' on':''}" data-act="usefb">${FBU?'✅ Фрибет применяется':'🎁 Использовать фрибет ('+money(U.freebet)+')'}</div>`:''}<div class="inb${er?' er':''}"><div class="l"><input id="stk" type="number" inputmode="numeric" value="${STK}"><span class="pot">→ ${Math.round(pot).toLocaleString('ru-RU')}</span></div><div class="r">Баланс<b>${Math.round(U.balance).toLocaleString('ru-RU')}</b></div></div>${er?'<div class="err">Недостаточно средств</div>':''}<div class="qr">${[['20','min'],['50'],['500'],['1000'],['2000'],[String(Math.max(0,Math.floor(Math.min(U.balance,700000)))),'max']].map(q=>`<div class="qb" data-act="q" data-v="${q[0]}">${q[1]?'<small style="display:block;font-size:10px;color:#8a929c">'+q[1]+'</small>':''}${Number(q[0]).toLocaleString('ru-RU')}</div>`).join('')}</div><button class="btn" data-act="${er?'topup':'place'}" style="padding:15px">${er?'Пополнить на '+Math.ceil(tot-U.balance):'Сделать ставку'}</button>`:'';
-  const s=$('#stk');if(s)s.oninput=()=>{STK=+s.value||0;slipTick()}}}
-function place(){if(!SLP.length)return toast('Купон пуст',0);const st=+STK||0;if(st<20)return toast('Минимальная ставка 20 ₽',0);let ch=0;
- for(const it of SLP){const e=getEv(it.ek),s=e&&state(e);if(!e||lockR(e,s)||s.fin)return toast('Исход недоступен: '+(e?e.h.n+' – '+e.a.n:''),0);const p=price(e,s,it.key);if(!p.o)return toast('Рынок закрыт: '+it.lab,0);if(Math.abs(p.o-it.odds)>.004){it.odds=p.o;ch=1}}
- if(ch){slipTick(1);return toast('Коэффициенты изменились — проверьте и подтвердите',0)}
- if(SM==='ex'&&new Set(SLP.map(i=>i.ek)).size<SLP.length)return toast('В экспрессе нельзя 2 исхода одного матча. Выберите «Одинар»',0);
- const groups=SM==='sg'?SLP.map(i=>[i]):[SLP.slice()],total=st*groups.length;let fb=FBU&&U.freebet>0?Math.min(total,U.freebet):0;if(total-fb>U.balance)return toast('Недостаточно средств',0);
- groups.forEach(g=>{const f=Math.min(st,fb);fb-=f;const to=R2(g.reduce((a,b)=>a*b.odds,1));H.push({id:Date.now()+Math.floor(Math.random()*1e6),items:g.map(i=>({...i,f:null})),stake:st,fb:f,totalOdds:to,pot:R2(st*to),status:'pending',t:Date.now()})});
- const used=FBU&&U.freebet>0?Math.min(total,U.freebet):0;U.freebet-=used;U.balance-=total-used;saveDB();hdr();toast('✅ Ставка принята · '+money(total));SLP=[];FBU=0;$('#slip').classList.remove('on');renderTop();renderList();if(page==='bets')renderPage();mpTick()}
-function betH(b){const stT={pending:'⏳ В игре',win:'✅ Выигрыш',lose:'❌ Проигрыш','return':'🔄 Возврат',cashout:'💸 Кэшаут'}[b.status]||b.status,pend=b.status==='pending',co=pend?cashVal(b):0;
- return`<div class="hb"><div class="hbt"><span>${b.items.length>1?'Экспресс ×'+b.items.length:'Одинар'} · ${money(b.stake)}</span><span class="stx ${b.status}">${stT}</span></div>${b.items.map(i=>`<div class="bi"><div>${esc(i.h||i.home||'')} – ${esc(i.a||i.away||'')} ${i.f!=null?(i.f===0?'❌':'✅'):''}</div><div class="bl">${esc(i.lab||((i.market||'Исход')+': '+(i.label||'')))} · <b>${(i.odds||0).toFixed(2)}</b></div></div>`).join('')}<div class="hbf">Коэф. ${(b.totalOdds||1).toFixed(2)} → ${pend?'возможный выигрыш '+money(b.pot||b.potentialWin||0):'выплата '+money(b.paid||0)} · ${new Date(b.t||b.createdAt||0).toLocaleString('ru-RU',{timeZone:'Europe/Moscow',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} МСК</div>${pend?`<div class="cob" data-act="co" data-id="${b.id}" data-cob="${b.id}" style="${co?'':'display:none'}">💸 Забрать <span>${money(co)}</span></div>`:''}</div>`}
-function betsH(){const l=H.filter(b=>BTAB?b.status!=='pending':b.status==='pending').slice().reverse();
- return`<div class="tabs" style="background:var(--hd);color:#fff"><div class="tab${BTAB?'':' on'}" data-act="btab" data-v="0">Активные</div><div class="tab${BTAB?' on':''}" data-act="btab" data-v="1">Рассчитанные</div></div>${l.length?l.map(betH).join(''):'<div class="no">Ставок пока нет</div>'}`}
-function menuH(){const pend=H.filter(b=>b.status==='pending').reduce((a,b)=>a+b.stake,0),dep=(U.depositDate===tk()?U.depositToday:0)||0;
- return`<div class="pc"><h3>👤 ${esc(cur)}</h3><div class="pr"><span>Баланс</span><span>${money(U.balance)}</span></div><div class="pr"><span>Фрибеты</span><span>${money(U.freebet)}</span></div><div class="pr"><span>Всего ставок</span><span>${H.length}</span></div><div class="pr"><span>Выигрышей</span><span>${H.filter(b=>b.status==='win').length}</span></div><div class="pr"><span>В игре</span><span>${money(pend)}</span></div><div class="pr"><span>Лимит пополнения сегодня</span><span>${money(DL-dep)}</span></div><br><button class="btn g" data-act="dep">💳 Пополнить (виртуальные ₽)</button></div>
- <div class="pc"><h3>🎰 Колесо фортуны</h3><p style="color:var(--mu);margin-bottom:10px">Раз в неделю — фрибет до 15 000 ₽</p><button class="btn" id="spinb" data-act="spin">${Date.now()<(U.lastSpin||0)+WEEK?'Доступно через '+Math.ceil(((U.lastSpin||0)+WEEK-Date.now())/36e5)+' ч':'Крутить'}</button></div>
- <div class="pc"><h3>ℹ️ О данных</h3><p style="color:var(--mu);line-height:1.5">Команды, лиги и бойцы настоящие, расписание примерное (время МСК), матчи, счёт и события — симуляция. Коэффициенты считает собственная модель (Пуассон по среднему числу голов лиги). Все деньги виртуальные. Логотипы и фото берутся из Википедии.</p></div><div style="padding:0 12px 12px"><button class="btn s" data-act="logout">Выйти</button></div>`}
-function deposit(need){const t=(U.depositDate===tk()?U.depositToday:0)||0,left=DL-t;if(left<=0)return toast('Дневной лимит исчерпан',0);let n=need;if(!n){const a=prompt('Пополнение (виртуальные ₽)\nСегодня: '+money(t)+'\nОсталось: '+money(left),String(Math.min(1000,left)));if(!a)return;n=Number(a)}
- if(isNaN(n)||n<=0)return toast('Неверная сумма',0);if(n>left)return toast('Максимум '+money(left),0);U.depositDate=tk();U.depositToday=t+n;bal(n);toast('+'+money(n));slipTick(1)}
-function spin(){if(Date.now()<(U.lastSpin||0)+WEEK)return toast('Ещё рано',0);const pz_=PRIZES[Math.floor(Math.random()*6)];U.freebet+=pz_;U.lastSpin=Date.now();saveDB();renderTop();
- $('#res').innerHTML=`<div class="rb"><div class="e">${pz_>=15000?'👑':'🎉'}</div><h2>${pz_>=15000?'ДЖЕКПОТ!':'Поздравляем!'}</h2><div class="a">+${money(pz_)}</div><p style="color:var(--mu);margin-bottom:14px">Фрибет зачислен</p><button class="btn" data-act="resclose">Забрать</button></div>`;$('#res').className='on';if(page==='menu')renderPage()}
-function openSearch(){$('#sr').className='full on';$('#sr').innerHTML=`<div class="gh"><span data-act="srclose">‹</span><input id="srq" placeholder="Поиск команды или бойца"><span data-act="srclose">✕</span></div><div id="srl"></div>`;
- const f=()=>{const q=$('#srq').value.toLowerCase().trim(),l=evs().filter(e=>!q||(e.h.n+' '+e.a.n+' '+e.L.n).toLowerCase().includes(q)).slice(0,40);$('#srl').innerHTML=l.length?l.map(e=>`<div class="sri" data-act="srgo" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${whenS(e.st)}</small></div>`).join(''):'<div class="no">Ничего не найдено</div>'};$('#srq').oninput=f;f();$('#srq').focus()}
-
-/* ================= ДЕЙСТВИЯ ================= */
-const ACT={
-am(d){am=d.v;$('#tL').className=am==='login'?'on':'';$('#tR').className=am==='reg'?'on':'';$('#pi2').style.display=am==='reg'?'block':'none';$('#sb').textContent=am==='reg'?'Зарегистрироваться':'Войти';$('#amsg').className='amsg'},
-submit,
-tab(d){go(d.v)},dep(){deposit()},topup(){deposit(Math.ceil((STK*(SM==='sg'?SLP.length:1))-U.balance))},
-mode(d){MODE=d.v;renderTop();renderList()},spf(d){SPF=d.v;renderTop();renderList()},hsp(d){HSP=d.v;renderTop();renderList()},soon(){SOON=!SOON;renderTop();renderList()},favf(){FAVF=!FAVF;renderTop();renderList()},
-golive(){MODE='live';SPF='all';go('sport')},lg(d){HID.has(d.k)?HID.delete(d.k):HID.add(d.k);renderList()},
-open(d){openMatch(d.ek)},back(){CE=null;$('#mp').className='full'},
-nx(){const e=getEv(CE),l=evs().filter(x=>x.L.n===e.L.n),i=l.findIndex(x=>x.k===CE);if(l.length>1)openMatch(l[(i+1)%l.length].k)},
-mtab(d){MT=d.v;MST=0;MSO=0;OVV=0;mpTick()},
-srch(){MSO=!MSO;MST=0;OVV=0;mpTick();const q=$('#msq');if(MSO&&q){q.focus();q.select()}},
-stat(){MST=!MST;MSO=0;OVV=0;mpTick()},
-bmf(){MBO=!MBO;MSO=0;OVV=0;mpTick()},
-ovv(d){OVV=+d.v;MSO=0;MST=0;mpTick()},
-seg(d){TLN[d.k]=+d.v;mpTick()},
-line(d){TLN[d.k]=+d.v;mpTick()},
-mk(d){const id=d.id;COL[id]=COL[id]===undefined?!(+d.d):!COL[id];mpTick()},
+srch(){MSO=!MSO;mpTick();if(MSO&&$('#msq'))$('#msq').focus()},
+stat(){MST=!MST;mpTick()},
+bmf(){MBO=!MBO;mpTick()},
+ovv(d){OVV=+d.v;mpTick()},
+mk(d){COL[d.id]=d.d?0:1;mpTick()},
 bm(d){BM.has(d.t)?BM.delete(d.t):BM.add(d.t);U.bm=[...BM];saveDB();mpTick()},
-bell(){const e=getEv(CE);if(!e)return;HID.has('bell'+e.k)?HID.delete('bell'+e.k):HID.add('bell'+e.k);mbH='';mpTick()},
-favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();mbH='';mpTick()},
-odd(d){if(SLP.some(s=>s.ek===d.ek&&s.key===d.key))return ACT.rm({i:SLP.findIndex(s=>s.ek===d.ek&&s.key===d.key)});
- const e=getEv(d.ek);if(!e)return;const s=state(e);if(lockR(e,s)||s.fin)return toast('Рынок закрыт',0);const p=price(e,s,d.key);if(!p.o)return toast('Недоступно',0);
- SLP.push({ek:d.ek,key:d.key,lab:lab(e,d.key),odds:p.o});renderTop();slipTick(1);if($('#slip').classList.contains('on'))return;toast('Добавлено: '+lab(e,d.key))},
-rm(d){SLP.splice(+d.i,1);if(!SLP.length){FBU=0;$('#slip').classList.remove('on')}renderTop();slipTick(1);mpTick();if(page==='bets')renderPage()},
+line(d){TLN[d.k]=d.v;mpTick()},
+seg(d){TLN[d.k]=+d.v;mpTick()},
+bell(){HID.has('bell'+CE)?HID.delete('bell'+CE):HID.add('bell'+CE);mpTick()},
+favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();renderList();mpTick()},
+odd(d){const e=getEv(d.ek);if(!e)return;const st=state(e);if(lockR(e,st)||st.fin)return toast('Приём ставок приостановлен',0);
+ const p=price(e,st,d.key);if(!p.o)return toast('Рынок недоступен',0);
+ const i=SLP.findIndex(b=>b.ek===d.ek&&b.key===d.key);if(i>=0){SLP.splice(i,1);toast('Убрано из купона')}
+ else{const g=grp(d.key),c=SLP.find(b=>b.ek===d.ek&&grp(b.key)===g);if(c){c.key=d.key;c.odds=p.o;c.lab=lab(e,d.key);c.n0=(d.key.split('|')[2]?+d.key.split('|')[2]:0);toast('Исход заменён')}
+  else{const n0=/^cs\|/.test(d.key)?parseInt(d.key.split('|')[2].split('-')[0]+d.key.split('|')[2].split('-')[1]):0;SLP.push({ek:d.ek,key:d.key,odds:p.o,lab:lab(e,d.key),h:e.h.n,a:e.a.n,n0})}}
+ if(SLP.length>1&&SM==='ex'&&new Set(SLP.map(x=>x.ek)).size<SLP.length){SM='sg';toast('Разные исходы одного матча — включены одинары')}
+ renderTop();mpTick();if($('#slip').classList.contains('on'))slipTick(1)},
 slipopen(){slipOpen()},slipclose(){$('#slip').classList.remove('on')},
-smode(){SM=SM==='ex'?'sg':'ex';slipTick(1)},
-usefb(){FBU=!FBU;slipTick(1)},
+rm(d){SLP.splice(+d.i,1);renderTop();slipTick(1);mpTick()},
+smode(){SM=SM==='ex'?'sg':'ex';slipTick(1)},usefb(){FBU=!FBU;slipTick(1)},
 q(d){STK=+d.v;slipTick(1)},place,
-co(d){const b=H.find(x=>String(x.id)===String(d.id)||x.id===d.cob);if(!b||b.status!=='pending')return;const v=cashVal(b);if(!v)return toast('Кэшаут недоступен',0);U.balance+=v;b.status='cashout';b.paid=v;saveDB();hdr();toast('💸 Кэшаут: '+money(v));if(page==='bets')renderPage()},
+co(d){const b=H.find(x=>x.id==d.id);if(!b||b.status!=='pending')return;const v=cashVal(b);if(!v)return toast('Кэшаут недоступен',0);
+ if(!confirm('Забрать '+money(v)+'?'))return;b.status='cashout';b.paid=v;bal(v);saveDB();toast('💸 Кэшаут: '+money(v));renderPage()},
 btab(d){BTAB=+d.v;renderPage()},
-spin,dep,resclose(){$('#res').className=''},srclose(){$('#sr').className='full';$('#sr').innerHTML=''},srgo(d){ACT.srclose();openMatch(d.ek)},
+spin,resclose(){$('#res').className=''},
 logout(){localStorage.removeItem('betapp_current');location.reload()},
-fab(){openSearch()}
-};
+srclose(){$('#sr').className='full'},
+srgo(d){$('#sr').className='full';openMatch(d.ek)},
+fab(){openSearch()}};
 
-/* ================= ОБРАБОТЧИК КЛИКОВ ================= */
-document.addEventListener('click',ev=>{const t=ev.target.closest('[data-act]');if(!t)return;ev.preventDefault();
- const a=t.dataset.act;if(ACT[a])ACT[a](t.dataset,t);
-});
+/* ================= ЦИКЛ ================= */
+let lastT=0,lastSettle=0,lastRender=0;
+function tick(){const n=Date.now();TS=Math.floor(n/1000);NOW=n;
+ if(n-lastSettle>1000){lastSettle=n;settleAll()}
+ if(CE)mpTick();
+ if(n-lastRender>700&&(page==='home'||page==='sport'||page==='bets')){lastRender=n;renderList()}
+ if(dirty&&n-lastT>400){lastT=n;dirty=0;saveDB();renderList();if(CE)mpTick()}
+}
+setInterval(tick,500);
 
-/* ================= ENTER В ФОРМЕ ВХОДА ================= */
-['li','pi','pi2'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')submit()})});
+/* маршрутизация кликов */
+document.addEventListener('click',ev=>{const t=ev.target.closest('[data-act]');if(!t)return;const a=ACT[t.dataset.act];if(!a)return;ev.stopPropagation();a(t.dataset)});
+$('#sb').addEventListener('click',submit);
+$('#pi').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+$('#pi2').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
 
-/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
-setInterval(()=>{NOW=Date.now();TS=Math.floor(NOW/1000);if(page==='home'||page==='sport')renderList();if(CE)mpTick();if($('#slip').classList.contains('on'))slipTick();settleAll()},1000);
-
-if(cur&&DB[cur]){try{login(cur)}catch(e){localStorage.removeItem('betapp_current')}}
-else{$('#auth').style.display='flex';$('#nav').style.display='none';$('#fab').style.display='none'}
+/* старт */
+if(cur&&DB[cur])login(cur);
+window.addEventListener('beforeunload',saveDB);
