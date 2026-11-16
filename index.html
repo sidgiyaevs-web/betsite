@@ -164,7 +164,6 @@ const whenS=t=>{const dd=dayN(t)-dayN(NOW),x=md(t);return(dd<=0?'Сегодня'
 const mmss=s=>pad(Math.floor(s/60))+':'+pad(Math.floor(s%60));
 const dtS=t=>{const x=md(t);return pad(x.d)+'.'+pad(x.m+1)+' '+pad(x.H)+':'+pad(x.M)+':'+pad(x.S)};
 
-/* иконки */
 const IC={
 home:'<path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>',
 ball:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.4 4.4H9.6L8.2 10.3z"/><path d="M12 3v4.5M15.8 10.3l4-1.3M14.4 14.7l2.6 3.6M9.6 14.7L7 18.3M8.2 10.3l-4-1.3"/>',
@@ -202,113 +201,79 @@ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2
 const ico=(n,s,c)=>`<svg class="ic ${c||''}" style="width:${s||22}px;height:${s||22}px" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
 const SPI={f:'ball',h:'puck',u:'glove'};
 
-/* ===== РЕАЛЬНЫЕ ДАННЫЕ ИЗ API ===== */
-const API_KEY='123';
-const API_BASE='https://www.thesportsdb.com/api/v1/json/';
+/* ===== API-FOOTBALL ===== */
+const API_KEY='615cd2c3cecf353bde0601174a164d04';
+let REAL_EVENTS=[];
 let REAL_TEAMS={};
+let REAL_LEAGUES={};
 
-function fetchTeam(id){
- if(REAL_TEAMS[id])return Promise.resolve(REAL_TEAMS[id]);
- return fetch(`${API_BASE}${API_KEY}/lookupteam.php?id=${id}`).then(r=>r.json()).then(d=>{
-  if(d.teams&&d.teams[0]){REAL_TEAMS[id]=d.teams[0];return d.teams[0];}
- }).catch(()=>{});
-}
+function getCurrDate(){const d=new Date();return d.toISOString().split('T')[0]}
 
-/* ===== ГЕНЕРАЦИЯ МАТЧЕЙ (СМЕСЬ API И СИМУЛЯЦИИ) ===== */
-const T=s=>s.split(',').map(x=>{const q=x.split('|');return{n:q[0],w:q[1],r:+q[2]}});
-const TS_={
-epl:'Арсенал|Arsenal F.C.|92,Манчестер Сити|Manchester City F.C.|91,Ливерпуль|Liverpool F.C.|90,Челси|Chelsea F.C.|85,Ньюкасл|Newcastle United F.C.|82,Тоттенхэм|Tottenham Hotspur F.C.|81,Астон Вилла|Aston Villa F.C.|81,Манчестер Юнайтед|Manchester United F.C.|80,Брайтон|Brighton & Hove Albion F.C.|76,Кристал Пэлас|Crystal Palace F.C.|76,Борнмут|AFC Bournemouth|75,Фулхэм|Fulham F.C.|74,Брентфорд|Brentford F.C.|74,Ноттингем Форест|Nottingham Forest F.C.|73,Вест Хэм|West Ham United F.C.|71,Эвертон|Everton F.C.|71,Лидс|Leeds United F.C.|68,Вулверхэмптон|Wolverhampton Wanderers F.C.|65,Сандерленд|Sunderland A.F.C.|65,Бернли|Burnley F.C.|62',
-lal:'Реал Мадрид|Real Madrid CF|92,Барселона|FC Barcelona|92,Атлетико|Atlético Madrid|87,Атлетик|Athletic Bilbao|82,Вильярреал|Villarreal CF|80,Реал Сосьедад|Real Sociedad|79,Бетис|Real Betis|79,Севилья|Sevilla FC|74,Валенсия|Valencia CF|72,Жирона|Girona FC|72,Сельта|RC Celta de Vigo|71,Хетафе|Getafe CF|70,Райо Вальекано|Rayo Vallecano|70,Мальорка|RCD Mallorca|69,Осасуна|CA Osasuna|69,Алавес|Deportivo Alavés|66,Эспаньол|RCD Espanyol|65,Эльче|Elche CF|62,Леванте|Levante UD|62,Овьедо|Real Oviedo|60',
-sea:'Интер|Inter Milan|89,Наполи|S.S.C. Napoli|88,Ювентус|Juventus FC|84,Милан|AC Milan|84,Аталанта|Atalanta BC|84,Рома|AS Roma|83,Лацио|SS Lazio|79,Болонья|Bologna FC 1909|78,Фиорентина|ACF Fiorentina|77,Торино|Torino FC|72,Удинезе|Udinese Calcio|70,Комо|Como 1907|70,Дженоа|Genoa CFC|68,Сассуоло|U.S. Sassuolo Calcio|66,Кальяри|Cagliari Calcio|64,Парма|Parma Calcio 1913|64,Верона|Hellas Verona FC|63,Лечче|U.S. Lecce|63,Кремонезе|U.S. Cremonese|62,Пиза|Pisa SC|60',
-bun:'Бавария|FC Bayern Munich|93,Байер|Bayer 04 Leverkusen|86,Боруссия Дортмунд|Borussia Dortmund|85,РБ Лейпциг|RB Leipzig|84,Айнтрахт|Eintracht Frankfurt|80,Штутгарт|VfB Stuttgart|80,Фрайбург|SC Freiburg|76,Хоффенхайм|TSG 1899 Hoffenheim|74,Вольфсбург|VfL Wolfsburg|71,Вердер|SV Werder Bremen|70,Майнц|1. FSV Mainz 05|70,Боруссия М|Borussia Mönchengladbach|70,Унион Берлин|1. FC Union Berlin|69,Гамбург|Hamburger SV|68,Аугсбург|FC Augsburg|66,Кёльн|1. FC Köln|64,Санкт-Паули|FC St. Pauli|63,Хайденхайм|1. FC Heidenheim|62',
-l1:'ПСЖ|Paris Saint-Germain F.C.|91,Марсель|Olympique de Marseille|82,Монако|AS Monaco FC|80,Лион|Olympique Lyonnais|80,Лилль|Lille OSC|79,Ницца|OGC Nice|76,Ренн|Stade Rennais F.C.|76,Ланс|RC Lens|75,Страсбур|RC Strasbourg Alsace|72,Брест|Stade Brestois 29|70,Тулуза|Toulouse FC|69,Нант|FC Nantes|66,Осер|AJ Auxerre|64,Лорьян|FC Lorient|63,Анже|Angers SCO|62,Гавр|Le Havre AC|62,Метц|FC Metz|61,Париж|Paris FC|60'};
-const TM={};['epl','lal','sea','bun','l1'].forEach(k=>T(TS_[k]).forEach(t=>TM[t.n]=t));
-const pl=s=>s.split(',').map(n=>TM[n]).filter(Boolean);
-
-const LG=[
-{k:'epl',sp:'f',n:'Англия. Премьер-лига',cr:'Футбол / Англия',ct:'Премьер-лига',w:'Premier League',G:2.8,hs:.55,co:10.5,yc:3.4,top:1,id:4328},
-{k:'lal',sp:'f',n:'Испания. Ла Лига',cr:'Футбол / Испания',ct:'Ла Лига',w:'La Liga',G:2.95,hs:.55,co:9.6,yc:5.2,top:1,id:4335},
-{k:'sea',sp:'f',n:'Италия. Серия А',cr:'Футбол / Италия',ct:'Серия А',w:'Serie A',G:3.1,hs:.55,co:9.8,yc:4.7,top:1,id:4332},
-{k:'bun',sp:'f',n:'Германия. Бундеслига',cr:'Футбол / Германия',ct:'Бундеслига',w:'Bundesliga',G:3.5,hs:.54,co:10.2,yc:3.6,top:1,id:4331},
-{k:'l1',sp:'f',n:'Франция. Лига 1',cr:'Футбол / Франция',ct:'Лига 1',w:'Ligue 1',G:3.0,hs:.55,co:9.9,yc:3.8,top:1,id:4334}];
-const LGI={};LG.forEach((c,i)=>LGI[c.k]=i);
-const GD={};
-
-async function loadRealEvents(){
- const d0=dayN(NOW),today=new Date().toISOString().slice(0,10);
- const cacheKey='betapp_real_events_'+today;
+async function fetchRealEvents(){
+ const today=getCurrDate();
+ const cacheKey='betapp_football_'+today;
  let cached=localStorage.getItem(cacheKey);
- if(cached){try{return JSON.parse(cached)}catch(e){}}
- let events=[];
- for(const c of LG){
-  try{
-   const res=await fetch(`${API_BASE}${API_KEY}/eventsday.php?d=${today}&s=Soccer&l=${c.id}`);
-   const json=await res.json();
-   if(json.events){
-    for(const ev of json.events){
-     const st=new Date(ev.strTimestamp).getTime();
-     const hId=ev.idHomeTeam,aId=ev.idAwayTeam;
-     const hTeam=await fetchTeam(hId),aTeam=await fetchTeam(aId);
-     if(hTeam&&aTeam){
+ if(cached){try{const arr=JSON.parse(cached);if(arr.length>0)return arr}catch(e){}}
+ 
+ try{
+  // Загружаем матчи на сегодня (топ-лиги: АПЛ 39, Ла Лига 140, Серия А 135, Бундеслига 78, Лига 1 61)
+  const leagues=[39,140,135,78,61,2,3]; // + ЛЧ и ЛЕ
+  let events=[];
+  
+  for(const l of leagues){
+   const res=await fetch(`https://v3.football.api-sports.io/fixtures?league=${l}&season=2023`,{
+    headers:{'x-apisports-key':API_KEY}
+   });
+   const data=await res.json();
+   if(data.response){
+    for(const f of data.response){
+     const dateStr=f.fixture.date;
+     const st=new Date(dateStr).getTime();
+     if(Math.abs(st-NOW)<86400000*2){ // только сегодня и завтра
       events.push({
-       k:c.k+'.real.'+ev.idEvent,
+       k:'api.'+f.fixture.id,
        sp:'f',
-       L:{...c,n:c.n,ct:c.ct,cr:c.cr,top:1},
-       h:{n:hTeam.strTeam,w:hTeam.strTeam,r:80,badge:hTeam.strBadge},
-       a:{n:aTeam.strTeam,w:aTeam.strTeam,r:80,badge:aTeam.strBadge},
+       L:{k:'api'+l,n:'Лига '+l,cr:'Футбол',ct:'Матч',w:'League '+l,G:2.8,hs:.55,co:10,yc:4,top:1},
+       h:{n:f.teams.home.name,w:f.teams.home.name,r:80,badge:f.teams.home.logo},
+       a:{n:f.teams.away.name,w:f.teams.away.name,r:80,badge:f.teams.away.logo},
        st:st,
-       real:true
+       real:true,
+       apiId:f.fixture.id
       });
      }
     }
    }
-  }catch(e){console.warn('API error',c.k,e)}
- }
- if(events.length)localStorage.setItem(cacheKey,JSON.stringify(events));
- return events;
+  }
+  
+  if(events.length){
+   localStorage.setItem(cacheKey,JSON.stringify(events));
+   return events;
+  }
+ }catch(e){console.log('API error',e)}
+ 
+ return [];
 }
 
-function genDay(d){if(GD[d])return GD[d];const L=[],ds=d*864e5-MO,x=md(ds+36e5),wd=x.w,wk=Math.floor(d/7);
- /* Симуляция для UFC и других лиг, чтобы не было пусто */
- if(wd===0||wd===6){const r=rng('ufc'+d),st=wd===0?['00:00','00:25','00:50','01:15','01:40','02:05','03:05','03:35','04:05','04:35','05:15']:['21:00','21:25','21:50','22:15','22:45','23:20'],nm=wd===0?'UFC '+(300+wk%90):'UFC Fight Night',lg={k:'ufc'+wd,sp:'u',n:'MMA. '+nm+'. Лас-Вегас',cr:'Единоборства',ct:'MMA. '+nm+'. Лас-Вегас',w:'Ultimate Fighting Championship',top:1},used=new Set();
-  st.forEach((s,i)=>{let cl,pool;for(let z=0;z<9;z++){cl=CLS[Math.floor(r()*8)];pool=FF.filter(f=>f.c===cl&&!used.has(f.n));if(pool.length>1)break}
-   if(pool.length<2)return;const a=pool.splice(Math.floor(r()*pool.length),1)[0],b=pool.splice(Math.floor(r()*pool.length),1)[0];used.add(a.n);used.add(b.n);const R=i===st.length-1?5:3,p=s.split(':');
-   L.push({k:'ufc.'+d+'.'+i,sp:'u',L:lg,h:a,a:b,R,st:ds+p[0]*36e5+p[1]*6e4,sub:'Рейтинговый бой. '+cl+' вес. '+R+(R===3?' раунда':' раундов')})})}
- return GD[d]=L}
-function getEv(k){const p=String(k||'').split('.');if(p.length<3)return null;if(k.includes('.real.')){return (window.REAL_EVENTS||[]).find(e=>e.k===k)||null;}return genDay(+p[1]).find(e=>e.k===k)||null}
-function evs(){const d0=dayN(NOW);let a=[...(window.REAL_EVENTS||[])];
- for(let d=d0-1;d<=d0+2;d++)a=a.concat(genDay(d));
- return a.filter(e=>{if(NOW-e.st>144e5)return false;const st=state(e);return!st.fin||NOW-(e.st+endT(e)*1000)<9e4}).sort((x,y)=>x.st-y.st)}
+function genDay(d){return[]} // Больше не используем симуляцию лиг, только UFC
+function getEv(k){return REAL_EVENTS.find(e=>e.k===k)||null}
+function evs(){return REAL_EVENTS.sort((a,b)=>a.st-b.st)}
 
+/* СИМУЛЯЦИЯ (для UFC и Live) */
 const lamC=(e,nz)=>{const f=e.sp==='f',L=e.L,d=e.h.r-e.a.r+(nz||0),c=f?.03:.022;return[L.G*L.hs*Math.exp(c*d/2),L.G*(1-L.hs)*Math.exp(-c*d/2)]};
 const qOT=e=>1/(1+Math.exp(-.02*(e.h.r-e.a.r)-.08));
-function simF(e){const r=rng(e.k),L=e.L,[lh,la]=lamC(e,0),i1=60+Math.floor(r()*240),i2=120+Math.floor(r()*300),g=[],cor=[],yel=[],pen=[];
- for(const p of[1,2]){const a=p===1?0:2700,b=p===1?2700+i1:5400+i2,tm=()=>a+Math.floor(r()*(b-a))+1;
-  for(const s of[0,1]){const n=pz((s?la:lh)*(p===1?.45:.55),r);for(let i=0;i<n;i++)g.push({s,p,g:tm()})}
-  const nc=pz((L.co||10)*(p===1?.45:.55),r);for(let i=0;i<nc;i++)cor.push({s:r()<.52?0:1,p,g:tm()});
-  const ny=pz((L.yc||4)*(p===1?.42:.58),r);for(let i=0;i<ny;i++)yel.push({s:r()<.5?0:1,p,g:tm()})}
- g.sort((x,y)=>x.p-y.p||x.g-y.g);cor.sort((x,y)=>x.p-y.p||x.g-y.g);yel.sort((x,y)=>x.p-y.p||x.g-y.g);let h=0,a=0;g.forEach(x=>x.s?a++:h++);
- return e.sm={g,cor,yel,pen,i1,i2,res:{h,a},sc:[h,a],T:2700+i1+900+2700+i2}}
-function simH(e){const r=rng(e.k),L=e.L,[lh,la]=lamC(e,0),eh=lh*.93/3600,ea=la*.93/3600,g=[],pen=[],act=[[],[]];
- for(let t=0;t<3600;t++){const p=Math.floor(t/1200)+1;
-  for(const s of[0,1]){act[s]=act[s].filter(x=>x.end>t);if(act[s].length<2&&r()<L.pn/3600){const x={s,g:t,p,end:t+120};pen.push(x);act[s].push(x)}}
-  const nh=act[0].length,na=act[1].length,mh=na>nh?2.3:nh>na?.4:1,ma=nh>na?2.3:na>nh?.4:1;
-  if(r()<eh*mh){g.push({s:0,p,g:t+1,pp:na>nh});if(na>nh)act[1].shift().end=t+1}
-  else if(r()<ea*ma){g.push({s:1,p,g:t+1,pp:nh>na});if(nh>na)act[0].shift().end=t+1}}
- let h=0,a=0;g.forEach(x=>x.s?a++:h++);const reg=[h,a];let ot=null,so=0,w=h>a?0:1;
- if(h===a){const q=qOT(e);if(r()<.64){const s=r()<q?0:1,gt=3620+Math.floor(r()*270);g.push({s,p:4,g:gt});ot={len:gt-3600};w=s}else{so=1;w=r()<q?0:1;ot={len:300}}}
- const tl=[['p',1200,1],['i',900,1],['p',1200,2],['i',900,2],['p',1200,3]];if(ot){tl.push(['ib',120,3],['ot',ot.len,4]);if(so)tl.push(['so',180,4])}
- const sc=reg.slice();if(ot)sc[w]++;
- return e.sm={g,pen,cor:[],yel:[],reg,sc,w,ot:!!ot,so,tl,T:tl.reduce((s,x)=>s+x[1],0),res:{h:reg[0],a:reg[1],w:w===0?'h':'a',ot:ot?1:0}}}
-const FIN={'Тяжёлый':.72,'Полутяжёлый':.64,'Средний':.62,'Полусредний':.55,'Лёгкий':.56,'Полулёгкий':.5,'Легчайший':.47,'Наилегчайший':.42};
-const KOS={'Тяжёлый':.72,'Полутяжёлый':.68,'Средний':.64,'Полусредний':.58,'Лёгкий':.52,'Полулёгкий':.55,'Легчайший':.56,'Наилегчайший':.5};
-const W3=[.43,.33,.24],W5=[.34,.27,.2,.11,.08];
+function simF(e){const r=rng(e.k),[lh,la]=lamC(e,0),i1=60+Math.floor(r()*240),i2=120+Math.floor(r()*300),g=[];
+ for(const s of[0,1])for(const p of[1,2]){const n=pz((s?la:lh)*(p===1?.45:.55),r),a=p===1?0:2700,b=p===1?2700+i1:5400+i2;for(let i=0;i<n;i++)g.push({s,p,g:a+Math.floor(r()*(b-a))+1})}
+ g.sort((x,y)=>x.p-y.p||x.g-y.g);let h=0,a=0;g.forEach(x=>x.s?a++:h++);
+ return e.sm={g,pen:[],i1,i2,res:{h,a},sc:[h,a],T:2700+i1+900+2700+i2}}
 function simU(e){const r=rng(e.k),R=e.R,fr=FIN[e.h.c]-(R===5?.04:0),pA=1/(1+Math.exp(-(e.h.r-e.a.r)*.06)),fin=r()<fr,w=R===3?W3:W5;
  let win=r()<pA?0:1,me='DEC',rd=R,tin=300;
  if(fin){me=r()<KOS[e.h.c]?'KO':'SUB';const u=r();let acc=0;rd=R;for(let i=0;i<R;i++){acc+=w[i];if(u<acc){rd=i+1;break}}tin=Math.max(8,Math.floor(Math.pow(r(),1.1)*292)+6)}else if(r()<.03)win=-1;
  const endReal=fin?(rd-1)*360+tin:(R-1)*360+300;e.fr=fr;e.pA=pA;
  return e.sm={win,me,rd,fin,endReal,Fe:fin?(rd-1)*300+tin:R*300,T:fin?endReal:endReal+10,tin}}
-const sim=e=>e.sm||(e.sp==='f'?simF(e):e.sp==='h'?simH(e):simU(e));
+const FIN={'Тяжёлый':.72,'Полутяжёлый':.64,'Средний':.62,'Полусредний':.55,'Лёгкий':.56,'Полулёгкий':.5,'Легчайший':.47,'Наилегчайший':.42};
+const KOS={'Тяжёлый':.72,'Полутяжёлый':.68,'Средний':.64,'Полусредний':.58,'Лёгкий':.52,'Полулёгкий':.55,'Легчайший':.56,'Наилегчайший':.5};
+const W3=[.43,.33,.24],W5=[.34,.27,.2,.11,.08];
+const sim=e=>e.sm||(e.sp==='f'?simF(e):simU(e));
 const endT=e=>sim(e).T;
 const inc=(g,s)=>s.fin||(s.brk?g.p<=s.per:(g.p<s.per||(g.p===s.per&&g.g<=s.gt)));
 function fill(e,s){const m=sim(e);let h=0,a=0;for(const g of m.g)if(inc(g,s))g.s?a++:h++;if(s.fin&&m.so)m.w===0?h++:a++;s.sc=[h,a];s.live=!s.fin&&s.ph!=='pre';return s}
@@ -316,19 +281,15 @@ function stF(e,now){const m=sim(e),t=(now-e.st)/1000,h1=2700+m.i1,b=h1+900,e2=b+
  if(t<0)return{ph:'pre',t:-t,per:0,gt:0,sc:[0,0],live:0,fin:0};
  if(t<h1)return fill(e,{ph:'p',per:1,gt:t,t});if(t<b)return fill(e,{ph:'brk',per:1,gt:h1,brk:1,t});
  if(t<e2)return fill(e,{ph:'p',per:2,gt:2700+(t-b),t});return fill(e,{ph:'fin',per:2,gt:5400+m.i2,fin:1,t})}
-function stH(e,now){const m=sim(e),t=(now-e.st)/1000;if(t<0)return{ph:'pre',t:-t,per:0,gt:0,sc:[0,0],live:0,fin:0};let o=0;
- for(const[k,len,p]of m.tl){if(t<o+len){const el=t-o,br=k==='i'||k==='ib';return fill(e,{ph:br?'brk':k==='so'?'so':'p',per:p,gt:k==='p'?(p-1)*1200+el:k==='i'?p*1200:k==='ib'?3600:k==='ot'?3600+el:3900,brk:br?1:0,t})}o+=len}
- return fill(e,{ph:'fin',per:m.ot?4:3,gt:3900,fin:1,t})}
 function stU(e,now){const m=sim(e),t=(now-e.st)/1000;if(t<0)return{ph:'pre',t:-t,fin:0,live:0};
  if(t>=m.T)return{ph:'fin',fin:1,live:0,F:m.Fe,t};
  if(!m.fin&&t>=m.endReal)return{ph:'dec',live:1,F:e.R*300,left:m.T-t,rd:e.R,t};
  const rd=Math.floor(t/360)+1,inr=t-(rd-1)*360;if(inr>=300)return{ph:'brk',live:1,rd,F:rd*300,left:360-inr,t};
  return{ph:'p',live:1,rd,inr,F:(rd-1)*300+inr,left:300-inr,t}}
-const stX=(e,now)=>e.sp==='f'?stF(e,now):e.sp==='h'?stH(e,now):stU(e,now);
+const stX=(e,now)=>e.sp==='f'?stF(e,now):stU(e,now);
 function state(e){if(e._ts===TS)return e._s;e._ts=TS;return e._s=stX(e,NOW)}
 function snap(e){if(e._sb!==TB){e._sb=TB;e._ss=stX(e,TB*BK)}return e._ss}
 function clkS(e,st){if(e.sp==='u')return st.ph==='dec'?'Подсчёт карточек · '+Math.ceil(st.left)+'с':st.ph==='brk'?'Перерыв':'Раунд '+st.rd+' · '+mmss(st.left);return st.brk?'Перерыв':st.ph==='so'?'Буллиты':mmss(st.gt)}
-
 function res(t,x,s){const L=parseFloat(x),h=s.h,a=s.a,d=h-a,T=h+a,c=v=>v>0?[1,0]:v===0?[0,1]:[0,0],W=b=>[b?1:0,0],Y=b=>W(b===(x==='y'));
  const as=f=>{if(Math.abs(L*4)%2!==1)return f(L);const u=f(L-.25),v=f(L+.25);return[(u[0]+v[0])/2,(u[1]+v[1])/2]};
  switch(t){case'1':return W(d>0);case'X':return W(d===0);case'2':return W(d<0);case'1X':return W(d>=0);case'12':return W(d!==0);case'X2':return W(d<=0);
@@ -354,7 +315,7 @@ function dist(e,st,sc){const ck=e.k+sc;if(DC[ck])return DC[ck];const f=e.sp==='f
  if(!f&&sc==='m'){const q=qOT(e),o2=[];out.forEach(o=>{if(o.h===o.a){o2.push({h:o.h,a:o.a,ot:1,w:'h',p:o.p*q},{h:o.h,a:o.a,ot:1,w:'a',p:o.p*(1-q)})}else o2.push({h:o.h,a:o.a,ot:0,w:o.h>o.a?'h':'a',p:o.p})});out=o2}
  return DC[ck]=out}
 const CK={p:'pen',c:'cor',y:'yel'};
-function cntP(e,st,kd,over,x){const L=e.L,arr=sim(e)[CK[kd]],k=arr.filter(a=>inc(a,st)).length,rate=kd==='p'?L.pn*2:kd==='c'?(L.co||10):(L.yc||4),done=st.fin||(e.sp==='h'&&st.per>=4),lm=done?0:rate*remW(e,st,'m');
+function cntP(e,st,kd,over,x){const L=e.L,arr=sim(e)[CK[kd]]||[],k=arr.filter(a=>inc(a,st)).length,rate=kd==='p'?L.pn*2:kd==='c'?(L.co||10):(L.yc||4),done=st.fin||(e.sp==='h'&&st.per>=4),lm=done?0:rate*remW(e,st,'m');
  const cdf=n=>{if(n<0)return 0;let p=Math.exp(-lm),c=p;for(let i=1;i<=n;i++){p*=lm/i;c+=p}return Math.min(1,c)},n=Math.floor(+x)-k;
  return mkP(over?1-cdf(n):cdf(n),0,kd+(over?'o':'u'))}
 function price0(e,st,key){const[sc,t,x]=key.split('|');
@@ -404,7 +365,6 @@ function settleAll(){let ch=0;H.forEach(b=>{if(b.status!=='pending')return;
 function cashVal(b){if(b.status!=='pending'||!b.items[0].ek)return 0;let p=1;for(const it of b.items){if(it.f===0)return 0;if(it.f!=null){p*=it.f/it.odds;continue}const e=getEv(it.ek);if(!e)return 0;const st=state(e);if(st.fin)return 0;const q=price(e,it.key);if(!q.p)return 0;p*=q.p}
  const v=Math.min(b.stake*b.totalOdds*p*.92,b.stake*b.totalOdds*.95);return v<b.stake*.03?0:Math.floor(v)}
 
-/* === Загрузка логотипов из API === */
 let IMG={};
 function need(w){}
 function lgo(w,n,sz,cls,fb){if(w&&w.startsWith('http'))return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px"><img src="${w}" alt="" onerror="this.parentNode.style.background='#7a8794';this.remove()"></span>`;
@@ -665,14 +625,15 @@ function tick(){NOW=Date.now();TS=Math.floor(NOW/1000);const nb=Math.floor(NOW/B
  document.querySelectorAll('[data-cob]').forEach(el=>{const b=H.find(x=>x.id===el.dataset.cob);if(b){const v=cashVal(b);el.style.display=v?'':'none'}})}catch(e){console.error(e)}}
 
 /* Запуск */
-loadRealEvents().then(events=>{
- window.REAL_EVENTS=events;
- setInterval(tick,1000);
- if(cur&&DB[cur])login(cur);
+setInterval(tick,1000);
+fetchRealEvents().then(events=>{
+ REAL_EVENTS=events;
+ if(page==='home'||page==='sport')renderList();
 }).catch(()=>{
- setInterval(tick,1000);
- if(cur&&DB[cur])login(cur);
+ if(page==='home'||page==='sport')renderList();
 });
+if(cur&&DB[cur])login(cur);
 </script>
 </body>
 </html>
+```
