@@ -40,6 +40,7 @@ input,button,textarea{font:inherit;color:inherit}
 .hh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;font-size:24px;font-weight:800}
 .lvb{font-size:14px;font-weight:600;border:1px solid var(--ln);background:#fff;padding:9px 14px;border-radius:12px;cursor:pointer}.lvb::before{content:'●';color:#f08a96;margin-right:7px}
 .sub3{padding:12px 16px 6px;font-weight:800;font-size:15px}
+.inf{padding:7px 14px;font-size:11.5px;color:#6b747e;background:#fff;border-bottom:1px solid var(--ln);line-height:1.35}
 .lgh{display:flex;align-items:center;height:34px;border-bottom:1px solid var(--ln);cursor:pointer}.lgh.tf{background:#eaf1e6}.lgh.th{background:#e3e9ee}.lgh.tu{background:#f1e6e7}
 .lgh .ch{width:24px;color:#7e8791;border-right:1px solid var(--ln);height:100%;display:flex;align-items:center;justify-content:center;transition:transform .2s}.lgh.cl .ch{transform:rotate(-90deg)}
 .lgh .nm{flex:1;display:flex;align-items:center;gap:8px;padding:0 10px;font-weight:600;font-size:13px;min-width:0}.nm .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
@@ -201,79 +202,108 @@ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2
 const ico=(n,s,c)=>`<svg class="ic ${c||''}" style="width:${s||22}px;height:${s||22}px" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
 const SPI={f:'ball',h:'puck',u:'glove'};
 
-/* ===== API-FOOTBALL ===== */
-const API_KEY='615cd2c3cecf353bde0601174a164d04';
-let REAL_EVENTS=[];
-let REAL_TEAMS={};
-let REAL_LEAGUES={};
-
-function getCurrDate(){const d=new Date();return d.toISOString().split('T')[0]}
-
-async function fetchRealEvents(){
- const today=getCurrDate();
- const cacheKey='betapp_football_'+today;
- let cached=localStorage.getItem(cacheKey);
- if(cached){try{const arr=JSON.parse(cached);if(arr.length>0)return arr}catch(e){}}
- 
- try{
-  // Загружаем матчи на сегодня (топ-лиги: АПЛ 39, Ла Лига 140, Серия А 135, Бундеслига 78, Лига 1 61)
-  const leagues=[39,140,135,78,61,2,3]; // + ЛЧ и ЛЕ
-  let events=[];
-  
-  for(const l of leagues){
-   const res=await fetch(`https://v3.football.api-sports.io/fixtures?league=${l}&season=2023`,{
-    headers:{'x-apisports-key':API_KEY}
-   });
-   const data=await res.json();
-   if(data.response){
-    for(const f of data.response){
-     const dateStr=f.fixture.date;
-     const st=new Date(dateStr).getTime();
-     if(Math.abs(st-NOW)<86400000*2){ // только сегодня и завтра
-      events.push({
-       k:'api.'+f.fixture.id,
-       sp:'f',
-       L:{k:'api'+l,n:'Лига '+l,cr:'Футбол',ct:'Матч',w:'League '+l,G:2.8,hs:.55,co:10,yc:4,top:1},
-       h:{n:f.teams.home.name,w:f.teams.home.name,r:80,badge:f.teams.home.logo},
-       a:{n:f.teams.away.name,w:f.teams.away.name,r:80,badge:f.teams.away.logo},
-       st:st,
-       real:true,
-       apiId:f.fixture.id
-      });
-     }
-    }
-   }
-  }
-  
-  if(events.length){
-   localStorage.setItem(cacheKey,JSON.stringify(events));
-   return events;
-  }
- }catch(e){console.log('API error',e)}
- 
- return [];
-}
-
-function genDay(d){return[]} // Больше не используем симуляцию лиг, только UFC
-function getEv(k){return REAL_EVENTS.find(e=>e.k===k)||null}
-function evs(){return REAL_EVENTS.sort((a,b)=>a.st-b.st)}
-
-/* СИМУЛЯЦИЯ (для UFC и Live) */
+const T=s=>s.split(',').map(x=>{const q=x.split('|');return{n:q[0],w:q[1],r:+q[2]}});
+const TS_={
+rpl:'Краснодар|FC Krasnodar|86,Зенит|FC Zenit Saint Petersburg|85,Локомотив|FC Lokomotiv Moscow|79,ЦСКА|PFC CSKA Moscow|79,Динамо|FC Dynamo Moscow|78,Спартак|FC Spartak Moscow|77,Балтика|FC Baltika Kaliningrad|72,Ростов|FC Rostov|69,Крылья Советов|PFC Krylia Sovetov Samara|70,Рубин|FC Rubin Kazan|68,Ахмат|FC Akhmat Grozny|66,Динамо Махачкала|FC Dynamo Makhachkala|64,Пари НН|FC Nizhny Novgorod|65,Акрон|FC Akron Tolyatti|66,Сочи|PFC Sochi|62,Оренбург|FC Orenburg|60',
+epl:'Арсенал|Arsenal F.C.|92,Манчестер Сити|Manchester City F.C.|91,Ливерпуль|Liverpool F.C.|90,Челси|Chelsea F.C.|85,Ньюкасл|Newcastle United F.C.|82,Тоттенхэм|Tottenham Hotspur F.C.|81,Астон Вилла|Aston Villa F.C.|81,Манчестер Юнайтед|Manchester United F.C.|80,Брайтон|Brighton & Hove Albion F.C.|76,Кристал Пэлас|Crystal Palace F.C.|76,Борнмут|AFC Bournemouth|75,Фулхэм|Fulham F.C.|74,Брентфорд|Brentford F.C.|74,Ноттингем Форест|Nottingham Forest F.C.|73,Вест Хэм|West Ham United F.C.|71,Эвертон|Everton F.C.|71,Лидс|Leeds United F.C.|68,Вулверхэмптон|Wolverhampton Wanderers F.C.|65,Сандерленд|Sunderland A.F.C.|65,Бернли|Burnley F.C.|62',
+lal:'Реал Мадрид|Real Madrid CF|92,Барселона|FC Barcelona|92,Атлетико|Atlético Madrid|87,Атлетик|Athletic Bilbao|82,Вильярреал|Villarreal CF|80,Реал Сосьедад|Real Sociedad|79,Бетис|Real Betis|79,Севилья|Sevilla FC|74,Валенсия|Valencia CF|72,Жирона|Girona FC|72,Сельта|RC Celta de Vigo|71,Хетафе|Getafe CF|70,Райо Вальекано|Rayo Vallecano|70,Мальорка|RCD Mallorca|69,Осасуна|CA Osasuna|69,Алавес|Deportivo Alavés|66,Эспаньол|RCD Espanyol|65,Эльче|Elche CF|62,Леванте|Levante UD|62,Овьедо|Real Oviedo|60',
+sea:'Интер|Inter Milan|89,Наполи|S.S.C. Napoli|88,Ювентус|Juventus FC|84,Милан|AC Milan|84,Аталанта|Atalanta BC|84,Рома|AS Roma|83,Лацио|SS Lazio|79,Болонья|Bologna FC 1909|78,Фиорентина|ACF Fiorentina|77,Торино|Torino FC|72,Удинезе|Udinese Calcio|70,Комо|Como 1907|70,Дженоа|Genoa CFC|68,Сассуоло|U.S. Sassuolo Calcio|66,Кальяри|Cagliari Calcio|64,Парма|Parma Calcio 1913|64,Верона|Hellas Verona FC|63,Лечче|U.S. Lecce|63,Кремонезе|U.S. Cremonese|62,Пиза|Pisa SC|60',
+bun:'Бавария|FC Bayern Munich|93,Байер|Bayer 04 Leverkusen|86,Боруссия Дортмунд|Borussia Dortmund|85,РБ Лейпциг|RB Leipzig|84,Айнтрахт|Eintracht Frankfurt|80,Штутгарт|VfB Stuttgart|80,Фрайбург|SC Freiburg|76,Хоффенхайм|TSG 1899 Hoffenheim|74,Вольфсбург|VfL Wolfsburg|71,Вердер|SV Werder Bremen|70,Майнц|1. FSV Mainz 05|70,Боруссия М|Borussia Mönchengladbach|70,Унион Берлин|1. FC Union Berlin|69,Гамбург|Hamburger SV|68,Аугсбург|FC Augsburg|66,Кёльн|1. FC Köln|64,Санкт-Паули|FC St. Pauli|63,Хайденхайм|1. FC Heidenheim|62',
+l1:'ПСЖ|Paris Saint-Germain F.C.|91,Марсель|Olympique de Marseille|82,Монако|AS Monaco FC|80,Лион|Olympique Lyonnais|80,Лилль|Lille OSC|79,Ницца|OGC Nice|76,Ренн|Stade Rennais F.C.|76,Ланс|RC Lens|75,Страсбур|RC Strasbourg Alsace|72,Брест|Stade Brestois 29|70,Тулуза|Toulouse FC|69,Нант|FC Nantes|66,Осер|AJ Auxerre|64,Лорьян|FC Lorient|63,Анже|Angers SCO|62,Гавр|Le Havre AC|62,Метц|FC Metz|61,Париж|Paris FC|60',
+ex:'Бенфика|S.L. Benfica|79,Спортинг|Sporting CP|80,Порту|FC Porto|78,ПСВ|PSV Eindhoven|79,Аякс|AFC Ajax|73,Галатасарай|Galatasaray S.K.|75,Фенербахче|Fenerbahçe S.K.|76,Брюгге|Club Brugge KV|73,Олимпиакос|Olympiacos F.C.|72,Славия Прага|SK Slavia Prague|70,Селтик|Celtic F.C.|71,Копенгаген|F.C. Copenhagen|70,Лех|Lech Poznań|68,Фейеноорд|Feyenoord|74,Бешикташ|Beşiktaş J.K.|71,Брага|S.C. Braga|70,Црвена Звезда|Red Star Belgrade|66,Рейнджерс|Rangers F.C.|68,Легия|Legia Warsaw|62,Раков|Raków Częstochowa|60,Омония|AC Omonia|58,Шемрок Роверс|Shamrock Rovers F.C.|54,Гент|K.A.A. Gent|62,Лозанна|FC Lausanne-Sport|55,Хамрун Спартанс|Hamrun Spartans F.C.|52,АЕК Афины|AEK Athens F.C.|66,АЗ|AZ Alkmaar|68,Твенте|FC Twente|66,Утрехт|FC Utrecht|63,Витория|Vitória S.C.|62,Трабзонспор|Trabzonspor|64,Башакшехир|İstanbul Başakşehir F.K.|62,Андерлехт|R.S.C. Anderlecht|68,Юнион СЖ|Royale Union Saint-Gilloise|68,Генк|K.R.C. Genk|66,Антверпен|Royal Antwerp F.C.|64,Мехелен|KV Mechelen|60,Серкль Брюгге|Cercle Brugge K.S.V.|58,Сент-Трюйден|Sint-Truidense V.V.|56,Харт оф Мидлотиан|Heart of Midlothian F.C.|60,Хайберниан|Hibernian F.C.|58,Абердин|Aberdeen F.C.|58,Данди Юнайтед|Dundee United F.C.|52,Мотеруэлл|Motherwell F.C.|54,Сент-Миррен|St Mirren F.C.|52,Аль-Хиляль|Al Hilal SFC|82,Аль-Наср|Al Nassr FC|80,Аль-Иттихад|Al-Ittihad Club (Jeddah)|76,Аль-Ахли|Al-Ahli Saudi FC|76,Аль-Шабаб|Al-Shabab FC (Riyadh)|62,Аль-Эттифак|Al-Ettifaq FC|62,Аль-Таавун|Al-Taawoun FC|60,Аль-Фейха|Al-Fayha FC|58',
+ch:'Ковентри|Coventry City F.C.|66,Мидлсбро|Middlesbrough F.C.|66,Лестер|Leicester City F.C.|66,Саутгемптон|Southampton F.C.|66,Вест Бромвич|West Bromwich Albion F.C.|64,Норвич|Norwich City F.C.|63,Халл Сити|Hull City A.F.C.|60,Шеффилд Юнайтед|Sheffield United F.C.|65,Суонси|Swansea City A.F.C.|60,Бристоль Сити|Bristol City F.C.|60,Миллуолл|Millwall F.C.|60,Престон|Preston North End F.C.|60,Дерби|Derby County F.C.|58,Блэкберн|Blackburn Rovers F.C.|58',
+b2:'Шальке|FC Schalke 04|64,Герта|Hertha BSC|64,Ганновер|Hannover 96|60,Нюрнберг|1. FC Nürnberg|60,Фортуна Дюссельдорф|Fortuna Düsseldorf|62,Кайзерслаутерн|1. FC Kaiserslautern|60,Карлсруэ|Karlsruher SC|60,Падерборн|SC Paderborn 07|60,Магдебург|1. FC Magdeburg|58,Дармштадт|SV Darmstadt 98|60',
+mls:'Интер Майами|Inter Miami CF|78,Лос-Анджелес Гэлакси|LA Galaxy|68,Лос-Анджелес FC|Los Angeles FC|76,Сиэтл Саундерс|Seattle Sounders FC|72,Коламбус Крю|Columbus Crew|72,Филадельфия Юнион|Philadelphia Union|70,Цинциннати|FC Cincinnati|73,Нью-Йорк Сити|New York City FC|68,Атланта Юнайтед|Atlanta United FC|66,Орландо Сити|Orlando City SC|68,Нэшвилл|Nashville SC|66,Торонто|Toronto FC|58,Ванкувер Уайткэпс|Vancouver Whitecaps FC|66,Портленд Тимберс|Portland Timbers|64,Даллас|FC Dallas|62,Хьюстон Динамо|Houston Dynamo FC|63,Остин|Austin FC|62,Реал Солт-Лейк|Real Salt Lake|64,Миннесота Юнайтед|Minnesota United FC|64,Сан-Диего|San Diego FC|70,Чикаго Файр|Chicago Fire FC|60,Нью-Инглэнд|New England Revolution|60,Шарлотт|Charlotte FC|62,Сент-Луис Сити|St. Louis City SC|60,Канзас-Сити|Sporting Kansas City|58,Колорадо Рэпидз|Colorado Rapids|58,Нью-Йорк Ред Буллз|New York Red Bulls|66,Ди-Си Юнайтед|D.C. United|58,Монреаль|CF Montréal|58',
+mx:'Америка|Club América|78,Монтеррей|C.F. Monterrey|76,Тигрес|Tigres UANL|76,Гвадалахара|C.D. Guadalajara|70,Крус Асуль|Cruz Azul|75,Пумас УНАМ|Club Universidad Nacional|68,Толука|Deportivo Toluca F.C.|76,Леон|Club León|66,Пачука|C.F. Pachuca|70,Сантос Лагуна|Santos Laguna|64,Атлас|Atlas F.C.|64,Тихуана|Club Tijuana|62,Керетаро|Querétaro F.C.|56,Некакса|Club Necaxa|58,Пуэбла|Club Puebla|56,Мазатлан|Mazatlán F.C.|56,Хуарес|FC Juárez|56,Сан-Луис|Atlético San Luis|58',
+br:'Фламенго|CR Flamengo|80,Палмейрас|SE Palmeiras|80,Ботафого|Botafogo de Futebol e Regatas|74,Флуминенсе|Fluminense FC|72,Сан-Паулу|São Paulo FC|70,Коринтианс|SC Corinthians Paulista|70,Гремио|Grêmio FBPA|70,Интернасьонал|SC Internacional|70,Атлетико Минейро|Clube Atlético Mineiro|72,Крузейро|Cruzeiro Esporte Clube|70,Васко да Гама|CR Vasco da Gama|66,Бахия|EC Bahia|68,Сантос|Santos FC|62,Форталеза|Fortaleza Esporte Clube|68,Брагантино|Red Bull Bragantino|64,Витория Салвадор|EC Vitória|58,Мирасол|Mirassol Futebol Clube|60',
+ar:'Бока Хуниорс|Boca Juniors|74,Ривер Плейт|Club Atlético River Plate|76,Расинг|Racing Club de Avellaneda|70,Индепендьенте|Club Atlético Independiente|66,Сан-Лоренсо|San Lorenzo de Almagro|64,Эстудиантес|Estudiantes de La Plata|70,Велес Сарсфилд|Vélez Sarsfield|68,Банфилд|Club Atlético Banfield|60,Ланус|Club Atlético Lanús|64,Тигре|Club Atlético Tigre|58',
+jp:'Виссел Кобе|Vissel Kobe|70,Кашима Антлерс|Kashima Antlers|68,Йокогама Маринос|Yokohama F. Marinos|68,Санфрече Хиросима|Sanfrecce Hiroshima|66,Урава Ред Даймондс|Urawa Red Diamonds|66,Кавасаки Фронтале|Kawasaki Frontale|68,Гамба Осака|Gamba Osaka|64,Нагоя Грампус|Nagoya Grampus|62,ФК Токио|FC Tokyo|62,Сересо Осака|Cerezo Osaka|62',
+au:'Мельбурн Сити|Melbourne City FC|66,Мельбурн Виктори|Melbourne Victory FC|64,Сидней|Sydney FC|64,Сентрал-Кост Маринерс|Central Coast Mariners FC|62,Вестерн Юнайтед|Western United FC|56,Аделаида Юнайтед|Adelaide United FC|60,Брисбен Роар|Brisbane Roar FC|58,Перт Глори|Perth Glory FC|56',
+khl:'ЦСКА|HC CSKA Moscow|84,СКА|SKA Saint Petersburg|80,Ак Барс|Ak Bars Kazan|82,Динамо Москва|HC Dynamo Moscow|79,Металлург Мг|Metallurg Magnitogorsk|82,Авангард|Avangard Omsk|80,Локомотив|Lokomotiv Yaroslavl|83,Спартак|HC Spartak Moscow|72,Салават Юлаев|Salavat Yulaev Ufa|76,Трактор|Traktor Chelyabinsk|75,Автомобилист|Avtomobilist Yekaterinburg|78,Северсталь|Severstal Cherepovets|73,Торпедо|Torpedo Nizhny Novgorod|74,Сибирь|Sibir Novosibirsk|68,Барыс|Barys Astana|66,Адмирал|Admiral Vladivostok|66,Нефтехимик|Neftekhimik Nizhnekamsk|68,Амур|Amur Khabarovsk|64,Витязь|HC Vityaz|64,Сочи|HC Sochi|66,Динамо Минск|HC Dinamo Minsk|68,Лада|Lada Togliatti|62',
+nhl:'Торонто|Toronto Maple Leafs|83,Эдмонтон|Edmonton Oilers|87,Вашингтон|Washington Capitals|82,Нью-Джерси|New Jersey Devils|80,Монреаль|Montreal Canadiens|75,Колорадо|Colorado Avalanche|89,Тампа-Бэй|Tampa Bay Lightning|84,Детройт|Detroit Red Wings|74,Питтсбург|Pittsburgh Penguins|74,Оттава|Ottawa Senators|78,Коламбус|Columbus Blue Jackets|68,Филадельфия|Philadelphia Flyers|72,Бостон|Boston Bruins|74,Миннесота|Minnesota Wild|80,Сент-Луис|St. Louis Blues|72,Флорида|Florida Panthers|87,Даллас|Dallas Stars|86,Вегас|Vegas Golden Knights|88,Каролина|Carolina Hurricanes|85,Рейнджерс|New York Rangers|78,Лос-Анджелес|Los Angeles Kings|80,Виннипег|Winnipeg Jets|85,Ванкувер|Vancouver Canucks|72,Калгари|Calgary Flames|70,Сиэтл|Seattle Kraken|72,Анахайм|Anaheim Ducks|68,Сан-Хосе|San Jose Sharks|64,Чикаго|Chicago Blackhawks|62,Баффало|Buffalo Sabres|72,Айлендерс|New York Islanders|75,Нэшвилл|Nashville Predators|70,Юта|Utah Mammoth|74',
+ahl:'Гранд-Рапидс|Grand Rapids Griffins|68,Хартфорд|Hartford Wolf Pack|66,Милуоки|Milwaukee Admirals|68,Чикаго Вулвз|Chicago Wolves|70,Рокфорд|Rockford IceHogs|62,Херши|Hershey Bears|70,Лихай-Вэлли|Lehigh Valley Phantoms|64,Провиденс|Providence Bruins|64,Сиракьюс|Syracuse Crunch|64,Рочестер|Rochester Americans|64,Ютика|Utica Comets|66,Кливленд Монстерс|Cleveland Monsters|60,Техас|Texas Stars|68,Колорадо Иглз|Colorado Eagles|66,Сан-Диего Галлз|San Diego Gulls|62,Бейкерсфилд|Bakersfield Condors|64',
+shl:'Фрёлунда|Frölunda HC|74,Лулео|Luleå HF|72,Фарьестад|Färjestad BK|72,Шеллефтео|Skellefteå AIK|74,Эребру|Örebro HK|62,Векшё|Växjö Lakers|70,Рёгле|Rögle BK|68,Брюнэс|Brynäs IF|64',
+lii:'Таппара|Tappara|74,Ильвес|Ilves|70,ТПС|TPS (ice hockey)|66,Кярпят|Oulun Kärpät|66,Ассат|Ässät|60,Лукко|Lukko|62,ХПК|HPK|60,Йокерит|Jokerit|64'};
+const TM={};Object.keys(TS_).filter(k=>!['khl','nhl','ahl','shl','lii'].includes(k)).forEach(k=>T(TS_[k]).forEach(t=>TM[t.n]=t));
+const pl=s=>s.split(',').map(n=>TM[n]).filter(Boolean);
+const FT=s=>s.split(',').map(x=>{const q=x.split('|');return{n:q[0],w:q[1],c:q[2],r:+q[3]}});
+const FF=FT("Джон Джонс|Jon Jones|Тяжёлый|93,Том Аспиналл|Tom Aspinall|Тяжёлый|90,Сирил Ган|Ciryl Gane|Тяжёлый|84,Стипе Миочич|Stipe Miocic|Тяжёлый|82,Александр Волков|Alexander Volkov|Тяжёлый|80,Сергей Павлович|Sergei Pavlovich|Тяжёлый|83,Кёртис Блейдс|Curtis Blaydes|Тяжёлый|81,Алекс Перейра|Alex Pereira|Полутяжёлый|91,Магомед Анкалаев|Magomed Ankalaev|Полутяжёлый|88,Иржи Прохазка|Jiří Procházka|Полутяжёлый|85,Джамал Хилл|Jamahal Hill|Полутяжёлый|80,Ян Блахович|Jan Błachowicz|Полутяжёлый|79,Карлос Ульберг|Carlos Ulberg|Полутяжёлый|82,Дрикус дю Плесси|Dricus du Plessis|Средний|86,Хамзат Чимаев|Khamzat Chimaev|Средний|88,Шон Стрикленд|Sean Strickland|Средний|80,Роберт Уиттакер|Robert Whittaker|Средний|82,Пауло Коста|Paulo Costa (fighter)|Средний|76,Марвин Веттори|Marvin Vettori|Средний|75,Белал Мухаммад|Belal Muhammad|Полусредний|84,Камару Усман|Kamaru Usman|Полусредний|83,Леон Эдвардс|Leon Edwards|Полусредний|83,Шавкат Рахмонов|Shavkat Rakhmonov|Полусредний|88,Джек Делла Маддалена|Jack Della Maddalena|Полусредний|86,Гилберт Бернс|Gilbert Burns|Полусредний|78,Ислам Махачев|Islam Makhachev|Лёгкий|94,Арман Царукян|Arman Tsarukyan|Лёгкий|86,Чарльз Оливейра|Charles Oliveira|Лёгкий|85,Дастин Порье|Dustin Poirier|Лёгкий|80,Джастин Гейджи|Justin Gaethje|Лёгкий|82,Бенеил Дариуш|Beneil Dariush|Лёгкий|75,Илия Топурия|Ilia Topuria|Полулёгкий|92,Алекс Волкановски|Alexander Volkanovski|Полулёгкий|87,Макс Холлоуэй|Max Holloway|Полулёгкий|85,Диего Лопес|Diego Lopes|Полулёгкий|79,Мовсар Евлоев|Movsar Evloev|Полулёгкий|82,Шон О'Мэлли|Sean O'Malley|Легчайший|83,Мераб Двалишвили|Merab Dvalishvili|Легчайший|88,Умар Нурмагомедов|Umar Nurmagomedov|Легчайший|85,Алджамейн Стерлинг|Aljamain Sterling|Легчайший|80,Петр Ян|Petr Yan|Легчайший|83,Александр Пантожа|Alexandre Pantoja|Наилегчайший|87,Брэндон Морено|Brandon Moreno|Наилегчайший|82,Амир Албази|Amir Albazi|Наилегчайший|80,Тагир Уланбеков|Tagir Ulanbekov|Наилегчайший|75");
+const X=(t,n)=>Array(n).fill(t),all7=a=>({0:a,1:a,2:a,3:a,4:a,5:a,6:a});
+const sm=m=>m>=5&&m<=6;
+const LG=[
+{k:'ucl',sp:'f',n:'Лига чемпионов. Основной этап',cr:'Футбол / Лига чемпионов',ct:'Основной этап',w:'UEFA Champions League',G:3.0,hs:.55,yc:3.0,top:1,off:m=>m>=5&&m<=7,t:pl('Реал Мадрид,Барселона,Атлетико,Арсенал,Манчестер Сити,Ливерпуль,Челси,Тоттенхэм,Ньюкасл,Бавария,Боруссия Дортмунд,Байер,Айнтрахт,Интер,Наполи,Ювентус,Милан,Аталанта,ПСЖ,Марсель,Монако,Лилль,Бенфика,Спортинг,Порту,ПСВ,Галатасарай,Брюгге,Аякс,Олимпиакос,Славия Прага,Копенгаген'),sch:{2:[...X('20:45',4),...X('23:00',4)],3:[...X('20:45',4),...X('23:00',4)]}},
+{k:'uel',sp:'f',n:'Лига Европы. Основной этап',cr:'Футбол / Лига Европы',ct:'Основной этап',w:'UEFA Europa League',G:2.75,hs:.55,top:1,off:m=>m>=5&&m<=7,t:pl('Астон Вилла,Рома,Лацио,Фиорентина,Атлетик,Реал Сосьедад,Вильярреал,Бетис,Севилья,Лион,Ницца,Ренн,Штутгарт,РБ Лейпциг,Фрайбург,Манчестер Юнайтед,Брайтон,Фенербахче,Селтик,Лех,Болонья,Брентфорд,Ланс,Фейеноорд,Бешикташ,Брага,Црвена Звезда,Рейнджерс'),sch:{4:[...X('20:45',4),...X('23:00',4)]}},
+{k:'uecl',sp:'f',n:'Лига конференций. Основной этап',cr:'Футбол / Лига конференций',ct:'Основной этап',w:'UEFA Conference League',G:2.8,hs:.55,off:m=>m>=5&&m<=7,t:pl('Фиорентина,Легия,Омония,Шемрок Роверс,Раков,Гент,Лозанна,Хамрун Спартанс,АЕК Афины,Страсбур,Рубин,Фулхэм,Кристал Пэлас,Майнц,АЗ,Твенте,Утрехт'),sch:{4:[...X('20:45',3),...X('23:00',4)]}},
+{k:'epl',sp:'f',n:'Англия. Премьер-лига',cr:'Футбол / Англия',ct:'Премьер-лига',w:'Premier League',G:2.8,hs:.55,co:10.5,yc:3.4,top:1,off:sm,t:T(TS_.epl),sch:{6:['15:30',...X('18:00',5),'20:30'],0:[...X('17:00',2),'19:30','22:00'],5:['23:00'],1:['23:00']},mw:{2:[...X('22:30',3),'23:15'],3:[...X('22:30',3),'23:15']}},
+{k:'lal',sp:'f',n:'Испания. Ла Лига',cr:'Футбол / Испания',ct:'Ла Лига',w:'La Liga',G:2.95,hs:.55,co:9.6,yc:5.2,top:1,off:sm,t:T(TS_.lal),sch:{5:['23:00'],6:['16:00','18:15','20:30','23:00'],0:['16:00','18:15','20:30','23:00'],1:['23:00']},mw:{2:['21:00','23:00','23:00'],3:['21:00','23:00','23:00']}},
+{k:'sea',sp:'f',n:'Италия. Серия А',cr:'Футбол / Италия',ct:'Серия А',w:'Serie A',G:3.1,hs:.55,co:9.8,yc:4.7,top:1,off:sm,t:T(TS_.sea),sch:{5:['22:45'],6:['17:00','20:00','22:45'],0:['14:30','17:00','17:00','20:00','22:45'],1:['22:45']},mw:{2:['20:30','22:45','22:45'],3:['20:30','22:45','22:45']}},
+{k:'bun',sp:'f',n:'Германия. Бундеслига',cr:'Футбол / Германия',ct:'Бундеслига',w:'Bundesliga',G:3.5,hs:.54,co:10.2,yc:3.6,top:1,off:(m,d)=>sm(m)||(m===11&&d>=21)||(m===0&&d<=9),t:T(TS_.bun),sch:{5:['22:30'],6:[...X('17:30',5),'20:30'],0:['17:30','19:30']},mw:{2:X('22:30',3),3:X('22:30',3)}},
+{k:'l1',sp:'f',n:'Франция. Лига 1',cr:'Футбол / Франция',ct:'Лига 1',w:'Ligue 1',G:3.0,hs:.55,co:9.9,yc:3.8,top:1,off:sm,t:T(TS_.l1),sch:{5:['23:00'],6:['19:00','23:00'],0:['15:00','17:00','19:05','22:45']},mw:{2:['21:00','23:00'],3:['21:00','23:00']}},
+{k:'rpl',sp:'f',n:'Россия. Премьер-Лига',cr:'Футбол / Россия',ct:'Премьер-Лига',w:'Russian Premier League',G:2.75,hs:.55,co:9.5,yc:3.5,top:1,off:(m,d)=>m===0||m===1||(m===11&&d>5)||m===5||(m===6&&d<24),t:T(TS_.rpl),sch:{5:['17:00','19:30'],6:['14:00','16:15','18:30','20:45'],0:['14:00','16:30','19:00']},mw:{2:['17:00','19:30'],3:['17:00','19:30']}},
+{k:'ere',sp:'f',n:'Нидерланды. Эредивизи',cr:'Футбол / Нидерланды',ct:'Эредивизи',w:'Eredivisie',G:3.15,hs:.55,off:sm,t:pl('ПСВ,Фейеноорд,Аякс,АЗ,Твенте,Утрехт'),sch:{5:['22:00'],6:['18:30','21:00'],0:['15:15','17:30']}},
+{k:'por',sp:'f',n:'Португалия. Примейра',cr:'Футбол / Португалия',ct:'Примейра',w:'Primeira Liga',G:2.6,hs:.56,off:sm,t:pl('Спортинг,Бенфика,Порту,Брага,Витория'),sch:{5:['22:15'],6:['20:30'],0:['19:00','21:30']}},
+{k:'tur',sp:'f',n:'Турция. Суперлига',cr:'Футбол / Турция',ct:'Суперлига',w:'Süper Lig',G:2.85,hs:.56,off:sm,t:pl('Галатасарай,Фенербахче,Бешикташ,Трабзонспор,Башакшехир'),sch:{5:['20:00'],6:['17:00','20:00'],0:['17:00','20:00']}},
+{k:'bel',sp:'f',n:'Бельгия. Про Лига',cr:'Футбол / Бельгия',ct:'Про Лига',w:'Belgian Pro League',G:2.9,hs:.55,off:sm,t:pl('Брюгге,Гент,Андерлехт,Юнион СЖ,Генк,Антверпен,Мехелен,Серкль Брюгге,Сент-Трюйден'),sch:{5:['22:00'],6:['18:00','20:15','22:45'],0:['16:30','19:15']}},
+{k:'sco',sp:'f',n:'Шотландия. Премьершип',cr:'Футбол / Шотландия',ct:'Премьершип',w:'Scottish Premiership',G:2.9,hs:.55,off:sm,t:pl('Селтик,Рейнджерс,Харт оф Мидлотиан,Хайберниан,Абердин,Данди Юнайтед,Мотеруэлл,Сент-Миррен'),sch:{6:['18:00',...X('18:00',3)],0:['16:00','18:30']}},
+{k:'ch',sp:'f',n:'Англия. Чемпионшип',cr:'Футбол / Англия',ct:'Чемпионшип',w:'EFL Championship',G:2.6,hs:.55,co:10,off:sm,t:T(TS_.ch),sch:{6:[...X('17:00',6),'19:30'],5:['22:00'],1:['22:00']},mw:{2:X('22:45',5),3:X('22:45',5)}},
+{k:'b2',sp:'f',n:'Германия. Вторая Бундеслига',cr:'Футбол / Германия',ct:'Вторая Бундеслига',w:'2. Bundesliga',G:3.1,hs:.55,off:(m,d)=>sm(m)||(m===11&&d>=21)||(m===0&&d<=15),t:T(TS_.b2),sch:{5:['22:30'],6:['15:30','18:30'],0:['15:30','17:30']}},
+{k:'sau',sp:'f',n:'Саудовская Аравия. Про-лига',cr:'Футбол / Саудовская Аравия',ct:'Про-лига',w:'Saudi Pro League',G:3.0,hs:.55,off:sm,t:pl('Аль-Хиляль,Аль-Наср,Аль-Иттихад,Аль-Ахли,Аль-Шабаб,Аль-Эттифак,Аль-Таавун,Аль-Фейха'),sch:{4:['19:00','21:30'],5:['19:30','22:00'],6:['19:00','21:30'],1:['19:00','21:30']}},
+{k:'jp',sp:'f',n:'Япония. Джей-лига',cr:'Футбол / Япония',ct:'Джей-лига',w:'J1 League',G:2.5,hs:.55,off:(m,d)=>(m===11&&d>10)||m===0||m===1,t:T(TS_.jp),sch:{6:['08:00','10:00','12:00'],0:['08:00','10:00','12:00'],3:['11:00','12:00']}},
+{k:'au',sp:'f',n:'Австралия. А-Лига',cr:'Футбол / Австралия',ct:'А-Лига',w:'A-League Men',G:3.1,hs:.55,off:m=>m>=4&&m<=8,t:T(TS_.au),sch:{5:['09:30','11:45'],6:['09:30','11:45'],0:['09:00','11:00']}},
+{k:'mls',sp:'f',n:'США. МЛС',cr:'Футбол / США',ct:'МЛС',w:'Major League Soccer',G:3.0,hs:.56,co:10,yc:3.2,top:1,off:(m,d)=>(m===11&&d>10)||m===0||(m===1&&d<18),t:T(TS_.mls),sch:{6:['01:30','03:30','04:30'],0:['01:00','02:30','03:30','03:30','04:30','05:30','06:30'],1:['01:00','02:30','03:30','04:30'],4:['02:30','03:30','03:30','04:30','05:30']}},
+{k:'mx',sp:'f',n:'Мексика. Лига МХ',cr:'Футбол / Мексика',ct:'Лига МХ',w:'Liga MX',G:2.9,hs:.56,top:1,off:(m,d)=>(m===11&&d>25)||(m===0&&d<8),t:T(TS_.mx),sch:{5:['04:00','06:05'],6:['02:00','04:00','06:00'],0:['03:00','05:00'],4:['04:00','06:00']}},
+{k:'br',sp:'f',n:'Бразилия. Серия А',cr:'Футбол / Бразилия',ct:'Серия А',w:'Campeonato Brasileiro Série A',G:2.6,hs:.57,top:1,off:(m,d)=>(m===11&&d>10)||m===0||m===1||(m===2&&d<20),t:T(TS_.br),sch:{6:['00:30','02:00','03:30'],0:['22:00','00:30','03:30'],3:['00:30','02:00','03:30'],4:['00:30','02:00']}},
+{k:'ar',sp:'f',n:'Аргентина. Лига Профессиональ',cr:'Футбол / Аргентина',ct:'Лига Профессиональ',w:'Argentine Primera División',G:2.3,hs:.57,off:(m,d)=>m===0||(m===1&&d<10)||m===5||m===6,t:T(TS_.ar),sch:{6:['21:30','00:00'],0:['21:30','00:00','03:00'],4:['01:00','03:00']}},
+{k:'nhl',sp:'h',n:'НХЛ. Регулярный сезон',cr:'Хоккей / НХЛ',ct:'Регулярный сезон',w:'National Hockey League',G:6.1,hs:.52,pn:3.1,top:1,off:(m,d)=>(m>=5&&m<=8)||(m===11&&d>=24&&d<=26),t:T(TS_.nhl),kp:[1,.6,.5,1,.7,1,.6],sch:all7(['02:00','03:00','03:00','03:00','03:00','03:00','04:00','05:00','06:00','06:00'])},
+{k:'khl',sp:'h',n:'Фонбет КХЛ. Регулярный сезон',cr:'Хоккей / Россия / Фонбет КХЛ',ct:'Регулярный сезон',w:'Kontinental Hockey League',G:5.1,hs:.52,pn:3.6,top:1,off:m=>m>=4&&m<=7,t:T(TS_.khl),kp:[.7,.6,.6,.6,.6,.6,.7],sch:all7(['12:30','14:30','16:30','17:00','19:00','19:30','19:30'])},
+{k:'ahl',sp:'h',n:'АХЛ. Регулярный сезон',cr:'Хоккей / АХЛ',ct:'Регулярный сезон',w:'American Hockey League',G:6.0,hs:.52,pn:3.4,off:m=>m>=5&&m<=8,t:T(TS_.ahl),kp:[1,.5,.4,.6,.5,.9,1],sch:{6:['03:00','03:00','03:00','04:00'],0:['22:00','23:00','03:00','03:00','03:00'],1:['03:00','03:00'],4:['03:00','03:00'],5:['03:00','03:00']}},
+{k:'shl',sp:'h',n:'Швеция. SHL',cr:'Хоккей / Швеция',ct:'SHL',w:'Swedish Hockey League',G:5.5,hs:.52,pn:3.3,off:m=>m>=4&&m<=7,t:T(TS_.shl),sch:{4:['21:00','21:00'],6:['17:00','21:00'],0:['17:00','20:00'],2:['21:00','21:00']}},
+{k:'lii',sp:'h',n:'Финляндия. Лиига',cr:'Хоккей / Финляндия',ct:'Лиига',w:'Liiga',G:5.3,hs:.52,pn:3.3,off:m=>m>=4&&m<=7,t:T(TS_.lii),sch:{4:['19:30','19:30'],5:['19:30','19:30'],6:['17:00','19:30'],3:['19:30','19:30']}}];
+const LGI={};LG.forEach((c,i)=>LGI[c.k]=i);
+const GD={},CITY=['Лас-Вегас','Абу-Даби','Лондон','Нью-Йорк','Рио-де-Жанейро','Париж','Сидней'],CLS=['Тяжёлый','Полутяжёлый','Средний','Полусредний','Лёгкий','Полулёгкий','Легчайший','Наилегчайший'];
+function genDay(d){if(GD[d])return GD[d];const L=[],ds=d*864e5-MO,x=md(ds+36e5),wd=x.w,wk=Math.floor(d/7);
+ for(const c of LG){let o=c.sch[wd];if(c.mw&&c.mw[wd]&&((wk+hs(c.k))%2===0))o=c.mw[wd];if(!o||(c.off&&c.off(x.m,x.d)))continue;const r=rng(c.k+d),sl=o.filter(()=>r()<(c.kp?c.kp[wd]:1)),tm=c.t.slice();
+  for(let i=tm.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[tm[i],tm[j]]=[tm[j],tm[i]]}
+  sl.slice(0,tm.length>>1).forEach((s,i)=>{const p=s.split(':');L.push({k:c.k+'.'+d+'.'+i,sp:c.sp,L:c,h:tm[2*i],a:tm[2*i+1],st:ds+p[0]*36e5+p[1]*6e4})})}
+ if(wd===0||wd===6){const r=rng('ufc'+d),st=wd===0?['00:00','00:25','00:50','01:15','01:40','02:05','03:05','03:35','04:05','04:35','05:15']:['21:00','21:25','21:50','22:15','22:45','23:20'],nm=wd===0?'UFC '+(300+wk%90):'UFC Fight Night',lg={k:'ufc'+wd,sp:'u',n:'MMA. '+nm+'. '+CITY[wk%7],cr:'Единоборства',ct:'MMA. '+nm+'. '+CITY[wk%7],w:'Ultimate Fighting Championship',top:1},used=new Set();
+  st.forEach((s,i)=>{let cl,pool;for(let z=0;z<9;z++){cl=CLS[Math.floor(r()*8)];pool=FF.filter(f=>f.c===cl&&!used.has(f.n));if(pool.length>1)break}
+   if(pool.length<2)return;const a=pool.splice(Math.floor(r()*pool.length),1)[0],b=pool.splice(Math.floor(r()*pool.length),1)[0];used.add(a.n);used.add(b.n);const R=i===st.length-1?5:3,p=s.split(':');
+   L.push({k:'ufc.'+d+'.'+i,sp:'u',L:lg,h:a,a:b,R,st:ds+p[0]*36e5+p[1]*6e4,sub:'Рейтинговый бой. '+cl+' вес. '+R+(R===3?' раунда':' раундов')})})}
+ return GD[d]=L}
+function getEv(k){const p=String(k||'').split('.');if(p.length<3)return null;if(p[0]==='r')return RE[k]||null;return genDay(+p[1]).find(e=>e.k===k)||null}
+function evs(){const d0=dayN(NOW);let a=[];for(let d=d0-1;d<=d0+2;d++)a=a.concat(genDay(d).filter(e=>!useReal(e.L.k)));
+ const sim_=a.filter(e=>{if(NOW-e.st>144e5)return false;const st=state(e);return!st.fin||NOW-(e.st+endT(e)*1000)<9e4});
+ const real=Object.values(RE).filter(e=>{if(!useReal(e.lk))return false;if(NOW-e.st>216e5&&e.rs.state!=='post')return false;if(NOW-e.st>2592e5)return false;const st=state(e);if(st.void)return false;return!st.fin||(e.finAt&&NOW-e.finAt<9e4)});
+ return sim_.concat(real).sort((x,y)=>x.st-y.st)}
 const lamC=(e,nz)=>{const f=e.sp==='f',L=e.L,d=e.h.r-e.a.r+(nz||0),c=f?.03:.022;return[L.G*L.hs*Math.exp(c*d/2),L.G*(1-L.hs)*Math.exp(-c*d/2)]};
 const qOT=e=>1/(1+Math.exp(-.02*(e.h.r-e.a.r)-.08));
-function simF(e){const r=rng(e.k),[lh,la]=lamC(e,0),i1=60+Math.floor(r()*240),i2=120+Math.floor(r()*300),g=[];
- for(const s of[0,1])for(const p of[1,2]){const n=pz((s?la:lh)*(p===1?.45:.55),r),a=p===1?0:2700,b=p===1?2700+i1:5400+i2;for(let i=0;i<n;i++)g.push({s,p,g:a+Math.floor(r()*(b-a))+1})}
- g.sort((x,y)=>x.p-y.p||x.g-y.g);let h=0,a=0;g.forEach(x=>x.s?a++:h++);
- return e.sm={g,pen:[],i1,i2,res:{h,a},sc:[h,a],T:2700+i1+900+2700+i2}}
+function simF(e){const r=rng(e.k),L=e.L,[lh,la]=lamC(e,0),i1=60+Math.floor(r()*240),i2=120+Math.floor(r()*300),g=[],cor=[],yel=[],pen=[];
+ for(const p of[1,2]){const a=p===1?0:2700,b=p===1?2700+i1:5400+i2,tm=()=>a+Math.floor(r()*(b-a))+1;
+  for(const s of[0,1]){const n=pz((s?la:lh)*(p===1?.45:.55),r);for(let i=0;i<n;i++)g.push({s,p,g:tm()})}
+  const nc=pz((L.co||10)*(p===1?.45:.55),r);for(let i=0;i<nc;i++)cor.push({s:r()<.52?0:1,p,g:tm()});
+  const ny=pz((L.yc||4)*(p===1?.42:.58),r);for(let i=0;i<ny;i++)yel.push({s:r()<.5?0:1,p,g:tm()})}
+ g.sort((x,y)=>x.p-y.p||x.g-y.g);cor.sort((x,y)=>x.p-y.p||x.g-y.g);yel.sort((x,y)=>x.p-y.p||x.g-y.g);let h=0,a=0;g.forEach(x=>x.s?a++:h++);
+ return e.sm={g,cor,yel,pen,i1,i2,res:{h,a},sc:[h,a],T:2700+i1+900+2700+i2}}
+function simH(e){const r=rng(e.k),L=e.L,[lh,la]=lamC(e,0),eh=lh*.93/3600,ea=la*.93/3600,g=[],pen=[],act=[[],[]];
+ for(let t=0;t<3600;t++){const p=Math.floor(t/1200)+1;
+  for(const s of[0,1]){act[s]=act[s].filter(x=>x.end>t);if(act[s].length<2&&r()<L.pn/3600){const x={s,g:t,p,end:t+120};pen.push(x);act[s].push(x)}}
+  const nh=act[0].length,na=act[1].length,mh=na>nh?2.3:nh>na?.4:1,ma=nh>na?2.3:na>nh?.4:1;
+  if(r()<eh*mh){g.push({s:0,p,g:t+1,pp:na>nh});if(na>nh)act[1].shift().end=t+1}
+  else if(r()<ea*ma){g.push({s:1,p,g:t+1,pp:nh>na});if(nh>na)act[0].shift().end=t+1}}
+ let h=0,a=0;g.forEach(x=>x.s?a++:h++);const reg=[h,a];let ot=null,so=0,w=h>a?0:1;
+ if(h===a){const q=qOT(e);if(r()<.64){const s=r()<q?0:1,gt=3620+Math.floor(r()*270);g.push({s,p:4,g:gt});ot={len:gt-3600};w=s}else{so=1;w=r()<q?0:1;ot={len:300}}}
+ const tl=[['p',1200,1],['i',900,1],['p',1200,2],['i',900,2],['p',1200,3]];if(ot){tl.push(['ib',120,3],['ot',ot.len,4]);if(so)tl.push(['so',180,4])}
+ const sc=reg.slice();if(ot)sc[w]++;
+ return e.sm={g,pen,cor:[],yel:[],reg,sc,w,ot:!!ot,so,tl,T:tl.reduce((s,x)=>s+x[1],0),res:{h:reg[0],a:reg[1],w:w===0?'h':'a',ot:ot?1:0}}}
+const FIN={'Тяжёлый':.72,'Полутяжёлый':.64,'Средний':.62,'Полусредний':.55,'Лёгкий':.56,'Полулёгкий':.5,'Легчайший':.47,'Наилегчайший':.42};
+const KOS={'Тяжёлый':.72,'Полутяжёлый':.68,'Средний':.64,'Полусредний':.58,'Лёгкий':.52,'Полулёгкий':.55,'Легчайший':.56,'Наилегчайший':.5};
+const W3=[.43,.33,.24],W5=[.34,.27,.2,.11,.08];
 function simU(e){const r=rng(e.k),R=e.R,fr=FIN[e.h.c]-(R===5?.04:0),pA=1/(1+Math.exp(-(e.h.r-e.a.r)*.06)),fin=r()<fr,w=R===3?W3:W5;
  let win=r()<pA?0:1,me='DEC',rd=R,tin=300;
  if(fin){me=r()<KOS[e.h.c]?'KO':'SUB';const u=r();let acc=0;rd=R;for(let i=0;i<R;i++){acc+=w[i];if(u<acc){rd=i+1;break}}tin=Math.max(8,Math.floor(Math.pow(r(),1.1)*292)+6)}else if(r()<.03)win=-1;
  const endReal=fin?(rd-1)*360+tin:(R-1)*360+300;e.fr=fr;e.pA=pA;
  return e.sm={win,me,rd,fin,endReal,Fe:fin?(rd-1)*300+tin:R*300,T:fin?endReal:endReal+10,tin}}
-const FIN={'Тяжёлый':.72,'Полутяжёлый':.64,'Средний':.62,'Полусредний':.55,'Лёгкий':.56,'Полулёгкий':.5,'Легчайший':.47,'Наилегчайший':.42};
-const KOS={'Тяжёлый':.72,'Полутяжёлый':.68,'Средний':.64,'Полусредний':.58,'Лёгкий':.52,'Полулёгкий':.55,'Легчайший':.56,'Наилегчайший':.5};
-const W3=[.43,.33,.24],W5=[.34,.27,.2,.11,.08];
-const sim=e=>e.sm||(e.sp==='f'?simF(e):simU(e));
+const sim=e=>e.sm||(e.sp==='f'?simF(e):e.sp==='h'?simH(e):simU(e));
 const endT=e=>sim(e).T;
 const inc=(g,s)=>s.fin||(s.brk?g.p<=s.per:(g.p<s.per||(g.p===s.per&&g.g<=s.gt)));
 function fill(e,s){const m=sim(e);let h=0,a=0;for(const g of m.g)if(inc(g,s))g.s?a++:h++;if(s.fin&&m.so)m.w===0?h++:a++;s.sc=[h,a];s.live=!s.fin&&s.ph!=='pre';return s}
@@ -281,12 +311,15 @@ function stF(e,now){const m=sim(e),t=(now-e.st)/1000,h1=2700+m.i1,b=h1+900,e2=b+
  if(t<0)return{ph:'pre',t:-t,per:0,gt:0,sc:[0,0],live:0,fin:0};
  if(t<h1)return fill(e,{ph:'p',per:1,gt:t,t});if(t<b)return fill(e,{ph:'brk',per:1,gt:h1,brk:1,t});
  if(t<e2)return fill(e,{ph:'p',per:2,gt:2700+(t-b),t});return fill(e,{ph:'fin',per:2,gt:5400+m.i2,fin:1,t})}
+function stH(e,now){const m=sim(e),t=(now-e.st)/1000;if(t<0)return{ph:'pre',t:-t,per:0,gt:0,sc:[0,0],live:0,fin:0};let o=0;
+ for(const[k,len,p]of m.tl){if(t<o+len){const el=t-o,br=k==='i'||k==='ib';return fill(e,{ph:br?'brk':k==='so'?'so':'p',per:p,gt:k==='p'?(p-1)*1200+el:k==='i'?p*1200:k==='ib'?3600:k==='ot'?3600+el:3900,brk:br?1:0,t})}o+=len}
+ return fill(e,{ph:'fin',per:m.ot?4:3,gt:3900,fin:1,t})}
 function stU(e,now){const m=sim(e),t=(now-e.st)/1000;if(t<0)return{ph:'pre',t:-t,fin:0,live:0};
  if(t>=m.T)return{ph:'fin',fin:1,live:0,F:m.Fe,t};
  if(!m.fin&&t>=m.endReal)return{ph:'dec',live:1,F:e.R*300,left:m.T-t,rd:e.R,t};
  const rd=Math.floor(t/360)+1,inr=t-(rd-1)*360;if(inr>=300)return{ph:'brk',live:1,rd,F:rd*300,left:360-inr,t};
  return{ph:'p',live:1,rd,inr,F:(rd-1)*300+inr,left:300-inr,t}}
-const stX=(e,now)=>e.sp==='f'?stF(e,now):stU(e,now);
+const stX=(e,now)=>e.real?stR(e,now):e.sp==='f'?stF(e,now):e.sp==='h'?stH(e,now):stU(e,now);
 function state(e){if(e._ts===TS)return e._s;e._ts=TS;return e._s=stX(e,NOW)}
 function snap(e){if(e._sb!==TB){e._sb=TB;e._ss=stX(e,TB*BK)}return e._ss}
 function clkS(e,st){if(e.sp==='u')return st.ph==='dec'?'Подсчёт карточек · '+Math.ceil(st.left)+'с':st.ph==='brk'?'Перерыв':'Раунд '+st.rd+' · '+mmss(st.left);return st.brk?'Перерыв':st.ph==='so'?'Буллиты':mmss(st.gt)}
@@ -332,11 +365,9 @@ function priceU(e,st,key){const[sc,t,x]=key.split('|'),m=sim(e),fr=e.fr,pd=1-fr,
  if(t==='rw'){if(x==='DEC')return mkP(pd/S,0,t,60);const n=+x;if(st.live&&st.rd>n)return NO;return mkP(fr*Mu(e,Math.max(F,(n-1)*300),n*300)/S,0,t,60)}
  if(t==='dec')return mkP(x==='y'?pd/S:1-pd/S,0,t);return NO}
 function price(e,key){const ck=e.k+key;let v=PRC[ck];if(v===undefined){const real=state(e);v=PRC[ck]=real.fin?NO:(e.sp==='u'?priceU(e,snap(e),key):price0(e,snap(e),key))}return v}
-function lockR(e,st){if(st.fin)return'Завершён';if(st.ph==='pre')return'';const m=sim(e);
- if(e.sp==='u'){if(st.ph==='dec')return'Подсчёт карточек';if(m.fin&&st.ph==='p'&&m.endReal-st.t<=5)return'Приём приостановлен';return''}
- if(st.brk)return'';for(const g of m.g.concat(m.pen)){if(g.p!==st.per)continue;const d=g.g-st.gt;if((d>0&&d<=4)||(d<=0&&d>-10))return'Приём приостановлен'}return''}
+function lockR(e,st){if(st.fin)return'Завершён';if(st.ph==='pre')return'';const m=sim(e);if(e.real&&NOW-e.rs.at>120000)return'Данные устарели';if(e.real&&e.sp==='u')return'';if(st.brk)return'';for(const g of m.g.concat(m.pen)){if(g.p!==st.per)continue;const d=g.g-st.gt;if((d>0&&d<=4)||(d<=0&&d>-10))return'Приём приостановлен'}return''}
 function scopeSc(e,st,sc,all){let h=0,a=0;const ps=WS[e.sp][sc];for(const g of sim(e).g)if(ps.includes(g.p)&&(all||inc(g,st)))g.s?a++:h++;return[h,a]}
-function decide(e,it){const st=state(e),[sc,t,x]=it.key.split('|'),o=it.odds;if(st.ph==='pre')return null;
+function decide(e,it){const st=state(e),[sc,t,x]=it.key.split('|'),o=it.odds;if(e.real&&e.rs.void)return 1;if(st.ph==='pre')return null;
  if(e.sp==='u'){const m=sim(e),F=st.F||0;
   if(t==='ov'||t==='un'){const L=parseFloat(x)*300;if(st.fin)return(m.Fe>L)===(t==='ov')?o:0;if(F>L)return t==='ov'?o:0;return null}
   if(t==='rw'&&x!=='DEC'&&st.live&&st.rd>+x)return 0;if(!st.fin)return null;
@@ -354,7 +385,7 @@ function legNow(e,it){if(it.f!=null)return it.f===0?'l':it.f>it.odds*.99?'w':'v'
  if(['ng','pn','w1','w2','ot'].includes(t)||/^[pcy][ou]$/.test(t))return'';const[h,a]=sc&&WS[e.sp][sc]?scopeSc(e,st,sc,0):st.sc;const r=res(t,x,{h,a});return r[0]>0?'w':r[1]>0?'v':'l'}
 function settleAll(){let ch=0;H.forEach(b=>{if(b.status!=='pending')return;
  if(!b.items[0]||!b.items[0].ek){b.status='return';b.paid=b.stake;U.balance+=b.stake;ch=1;return}
- b.items.forEach(it=>{if(it.f==null){const e=getEv(it.ek);if(e){const f=decide(e,it);if(f!=null)it.f=f}}});
+ b.items.forEach(it=>{if(it.f==null){const e=getEv(it.ek);if(e){const f=decide(e,it);if(f!=null)it.f=f}else if(String(it.ek).indexOf('r.')===0&&it.st&&NOW-it.st>1728e5)it.f=1}});
  const lost=b.items.some(i=>i.f===0);
  if(lost||b.items.every(i=>i.f!=null)){const pay=lost?0:Math.floor(b.stake*b.items.reduce((p,i)=>p*i.f,1)*100)/100;
   b.paid=pay;b.status=pay>b.stake+.005?'win':pay>.005?'return':'lose';b.t2=NOW;const cred=Math.max(0,pay-(b.fb||0));U.balance+=cred;
@@ -365,14 +396,17 @@ function settleAll(){let ch=0;H.forEach(b=>{if(b.status!=='pending')return;
 function cashVal(b){if(b.status!=='pending'||!b.items[0].ek)return 0;let p=1;for(const it of b.items){if(it.f===0)return 0;if(it.f!=null){p*=it.f/it.odds;continue}const e=getEv(it.ek);if(!e)return 0;const st=state(e);if(st.fin)return 0;const q=price(e,it.key);if(!q.p)return 0;p*=q.p}
  const v=Math.min(b.stake*b.totalOdds*p*.92,b.stake*b.totalOdds*.95);return v<b.stake*.03?0:Math.floor(v)}
 
-let IMG={};
-function need(w){}
-function lgo(w,n,sz,cls,fb){if(w&&w.startsWith('http'))return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px"><img src="${w}" alt="" onerror="this.parentNode.style.background='#7a8794';this.remove()"></span>`;
- return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px;background:hsl(${hs(n)%360},40%,40%);font-size:${Math.round(sz*.45)}px">${fb||esc(n[0])}</span>`}
-
+let IMG={};try{IMG=JSON.parse(localStorage.getItem('betapp_img')||'{}')}catch(e){}
+const PEND=new Set(),QQ=[];let busy=0,dirty=0;
+function need(w){if(!w||IMG[w]!==undefined||PEND.has(w))return;PEND.add(w);QQ.push(w);pump()}
+function pump(){while(busy<4&&QQ.length){const w=QQ.shift();busy++;
+ fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(w.replace(/ /g,'_'))).then(r=>r.ok?r.json():null).then(j=>{IMG[w]=(j&&((j.thumbnail&&j.thumbnail.source)||(j.originalimage&&j.originalimage.source)))||''}).catch(()=>{IMG[w]=''}).finally(()=>{busy--;PEND.delete(w);dirty=1;pump()})}}
+function lgo(w,n,sz,cls,fb){const isU=/^https?:/.test(w||''),u=isU?w:IMG[w];if(u===undefined)need(w);
+ if(u)return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px;background:hsl(${hs(n)%360},40%,40%);font-size:${Math.round(sz*.45)}px"><img src="${esc(u)}" alt="" onerror="this.parentNode.style.background='hsl(${hs(n)%360},40%,40%)';this.parentNode.textContent='${esc(n[0]).replace(/'/g,'')}'"></span>`;
+ return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px;background:hsl(${hs(n)%360},40%,40%);font-size:${Math.round(sz*.45)}px">${esc(fb||n[0])}</span>`}
 let DB={},cur=null,U=null,H=[],FAV=new Set(),BM=new Set(),SLP=[],SH0={on:0,tab:0};
 try{DB=JSON.parse(localStorage.getItem('betapp_users')||'{}');cur=localStorage.getItem('betapp_current')}catch(e){DB={}}
-const saveDB=()=>{try{localStorage.setItem('betapp_users',JSON.stringify(DB))}catch(e){}};
+const saveDB=()=>{try{localStorage.setItem('betapp_users',JSON.stringify(DB));localStorage.setItem('betapp_img',JSON.stringify(IMG))}catch(e){}if(typeof reSave==='function')reSave()};
 const tk=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const DL0=1500000,WEEK=6048e5;
 function toast(t,ok){const e=$('#toast');e.textContent=t;e.className='on'+(ok===0?' er':'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',2800);}
@@ -385,12 +419,11 @@ function submit(){const l=$('#li').value.trim(),p=$('#pi').value;if(l.length<3)r
   DB[l]={pass:p,balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[],id:String(10000000+hs(l)%89999999),created:Date.now()};saveDB();$('#pi').value='';$('#pi2').value='';authMsg('Регистрация прошла успешно! Теперь войдите',1);return ACT.am({v:'login'})}
  if(!DB[l])return authMsg('Такого аккаунта нет');if(DB[l].pass!==p)return authMsg('Неверный пароль');login(l)}
 function login(n){cur=n;U=DB[n];U.favs=U.favs||[];U.bm=U.bm||[];U.history=U.history||[];U.freebet=U.freebet||0;U.led=U.led||[];U.notif=U.notif||[];U.req=U.req||[];U.pay=U.pay||[];U.id=U.id||String(10000000+hs(n)%89999999);U.created=U.created||Date.now();U.staked=U.staked||0;
- U.st=Object.assign({goal:1,vib:1,acc:0,hide:0,hl:[]},U.st||{});U.dl=U.dl||DL0;
+ U.st=Object.assign({goal:1,vib:1,acc:0,hide:0,hl:[],real:1},U.st||{});U.dl=U.dl||DL0;
  H=U.history;FAV=new Set(U.favs);BM=new Set(U.bm);localStorage.setItem('betapp_current',n);
  $('#auth').style.display='none';$('#app').style.display='block';$('#nav').style.display='flex';$('#fab').style.display='flex';go('home')}
 function hdr(){const b=$('#bal');if(b)b.textContent=U.st&&U.st.hide?'••••':num(U.balance)}
 function bal(d){U.balance+=d;saveDB();hdr()}
-
 let page='home',MODE='all',SPF='all',SOON=0,FAVF=0,HSP='f',CE=null,MT='pop',MS='',MSO=0,MST=0,MBO=0,OVV=0,SM='ex',STK=100,FBU=0;
 const COL={},TLN={},LAST={},ARW={},HID=new Set();
 const NAVI=[['home','home','Главная'],['sport','ball','Спорт'],['slip','ticket','Купон'],['media','doc','Медиа'],['menu','grid','Меню']];
@@ -420,11 +453,11 @@ function recon(box,items){const ch=box.children;let same=ch.length===items.lengt
 function listItems(o){const hl=new Set(U.st.hl||[]);const L=evs().filter(e=>{const st=state(e);if(hl.has(e.L.k))return false;if(o.sp&&o.sp!=='all'&&e.sp!==o.sp)return false;if(o.mode==='live'&&!st.live)return false;if(o.mode==='pre'&&st.ph!=='pre')return false;if(o.fav&&!FAV.has(e.k))return false;if(o.soon&&!(st.ph==='pre'&&st.t<3600))return false;if(o.top&&!e.L.top)return false;return true});
  const g=new Map(),so={f:0,h:1,u:2};L.forEach(e=>{const k=e.sp+'|'+e.L.n;if(!g.has(k))g.set(k,[]);g.get(k).push(e)});
  const ks=[...g.keys()].sort((a,b)=>{const A=g.get(a)[0],B=g.get(b)[0],la=g.get(a).some(e=>state(e).live)?0:1,lb=g.get(b).some(e=>state(e).live)?0:1;return(o.liveFirst?la-lb:0)||so[A.sp]-so[B.sp]||(LGI[A.L.k]===undefined?99:LGI[A.L.k])-(LGI[B.L.k]===undefined?99:LGI[B.L.k])});
- const it=[];let n=0;ks.forEach(k=>{let es=g.get(k);const c=es[0].L,cl=HID.has(k);if(o.limit&&n>=o.limit)return;if(o.limit)es=es.slice(0,o.limit-n);n+=es.length;
+ const it=o.info?[{id:'info',html:infoH()}]:[];let n=0;ks.forEach(k=>{let es=g.get(k);const c=es[0].L,cl=HID.has(k);if(o.limit&&n>=o.limit)return;if(o.limit)es=es.slice(0,o.limit-n);n+=es.length;
   it.push({id:'g'+k,html:`<div class="lgh t${c.sp}${cl?' cl':''}" data-act="lg" data-k="${esc(k)}"><span class="ch">${ico('chevd',14)}</span><span class="nm">${lgo(c.w,c.n,20,'q',ico(SPI[c.sp],14))}<span class="t">${esc(c.n)}</span></span><span class="cnt">${g.get(k).length}</span></div>`});
   if(!cl)es.forEach((e,i)=>it.push({id:e.k,html:rowH(e,i===0)}))});return it}
-function renderList(){const box=$('#lst');if(!box)return;const o=page==='home'?{sp:HSP==='all'||HSP==='top'?'all':HSP,top:HSP==='top',limit:14,mode:'all',liveFirst:1}:{mode:MODE,sp:SPF==='top'?'all':SPF,top:SPF==='top',fav:FAVF,soon:SOON};
- let it=listItems(o);if(!it.length)it=[{id:'e',html:'<div class="no">Событий по выбранному фильтру нет.<br>Новые матчи появляются по расписанию (время МСК).</div>'}];recon(box,it)}
+function renderList(){const box=$('#lst');if(!box)return;const o=page==='home'?{sp:HSP==='all'||HSP==='top'?'all':HSP,top:HSP==='top',limit:14,mode:'all',liveFirst:1,info:1}:{mode:MODE,sp:SPF==='top'?'all':SPF,top:SPF==='top',fav:FAVF,soon:SOON,info:1};
+ o.info=1;let it=listItems(o);if(!it.some(x=>x.id!=='info'))it.push({id:'e',html:'<div class="no">Событий по выбранному фильтру нет.<br>Новые матчи появляются по расписанию (время МСК).</div>'});recon(box,it)}
 const TABN={f:[['pop','Популярное'],['match','Матч'],['t1','1-й тайм'],['t2','2-й тайм'],['cor','Угловые'],['yel','Карточки']],h:[['pop','Популярное'],['match','Матч'],['t1','1-й период'],['t2','2-й период'],['t3','3-й период'],['pen','Удаления']],u:[['pop','Популярное'],['match','Бой']]};
 const TC={f:'#5b9a2f',h:'#6f8697',u:'#b45a5a'};
 function mb(e,st,lr,key,lab){const p=price(e,key);if(!p.o)return`<div class="mb lk"><span>${esc(lab)}</span><b>—</b></div>`;const sel=SLP.some(b=>b.ek===e.k&&b.key===key),a=arw(e.k+key,p.o);
@@ -442,7 +475,7 @@ function cardsOf(e,st){const f=e.sp==='f',uf=e.sp==='u',H_=e.h.n,A=e.a.n,lr=lock
   return s.h+`<div class="sub2"><div class="sub">${esc(H_)}</div><div class="sub">${esc(A)}</div></div>`+G([[`m|h1|${-l}`,`Фора (${sg(-l)})`],[`m|h2|${l}`,`Фора (${sg(l)})`]],2)+(l===0?'':G([[`m|h1|${l}`,`Фора (${sg(l)})`],[`m|h2|${-l}`,`Фора (${sg(-l)})`]],2))};
  const A_={pop:[],match:[],t1:[],t2:[],t3:[],pen:[],cor:[],yel:[]};
  if(uf){const O=D('o','Исход',G([['m|1',H_],['m|X','X'],['m|2',A]],3),1),R=[.5,1.5,2.5,3.5,4.5].filter(l=>l<e.R),TT=D('t','Тотал раундов',totR('m',R,6),1);
-  A_.pop=[O,TT];A_.match=[O,TT,D('me','Способ победы',G([['m|me|KO','Нокаут/ТКО'],['m|me|SUB','Сабмишен'],['m|me|DEC','Решение']],3),1),D('rw','Победа в раунде',G([...Array(e.R)].map((_,i)=>[`m|rw|${i+1}`,'Раунд '+(i+1)]).concat([['m|rw|DEC','Решением']]),3),0),D('dec','Бой дойдёт до решения',G([['m|dec|y','Да'],['m|dec|n','Нет']],2),0)];return A_}
+  A_.pop=[O,TT];if(e.real){A_.match=[O,TT];return A_}A_.match=[O,TT,D('me','Способ победы',G([['m|me|KO','Нокаут/ТКО'],['m|me|SUB','Сабмишен'],['m|me|DEC','Решение']],3),1),D('rw','Победа в раунде',G([...Array(e.R)].map((_,i)=>[`m|rw|${i+1}`,'Раунд '+(i+1)]).concat([['m|rw|DEC','Решением']]),3),0),D('dec','Бой дойдёт до решения',G([['m|dec|y','Да'],['m|dec|n','Нет']],2),0)];return A_}
  const lines=f?[.5,1,1.5,2,2.5,3,3.5,4,4.5,5.5]:[3.5,4.5,5,5.5,6,6.5,7.5,8.5],il=f?[.5,1.5,2.5,3.5]:[1.5,2.5,3.5,4.5];
  const OM=D('o',f?'Исход матча (основное время)':'Исход',out3('m'),1),WN=D('w','Итоговая победа',G([['m|w1',H_],['m|w2',A]],2),1);
  const O1=D('o1',f?'Исход 1-го тайма':'Исход в 1-м периоде',out3('1'),1),per=st.per>=3?3:Math.max(1,st.per+(st.brk?1:0)),OP=D('op','Исход в '+per+'-м периоде',out3(String(per)),1);
@@ -459,16 +492,18 @@ function cardsOf(e,st){const f=e.sp==='f',uf=e.sp==='u',H_=e.h.n,A=e.a.n,lr=lock
   [1,2,3].forEach(p=>{A_['t'+p]=[D('o'+p,'Исход в '+p+'-м периоде',out3(String(p)),1),D('p'+p,'Тотал голов в '+p+'-м периоде',totC(String(p),[.5,1.5,2.5,3.5],'p'+p),1)]});
   const pl_=e.L.pn>3.4?[4.5,5.5,6.5,7.5,8.5,9.5]:[3.5,4.5,5.5,6.5,7.5,8.5];
   A_.pen=[D('po','Тотал удалений в матче (2 мин)',totC('m',pl_,'pn','po','pu'),1),D('pn','Следующее удаление',G([['m|pn|h',H_],['m|pn|n','Не будет'],['m|pn|a',A]],3),1)]}
+ if(e.real){A_.t1=[];A_.t2=[];A_.t3=[];A_.cor=[];A_.yel=[];A_.pen=[];A_.pop=A_.pop.filter(c=>!['o1','op','co'].includes(c.id))}
  return A_}
 function cardH(e,c){const id=e.k+c.id,cl=COL[id]!==undefined?COL[id]:!c.open,on=BM.has(c.t);
  return`<div class="mk${cl?' cl':''}"><div class="mkh" data-act="mk" data-id="${id}" data-d="${c.open?1:0}"><span data-act="bm" data-t="${esc(c.t)}" class="bmk${on?' on':''}">${ico('bm',20)}</span><span class="tt">${esc(c.t)}</span><span class="cv2">${ico('chevu',16)}</span></div><div class="mkb">${c.h}</div></div>`}
 function formB(n,r){let o='';for(let i=0;i<5;i++){const v=rng(n+'f'+i+Math.floor(dayN(NOW)/3))(),w=.25+(r-60)*.007,c=v<w?['w','В']:v<w+.22?['d','Н']:['l','П'];o+=`<div class="fb ${c[0]}">${c[1]}</div>`}return o+'<div class="fb q">?</div>'}
 function banH(e,st){const sp=e.sp,uf=sp==='u',m=uf?sim(e):null,live=st.live,fin=st.fin;
  const top=st.ph==='pre'?whenS(e.st):live?`<span class="ck">${ico('clock',16)} ${clkS(e,st)}</span>`:'Завершён';let cols='';
- if(!uf&&st.ph!=='pre'){const n=sp==='f'?2:3;cols='<span class="cols">'+[...Array(n)].map((_,i)=>`<span>${i+1}</span>`).join('')+(sp==='h'&&sim(e).ot&&st.per>=4?'<span>ОТ</span>':'')+'</span>'}
+ if(!uf&&st.ph!=='pre'&&!e.real){const n=sp==='f'?2:3;cols='<span class="cols">'+[...Array(n)].map((_,i)=>`<span>${i+1}</span>`).join('')+(sp==='h'&&sim(e).ot&&st.per>=4?'<span>ОТ</span>':'')+'</span>'}
  const row=i=>{const t=i?e.a:e.h;let right='';
   if(uf){if(fin&&m.win===i)right='<div class="scn"><b style="border:0">✔</b></div>'}
   else if(st.ph==='pre')right=`<div class="fm">${formB(t.n,t.r)}</div>`;
+  else if(e.real)right=`<div class="scn"><b style="border:0">${st.sc[i]}</b></div>`;
   else{const n=sp==='f'?2:3,pc=[...Array(n)].map((_,k)=>sim(e).g.filter(g=>g.s===i&&g.p===k+1&&inc(g,st)).length);if(sp==='h'&&sim(e).ot&&st.per>=4)pc.push(sim(e).g.filter(g=>g.s===i&&g.p===4&&inc(g,st)).length+(st.fin&&sim(e).so&&sim(e).w===i?1:0));right=`<div class="scn"><b>${st.sc[i]}</b>${pc.map(v=>`<span>${v}</span>`).join('')}</div>`}
   return`<div class="br">${lgo(t.badge||t.w,t.n,32,uf?'p':'')}<div class="nm">${esc(t.n)}</div>${right}</div>`};
  let rs='';if(uf&&fin){const w=m.win;rs=`<div class="bres">${w<0?'Ничья (решение судей)':'Победил '+esc(w?e.a.n:e.h.n)+' — '+({KO:'нокаут/ТКО',SUB:'сабмишен',DEC:'решение судей'})[m.me]+(m.fin?', раунд '+m.rd+' ('+mmss(m.tin)+')':'')}</div>`}
@@ -478,7 +513,7 @@ function statRows(e,st){if(st.ph==='pre')return null;const sp=e.sp,m=sim(e),pr=M
   return[['Владение, %',p1,100-p1],['Удары',s1,s2],['Удары в створ',Math.max(st.sc[0],Math.floor(s1*.4)),Math.max(st.sc[1],Math.floor(s2*.4))],['Угловые',cn(0),cn(1)],['Жёлтые карточки',yn(0),yn(1)],['Опасные атаки',Math.floor(pr*(30+r(8)*30)),Math.floor(pr*(30+r(9)*30))]]}
  const pn=s=>m.pen.filter(p=>p.s===s&&p.g<=st.gt),ppt=s=>Math.round(pn(1-s).reduce((q,p)=>q+Math.max(0,Math.min(p.end,st.gt)-p.g),0));
  return[['Броски',Math.floor(pr*(24+r(1)*12+d*.3)),Math.floor(pr*(24+r(2)*12-d*.3))],['Удаления (мин)',pn(0).length*2,pn(1).length*2],['Время в большинстве',mmss(ppt(0)),mmss(ppt(1))],['Силовые приёмы',Math.floor(pr*(14+r(3)*14)),Math.floor(pr*(14+r(4)*14))]]}
-function statsH(e,st){const R=statRows(e,st);if(!R)return'<div class="no">Статистика появится с началом матча</div>';
+function statsH(e,st){if(e.real)return'<div class="no">Подробная статистика недоступна для реальных матчей</div>';const R=statRows(e,st);if(!R)return'<div class="no">Статистика появится с началом матча</div>';
  return`<div class="mkb" style="margin:10px"><div class="st1"><span>${esc(e.h.n)}</span><span>${esc(e.a.n)}</span></div>`+R.map(x=>{const t=(+x[1]||0)+(+x[2]||0)||1;return`<div class="st1"><span>${x[1]}</span><span style="color:var(--mu);font-weight:500">${x[0]}</span><span>${x[2]}</span></div>`+(typeof x[1]==='number'?`<div class="stb"><i style="width:${x[1]/t*100}%"></i></div>`:'')}).join('')+'</div>'}
 function ovH(e,st){if(st.ph==='pre')return'<div class="no">События появятся после начала</div>';if(e.sp==='u')return`<div class="mkb" style="margin:10px"><div class="ev"><b>${clkS(e,st)}</b><span>${st.fin?'Бой завершён':'Идёт бой'}</span></div></div>`;
  const m=sim(e),f=e.sp==='f',L=[];m.g.forEach(g=>{if(inc(g,st))L.push({p:g.p,g:g.g,t:(f?(g.p===1?(g.g>2700?'45+'+Math.ceil((g.g-2700)/60):Math.ceil(g.g/60)):(g.g>5400?'90+'+Math.ceil((g.g-5400)/60):45+Math.ceil((g.g-2700)/60)))+"'":mmss(g.g)),x:`${f?'⚽':'🏒'} Гол — ${esc(g.s?e.a.n:e.h.n)}${g.pp?' (в большинстве)':''}`})});
@@ -489,13 +524,12 @@ let mbH='',mtH='';
 function openMatch(k){CE=k;MT='pop';MS='';MSO=0;MST=0;MBO=0;OVV=0;const e=getEv(k);if(!e)return;$('#mp').className='full on';$('#mp').scrollTop=0;const c=e.L;
  $('#mp').innerHTML=`<div class="top">${topH(0)}<div class="mhead"><div class="bk" data-act="back">${ico('back',22)}</div><div class="bt0">${esc(e.sp==='u'?'Единоборства / '+c.ct:c.cr)}<b>${esc(e.sp==='u'?e.sub:c.ct)}</b></div><div class="nx" data-act="nx">⇅</div></div></div><div id="mban"></div><div id="mtabs"></div><div id="msr"></div><div id="mbody"></div>`;mbH='';mtH='';mpTick()}
 function mpTick(){if(!CE)return;const e=getEv(CE);if(!e)return;const st=state(e),bh=banH(e,st);if(bh!==mbH){$('#mban').innerHTML=bh;mbH=bh}
- const th=`<div class="mt" style="--tc:${TC[e.sp]}"><div class="ic2${MSO?' on':''}" data-act="srch">${ico('search',20)}</div><div class="ic2${MST?' on':''}" data-act="stat">${ico('doc',20)}</div><div class="ic2${MBO?' on':''}" data-act="bmf">${ico('bm',20)}</div>${TABN[e.sp].map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO&&!MBO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}</div>`;if(th!==mtH){$('#mtabs').innerHTML=th;mtH=th}
+ const th=`<div class="mt" style="--tc:${TC[e.sp]}"><div class="ic2${MSO?' on':''}" data-act="srch">${ico('search',20)}</div><div class="ic2${MST?' on':''}" data-act="stat">${ico('doc',20)}</div><div class="ic2${MBO?' on':''}" data-act="bmf">${ico('bm',20)}</div>${TABN[e.sp].filter(x=>!e.real||['pop','match'].includes(x[0])).map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO&&!MBO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}</div>`;if(th!==mtH){$('#mtabs').innerHTML=th;mtH=th}
  const sb=$('#msr');if(MSO&&!sb.firstChild){sb.innerHTML=`<div class="msr"><input id="msq" placeholder="Поиск по рынкам" value="${esc(MS)}"></div>`;$('#msq').oninput=ev=>{MS=ev.target.value.toLowerCase().trim();mpTick()}}else if(!MSO&&sb.firstChild)sb.innerHTML='';
  let items;if(OVV)items=[{id:'ov',html:ovH(e,st)}];else if(MST)items=[{id:'st',html:statsH(e,st)}];
  else{const A=cardsOf(e,st);let list=A[MT]||[];if(MS||MBO){const mp=new Map();Object.values(A).forEach(a=>a.forEach(c=>{if(!mp.has(c.t))mp.set(c.t,c)}));list=[...mp.values()].filter(c=>(!MS||c.t.toLowerCase().includes(MS))&&(!MBO||BM.has(c.t)))}
   items=list.map(c=>({id:e.k+c.id,html:cardH(e,c)}));if(!items.length)items=[{id:'n',html:'<div class="no">Ничего не найдено</div>'}]}
  recon($('#mbody'),items)}
-
 const YN=x=>x==='y'?'да':'нет';
 function lab(e,key){const[sc,t,x]=key.split('|'),f=e.sp==='f',pf=sc==='m'?'':sc+(f?'Т ':'П ');
  if(e.sp==='u'){return({'1':'Поб 1','2':'Поб 2',X:'Ничья',ov:'Тотал раундов > '+x,un:'Тотал раундов < '+x,me:({KO:'Нокаут/ТКО',SUB:'Сабмишен',DEC:'Решение'})[x],rw:x==='DEC'?'Победа решением':'Победа в раунде '+x,dec:'Бой до решения - '+YN(x)})[t]||key}
@@ -514,7 +548,7 @@ function shHead(){
  if(SH0.sub==='main')return`<div class="sh2 c"><div class="tt2c">Мой профиль<small>ID: ${U.id} <span data-act="copy">${ico('copy',14)}</span></small></div><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`;
  return`<div class="sh2"><div class="bk2" data-act="subback">${ico('back',22)}</div><div class="tt2">${T_[SH0.sub]}</div><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`}
 const dgrp=t=>{const dd=dayN(NOW)-dayN(t),x=md(t),d=x.d+' '+MON[x.m].toUpperCase();return dd<=0?'СЕГОДНЯ, '+d:dd===1?'ВЧЕРА, '+d:d};
-function legH(it){const e=getEv(it.ek);if(!e)return'';const st=state(e),ln=legNow(e,it);let top;
+function legH(it){const e=getEv(it.ek);if(!e)return`<div class="bl">${ico('ball',22,'gi')}<div class="blm"><div class="bl1">Данные загружаются…</div><div class="bl2">${esc(it.h||'')} – ${esc(it.a||'')}</div><div class="bl3"><span>${esc(it.lab||'')}</span><span>${od2(it.odds||1)}</span></div></div><i class="bar n"></i></div>`;const st=state(e),ln=legNow(e,it);let top;
  if(e.sp==='u')top=st.ph==='pre'?whenS(e.st):st.fin?'Бой завершён':clkS(e,st);else top=st.ph==='pre'?whenS(e.st):'Счет матча <b class="sc '+(ln||'')+'">'+st.sc[0]+':'+st.sc[1]+'</b>';
  return`<div class="bl">${ico(SPI[e.sp],22,'gi')}<div class="blm"><div class="bl1">${top}</div><div class="bl2">${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="bl3"><span>${esc(it.lab)}</span><span>${od2(it.odds)}</span></div></div><i class="bar ${ln||'n'}"></i></div>`}
 function betCard(b){const pend=b.status==='pending',bd=pend?'p':b.status==='win'?'w':b.status==='lose'?'l':b.status==='cashout'?'c':'r',ic={p:'clock',w:'check',l:'x',c:'wallet',r:'rot'}[bd],n=b.items.length,co=pend?cashVal(b):0;
@@ -550,7 +584,7 @@ function pfBody(){const s=SH0.sub;
  if(s==='req')return`<div class="pc"><h3>Новый запрос</h3><textarea class="gi" id="rq" rows="4" placeholder="Опишите вопрос"></textarea><button class="btn red" data-act="sendreq">Отправить</button></div><div class="pc"><h3>Мои запросы</h3>${(U.req||[]).length?U.req.map(r=>`<div class="rqi"><b>${dtS(r.t)}</b><div>${esc(r.x)}</div><div class="rsp">${r.a?esc(r.a):'Ожидает ответа…'}</div></div>`).join(''):'<p class="mu2">Запросов пока нет</p>'}</div>`;
  if(s==='notif')return`<div class="pc"><div style="display:flex;justify-content:space-between;align-items:center"><h3>Уведомления</h3><span class="lnk" data-act="clearn">Очистить</span></div>${(U.notif||[]).length?U.notif.map(n=>`<div class="rqi"><b>${dtS(n.t)}</b><div>${esc(n.x)}</div></div>`).join(''):'<p class="mu2">Уведомлений нет</p>'}</div>`;
  if(s==='data')return`<div class="pc"><h3>Профиль</h3><div class="pr"><span>Логин</span><span>${esc(cur)}</span></div><div class="pr"><span>ID</span><span>${U.id}</span></div><div class="pr"><span>Регистрация</span><span>${dtS(U.created)}</span></div></div><div class="pc"><h3>Смена пароля</h3><input class="gi" id="op" type="password" placeholder="Текущий пароль"><input class="gi" id="np" type="password" placeholder="Новый пароль"><button class="btn red" data-act="savepw">Сохранить</button></div>`;
- if(s==='set')return`<div class="pc"><h3>Настройки</h3>${tg('Уведомления о голах в моих ставках','goal',U.st.goal)}${tg('Вибрация','vib',U.st.vib)}${tg('Принимать изменения коэффициентов','acc',U.st.acc)}${tg('Скрывать баланс','hide',U.st.hide)}</div><div class="pc"><h3>Данные</h3><button class="btn s" data-act="resetdata">Сбросить баланс и ставки</button></div>`;
+ if(s==='set')return`<div class="pc"><h3>Настройки</h3>${tg('Уведомления о голах в моих ставках','goal',U.st.goal)}${tg('Вибрация','vib',U.st.vib)}${tg('Реальные матчи и счёт (ESPN API)','real',U.st.real)}${tg('Принимать изменения коэффициентов','acc',U.st.acc)}${tg('Скрывать баланс','hide',U.st.hide)}</div><div class="pc"><h3>Данные</h3><button class="btn s" data-act="resetdata">Сбросить баланс и ставки</button></div>`;
  if(s==='resp'){const paused=U.pause&&U.pause>NOW;return`<div class="pc"><h3>Лимит пополнения в день</h3><div class="chips2">${[1e4,5e4,15e4,15e5].map(v=>`<div class="cp2${U.dl===v?' on':''}" data-act="setlim" data-v="${v}">${num(v)}</div>`).join('')}</div></div><div class="pc"><h3>Перерыв</h3><p class="mu2">${paused?'Перерыв активен до '+dtS(U.pause):'На время перерыва ставки и пополнение недоступны.'}</p><div class="chips2">${[[1,'1 час'],[24,'24 часа'],[168,'7 дней']].map(([h,n])=>`<div class="cp2" data-act="pause" data-v="${h}">${n}</div>`).join('')}${paused?'<div class="cp2" data-act="pause" data-v="0">Снять</div>':''}</div></div>`}
  if(s==='vip'){let lv=0;VIP.forEach((v,i)=>{if(U.staked>=v[0])lv=i});const nx=VIP[lv+1];return`<div class="pc"><h3>${ico('crown',22)} ${VIP[lv][1]}</h3><p class="mu2">Сумма ставок: ${money(U.staked)}</p>${nx?`<div class="stb" style="height:8px;margin:12px 0"><i style="width:${Math.min(100,(U.staked-VIP[lv][0])/(nx[0]-VIP[lv][0])*100)}%"></i></div><p class="mu2">До уровня «${nx[1]}»: ${money(nx[0]-U.staked)}</p>`:'<p class="mu2">Максимальный уровень!</p>'}</div><div class="pc">${VIP.map((v,i)=>`<div class="pr"><span>${v[1]}</span><span>${i<=lv?'✔':num(v[0])+' ₽'}</span></div>`).join('')}</div>`}
  return''}
@@ -595,7 +629,7 @@ favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();mbH='';mp
 odd(d){const e=getEv(d.ek);if(!e)return;const st=state(e),r=lockR(e,st);if(r)return toast(r,0);const i=SLP.findIndex(b=>b.ek===d.ek&&b.key===d.key);
  if(i>=0)SLP.splice(i,1);else{const p=price(e,d.key);if(!p.o)return toast('Исход закрыт',0);const g=grp(d.key);for(let j=SLP.length-1;j>=0;j--)if(SLP[j].ek===d.ek&&grp(SLP[j].key)===g)SLP.splice(j,1);
   const t=d.key.split('|')[1],n0=t==='ng'?sim(e).g.filter(x=>inc(x,st)).length:t==='pn'?sim(e).pen.filter(x=>x.g<=st.gt).length:0;
-  SLP.push({ek:d.ek,key:d.key,odds:p.o,n0,h:e.h.n,a:e.a.n,lab:lab(e,d.key)})}renderTop();renderList();mpTick();if(SH0.on&&SH0.k==='slip')renderSheet()},
+  SLP.push({ek:d.ek,key:d.key,odds:p.o,n0,st:e.st,h:e.h.n,a:e.a.n,lab:lab(e,d.key)})}renderTop();renderList();mpTick();if(SH0.on&&SH0.k==='slip')renderSheet()},
 shclose:closeSheet,shtab(d){SH0.tab=d.v;renderSheet()},sub(d){SH0.sub=d.v;if(d.v==='notif')setTimeout(()=>{(U.notif||[]).forEach(n=>n.u=0);saveDB()},300);renderSheet()},subback(){SH0.sub='main';renderSheet()},
 rm(d){SLP.splice(+d.i,1);renderTop();renderList();mpTick();renderSheet()},smode(){SM=SM==='ex'?'sg':'ex';renderSheet()},q(d){STK=+d.v;renderSheet()},usefb(){FBU=!FBU;renderSheet()},place,
 co(d,el,ev){ev.stopPropagation();const b=H.find(x=>x.id==d.id);if(!b||b.status!=='pending')return;const v=cashVal(b);if(!v)return toast('Кэшаут недоступен',0);if(!confirm('Забрать '+money(v)+' вместо '+money(b.pot)+'?'))return;b.status='cashout';b.paid=v;led('cash',v,'Кэшаут № '+b.id);bal(Math.max(0,v-(b.fb||0)));notify('Кэшаут '+money(v)+' по ставке № '+b.id);toast('Кэшаут +'+money(v));renderSheet()},
@@ -603,7 +637,7 @@ bhelp(d,el,ev){ev.stopPropagation();const b=H.find(x=>x.id==d.id);if(!b)return;c
  $('#res').innerHTML=`<div class="rb" style="text-align:left"><h2 style="font-size:19px">Ставка № ${b.id}</h2><div class="pr"><span>Статус</span><span>${stT}</span></div><div class="pr"><span>Сумма</span><span>${money(b.stake)}</span></div><div class="pr"><span>Коэффициент</span><span>${od2(b.totalOdds)}</span></div><div class="pr"><span>Возможный выигрыш</span><span>${money(b.pot)}</span></div>${b.status!=='pending'?`<div class="pr"><span>Выплата</span><span>${money(b.paid||0)}</span></div>`:''}${b.fb?`<div class="pr"><span>Фрибет</span><span>${money(b.fb)}</span></div>`:''}<button class="btn red" style="margin-top:14px" data-act="resclose">Закрыть</button></div>`;$('#res').className='on'},
 hf(d){SH0.hf=d.v;renderSheet()},ht(d){SH0.ht=+d.v;renderSheet()},eye(){U.st.hide=U.st.hide?0:1;saveDB();hdr();renderSheet()},
 copy(){try{navigator.clipboard.writeText(U.id)}catch(e){}toast('ID скопирован')},
-tgl(d){U.st[d.v]=U.st[d.v]?0:1;saveDB();hdr();renderSheet()},
+tgl(d){U.st[d.v]=U.st[d.v]?0:1;saveDB();hdr();renderSheet();if(d.v==='real'){PRC={};DC={};renderList();toast(U.st.real?'Реальные матчи включены':'Включена симуляция')}},
 withdraw(){const a=+$('#pa').value;if(!(a>=100))return toast('Минимальная выплата 100 ₽',0);if(a>U.balance)return toast('Недостаточно средств',0);U.pay.unshift({t:NOW,a});led('pay',-a,'Выплата');bal(-a);notify('Выплата '+money(a)+' оформлена');toast('Выплата оформлена');renderSheet()},
 sendreq(){const x=($('#rq').value||'').trim();if(x.length<3)return toast('Опишите вопрос',0);const r={t:NOW,x,a:''};U.req.unshift(r);saveDB();renderSheet();toast('Запрос отправлен');setTimeout(()=>{r.a='Спасибо за обращение! Это демо-проект, ответ сформирован автоматически: вопрос принят.';notify('Ответ на ваш запрос получен');saveDB();if(SH0.on&&SH0.sub==='req')renderSheet()},4000)},
 clearn(){U.notif=[];saveDB();renderSheet()},
@@ -621,18 +655,66 @@ function goalWatch(){if(!U.st.goal)return;const seen=new Set();H.forEach(b=>{if(
 function tick(){NOW=Date.now();TS=Math.floor(NOW/1000);const nb=Math.floor(NOW/BK);if(nb!==TB){TB=nb;PRC={};DC={}}
  if(!U)return;try{if(dirty){dirty=0;mbH='';mtH=''}
  if(page==='home'||page==='sport')renderList();else if(page==='media'&&TS%5===0)renderPage();
- if(CE)mpTick();settleAll();goalWatch();sheetTick();hdr();
+ realTick();if(CE)mpTick();settleAll();goalWatch();sheetTick();hdr();
  document.querySelectorAll('[data-cob]').forEach(el=>{const b=H.find(x=>x.id===el.dataset.cob);if(b){const v=cashVal(b);el.style.display=v?'':'none'}})}catch(e){console.error(e)}}
 
-/* Запуск */
+/* ===== РЕАЛЬНЫЕ МАТЧИ (ESPN public API) ===== */
+const ES={ucl:'soccer/uefa.champions',uel:'soccer/uefa.europa',uecl:'soccer/uefa.europa.conf',epl:'soccer/eng.1',lal:'soccer/esp.1',sea:'soccer/ita.1',bun:'soccer/ger.1',l1:'soccer/fra.1',rpl:'soccer/rus.1',ere:'soccer/ned.1',por:'soccer/por.1',tur:'soccer/tur.1',bel:'soccer/bel.1',sco:'soccer/sco.1',ch:'soccer/eng.2',b2:'soccer/ger.2',sau:'soccer/ksa.1',jp:'soccer/jpn.1',au:'soccer/aus.1',mls:'soccer/usa.1',mx:'soccer/mex.1',br:'soccer/bra.1',ar:'soccer/arg.1',nhl:'hockey/nhl',ufc:'mma/ufc'};
+const RE={},RL={};let reBusy=0;
+const nrm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\./g,'').replace(/&/g,' and ').replace(/\b(fc|cf|afc|sc|ssc|ac|as|cd|rc|ud|ca|sv|vfb|vfl|tsg|sk|fk|bk|if|ik|sl|cp|us|ss|acf|club|de|the)\b/g,' ').replace(/\b[0-9]+\b/g,' ').replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
+const TIX={},FIX={},ALI={internazionale:'inter milan','paris saint germain':'paris saint germain',psg:'paris saint germain','atletico de madrid':'atletico madrid','bayern munchen':'bayern munich','manchester utd':'manchester united','spurs':'tottenham hotspur','wolves':'wolverhampton wanderers','man city':'manchester city','man united':'manchester united'};
+Object.keys(TS_).forEach(k=>T(TS_[k]).forEach(t=>{const n=nrm(t.w);if(!TIX[n])TIX[n]=t}));FF.forEach(f=>FIX[nrm(f.w)]=f);
+const CLSM=[['light heavy','Полутяжёлый'],['heavy','Тяжёлый'],['middle','Средний'],['welter','Полусредний'],['light','Лёгкий'],['feather','Полулёгкий'],['bantam','Легчайший'],['fly','Наилегчайший'],['straw','Наилегчайший']];
+const clsOf=t=>{t=String(t||'').toLowerCase();for(const[k,v]of CLSM)if(t.includes(k))return v;return'Лёгкий'};
+const recR=(s,sp)=>{const q=String(s||'').split('-').map(Number);if(q.length<2||q.some(isNaN))return 68;const g=q.reduce((a,b)=>a+b,0);if(!g)return 68;const ppg=sp==='f'?(3*q[0]+(q[1]||0))/g:(2*q[0]+(q[2]||0))/g;return Math.max(52,Math.min(90,70+(ppg-(sp==='f'?1.35:1.1))*(sp==='f'?16:18)*Math.min(1,g/8)))};
+const recF=s=>{const q=String(s||'').split('-').map(Number);if(q.length<2||q.some(isNaN))return 75;const g=q.reduce((a,b)=>a+b,0);return g?60+q[0]/g*32:75};
+const recOf=c=>(c.records&&c.records[0]&&c.records[0].summary)||'';
+function mapTeam(tm,rec,sp){tm=tm||{};const nm=tm.displayName||tm.name||'Команда',k=nrm(nm),f=TIX[ALI[k]||k],logo=tm.logo||(tm.logos&&tm.logos[0]&&tm.logos[0].href)||'';
+ if(f)return{n:f.n,w:logo||f.w,r:f.r};return{n:nm.length>18&&tm.shortDisplayName?tm.shortDisplayName:nm,w:logo||nm,r:recR(rec,sp)}}
+const mkSm=()=>({g:[],pen:[],cor:[],yel:[],i1:0,i2:0,T:0,res:{h:0,a:0,w:'h',ot:0}});
+function stRU(e,now){const r=e.rs;if(r.state==='post')return{ph:'fin',fin:1,live:0,F:e.sm.Fe,t:0};
+ const brk=/END|BREAK|INTERMISSION/.test(r.name),dt=Math.min(120,(now-r.at)/1000),per=r.per||1;let rem=Math.max(0,Math.min(300,(r.clk||300)-(brk?0:dt)));if(brk)rem=0;
+ return{ph:brk?'brk':'p',live:1,rd:per,inr:300-rem,F:(per-1)*300+(300-rem),left:brk?60:rem,t:0}}
+function stR(e,now){const r=e.rs;if(r.void)return{ph:'fin',fin:1,live:0,void:1,per:0,gt:0,sc:r.sc};
+ if(r.state==='pre')return{ph:'pre',t:Math.max(0,(e.st-now)/1000),per:0,gt:0,sc:[0,0],live:0,fin:0};
+ if(e.sp==='u')return stRU(e,now);
+ const f=e.sp==='f',post=r.state==='post',brk=/HALFTIME|END_PERIOD|INTERMISSION|END_OF/.test(r.name),run=!brk&&!/DELAY|SUSPEND/.test(r.name),dt=Math.min(120,(now-r.at)/1000);let per=r.per||1,gt;
+ if(f){gt=(r.clk||0)+(run?dt:0);if(!r.clk&&!post){const el=Math.max(0,(now-e.st)/1000);gt=el<2800?el:Math.max(2700,el-900);per=el<2800?1:2}
+  if(per===1)gt=Math.min(gt,3000);else gt=Math.max(2700,Math.min(gt,5800));if(brk){per=1;gt=2700}if(post){per=2;gt=5400}}
+ else{const rem=Math.max(0,(r.clk||0)-(run?dt:0));if(per<=3)gt=(per-1)*1200+(1200-Math.min(1200,rem));else if(per===4)gt=3600+(300-Math.min(300,rem));else gt=3900;if(brk)gt=Math.min(per,3)*1200}
+ return{ph:post?'fin':brk?'brk':(!f&&per>=5)?'so':'p',per:post?(f?2:(r.per>3?4:3)):per,gt,brk:brk&&!post?1:0,fin:post?1:0,live:post?0:1,sc:r.sc,t:0}}
+function syncGoals(e){const st=stR(e,NOW),sm=e.sm,sc=st.sc,cnt=[0,0];sm.g.forEach(g=>cnt[g.s]++);
+ for(const s of[0,1]){while(cnt[s]<sc[s]){sm.g.push({s,p:e.fresh?1:Math.max(1,st.live?st.per:1),g:e.fresh?1:Math.floor(st.gt)});cnt[s]++}while(cnt[s]>sc[s]){let i=-1;sm.g.forEach((g,j)=>{if(g.s===s)i=j});sm.g.splice(i,1);cnt[s]--}}
+ sm.g.sort((x,y)=>x.p-y.p||x.g-y.g);e.fresh=0;const r=e.rs;
+ if(r.state==='post'){let h=r.sc[0],a=r.sc[1],ot=0;if(e.sp==='h'){ot=r.per>3?1:0;if(ot){if(r.ls[0].length>=3&&r.ls[1].length>=3){h=r.ls[0][0]+r.ls[0][1]+r.ls[0][2];a=r.ls[1][0]+r.ls[1][1]+r.ls[1][2]}else h=a=Math.min(h,a)}}sm.res={h,a,w:r.sc[0]>r.sc[1]?'h':'a',ot}}}
+function parseEv(k,x){const c=(x.competitions||[])[0];if(!c||!c.competitors)return 0;const sp=ES[k].indexOf('hockey')===0?'h':'f',lg=LG.find(z=>z.k===k),ho=c.competitors.find(z=>z.homeAway==='home'),aw=c.competitors.find(z=>z.homeAway==='away');if(!ho||!aw||!lg)return 0;
+ const s=c.status||x.status||{},ty=s.type||{},id='r.'+k+'.'+x.id,prev=RE[id]&&RE[id].rs;
+ const rs={state:ty.state||'pre',name:ty.name||'',per:+s.period||0,clk:+s.clock||0,at:NOW,det:ty.detail||'',sc:[+ho.score||0,+aw.score||0],ls:[(ho.linescores||[]).map(z=>+z.value||0),(aw.linescores||[]).map(z=>+z.value||0)],void:/POSTPONED|CANCEL|FORFEIT/.test(ty.name||'')};
+ let e=RE[id];if(!e)e=RE[id]={k:id,sp,L:lg,lk:k,real:1,fresh:1,st:Date.parse(x.date||c.date),h:mapTeam(ho.team,recOf(ho),sp),a:mapTeam(aw.team,recOf(aw),sp),sm:mkSm()};
+ e.st=Date.parse(x.date||c.date)||e.st;e.rs=rs;if(rs.state==='in')e.seenLive=1;if(rs.state==='post'&&!e.finAt)e.finAt=e.seenLive?NOW:0;e._ts=-1;e._sb=-1;syncGoals(e);return 1}
+function parseUfc(x){let n=0;const nm=x.shortName||x.name||'UFC',lg={k:'ufcR',sp:'u',n:'MMA. '+nm,cr:'Единоборства',ct:'MMA. '+nm,w:'Ultimate Fighting Championship',top:1};
+ (x.competitions||[]).forEach((c,i)=>{const cs=(c.competitors||[]).slice().sort((p,q)=>(p.order||0)-(q.order||0));if(cs.length<2)return;const s=c.status||{},ty=s.type||{},id='r.ufc.'+(c.id||x.id+'_'+i),cl=clsOf(c.type&&(c.type.text||c.type.abbreviation)||x.name),R=(c.format&&c.format.regulation&&c.format.regulation.periods)||3;
+  const mf=z=>{const a=z.athlete||{},nmm=a.displayName||a.fullName||'Боец',f=FIX[nrm(nmm)];return f?{n:f.n,w:(a.headshot&&a.headshot.href)||f.w,r:f.r,c:f.c}:{n:nmm,w:(a.headshot&&a.headshot.href)||nmm,r:recF(recOf(z)),c:cl}};
+  const rs={state:ty.state||'pre',name:ty.name||'',per:+s.period||0,clk:+s.clock||0,at:NOW,det:ty.detail||'',sc:[0,0],ls:[[],[]],void:/POSTPONED|CANCEL/.test(ty.name||'')};
+  let e=RE[id];if(!e){const A=mf(cs[0]),B=mf(cs[1]);e=RE[id]={k:id,sp:'u',L:lg,lk:'ufc',real:1,st:Date.parse(c.date||x.date),h:A,a:B,R,sub:'Рейтинговый бой. '+cl+' вес. '+R+(R===3?' раунда':' раундов'),sm:{win:-2,me:'?',rd:0,fin:0,endReal:0,Fe:R*300,T:0}};
+   e.fr=FIN[A.c||cl]-(R===5?.04:0);e.pA=1/(1+Math.exp(-(A.r-B.r)*.06))}
+  e.rs=rs;e.L=lg;e.st=Date.parse(c.date||x.date)||e.st;e._ts=-1;e._sb=-1;if(rs.state==='in')e.seenLive=1;
+  if(rs.state==='post'){const w=cs.findIndex(z=>z.winner===true),dec=/decision|dec\b/i.test(JSON.stringify(s)),per=rs.per||1,inr=Math.max(0,Math.min(300,300-(rs.clk||0)));e.sm={win:w,me:dec?'DEC':'KO',rd:per,fin:dec?0:1,endReal:0,Fe:dec?R*300:(per-1)*300+inr,T:0};if(!e.finAt)e.finAt=e.seenLive?NOW:0}
+  n++});return n}
+async function fetchLg(k){const rl=RL[k];try{const d=x=>new Date(NOW+x*864e5).toISOString().slice(0,10).replace(/-/g,'');const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+ES[k]+'/scoreboard?dates='+d(-1)+'-'+d(3)+'&limit=300');if(!r.ok)throw 0;const j=await r.json();let n=0;
+ (j.events||[]).forEach(x=>{try{n+=k==='ufc'?parseUfc(x):parseEv(k,x)}catch(e){}});rl.ok=1;rl.n=n;rl.at=NOW;rl.err=0}catch(e){rl.err=(rl.err||0)+1;if(rl.err>2&&!rl.at)rl.ok=0}}
+function realTick(){if(!U||U.st.real===0||reBusy>=3)return;for(const k of Object.keys(ES)){const rl=RL[k]||(RL[k]={t:0,ok:0,n:0,err:0});const live=Object.values(RE).some(e=>e.lk===k&&e.rs&&e.rs.state==='in'),iv=live?15000:(rl.ok?90000:40000);
+ if(NOW-rl.t>=iv&&!rl.busy){rl.busy=1;rl.t=NOW;reBusy++;fetchLg(k).then(()=>{},()=>{}).then(()=>{rl.busy=0;reBusy--;if(page==='home'||page==='sport')renderList()});if(reBusy>=3)break}}}
+const useReal=k=>{const sk=String(k).indexOf('ufc')===0?'ufc':k;return(!U||U.st.real!==0)&&ES[sk]&&RL[sk]&&RL[sk].ok&&RL[sk].at};
+function infoH(){if(U.st.real===0)return'<div class="inf">Режим: симуляция матчей</div>';let ok=0,at=0;for(const k in ES){const r=RL[k];if(r&&r.ok){ok++;at=Math.max(at,r.at||0)}}
+ return`<div class="inf">${ok?'Реальные матчи: ESPN API · обновлено '+hm(at)+':'+pad(md(at).S)+' МСК · лиг: '+ok+' · симуляция: КХЛ, АХЛ, SHL, Лиига':'Загрузка реальных матчей… Пока показана симуляция'}</div>`}
+function serE(e){const o={};for(const k in e){if(k==='_s'||k==='_ss'||k==='_ts'||k==='_sb')continue;o[k]=e[k]}if(e.sp!=='u')o.L=undefined;return o}
+function reSave(){try{const ks=new Set();H.forEach(b=>{if(b.status==='pending')b.items.forEach(i=>{if(i.ek&&String(i.ek).indexOf('r.')===0)ks.add(i.ek)})});const o={};ks.forEach(k=>{if(RE[k])o[k]=serE(RE[k])});localStorage.setItem('betapp_re',JSON.stringify(o))}catch(e){}}
+try{const o=JSON.parse(localStorage.getItem('betapp_re')||'{}');Object.keys(o).forEach(k=>{const e=o[k];if(!RE[k]){if(e.sp!=='u')e.L=LG.find(z=>z.k===e.lk);if(e.L){e._ts=-1;e._sb=-1;RE[k]=e}}})}catch(e){}
+
 setInterval(tick,1000);
-fetchRealEvents().then(events=>{
- REAL_EVENTS=events;
- if(page==='home'||page==='sport')renderList();
-}).catch(()=>{
- if(page==='home'||page==='sport')renderList();
-});
 if(cur&&DB[cur])login(cur);
+realTick();
 </script>
 </body>
 </html>
