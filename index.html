@@ -5,46 +5,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#15181e">
 <title>BETAPP</title>
 <style>
 :root{--hd:#15181e;--bg:#f2f4f7;--ln:#e0e4e9;--tx:#1b1f24;--mu:#7e8791;--ac:#e8002d;--sel:#232a36;--gr:#2f8f2f;--btn:#eceff3}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",Roboto,sans-serif}
 body{background:var(--bg);color:var(--tx);font-size:14px;padding-bottom:calc(66px + env(safe-area-inset-bottom));overflow-x:hidden}
-input,button{font:inherit}
+input,button,textarea{font:inherit;color:inherit}
+.ic{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:middle}
 #auth{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:24px;background:var(--hd)}
 .alogo{font-size:44px;font-weight:900;font-style:italic;color:#fff;letter-spacing:-2px}.alogo i{color:var(--ac)}.asub{color:#9aa1ab;margin:4px 0 24px}
 .abox{width:100%;max-width:380px;background:#fff;border-radius:16px;padding:22px}
-.atabs{display:flex;background:var(--btn);border-radius:10px;padding:3px;margin-bottom:14px}.atabs button{flex:1;padding:10px;border:0;border-radius:8px;background:none;font-weight:700;color:var(--mu)}.atabs button.on{background:#fff;color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.atabs{display:flex;background:var(--btn);border-radius:10px;padding:3px;margin-bottom:14px}.atabs button{flex:1;padding:10px;border:0;border-radius:8px;background:none;font-weight:700;color:var(--mu);cursor:pointer}.atabs button.on{background:#fff;color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .abox input{width:100%;padding:13px;margin-bottom:10px;border:1.5px solid var(--ln);border-radius:10px;background:var(--btn);outline:none}
 .amsg{display:none;padding:10px;border-radius:8px;margin-bottom:10px;text-align:center;font-weight:600}.amsg.show{display:block}.amsg.er{background:#fde3e3;color:#b3202e}.amsg.ok{background:#dff3e3;color:#1f7a34}
-.btn{display:block;width:100%;padding:14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:15px;font-weight:700;cursor:pointer}.btn.g{background:var(--gr)}.btn.s{background:var(--btn);color:var(--tx)}.btn:disabled{opacity:.45}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:15px;font-weight:700;cursor:pointer}.btn.red{background:#e8002d}.btn.s{background:var(--btn);color:var(--tx)}.btn.g{background:var(--gr)}.btn:disabled{opacity:.45;cursor:default}.btn:active{opacity:.85}
+.pl{display:inline-flex}
 .top{position:sticky;top:0;z-index:60;background:var(--hd);color:#fff;padding-top:env(safe-area-inset-top)}
 .t1{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px}
 .logo{font-size:25px;font-weight:900;font-style:italic;letter-spacing:-1.5px}.logo i{color:var(--ac)}
 .hr{display:flex;align-items:center;gap:8px}
-.pill{display:flex;align-items:center;gap:9px;height:34px;background:#2b2f37;border-radius:18px;padding:0 14px 0 4px;font-weight:700;cursor:pointer}
-.plus{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1}
-.fbp{background:#e08a2c;border-radius:18px;height:34px;padding:0 12px;display:flex;align-items:center;font-weight:700;font-size:13px;cursor:pointer}
-.ava{width:34px;height:34px;border-radius:50%;background:#3b4048;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.pill{display:flex;align-items:center;gap:9px;height:34px;background:#2b2f37;border-radius:18px;padding:0 14px 0 4px;font-weight:700;font-size:15px;cursor:pointer}
+.plus{width:26px;height:26px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center}.plus .ic{stroke-width:3}
+.fbp{background:#e08a2c;border-radius:18px;height:34px;padding:0 12px;display:flex;align-items:center;gap:5px;font-weight:700;font-size:13px;cursor:pointer}
+.ava{width:34px;height:34px;border-radius:50%;background:#3b4048;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;color:#fff}.ava .ic{fill:currentColor;stroke:none}
 .ava::after{content:'';position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#f4b400;border:2px solid var(--hd)}
 .tabs{display:flex;align-items:center;gap:20px;padding:0 16px;height:46px;border-top:1px solid #272b33}
 .tab{height:100%;display:flex;align-items:center;font-size:15px;font-weight:600;color:#8d949e;position:relative;cursor:pointer}.tab.on{color:#fff}.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--ac)}
-.sp1{flex:1}.ib{width:38px;height:28px;border-radius:14px;background:#2b2f37;display:flex;align-items:center;justify-content:center;font-size:14px;margin-left:6px;cursor:pointer}.ib.on{background:#555b66}
+.sp1{flex:1}.ib{width:38px;height:28px;border-radius:14px;background:#2b2f37;display:flex;align-items:center;justify-content:center;margin-left:6px;cursor:pointer;color:#e5e8ec}.ib.on{background:#555b66}.ib.on .ic{fill:#fff}
 .sports{display:flex;border-top:1px solid #272b33;overflow-x:auto;scrollbar-width:none}.sports::-webkit-scrollbar{display:none}
-.sp{flex:1 0 auto;min-width:64px;text-align:center;padding:8px 6px 6px;font-size:11px;font-weight:600;color:#8d949e;cursor:pointer}.sp .e{display:block;font-size:19px;filter:grayscale(1);opacity:.55;margin-bottom:2px}.sp.on{color:#fff}.sp.on .e{filter:none;opacity:1}
-.hh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px;font-size:24px;font-weight:800}
+.sp{flex:1 0 auto;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px 7px;font-size:11px;font-weight:600;color:#8d949e;cursor:pointer}
+.sports .ic{fill:currentColor;fill-opacity:.3}.sp.on{color:#fff}.sp.on.sf .ic{color:#5bb04a;fill-opacity:.5}.sp.on .ic{fill-opacity:.45}
+.promo{display:flex;gap:10px;overflow-x:auto;padding:12px 14px 4px;scrollbar-width:none}.promo>div{flex:0 0 78%;border-radius:14px;padding:16px;color:#fff;min-height:96px;cursor:pointer;font-size:13px}.promo b{display:block;font-size:19px;margin-bottom:5px}
+.hh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;font-size:24px;font-weight:800}
 .lvb{font-size:14px;font-weight:600;border:1px solid var(--ln);background:#fff;padding:9px 14px;border-radius:12px;cursor:pointer}.lvb::before{content:'●';color:#f08a96;margin-right:7px}
-.hsp{display:flex;padding:0 6px 10px}.hsp .sp{flex:1;color:#8a929c}.hsp .sp.on{color:var(--tx)}
+.sub3{padding:12px 16px 6px;font-weight:800;font-size:15px}
 .lgh{display:flex;align-items:center;height:34px;border-bottom:1px solid var(--ln);cursor:pointer}.lgh.tf{background:#eaf1e6}.lgh.th{background:#e3e9ee}.lgh.tu{background:#f1e6e7}
-.lgh .ch{width:24px;text-align:center;color:#7e8791;font-size:13px;border-right:1px solid var(--ln);height:100%;display:flex;align-items:center;justify-content:center;transition:transform .2s}.lgh.cl .ch{transform:rotate(-90deg)}
-.lgh .nm{flex:1;display:flex;align-items:center;gap:8px;padding:0 10px;font-weight:600;font-size:13px;min-width:0}.nm span.t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lgh .ch{width:24px;color:#7e8791;border-right:1px solid var(--ln);height:100%;display:flex;align-items:center;justify-content:center;transition:transform .2s}.lgh.cl .ch{transform:rotate(-90deg)}
+.lgh .nm{flex:1;display:flex;align-items:center;gap:8px;padding:0 10px;font-weight:600;font-size:13px;min-width:0}.nm .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .cnt{margin-right:8px;background:rgba(0,0,0,.06);border-radius:6px;padding:2px 9px;font-size:12px;color:#6b747e}
 .mr{display:flex;background:#fff;border-bottom:1px solid var(--ln);min-height:64px;cursor:pointer}
-.mr .cv{width:24px;display:flex;align-items:center;justify-content:center;color:#a2aab3;font-size:17px;flex:none}
+.mr .cv{width:24px;display:flex;align-items:center;justify-content:center;color:#a2aab3;flex:none}
 .mr .tm{flex:1;min-width:0;padding:8px 6px;display:flex;flex-direction:column;justify-content:center}
 .tn{display:flex;align-items:center;gap:6px;font-size:14.5px;line-height:21px;font-weight:500}.tn span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.tn b{color:var(--ac);font-weight:700;padding-right:6px}
 .ti{font-size:12px;color:var(--mu);margin-top:2px;display:flex;align-items:center;gap:5px}.ti.lv{color:var(--gr);font-weight:700}
-.clk{width:13px;height:13px;border:2px solid var(--gr);border-radius:50%;display:inline-block;position:relative;flex:none}.clk::before{content:'';position:absolute;left:4px;top:1px;width:2px;height:5px;background:var(--gr)}.clk.w{border-color:#fff}.clk.w::before{background:#fff}
+.clk{width:13px;height:13px;border:2px solid var(--gr);border-radius:50%;display:inline-block;position:relative;flex:none}.clk::before{content:'';position:absolute;left:4px;top:1px;width:2px;height:5px;background:var(--gr)}
 .pz{width:13px;height:13px;border:2px solid #8a929c;border-radius:50%;display:inline-block;flex:none}
 .ods{display:flex;flex-direction:column;flex:none}.ol,.oc{display:flex}.ol{height:20px}.ol span{width:58px;text-align:center;font-size:12px;color:#7e8791;line-height:20px}
 .mr.tf .ol{background:#eaf1e6}.mr.th .ol{background:#e3e9ee}.mr.tu .ol{background:#f1e6e7}
@@ -54,68 +59,94 @@ input,button{font:inherit}
 .no{text-align:center;color:var(--mu);padding:40px 20px;line-height:1.5}
 .full{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto;background:var(--bg);z-index:100}.full.on{display:flex}
 .mhead{display:flex;align-items:center;background:var(--hd);color:#fff;height:48px;border-top:1px solid #272b33}
-.bk{width:48px;font-size:28px;text-align:center;cursor:pointer;border-right:1px solid #272b33;height:100%;display:flex;align-items:center;justify-content:center}
+.bk{width:48px;text-align:center;cursor:pointer;border-right:1px solid #272b33;height:100%;display:flex;align-items:center;justify-content:center}
 .bt0{flex:1;padding:0 12px;font-size:12px;color:#8d949e;min-width:0}.bt0 b{display:block;font-size:14px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nx{width:40px;height:34px;margin-right:12px;border-radius:8px;background:#2b2f37;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ban{color:#fff;padding:8px 14px 12px}.ban.f{background:#41622b}.ban.h{background:#506270}.ban.u{background:linear-gradient(#6a3d42,#864a4e)}.ban.d{filter:saturate(.75)}
 .bst{display:flex;gap:18px;font-size:13px;font-weight:600;margin:-8px -14px 6px;padding:0 14px;background:rgba(0,0,0,.14);height:34px;align-items:center}.bst span{opacity:.65;cursor:pointer;height:100%;display:flex;align-items:center;position:relative}.bst span.on{opacity:1}.bst span.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:#fff;border-radius:3px 3px 0 0}
-.btp{display:flex;justify-content:space-between;align-items:center;font-size:13px;height:26px}.btp .r{display:flex;gap:14px;align-items:center;font-size:17px}.btp .cols{display:flex;gap:0;font-size:12px;opacity:.8}.btp .cols span{width:24px;text-align:center}
+.btp{display:flex;justify-content:space-between;align-items:center;font-size:13px;height:28px}.btp .r{display:flex;gap:14px;align-items:center}.btp .r>span{cursor:pointer;display:flex}.btp .r>span.on .ic{color:#ffd24a;fill:#ffd24a}.ck{display:flex;align-items:center;gap:5px;font-weight:600}.btp .cols{display:flex;font-size:12px;opacity:.8;cursor:default}.btp .cols span{width:24px;text-align:center}
 .br{display:flex;align-items:center;gap:10px;padding:7px 0}.br+.br{border-top:1px solid rgba(255,255,255,.22)}
-.lgo{border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;overflow:hidden}.lgo img{width:100%;height:100%;object-fit:contain}.lgo.p img{object-fit:cover;object-position:50% 18%}.lgo.q{border-radius:4px}
+.lgo{border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;overflow:hidden}.lgo img{width:100%;height:100%;object-fit:contain}.lgo.p img{object-fit:cover;object-position:50% 18%}.lgo.q{border-radius:4px;background:transparent}
 .br .nm{flex:1;font-size:16px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fm{display:flex;gap:4px}.fb{width:22px;height:22px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}.fb.w{background:#69a51b}.fb.l{background:#d65a5a}.fb.d{background:#d9972a}.fb.q{background:#74828c;color:#cfd6dc}
 .scn{display:flex;align-items:center}.scn b{font-size:19px;width:30px;text-align:right;padding-right:10px;border-right:1px solid rgba(255,255,255,.25)}.scn span{width:24px;text-align:center;font-size:15px;opacity:.85}
+.bres{font-size:13px;padding:6px 0 0}
 .mt{display:flex;align-items:center;overflow-x:auto;background:#fff;border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5;scrollbar-width:none}.mt::-webkit-scrollbar{display:none}
-.mt .ic{flex:0 0 auto;width:46px;text-align:center;font-size:17px;cursor:pointer;padding:13px 0;filter:grayscale(1);opacity:.6}.mt .ic.on{opacity:1}
-.mt .mtb{flex:0 0 auto;padding:14px 13px;font-size:13.5px;font-weight:600;color:var(--mu);cursor:pointer;position:relative;white-space:nowrap}.mt .mtb.on{color:var(--tx)}.mt .mtb.on::after{content:'';position:absolute;left:8px;right:8px;bottom:0;height:4px;border-radius:4px 4px 0 0;background:var(--tc)}
+.ic2{flex:0 0 auto;width:44px;text-align:center;cursor:pointer;padding:12px 0;color:#7e8791;display:flex;justify-content:center}.ic2.on{color:var(--tx)}.ic2.on .ic{fill:currentColor;fill-opacity:.25}
+.mtb{flex:0 0 auto;padding:14px 13px;font-size:13.5px;font-weight:600;color:var(--mu);cursor:pointer;position:relative;white-space:nowrap}.mtb.on{color:var(--tx)}.mtb.on::after{content:'';position:absolute;left:8px;right:8px;bottom:0;height:4px;border-radius:4px 4px 0 0;background:var(--tc)}
 .msr{padding:8px 12px;background:#fff}.msr input{width:100%;padding:10px;border:1.5px solid var(--ln);border-radius:8px;background:var(--btn);outline:none}
-.mk{margin-top:2px}.mkh{display:flex;align-items:center;gap:10px;padding:13px 14px 9px;cursor:pointer}.mkh .tt{flex:1;font-size:13.5px;font-weight:700}.mkh .cv2{color:var(--mu);font-size:13px;transition:transform .2s}.mk.cl .cv2{transform:rotate(180deg)}
+.mk{margin-top:2px}.mkh{display:flex;align-items:center;gap:10px;padding:13px 14px 9px;cursor:pointer}.mkh .tt{flex:1;font-size:13.5px;font-weight:700}.cv2{color:var(--mu);transition:transform .2s;display:flex}.mk.cl .cv2{transform:rotate(180deg)}
+.bmk{color:#8a929c;display:flex}.bmk.on{color:#f5b400}.bmk.on .ic{fill:#f5b400}
 .mkb{margin:0 10px 6px;background:#fff;border-radius:14px;padding:9px}.mk.cl .mkb{display:none}
 .mg{display:grid;gap:5px;margin-bottom:5px}.mg:last-child{margin-bottom:0}
 .mb{display:flex;justify-content:space-between;align-items:center;background:var(--btn);border-radius:7px;padding:0 10px;height:38px;font-size:13.5px;cursor:pointer;gap:6px;min-width:0;transition:background .3s}
 .mb span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.mb b{font-weight:700;font-size:14.5px;white-space:nowrap}
-.mb.sel{background:var(--sel);color:#fff}.mb.lk{opacity:.5;cursor:default}.mb.fu{background:#dcf0df}.mb.fd{background:#f6dcdc}
+.mb.sel{background:var(--sel);color:#fff}.mb.lk{opacity:.55;cursor:default}.mb.fu{background:#dcf0df}.mb.fd{background:#f6dcdc}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
 .cp{flex:0 0 auto;min-width:46px;height:32px;display:flex;align-items:center;justify-content:center;background:#eef0f3;border-radius:6px;font-size:14px;font-weight:600;border:1.5px solid transparent;cursor:pointer;color:#5c6670}.cp.on{border-color:#1f3fb0;color:#1f3fb0;background:#fff}
 .seg{display:flex;background:var(--btn);border-radius:8px;padding:3px;margin-bottom:8px}.seg div{flex:1;text-align:center;padding:8px;border-radius:6px;font-weight:700;font-size:13.5px;color:#6b747e;cursor:pointer}.seg div.on{background:#fff;color:#1f3fb0;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .tr{display:grid;grid-template-columns:1fr 100px 100px;gap:5px;align-items:center;padding:3px 0}.tr>span{font-size:13.5px}
-.sub{font-size:11px;font-weight:700;color:#6b747e;margin:4px 0 4px;text-transform:uppercase}.sub2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.sub{font-size:11px;font-weight:700;color:#6b747e;margin:4px 0;text-transform:uppercase}.sub2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .st1{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin:10px 0 5px}.stb{height:5px;background:#e3e7ec;border-radius:3px;display:flex;overflow:hidden}.stb i{background:var(--ac)}
 .ev{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:13.5px}.ev:last-child{border:0}.ev b{width:54px;color:var(--mu);font-weight:600}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--ln);display:flex;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
-nav a{flex:1;text-align:center;font-size:11px;font-weight:600;color:#7e8791;position:relative;cursor:pointer}nav a .e{display:block;font-size:21px;filter:grayscale(1);opacity:.6}nav a.on{color:var(--tx);font-weight:800}nav a.on .e{opacity:1;filter:grayscale(1) brightness(.2)}
-.bdg{position:absolute;top:-3px;left:calc(50% + 4px);background:var(--ac);color:#fff;min-width:19px;height:19px;border-radius:10px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;padding:0 3px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--ln);display:flex;padding:7px 0 calc(7px + env(safe-area-inset-bottom))}
+nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:#8b94a0;position:relative;cursor:pointer}nav a .ic{fill:currentColor;fill-opacity:.28}
+nav a.on{color:var(--tx);font-weight:800}nav a.on .ic{fill-opacity:.55}
+.bdg{position:absolute;top:-4px;left:calc(50% + 4px);background:var(--ac);color:#fff;min-width:20px;height:20px;border-radius:10px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;padding:0 4px}
 #fab{position:fixed;right:14px;bottom:calc(80px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:#fff;box-shadow:0 3px 14px rgba(0,0,0,.22);display:none;align-items:center;justify-content:center;z-index:65;cursor:pointer}
-#slip{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:none;align-items:flex-end}#slip.on{display:flex}
-.sheet{background:#fff;width:100%;max-height:92vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);animation:up .22s}@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
-.hnd{width:48px;height:4px;border-radius:2px;background:#c9ced6;margin:10px auto 0}
-.sh{display:flex;align-items:center;gap:18px;padding:12px 18px;border-bottom:1px solid var(--ln);font-size:16px;font-weight:700}.sh span{color:#8a929c}.sh span.on{color:var(--tx);position:relative}.sh span.on::after{content:'';position:absolute;left:0;right:0;bottom:-13px;height:3px;background:var(--tx);border-radius:2px}.sh .x2{margin-left:auto;background:var(--btn);width:34px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#444;cursor:pointer}
-.sb2{overflow-y:auto;flex:1;padding:12px 14px 0}
-.si{background:#f2f4f7;border-radius:12px;padding:10px 12px;margin-bottom:9px;position:relative}.si .m1{display:flex;align-items:center;gap:7px;color:#7e8791;font-size:12px}.si .m2{font-size:13.5px;margin:3px 0 4px}.si .m2 em{font-style:normal;border:1px solid #9aa5d8;color:#26379b;border-radius:4px;padding:0 5px;margin-right:6px;font-size:12px;background:#fff}.si .m3{display:flex;justify-content:space-between;font-weight:800;font-size:16px}.si .x{position:absolute;right:10px;top:8px;font-size:20px;color:#9aa1ab;cursor:pointer}.si.off{opacity:.5}
-.sf{padding:6px 14px 14px}
-.srow{display:flex;gap:8px;margin-bottom:10px;align-items:center}.sel2{flex:1;border:1px solid var(--ln);border-radius:9px;padding:11px 12px;font-weight:700;background:#fff}.tot{border:1px solid var(--ln);border-radius:9px;padding:11px 12px;font-weight:800;color:#1f3fb0;white-space:nowrap}
-.inb{display:flex;border:1.5px solid var(--ln);border-radius:10px;overflow:hidden;margin-bottom:6px}.inb.er{border-color:#e08a96}.inb .l{flex:1;display:flex;align-items:center;padding:0 12px;gap:8px;font-size:22px;font-weight:800}.inb input{width:90px;border:0;outline:none;font-size:22px;font-weight:800;background:none}.inb .pot{color:#8a929c;font-weight:500;font-size:20px}.inb .r{background:var(--btn);padding:8px 12px;font-size:12px;color:#6b747e;min-width:100px;border-left:1px solid var(--ln)}.inb .r b{display:block;font-size:16px;color:var(--tx)}
+#sheet{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none;align-items:flex-end}#sheet.on{display:flex}
+.sheet{background:#f3f5f8;width:100%;max-width:640px;margin:0 auto;max-height:calc(100% - 54px);border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);animation:up .22s;overflow:hidden}.sheet.tall{height:calc(100% - 54px)}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.hnd{width:48px;height:4px;border-radius:2px;background:#c3c9d1;margin:9px auto 0;background-clip:padding-box;flex:none}
+.sheet>.hnd{background:#a8afb9}
+.sh,.sh2{display:flex;align-items:center;gap:18px;padding:12px 16px;background:#fff;font-size:16px;font-weight:700;border-bottom:1px solid var(--ln);flex:none}
+.sheet .hnd{background:#a8afb9}
+.sh>.ic{color:#4b5260;fill:currentColor;stroke:none}.sh span{color:#8a929c;cursor:pointer}.sh span.on{color:var(--tx);position:relative}.sh span.on::after{content:'';position:absolute;left:0;right:0;bottom:-13px;height:3px;background:var(--tx);border-radius:2px}
+.x2{margin-left:auto;background:var(--btn);width:38px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#444;cursor:pointer}
+.sh2.c{justify-content:center;position:relative}.sh2.c .x2{position:absolute;right:16px;top:14px}.tt2c{text-align:center;font-size:19px;font-weight:800}.tt2c small{display:flex;align-items:center;justify-content:center;gap:5px;color:#6b7a90;font-weight:500;font-size:13px;margin-top:2px}.tt2c small span{cursor:pointer;display:flex}
+.bk2{cursor:pointer;display:flex}.tt2{font-size:18px;font-weight:800}
+.sb2{overflow-y:auto;flex:1;padding:12px 12px 6px;-webkit-overflow-scrolling:touch}
+.sq{display:flex;align-items:center;gap:8px;background:#dfe5ee;border-radius:10px;padding:0 12px;height:40px;margin-bottom:6px;color:#6b747e}.sq input{flex:1;border:0;background:none;outline:none;font-size:16px}
+.si{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:9px;position:relative}.si .m1{display:flex;align-items:center;gap:7px;color:#7e8791;font-size:12px}.si .m2{font-size:13.5px;margin:3px 0 4px}.si .m2 em{font-style:normal;border:1px solid #9aa5d8;color:#26379b;border-radius:4px;padding:0 5px;margin-right:6px;font-size:12px;background:#fff}.si .m3{display:flex;justify-content:space-between;font-weight:800;font-size:16px}.si .x{position:absolute;right:10px;top:8px;color:#9aa1ab;cursor:pointer}.si.off{opacity:.5}
+.sf{padding:8px 14px 14px;background:#fff;border-top:1px solid var(--ln)}
+.srow{display:flex;gap:8px;margin-bottom:10px;align-items:center}.sel2{flex:0 0 auto;display:flex;align-items:center;gap:8px;border:1px solid var(--ln);border-radius:9px;padding:11px 14px;font-weight:700;background:#fff;cursor:pointer}.tot{margin-left:auto;border:1px solid var(--ln);border-radius:9px;padding:11px 14px;font-weight:800;color:#1f3fb0;white-space:nowrap}
+.inb{display:flex;border:1.5px solid var(--ln);border-radius:10px;overflow:hidden;margin-bottom:6px;background:#fff}.inb.er{border-color:#e8a0aa}.inb .l{flex:1;display:flex;align-items:center;padding:0 12px;gap:8px;font-size:22px;font-weight:800;min-width:0}.inb input{width:90px;border:0;outline:none;font-size:22px;font-weight:800;background:none}.inb .pot{color:#8a929c;font-weight:500;font-size:20px}.inb .r{background:var(--btn);padding:8px 12px;font-size:12px;color:#6b747e;min-width:100px;border-left:1px solid var(--ln)}.inb .r b{display:block;font-size:16px;color:var(--tx)}
 .err{color:#d6455a;font-size:13px;margin-bottom:8px}
-.qr{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.qb{flex:0 0 auto;min-width:46px;text-align:center;padding:10px 8px;border:1px solid var(--ln);border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;background:#fff}
+.qr{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.qb{flex:0 0 auto;min-width:48px;text-align:center;padding:8px;border:1px solid var(--ln);border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;background:#fff;line-height:1.1}.qb small{display:block;font-size:10px;color:#8a929c;font-weight:500}
 .fbt{border:1.5px solid var(--ln);border-radius:9px;padding:9px;text-align:center;font-weight:700;font-size:13px;margin-bottom:10px;cursor:pointer}.fbt.on{border-color:var(--gr);color:var(--gr)}
-.pc{background:#fff;margin:10px 12px;border-radius:14px;padding:14px}.pc h3{font-size:15px;margin-bottom:8px}.pr{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--ln)}.pr:last-child{border:0}.pr span:first-child{color:var(--mu)}
-.hb{background:#fff;border-radius:12px;padding:12px;margin:8px 12px}.hbt{display:flex;justify-content:space-between;font-weight:800;margin-bottom:6px}.bi{padding:6px 0;border-top:1px solid var(--ln);font-size:13px}.bl{color:var(--mu);font-size:12px}.hbf{margin-top:6px;color:var(--mu);font-size:12px}
-.stx.win{color:var(--gr)}.stx.lose{color:var(--ac)}.stx.pending{color:#d98a00}.stx.return,.stx.cashout{color:#1f3fb0}
-.cob{margin-top:8px;background:#e08a2c;color:#fff;text-align:center;padding:9px;border-radius:9px;font-weight:800;cursor:pointer}
-.sri{padding:12px 16px;border-bottom:1px solid var(--ln);background:#fff;cursor:pointer}.sri small{color:var(--mu);display:block}
-.gh{background:var(--hd);color:#fff;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;position:sticky;top:0;z-index:5}.gh input{flex:1;padding:10px;border-radius:8px;border:0;outline:none}.gh span{cursor:pointer;font-size:22px}
-#res{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}#res.on{display:flex}.rb{background:#fff;border-radius:18px;padding:28px 22px;max-width:320px;width:100%;text-align:center}.rb .e{font-size:54px}.rb .a{font-size:38px;font-weight:900;color:var(--ac);margin:12px 0}
-#toast{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-140px);background:var(--gr);color:#fff;padding:11px 20px;border-radius:12px;font-weight:700;z-index:400;transition:transform .3s;max-width:90%;text-align:center;font-size:13.5px;box-shadow:0 4px 16px rgba(0,0,0,.25)}#toast.on{transform:translateX(-50%) translateY(0)}#toast.er{background:var(--ac)}
+.pc{background:#fff;margin:0 0 10px;border-radius:14px;padding:14px}.pc h3{font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px}.mu2{color:var(--mu);font-size:13px;line-height:1.45}.pc .btn{margin-top:10px}
+.pr{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:14px}.pr:last-child{border:0}.pr>span:first-child{color:var(--mu)}
+.gi{width:100%;padding:12px;border:1.5px solid var(--ln);border-radius:10px;background:var(--btn);outline:none;margin:6px 0;resize:none}
+.tg{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--ln);font-size:14px;gap:10px}.tg:last-child{border:0}
+.sw{width:46px;height:26px;border-radius:13px;background:#c4cad3;position:relative;flex:none;cursor:pointer;transition:background .2s}.sw::after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on{background:var(--gr)}.sw.on::after{transform:translateX(20px)}
+.pi{display:flex;align-items:center;gap:16px;padding:0 6px;height:58px;font-size:17px;font-weight:500;cursor:pointer}.pi .ic{fill:#3b4150;stroke:#3b4150;fill-opacity:1;stroke-width:1.2}.pi>span{flex:1}.pi .cv3{margin-left:auto;stroke:#9aa1ab;fill:none;stroke-width:2.2}
+.bdg2{background:var(--ac);color:#fff;border-radius:10px;min-width:20px;height:20px;padding:0 6px;font-size:12px;display:flex;align-items:center;justify-content:center}
+.balc{background:#fff;border-radius:14px;padding:14px 14px 16px;margin-bottom:14px;position:relative}.balc small{color:#6b7a90;font-size:14px}.bv{font-size:34px;font-weight:800;margin:2px 0 12px}.eye{position:absolute;right:14px;top:14px;color:#6b7a90;cursor:pointer;display:flex}.balc .btn{padding:16px}
+.hr2{height:1px;background:#d8dee8;margin:8px 6px}
+.chips2{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.cp2{padding:8px 14px;border-radius:18px;background:#fff;border:1px solid var(--ln);font-weight:600;font-size:13px;cursor:pointer;color:#5c6670}.cp2.on{background:var(--sel);color:#fff;border-color:var(--sel)}
+.rqi{padding:10px 0;border-bottom:1px solid var(--ln);font-size:14px}.rqi:last-child{border:0}.rqi b{color:var(--mu);font-size:12px;font-weight:600;display:block}.rsp{color:#1f3fb0;margin-top:4px;font-size:13px}.lnk{color:#1f3fb0;font-weight:700;cursor:pointer;font-size:13px}
+.bd{font-size:11px;font-weight:700;letter-spacing:.8px;color:#6b747e;margin:14px 4px 8px}
+.bc{background:#fff;border-radius:14px;margin:0 0 12px;overflow:hidden}
+.bch{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid var(--ln)}.bb{width:34px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none;margin-top:2px}.bb .ic{stroke-width:3}.bb.l{background:#d9534f}.bb.w{background:#3f9f4a}.bb.p{background:#8c96a0}.bb.r{background:#5b7bd6}.bb.c{background:#e08a2c}
+.bct{font-size:18px;font-weight:800}.bct small{color:#8a929c;font-weight:500;font-size:15px}.bcn{font-size:12.5px;color:#6b7a90;display:flex;align-items:center;gap:5px;margin-top:2px}.bhelp{margin-left:auto;color:#1f3a8a;cursor:pointer;display:flex}
+.bl{display:flex;gap:10px;padding:0 0 0 14px;position:relative}.bl+.bl .blm{border-top:1px solid var(--ln)}.bl .gi{margin-top:12px;color:#8aa0b3;fill:currentColor;fill-opacity:.4}.blm{flex:1;padding:10px 20px 10px 0;margin-right:0}
+.bl1{font-size:13px;color:#6b7a90}.bl1 .sc{font-weight:800}.sc.w{color:#3f9f4a}.sc.l{color:#d9534f}.bl2{font-size:15px;margin:2px 0 6px}.bl3{display:flex;justify-content:space-between;font-size:18px;font-weight:800;gap:8px}
+.bar{position:absolute;right:0;top:12px;bottom:12px;width:7px;border-radius:4px 0 0 4px;background:#cfd5dc}.bar.w{background:#86c76f}.bar.l{background:#e19a9a}.bar.v{background:#9db3d6}
+.bcf{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-top:1px solid var(--ln);font-size:18px;font-weight:700;color:#6b7a90}.bcf>span:first-child{display:flex;align-items:center;gap:8px}.bcf .bco{color:var(--tx);font-weight:800}.bcf small{font-size:12px;color:#6b7a90;font-weight:600}.bco em{font-style:normal;background:#e08a2c;color:#fff;border-radius:8px;padding:4px 8px;font-size:12px;margin-right:6px;cursor:pointer}
+#res{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}#res.on{display:flex}.rb{background:#fff;border-radius:18px;padding:26px 22px;max-width:340px;width:100%;text-align:center}.rb .e{font-size:54px}.rb .a{font-size:38px;font-weight:900;color:var(--ac);margin:12px 0}
+#toast{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-160px);background:var(--gr);color:#fff;padding:11px 20px;border-radius:12px;font-weight:700;z-index:400;transition:transform .3s;max-width:90%;text-align:center;font-size:13.5px;box-shadow:0 4px 16px rgba(0,0,0,.25)}#toast.on{transform:translateX(-50%) translateY(0)}#toast.er{background:var(--ac)}
+.sri{padding:12px 16px;border-bottom:1px solid var(--ln);background:#fff;cursor:pointer}.sri small{color:var(--mu);display:block;margin-top:2px}
+.gh{background:var(--hd);color:#fff;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;position:sticky;top:0;z-index:5}.gh input{flex:1;padding:10px;border-radius:8px;border:0;outline:none;color:#111}.gh span{cursor:pointer;display:flex}
 ::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
 <body>
 <div id="auth"><div class="alogo">BET<i>APP</i></div><div class="asub">Ставки на спорт • Live</div>
 <div class="abox"><div class="atabs"><button id="tL" class="on" data-act="am" data-v="login">Вход</button><button id="tR" data-act="am" data-v="reg">Регистрация</button></div><div id="amsg" class="amsg"></div>
-<input id="li" placeholder="Логин" autocomplete="username"><input id="pi" type="password" placeholder="Пароль"><input id="pi2" type="password" placeholder="Повтор пароля" style="display:none"><button class="btn" id="sb" data-act="submit">Войти</button></div></div>
+<input id="li" placeholder="Логин" autocomplete="username"><input id="pi" type="password" placeholder="Пароль" autocomplete="current-password"><input id="pi2" type="password" placeholder="Повтор пароля" style="display:none"><button class="btn" id="sb" data-act="submit">Войти</button></div></div>
 <div id="app" style="display:none"><div class="top" id="top"></div><div id="pg"></div></div>
 <div id="fab" data-act="fab"><svg width="30" height="30" viewBox="0 0 34 34" fill="none" stroke="#1d3fb5" stroke-width="3" stroke-linecap="round"><path d="M2 9h9M2 17h6M2 25h9"/><circle cx="21" cy="16" r="8"/><path d="M27 22l5 6"/></svg></div>
-<nav id="nav" style="display:none"></nav><div id="slip"></div><div id="mp" class="full"></div><div id="sr" class="full"></div><div id="res"></div><div id="toast"></div>
+<nav id="nav" style="display:none"></nav><div id="sheet"></div><div id="mp" class="full"></div><div id="sr" class="full"></div><div id="res"></div><div id="toast"></div>
 <script>
 'use strict';
 const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,'0'),R2=x=>Math.round(x*100)/100,fl2=x=>Math.floor(x*100+1e-6)/100;
@@ -132,8 +163,44 @@ let NOW=Date.now(),TS=Math.floor(NOW/1000);const BK=10000;let TB=Math.floor(NOW/
 const whenS=t=>{const dd=dayN(t)-dayN(NOW),x=md(t);return(dd<=0?'Сегодня':dd===1?'Завтра':x.d+' '+MON[x.m])+' в '+hm(t)};
 const mmss=s=>pad(Math.floor(s/60))+':'+pad(Math.floor(s%60));
 const dtS=t=>{const x=md(t);return pad(x.d)+'.'+pad(x.m+1)+' '+pad(x.H)+':'+pad(x.M)+':'+pad(x.S)};
-
-/* Данные */
+/* ===== иконки ===== */
+const IC={
+home:'<path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>',
+ball:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.4 4.4H9.6L8.2 10.3z"/><path d="M12 3v4.5M15.8 10.3l4-1.3M14.4 14.7l2.6 3.6M9.6 14.7L7 18.3M8.2 10.3l-4-1.3"/>',
+ticket:'<path d="M3 8a2 2 0 002-2h14a2 2 0 002 2v2a2 2 0 000 4v2a2 2 0 00-2 2H5a2 2 0 00-2-2v-2a2 2 0 000-4z"/><path d="M15 6v12"/>',
+doc:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+grid:'<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+flame:'<path d="M12 3c.5 3.5 5 5.5 5 10.5a5 5 0 01-10 0c0-2 .8-3.3 2-4.5.2 1.6 1 2.5 2 2.7C11 9 10.5 6 12 3z"/>',
+puck:'<ellipse cx="12" cy="9" rx="8" ry="3.5"/><path d="M4 9v5.5C4 16.4 7.6 18 12 18s8-1.6 8-3.5V9"/>',
+glove:'<path d="M7 12V7.5a2.5 2.5 0 015 0V8a2.2 2.2 0 014.4.4V15a6 6 0 01-6 6h-.8A4.6 4.6 0 017 16.4z"/><path d="M8 12.5h4"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+star:'<path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/>',
+sliders:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/>',
+bell:'<path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21h4"/>',
+bm:'<path d="M7 3h10v18l-5-4-5 4z"/>',
+chev:'<path d="M9 5l7 7-7 7"/>',chevd:'<path d="M5 9l7 7 7-7"/>',chevu:'<path d="M5 15l7-7 7 7"/>',back:'<path d="M15 5l-7 7 7 7"/>',
+wallet:'<path d="M4 7a2 2 0 012-2h11v3"/><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="16.5" cy="13.5" r="1.4"/>',
+eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+eyeoff:'<path d="M3 3l18 18M10.6 6.2A9 9 0 0112 6c6 0 10 6 10 6a17 17 0 01-3.2 3.7M6.3 7.6A17 17 0 002 12s4 7 10 7c1.5 0 2.9-.4 4.1-1"/>',
+copy:'<rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 16V6a2 2 0 012-2h9"/>',
+help:'<path d="M4 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2h-6l-5 4v-4H6a2 2 0 01-2-2z"/><path d="M10 8.5a2 2 0 013.6 1.2c0 1.5-2 1.7-2 3M12 14.8v.2"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8c-2-4-6-3-5 0M12 8c2-4 6-3 5 0"/>',
+chat:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0"/>',
+crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
+out:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12h8M13 8l4 4-4 4"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',check:'<path d="M5 12l5 5 9-10"/>',plus:'<path d="M12 5v14M5 12h14"/>',
+rot:'<path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 14A7 7 0 0018 15M18.5 10A7 7 0 006 9"/>',
+pay:'<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M3 10h18M7 15h3"/>',
+tennis:'<circle cx="12" cy="12" r="9"/><path d="M5 5c4 3 4 11 0 14M19 5c-4 3-4 11 0 14"/>',trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'};
+const ico=(n,s,c)=>`<svg class="ic ${c||''}" style="width:${s||22}px;height:${s||22}px" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
+const SPI={f:'ball',h:'puck',u:'glove'};
+/* ===== ДАННЫЕ ===== */
 const T=s=>s.split(',').map(x=>{const q=x.split('|');return{n:q[0],w:q[1],r:+q[2]}});
 const TS_={
 rpl:'Краснодар|FC Krasnodar|86,Зенит|FC Zenit Saint Petersburg|85,Локомотив|FC Lokomotiv Moscow|79,ЦСКА|PFC CSKA Moscow|79,Динамо|FC Dynamo Moscow|78,Спартак|FC Spartak Moscow|77,Балтика|FC Baltika Kaliningrad|72,Ростов|FC Rostov|69,Крылья Советов|PFC Krylia Sovetov Samara|70,Рубин|FC Rubin Kazan|68,Ахмат|FC Akhmat Grozny|66,Динамо Махачкала|FC Dynamo Makhachkala|64,Пари НН|FC Nizhny Novgorod|65,Акрон|FC Akron Tolyatti|66,Сочи|PFC Sochi|62,Оренбург|FC Orenburg|60',
@@ -206,7 +273,7 @@ function getEv(k){const p=String(k||'').split('.');if(p.length<3)return null;ret
 function evs(){const d0=dayN(NOW);let a=[];for(let d=d0-1;d<=d0+2;d++)a=a.concat(genDay(d));
  return a.filter(e=>{if(NOW-e.st>144e5)return false;const st=state(e);return!st.fin||NOW-(e.st+endT(e)*1000)<9e4}).sort((x,y)=>x.st-y.st)}
 
-/* ================= СИМУЛЯЦИЯ (детерминированная, 1 сек = 1 сек) ================= */
+/* ================= СИМУЛЯЦИЯ ================= */
 const lamC=(e,nz)=>{const f=e.sp==='f',L=e.L,d=e.h.r-e.a.r+(nz||0),c=f?.03:.022;return[L.G*L.hs*Math.exp(c*d/2),L.G*(1-L.hs)*Math.exp(-c*d/2)]};
 const qOT=e=>1/(1+Math.exp(-.02*(e.h.r-e.a.r)-.08));
 function simF(e){const r=rng(e.k),L=e.L,[lh,la]=lamC(e,0),i1=60+Math.floor(r()*240),i2=120+Math.floor(r()*300),g=[],cor=[],yel=[],pen=[];
@@ -255,6 +322,7 @@ const stX=(e,now)=>e.sp==='f'?stF(e,now):e.sp==='h'?stH(e,now):stU(e,now);
 function state(e){if(e._ts===TS)return e._s;e._ts=TS;return e._s=stX(e,NOW)}
 function snap(e){if(e._sb!==TB){e._sb=TB;e._ss=stX(e,TB*BK)}return e._ss}
 function clkS(e,st){if(e.sp==='u')return st.ph==='dec'?'Подсчёт карточек · '+Math.ceil(st.left)+'с':st.ph==='brk'?'Перерыв':'Раунд '+st.rd+' · '+mmss(st.left);return st.brk?'Перерыв':st.ph==='so'?'Буллиты':mmss(st.gt)}
+/* ================= КОЭФФИЦИЕНТЫ ================= */
 function res(t,x,s){const L=parseFloat(x),h=s.h,a=s.a,d=h-a,T=h+a,c=v=>v>0?[1,0]:v===0?[0,1]:[0,0],W=b=>[b?1:0,0],Y=b=>W(b===(x==='y'));
  const as=f=>{if(Math.abs(L*4)%2!==1)return f(L);const u=f(L-.25),v=f(L+.25);return[(u[0]+v[0])/2,(u[1]+v[1])/2]};
  switch(t){case'1':return W(d>0);case'X':return W(d===0);case'2':return W(d<0);case'1X':return W(d>=0);case'12':return W(d!==0);case'X2':return W(d<=0);
@@ -330,6 +398,7 @@ function settleAll(){let ch=0;H.forEach(b=>{if(b.status!=='pending')return;
 function cashVal(b){if(b.status!=='pending'||!b.items[0].ek)return 0;let p=1;for(const it of b.items){if(it.f===0)return 0;if(it.f!=null){p*=it.f/it.odds;continue}const e=getEv(it.ek);if(!e)return 0;const st=state(e);if(st.fin)return 0;const q=price(e,it.key);if(!q.p)return 0;p*=q.p}
  const v=Math.min(b.stake*b.totalOdds*p*.92,b.stake*b.totalOdds*.95);return v<b.stake*.03?0:Math.floor(v)}
 
+/* ================= ЛОГОТИПЫ ================= */
 let IMG={};try{IMG=JSON.parse(localStorage.getItem('betapp_img')||'{}')}catch(e){}
 const PEND=new Set(),QQ=[];let busy=0,dirty=0;
 function need(w){if(!w||IMG[w]!==undefined||PEND.has(w))return;PEND.add(w);QQ.push(w);pump()}
@@ -337,298 +406,268 @@ function pump(){while(busy<4&&QQ.length){const w=QQ.shift();busy++;
  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(w.replace(/ /g,'_'))).then(r=>r.ok?r.json():null).then(j=>{IMG[w]=(j&&((j.thumbnail&&j.thumbnail.source)||(j.originalimage&&j.originalimage.source)))||''}).catch(()=>{IMG[w]=''}).finally(()=>{busy--;PEND.delete(w);dirty=1;pump()})}}
 function lgo(w,n,sz,cls,fb){const u=IMG[w];if(u===undefined)need(w);
  if(u)return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px"><img src="${esc(u)}" alt="" onerror="this.parentNode.style.background='#7a8794';this.remove()"></span>`;
- return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px;background:hsl(${hs(n)%360},40%,40%);font-size:${Math.round(sz*.45)}px">${esc(fb||n[0])}</span>`}
+ return`<span class="lgo ${cls||''}" style="width:${sz}px;height:${sz}px;background:hsl(${hs(n)%360},40%,40%);font-size:${Math.round(sz*.45)}px">${fb||esc(n[0])}</span>`}
+/* ================= ПОЛЬЗОВАТЕЛЬ ================= */
 let DB={},cur=null,U=null,H=[],FAV=new Set(),BM=new Set(),SLP=[],SH={on:0,tab:0};
 try{DB=JSON.parse(localStorage.getItem('betapp_users')||'{}');cur=localStorage.getItem('betapp_current')}catch(e){DB={}}
 const saveDB=()=>{try{localStorage.setItem('betapp_users',JSON.stringify(DB));localStorage.setItem('betapp_img',JSON.stringify(IMG))}catch(e){}};
 const tk=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
-const DL=1500000,WEEK=6048e5,PRIZES=[500,1000,2500,5000,10000,15000];
-function toast(t,ok){const e=$('#toast');e.textContent=t;e.className='on'+(ok===0?' er':'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',2800)}
-function notify(t){}
-function led(t,n,d){}
+const DL0=1500000,WEEK=6048e5;
+function toast(t,ok){const e=$('#toast');e.textContent=t;e.className='on'+(ok===0?' er':'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',2800);if(U&&U.st&&U.st.vib&&navigator.vibrate&&ok!==undefined)try{navigator.vibrate(60)}catch(x){}}
+function led(y,a,n){U.led=U.led||[];U.led.unshift({t:NOW,y,a,n});if(U.led.length>200)U.led.length=200}
+function notify(t){U.notif=U.notif||[];U.notif.unshift({t:NOW,x:t,u:1});if(U.notif.length>60)U.notif.length=60}
 let am='login';
 const authMsg=(t,ok)=>{const m=$('#amsg');m.textContent=t;m.className='amsg show '+(ok?'ok':'er')};
 function submit(){const l=$('#li').value.trim(),p=$('#pi').value;if(l.length<3)return authMsg('Логин минимум 3 символа');if(p.length<3)return authMsg('Пароль минимум 3 символа');
- if(am==='reg'){if(p!==$('#pi2').value)return authMsg('Пароли не совпадают');if(DB[l])return authMsg('Логин занят');DB[l]={pass:p,balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[]};saveDB();authMsg('Готово! Теперь войдите',1);return ACT.am({v:'login'})}
- if(!DB[l])return authMsg('Нет такого аккаунта');if(DB[l].pass!==p)return authMsg('Неверный пароль');login(l)}
-function login(n){cur=n;U=DB[n];U.favs=U.favs||[];U.bm=U.bm||[];U.history=U.history||[];U.freebet=U.freebet||0;H=U.history;FAV=new Set(U.favs);BM=new Set(U.bm);localStorage.setItem('betapp_current',n);
+ if(am==='reg'){if(p!==$('#pi2').value)return authMsg('Пароли не совпадают');if(DB[l])return authMsg('Такой логин уже занят');
+  DB[l]={pass:p,balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[],id:String(10000000+hs(l)%89999999),created:Date.now()};saveDB();$('#pi').value='';$('#pi2').value='';authMsg('Регистрация прошла успешно! Теперь войдите',1);return ACT.am({v:'login'})}
+ if(!DB[l])return authMsg('Такого аккаунта нет');if(DB[l].pass!==p)return authMsg('Неверный пароль');login(l)}
+function login(n){cur=n;U=DB[n];U.favs=U.favs||[];U.bm=U.bm||[];U.history=U.history||[];U.freebet=U.freebet||0;U.led=U.led||[];U.notif=U.notif||[];U.req=U.req||[];U.pay=U.pay||[];U.id=U.id||String(10000000+hs(n)%89999999);U.created=U.created||Date.now();U.staked=U.staked||0;
+ U.st=Object.assign({goal:1,vib:1,acc:0,hide:0,hl:[]},U.st||{});U.dl=U.dl||DL0;
+ H=U.history;FAV=new Set(U.favs);BM=new Set(U.bm);localStorage.setItem('betapp_current',n);
  $('#auth').style.display='none';$('#app').style.display='block';$('#nav').style.display='flex';$('#fab').style.display='flex';go('home')}
-const hdr=()=>{const b=$('#bal');if(b)b.textContent=money(U.balance)};
-const bal=d=>{U.balance+=d;saveDB();hdr()};
-let page='home',MODE='all',SPF='all',SOON=0,FAVF=0,HSP='f',CE=null,MT='pop',MS='',MSO=0,MST=0,MBO=0,OVV=0,BTAB=0,SM='ex',STK=100,FBU=0;
+function hdr(){const b=$('#bal');if(b)b.textContent=U.st&&U.st.hide?'••••':num(U.balance)}
+function bal(d){U.balance+=d;saveDB();hdr()}
+/* ================= ИНТЕРФЕЙС ================= */
+let page='home',MODE='all',SPF='all',SOON=0,FAVF=0,HSP='f',CE=null,MT='pop',MS='',MSO=0,MST=0,MBO=0,OVV=0,SM='ex',STK=100,FBU=0;
 const COL={},TLN={},LAST={},ARW={},HID=new Set();
-const NAV=[['home','🏠','Главная'],['sport','⚽','Спорт'],['slip','🎫','Купон'],['bets','🎯','Ставки'],['menu','☰','Меню']];
-function topH(){let h=`<div class="t1"><div class="logo">BET<i>APP</i></div><div class="hr">${U.freebet>0?`<div class="fbp" data-act="tab" data-v="menu">🎁 ${money(U.freebet)}</div>`:''}<div class="pill" data-act="dep"><span class="plus">+</span><span id="bal">${money(U.balance)}</span></div><div class="ava" data-act="tab" data-v="menu">👤</div></div></div>`;
- if(page==='sport')h+=`<div class="tabs">${[['live','Live'],['pre','Прематч'],['all','Все']].map(([v,n])=>`<div class="tab${MODE===v?' on':''}" data-act="mode" data-v="${v}">${n}</div>`).join('')}<div class="sp1"></div><div class="ib${SOON?' on':''}" data-act="soon">🕐</div><div class="ib${FAVF?' on':''}" data-act="favf">★</div></div>`;
- if(page==='sport'||page==='home')h+=`<div class="sports">${[['all','🧭','Все'],['top','🔥','Топ'],['f','⚽','Футбол'],['h','🏒','Хоккей'],['u','🥊','UFC']].map(([v,e,n])=>`<div class="sp${(page==='sport'?SPF:HSP)===v?' on':''}" data-act="${page==='sport'?'spf':'hsp'}" data-v="${v}"><span class="e">${e}</span>${n}</div>`).join('')}</div>`;
+const NAVI=[['home','home','Главная'],['sport','ball','Спорт'],['slip','ticket','Купон'],['media','doc','Медиа'],['menu','grid','Меню']];
+function topH(full){let h=`<div class="t1"><div class="logo">BET<i>APP</i></div><div class="hr">${U.freebet>0?`<div class="fbp" data-act="menu">${ico('gift',16)} ${num(U.freebet)}</div>`:''}<div class="pill" data-act="dep"><span class="plus">${ico('plus',16)}</span><span id="bal">${U.st.hide?'••••':num(U.balance)}</span></div><div class="ava" data-act="menu">${ico('user',20)}</div></div></div>`;
+ if(!full)return h;
+ if(page==='sport')h+=`<div class="tabs">${[['live','Live'],['pre','Прематч'],['all','Все']].map(([v,n])=>`<div class="tab${MODE===v?' on':''}" data-act="mode" data-v="${v}">${n}</div>`).join('')}<div class="sp1"></div><div class="ib${SOON?' on':''}" data-act="soon">${ico('clock',18)}</div><div class="ib${FAVF?' on':''}" data-act="favf">${ico('star',18)}</div><div class="ib" data-act="flt">${ico('sliders',18)}</div></div>`;
+ if(page==='sport'||page==='home')h+=`<div class="sports">${[['all','compass','Все'],['top','flame','Топ'],['f','ball','Футбол'],['h','puck','Хоккей'],['u','glove','UFC']].map(([v,i,n])=>`<div class="sp${(page==='sport'?SPF:HSP)===v?' on':''} s${v}" data-act="${page==='sport'?'spf':'hsp'}" data-v="${v}">${ico(i,22)}<span>${n}</span></div>`).join('')}</div>`;
  return h}
-function renderTop(){$('#top').innerHTML=topH();$('#nav').innerHTML=NAV.map(([v,e,n])=>`<a class="${page===v?'on':''}" data-act="${v==='slip'?'slipopen':'tab'}" data-v="${v}"><span class="e">${e}</span>${n}${v==='slip'&&SLP.length?`<span class="bdg">${SLP.length}</span>`:''}</a>`).join('')}
+function renderTop(){$('#top').innerHTML=topH(1);$('#nav').innerHTML=NAVI.map(([v,i,n])=>`<a class="${page===v?'on':''}" data-act="${v==='slip'?'slipopen':v==='menu'?'menu':'tab'}" data-v="${v}">${ico(i,24)}<span>${n}</span>${v==='slip'&&SLP.length?`<b class="bdg">${SLP.length}</b>`:''}</a>`).join('')}
 function go(p){page=p;CE=null;$('#mp').className='full';renderTop();renderPage();scrollTo(0,0)}
-function renderPage(){const pg=$('#pg');
- if(page==='home')pg.innerHTML=`<div class="hh">Топ-события<span class="lvb" data-act="golive">Live</span></div><div id="lst"></div>`;
- else if(page==='sport')pg.innerHTML='<div id="lst"></div>';else if(page==='bets')pg.innerHTML=betsH();else pg.innerHTML=menuH();
- renderList()}
+function mediaH(){const d=evs(),fin=d.filter(e=>state(e).fin).slice(-8).reverse(),up=d.filter(e=>state(e).ph==='pre'&&e.L.top).slice(0,8),lv=d.filter(e=>state(e).live);
+ const row=(e,x)=>`<div class="sri" data-act="open" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${x}</small></div>`;
+ return`<div class="hh">Медиа</div><div class="sub3">Сейчас в эфире</div>${lv.length?lv.slice(0,8).map(e=>{const st=state(e);return row(e,(e.sp==='u'?clkS(e,st):st.sc[0]+':'+st.sc[1]+' · '+clkS(e,st)))}).join(''):'<div class="no" style="padding:18px">Сейчас нет трансляций</div>'}<div class="sub3">Итоги</div>${fin.length?fin.map(e=>{const st=state(e),m=sim(e);return row(e,e.sp==='u'?(m.win<0?'Ничья':'Победил '+(m.win?e.a.n:e.h.n)+' ('+({KO:'КО/ТКО',SUB:'сабмишен',DEC:'решение'})[m.me]+')'):st.sc[0]+':'+st.sc[1])}).join(''):'<div class="no" style="padding:18px">Пока нет завершённых матчей</div>'}<div class="sub3">Анонсы топ-матчей</div>${up.map(e=>row(e,whenS(e.st))).join('')}`}
+function homeH(){return`<div class="promo"><div style="background:linear-gradient(135deg,#e8002d,#8a0a22)" data-act="promo" data-v="spin"><b>Колесо фортуны</b>Раз в неделю фрибет до 15 000 ₽</div><div style="background:linear-gradient(135deg,#1d4fd7,#0b2f78)" data-act="promo" data-v="daily"><b>Ежедневный бонус</b>Забери 1 000 ₽ каждый день</div><div style="background:linear-gradient(135deg,#2f8f2f,#14501a)" data-act="tab" data-v="sport"><b>Live-ставки</b>Футбол, хоккей и UFC в режиме Live</div></div><div class="hh">Топ-события<span class="lvb" data-act="golive">Live</span></div><div id="lst"></div>`}
+function renderPage(){const pg=$('#pg');if(page==='home')pg.innerHTML=homeH();else if(page==='sport')pg.innerHTML='<div id="lst"></div>';else if(page==='media')pg.innerHTML=mediaH();else pg.innerHTML=historyH(0);renderList()}
+/* --- коэффициенты в списке --- */
 function arw(id,o){const n=NOW;if(o&&LAST[id]!==undefined&&Math.abs(LAST[id]-o)>.004)ARW[id]={u:o>LAST[id],t:n};if(o)LAST[id]=o;const a=ARW[id];return a&&n-a.t<9000?{h:`<i class="ar ${a.u?'u':'d'}">${a.u?'▲':'▼'}</i>`,f:a.u?' fu':' fd'}:{h:'',f:''}}
+const od2=o=>o.toFixed(2);
 function oc(e,st,lr,key){if(st.fin)return'<div class="o lk"></div>';const p=price(e,key);if(!p.o)return'<div class="o lk">—</div>';const sel=SLP.some(b=>b.ek===e.k&&b.key===key),a=arw(e.k+key,p.o);
- return`<div class="o${sel?' sel':''}${lr?' lk':''}${lr?'':a.f}" data-act="odd" data-ek="${e.k}" data-key="${key}">${lr?'🔒':p.o.toFixed(2)}${lr?'':a.h}</div>`}
+ return`<div class="o${sel?' sel':''}${lr?' lk':''}${lr?'':a.f}" data-act="odd" data-ek="${e.k}" data-key="${key}">${lr?ico('lock',14):od2(p.o)}${lr?'':a.h}</div>`}
 function rowH(e,first){const st=state(e),lr=lockR(e,st),uf=e.sp==='u',m=uf?sim(e):null;let inf,cls='ti';
  if(st.ph==='pre')inf=whenS(e.st);else if(st.fin)inf='Завершён';else{cls='ti lv';inf=(st.brk?'<i class="pz"></i>':'<i class="clk"></i>')+clkS(e,st)}
  const sc=i=>uf?(st.fin&&m.win===i?'<b>✔</b>':''):(st.ph==='pre'?'':'<b>'+st.sc[i]+'</b>');
- const keys=uf?['m|1','m|X','m|2']:['m|1','m|X','m|2'];
- return`<div class="mr t${e.sp}" data-act="open" data-ek="${e.k}"><div class="cv">›</div><div class="tm"><div class="tn"><span>${esc(e.h.n)}</span>${sc(0)}</div><div class="tn"><span>${esc(e.a.n)}</span>${sc(1)}</div><div class="${cls}">${inf}</div></div><div class="ods">${first?'<div class="ol"><span>1</span><span>X</span><span>2</span></div>':''}<div class="oc">${keys.map(k=>oc(e,st,lr,k)).join('')}</div></div></div>`}
+ return`<div class="mr t${e.sp}" data-act="open" data-ek="${e.k}"><div class="cv">${ico('chev',16)}</div><div class="tm"><div class="tn"><span>${esc(e.h.n)}</span>${sc(0)}</div><div class="tn"><span>${esc(e.a.n)}</span>${sc(1)}</div><div class="${cls}">${inf}</div></div><div class="ods">${first?'<div class="ol"><span>1</span><span>X</span><span>2</span></div>':''}<div class="oc">${['m|1','m|X','m|2'].map(k=>oc(e,st,lr,k)).join('')}</div></div></div>`}
 function recon(box,items){const ch=box.children;let same=ch.length===items.length;if(same)for(let i=0;i<items.length;i++)if(ch[i].dataset.id!==items[i].id){same=false;break}
  if(same){items.forEach((it,i)=>{if(ch[i]._h!==it.html){ch[i].innerHTML=it.html;ch[i]._h=it.html}});return}
  box.innerHTML=items.map(it=>`<div data-id="${esc(it.id)}">${it.html}</div>`).join('');items.forEach((it,i)=>box.children[i]._h=it.html)}
-function listItems(o){const L=evs().filter(e=>{const st=state(e);if(o.sp&&o.sp!=='all'&&e.sp!==o.sp)return false;if(o.mode==='live'&&!st.live)return false;if(o.mode==='pre'&&st.ph!=='pre')return false;if(o.fav&&!FAV.has(e.k))return false;if(o.soon&&!(st.ph==='pre'&&st.t<3600))return false;if(o.top&&!e.L.top)return false;return true});
+function listItems(o){const hl=new Set(U.st.hl||[]);const L=evs().filter(e=>{const st=state(e);if(hl.has(e.L.k))return false;if(o.sp&&o.sp!=='all'&&e.sp!==o.sp)return false;if(o.mode==='live'&&!st.live)return false;if(o.mode==='pre'&&st.ph!=='pre')return false;if(o.fav&&!FAV.has(e.k))return false;if(o.soon&&!(st.ph==='pre'&&st.t<3600))return false;if(o.top&&!e.L.top)return false;return true});
  const g=new Map(),so={f:0,h:1,u:2};L.forEach(e=>{const k=e.sp+'|'+e.L.n;if(!g.has(k))g.set(k,[]);g.get(k).push(e)});
- const ks=[...g.keys()].sort((a,b)=>{const A=g.get(a)[0],B=g.get(b)[0];return so[A.sp]-so[B.sp]||(LGI[A.L.k]===undefined?99:LGI[A.L.k])-(LGI[B.L.k]===undefined?99:LGI[B.L.k])});
+ const ks=[...g.keys()].sort((a,b)=>{const A=g.get(a)[0],B=g.get(b)[0],la=g.get(a).some(e=>state(e).live)?0:1,lb=g.get(b).some(e=>state(e).live)?0:1;return(o.liveFirst?la-lb:0)||so[A.sp]-so[B.sp]||(LGI[A.L.k]===undefined?99:LGI[A.L.k])-(LGI[B.L.k]===undefined?99:LGI[B.L.k])});
  const it=[];let n=0;ks.forEach(k=>{let es=g.get(k);const c=es[0].L,cl=HID.has(k);if(o.limit&&n>=o.limit)return;if(o.limit)es=es.slice(0,o.limit-n);n+=es.length;
-  it.push({id:'g'+k,html:`<div class="lgh t${c.sp}${cl?' cl':''}" data-act="lg" data-k="${esc(k)}"><span class="ch">⌄</span><span class="nm">${lgo(c.w,c.n,20,'q',{f:'⚽',h:'🏒',u:'🥊'}[c.sp])}<span class="t">${esc(c.n)}</span></span><span class="cnt">${g.get(k).length}</span></div>`});
+  it.push({id:'g'+k,html:`<div class="lgh t${c.sp}${cl?' cl':''}" data-act="lg" data-k="${esc(k)}"><span class="ch">${ico('chevd',14)}</span><span class="nm">${lgo(c.w,c.n,20,'q',ico(SPI[c.sp],14))}<span class="t">${esc(c.n)}</span></span><span class="cnt">${g.get(k).length}</span></div>`});
   if(!cl)es.forEach((e,i)=>it.push({id:e.k,html:rowH(e,i===0)}))});return it}
-function renderList(){const box=$('#lst');if(!box)return;const o=page==='home'?{sp:HSP,limit:12,mode:'all'}:{mode:MODE,sp:SPF==='top'?'all':SPF,top:SPF==='top',fav:FAVF,soon:SOON};
+function renderList(){const box=$('#lst');if(!box)return;const o=page==='home'?{sp:HSP==='all'||HSP==='top'?'all':HSP,top:HSP==='top',limit:14,mode:'all',liveFirst:1}:{mode:MODE,sp:SPF==='top'?'all':SPF,top:SPF==='top',fav:FAVF,soon:SOON};
  let it=listItems(o);if(!it.length)it=[{id:'e',html:'<div class="no">Событий по выбранному фильтру нет.<br>Новые матчи появляются по расписанию (время МСК).</div>'}];recon(box,it)}
-const TABN={f:[['pop','Популярное'],['match','Матч'],['t1','1-й тайм'],['t2','2-й тайм']],h:[['pop','Популярное'],['match','Матч'],['t1','1-й период'],['t2','2-й период'],['t3','3-й период'],['pen','Удаления']],u:[['pop','Популярное'],['match','Бой']]};
+/* --- страница матча --- */
+const TABN={f:[['pop','Популярное'],['match','Матч'],['t1','1-й тайм'],['t2','2-й тайм'],['cor','Угловые'],['yel','Карточки']],h:[['pop','Популярное'],['match','Матч'],['t1','1-й период'],['t2','2-й период'],['t3','3-й период'],['pen','Удаления']],u:[['pop','Популярное'],['match','Бой']]};
 const TC={f:'#5b9a2f',h:'#6f8697',u:'#b45a5a'};
 function mb(e,st,lr,key,lab){const p=price(e,key);if(!p.o)return`<div class="mb lk"><span>${esc(lab)}</span><b>—</b></div>`;const sel=SLP.some(b=>b.ek===e.k&&b.key===key),a=arw(e.k+key,p.o);
- return`<div class="mb${sel?' sel':''}${lr?' lk':''}${lr?'':a.f}" data-act="odd" data-ek="${e.k}" data-key="${key}"><span>${esc(lab)}</span><b>${lr?'🔒':p.o.toFixed(2)}${lr?'':a.h}</b></div>`}
-function cardsOf(e,st) {
-    const f = e.sp === 'f', uf = e.sp === 'u';
-    const H_ = e.h.n, A = e.a.n, lr = lockR(e, st);
-    const B = (k, l) => mb(e, st, lr, k, l);
-    const G = (a, c) => `<div class="mg" style="grid-template-columns:repeat(${c},1fr)">${a.map(x => B(x[0], x[1])).join('')}</div>`;
-    const D = (id, t, h, open) => ({id, t, h, open});
-    const out3 = sc => G([[sc + '|1', '1'], [sc + '|X', 'X'], [sc + '|2', '2']], 3) + G([[sc + '|1X', '1X'], [sc + '|12', '12'], [sc + '|X2', 'X2']], 3);
-    const ls = (id, arr, ok) => {
-        const av = arr.filter(ok);
-        if (!av.length) return null;
-        const k = e.k + id;
-        if (!av.includes(TLN[k])) TLN[k] = av[Math.floor((av.length - 1) / 2)];
-        return {c: TLN[k], h: `<div class="chips">${av.map(l => `<div class="cp${l === TLN[k] ? ' on' : ''}" data-act="line" data-k="${k}" data-v="${l}">${l}</div>`).join('')}</div>`}
-    };
-    const ok2 = (sc, a, b) => l => price(e, `${sc}|${a}|${l}`).o && price(e, `${sc}|${b}|${l}`).o;
-    const totC = (sc, arr, id) => {
-        const s = ls(id, arr, ok2(sc, 'ov', 'un'));
-        return s ? s.h + G([[`${sc}|ov|${s.c}`, 'Больше'], [`${sc}|un|${s.c}`, 'Меньше']], 2) : '<div class="no" style="padding:12px">Нет доступных линий</div>'
-    };
-    const totR = (sc, arr, n) => {
-        const r = arr.filter(ok2(sc, 'ov', 'un')).slice(0, n);
-        return r.length ? r.map(l => `<div class="tr"><span>Тотал ${l}</span>${B(`${sc}|ov|${l}`, 'Б')}${B(`${sc}|un|${l}`, 'М')}</div>`).join('') : '<div class="no" style="padding:12px">Нет доступных линий</div>'
-    };
-    const seg = (id, a, b) => {
-        const k = e.k + id, v = TLN[k] || 0;
-        return `<div class="seg"><div class="${v ? '' : 'on'}" data-act="seg" data-k="${k}" data-v="0">${esc(a)}</div><div class="${v ? 'on' : ''}" data-act="seg" data-k="${k}" data-v="1">${esc(b)}</div></div>`
-    };
-    const indiv = (id, arr) => {
-        const v = TLN[e.k + id + 's'] || 0, a = v ? 'o2' : 'o1', b = v ? 'u2' : 'u1';
-        const s = ls(id + v, arr, l => price(e, `m|${a}|${l}`).o && price(e, `m|${b}|${l}`).o);
-        return seg(id + 's', H_, A) + (s ? s.h + G([[`m|${a}|${s.c}`, 'Больше'], [`m|${b}|${s.c}`, 'Меньше']], 2) : '<div class="no" style="padding:12px">Нет линий</div>')
-    };
-    const hcp = arr => {
-        const s = ls('hc', arr, l => price(e, `m|h1|${-l}`).o || price(e, `m|h2|${l}`).o);
-        if (!s) return '<div class="no" style="padding:12px">Нет линий</div>';
-        const l = s.c, L0 = l === 0;
-        return s.h + `<div class="sub2"><div class="sub">${esc(H_)}</div><div class="sub">${esc(A)}</div></div>` + G([[`m|h1|${-l}`, `Фора (${sg(-l)})`], [`m|h2|${l}`, `Фора (${sg(l)})`]], 2) + (L0 ? '' : G([[`m|h1|${l}`, `Фора (${sg(l)})`], [`m|h2|${-l}`, `Фора (${sg(-l)})`]], 2))
-    };
-    const A_ = {pop: [], match: [], t1: [], t2: [], t3: [], pen: []};
-    if (uf) { 
-        const O = D('o', 'Исход', G([['m|1', e.h.n], ['m|X', 'X'], ['m|2', e.a.n]], 3), 1);
-        const R = [.5, 1.5, 2.5, 3.5, 4.5].filter(l => l < e.R);
-        const TT = D('t', 'Тотал раундов', totR('m', R, 6), 1);
-        A_.pop = [O, TT];
-        A_.match = [O, TT, D('me', 'Способ победы', G([['m|me|KO', 'Нокаут/ТКО'], ['m|me|SUB', 'Сабмишен'], ['m|me|DEC', 'Решение']], 3), 1), D('rw', 'Победа в раунде', G([...Array(e.R)].map((_, i) => [`m|rw|${i + 1}`, 'Раунд ' + (i + 1)]).concat([['m|rw|DEC', 'Решением']]), 3), 0), D('dec', 'Бой дойдёт до решения', G([['m|dec|y', 'Да'], ['m|dec|n', 'Нет']], 2), 0)];
-        return A_;
-    }
-    const lines = f ? [.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5] : [3.5, 4.5, 5, 5.5, 6, 6.5, 7.5, 8.5];
-    const il = f ? [.5, 1.5, 2.5, 3.5] : [1.5, 2.5, 3.5, 4.5];
-    const OM = D('o', f ? 'Исход матча (основное время)' : 'Исход', out3('m'), 1);
-    const WN = D('w', 'Итоговая победа', G([['m|w1', H_], ['m|w2', A]], 2), 1);
-    const O1 = D('o1', f ? 'Исход 1-го тайма' : 'Исход в 1-м периоде', out3('1'), 1);
-    const per = st.per >= 3 ? 3 : Math.max(1, st.per + (st.brk ? 1 : 0));
-    const OP = D('op', 'Исход в ' + per + '-м периоде', out3(String(per)), 1);
-    const TP = D('tr', 'Тотал голов в матче', totR('m', lines, f ? 5 : 4), 1);
-    const TB = D('t', 'Тотал голов в матче', totC('m', lines, 't'), 1);
-    const HC = D('hc', 'Исход матча с учётом форы', hcp(f ? [0, 1, 1.5, 2, 2.5] : [.5, 1.5, 2.5, 3.5]), 0);
-    const SC = f ? D('sn', 'Забьют - не забьют', [['bt', 'Обе забьют'], ['sc1', H_ + ' забьёт'], ['sc2', A + ' забьёт'], ['on1', 'Только ' + H_ + ' забьёт'], ['on2', 'Только ' + A + ' забьёт'], ['one', 'Только одна забьёт'], ['nb', 'Никто не забьёт']].map(x => `<div class="tr"><span>${esc(x[1])}</span>${B('m|' + x[0] + '|y', 'Да')}${B('m|' + x[0] + '|n', 'Нет')}</div>`).join(''), 0) : D('sn', 'Обе команды забьют', G([['m|bt|y', 'Да'], ['m|bt|n', 'Нет']], 2), 0);
-    const IT = D('it', 'Индивидуальные тоталы голов', indiv('i', il), 0);
-    const cs = [];
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) cs.push([`m|cs|${i}-${j}`, i + ':' + j]);
-    const NG = D('ng', st.ph === 'pre' ? 'Первый гол' : 'Следующий гол', G([['m|ng|h', H_], ['m|ng|n', 'Никто'], ['m|ng|a', A]], 3), 0);
-    if (f) {
-        A_.pop = [OM].concat(st.per < 2 && !st.brk ? [O1] : [], [TP]);
-        A_.match = [OM, TB, HC, SC, IT, D('cs', 'Точный счёт', G(cs, 4), 0), NG];
-        A_.t1 = [O1, D('p1', 'Тотал 1-го тайма', totC('1', [.5, 1, 1.5, 2, 2.5], 'p1'), 1)];
-        A_.t2 = [D('o2', 'Исход 2-го тайма', out3('2'), 1), D('p2', 'Тотал 2-го тайма', totC('2', [.5, 1, 1.5, 2, 2.5], 'p2'), 1)];
-    } else {
-        A_.pop = [OM, WN, OP, TB];
-        A_.match = [OM, WN, TB, HC, IT, SC, D('ot', 'Будет ли овертайм', G([['m|ot|y', 'Да'], ['m|ot|n', 'Нет']], 2), 0), NG];
-        [1, 2, 3].forEach(p => {
-            A_['t' + p] = [D('o' + p, 'Исход в ' + p + '-м периоде', out3(String(p)), 1), D('p' + p, 'Тотал голов в ' + p + '-м периоде', totC(String(p), [.5, 1.5, 2.5, 3.5], 'p' + p), 1)]
-        });
-        const pl_ = e.L.pn > 3.3 ? [4.5, 5.5, 6.5, 7.5, 8.5, 9.5] : [3.5, 4.5, 5.5, 6.5, 7.5, 8.5];
-        const sp_ = ls('pn', pl_, l => price(e, `m|po|${l}`).o && price(e, `m|pu|${l}`).o);
-        A_.pen = [D('po', 'Тотал удалений в матче (2 мин)', sp_ ? sp_.h + G([[`m|po|${sp_.c}`, 'Больше'], [`m|pu|${sp_.c}`, 'Меньше']], 2) : '<div class="no" style="padding:12px">Нет линий</div>', 1), D('pn', 'Следующее удаление', G([['m|pn|h', H_], ['m|pn|n', 'Не будет'], ['m|pn|a', A]], 3), 1)];
-    }
-    return A_;
-}
+ return`<div class="mb${sel?' sel':''}${lr?' lk':''}${lr?'':a.f}" data-act="odd" data-ek="${e.k}" data-key="${key}"><span>${esc(lab)}</span><b>${lr?ico('lock',14):od2(p.o)}${lr?'':a.h}</b></div>`}
+function cardsOf(e,st){const f=e.sp==='f',uf=e.sp==='u',H_=e.h.n,A=e.a.n,lr=lockR(e,st),B=(k,l)=>mb(e,st,lr,k,l);
+ const G=(a,c)=>`<div class="mg" style="grid-template-columns:repeat(${c},1fr)">${a.map(x=>B(x[0],x[1])).join('')}</div>`,D=(id,t,h,open)=>({id,t,h,open});
+ const out3=sc=>G([[sc+'|1','1'],[sc+'|X','X'],[sc+'|2','2']],3)+G([[sc+'|1X','1X'],[sc+'|12','12'],[sc+'|X2','X2']],3);
+ const ls=(id,arr,ok)=>{const av=arr.filter(ok);if(!av.length)return null;const k=e.k+id;if(!av.includes(TLN[k]))TLN[k]=av[Math.floor((av.length-1)/2)];return{c:TLN[k],h:`<div class="chips">${av.map(l=>`<div class="cp${l===TLN[k]?' on':''}" data-act="line" data-k="${k}" data-v="${l}">${l}</div>`).join('')}</div>`}};
+ const ok2=(sc,a,b)=>l=>price(e,`${sc}|${a}|${l}`).o&&price(e,`${sc}|${b}|${l}`).o,NL='<div class="no" style="padding:12px">Нет доступных линий</div>';
+ const totC=(sc,arr,id,a,b)=>{const s=ls(id,arr,ok2(sc,a||'ov',b||'un'));return s?s.h+G([[`${sc}|${a||'ov'}|${s.c}`,'Больше'],[`${sc}|${b||'un'}|${s.c}`,'Меньше']],2):NL};
+ const totR=(sc,arr,n)=>{const r=arr.filter(ok2(sc,'ov','un')).slice(0,n);return r.length?r.map(l=>`<div class="tr"><span>Тотал ${l}</span>${B(`${sc}|ov|${l}`,'Б')}${B(`${sc}|un|${l}`,'М')}</div>`).join(''):NL};
+ const seg=(id,a,b)=>{const k=e.k+id,v=TLN[k]||0;return`<div class="seg"><div class="${v?'':'on'}" data-act="seg" data-k="${k}" data-v="0">${esc(a)}</div><div class="${v?'on':''}" data-act="seg" data-k="${k}" data-v="1">${esc(b)}</div></div>`};
+ const indiv=(id,arr)=>{const v=TLN[e.k+id+'s']||0,a=v?'o2':'o1',b=v?'u2':'u1',s=ls(id+v,arr,l=>price(e,`m|${a}|${l}`).o&&price(e,`m|${b}|${l}`).o);return seg(id+'s',H_,A)+(s?s.h+G([[`m|${a}|${s.c}`,'Больше'],[`m|${b}|${s.c}`,'Меньше']],2):NL)};
+ const hcp=arr=>{const s=ls('hc',arr,l=>price(e,`m|h1|${-l}`).o||price(e,`m|h2|${l}`).o);if(!s)return NL;const l=s.c;
+  return s.h+`<div class="sub2"><div class="sub">${esc(H_)}</div><div class="sub">${esc(A)}</div></div>`+G([[`m|h1|${-l}`,`Фора (${sg(-l)})`],[`m|h2|${l}`,`Фора (${sg(l)})`]],2)+(l===0?'':G([[`m|h1|${l}`,`Фора (${sg(l)})`],[`m|h2|${-l}`,`Фора (${sg(-l)})`]],2))};
+ const A_={pop:[],match:[],t1:[],t2:[],t3:[],pen:[],cor:[],yel:[]};
+ if(uf){const O=D('o','Исход',G([['m|1',H_],['m|X','X'],['m|2',A]],3),1),R=[.5,1.5,2.5,3.5,4.5].filter(l=>l<e.R),TT=D('t','Тотал раундов',totR('m',R,6),1);
+  A_.pop=[O,TT];A_.match=[O,TT,D('me','Способ победы',G([['m|me|KO','Нокаут/ТКО'],['m|me|SUB','Сабмишен'],['m|me|DEC','Решение']],3),1),D('rw','Победа в раунде',G([...Array(e.R)].map((_,i)=>[`m|rw|${i+1}`,'Раунд '+(i+1)]).concat([['m|rw|DEC','Решением']]),3),0),D('dec','Бой дойдёт до решения',G([['m|dec|y','Да'],['m|dec|n','Нет']],2),0)];return A_}
+ const lines=f?[.5,1,1.5,2,2.5,3,3.5,4,4.5,5.5]:[3.5,4.5,5,5.5,6,6.5,7.5,8.5],il=f?[.5,1.5,2.5,3.5]:[1.5,2.5,3.5,4.5];
+ const OM=D('o',f?'Исход матча (основное время)':'Исход',out3('m'),1),WN=D('w','Итоговая победа',G([['m|w1',H_],['m|w2',A]],2),1);
+ const O1=D('o1',f?'Исход 1-го тайма':'Исход в 1-м периоде',out3('1'),1),per=st.per>=3?3:Math.max(1,st.per+(st.brk?1:0)),OP=D('op','Исход в '+per+'-м периоде',out3(String(per)),1);
+ const TP=D('tr','Тотал голов в матче',totR('m',lines,f?5:4),1),TB=D('t','Тотал голов в матче',totC('m',lines,'t'),1);
+ const HC=D('hc','Исход матча с учётом форы',hcp(f?[0,1,1.5,2,2.5]:[.5,1.5,2.5,3.5]),0);
+ const SC=f?D('sn','Забьют - не забьют',[['bt','Обе забьют'],['ec','Каждая команда больше 1.5'],['sc1',H_+' забьёт'],['sc2',A+' забьёт'],['on1','Только '+H_+' забьёт'],['on2','Только '+A+' забьёт'],['one','Только одна забьёт'],['nb','Никто не забьёт']].map(x=>`<div class="tr"><span>${esc(x[1])}</span>${B('m|'+x[0]+'|y','Да')}${B('m|'+x[0]+'|n','Нет')}</div>`).join(''),0):D('sn','Обе команды забьют',G([['m|bt|y','Да'],['m|bt|n','Нет']],2),0);
+ const IT=D('it','Индивидуальные тоталы голов',indiv('i',il),0),cs=[];for(let i=0;i<4;i++)for(let j=0;j<4;j++)cs.push([`m|cs|${i}-${j}`,i+':'+j]);
+ const NG=D('ng',st.ph==='pre'?'Первый гол':'Следующий гол',G([['m|ng|h',H_],['m|ng|n','Никто'],['m|ng|a',A]],3),0);
+ if(f){A_.pop=[OM].concat(st.per<2&&!st.brk?[O1]:[],[TP]);A_.match=[OM,TB,HC,SC,IT,D('cs','Точный счёт',G(cs,4),0),NG];
+  A_.t1=[O1,D('p1','Тотал 1-го тайма',totC('1',[.5,1,1.5,2,2.5],'p1'),1)];A_.t2=[D('o2','Исход 2-го тайма',out3('2'),1),D('p2','Тотал 2-го тайма',totC('2',[.5,1,1.5,2,2.5],'p2'),1)];
+  const cl=(e.L.co||10)>10?[8.5,9.5,10.5,11.5,12.5]:[7.5,8.5,9.5,10.5,11.5],yl=(e.L.yc||4)>4?[3.5,4.5,5.5,6.5]:[2.5,3.5,4.5,5.5];
+  A_.cor=[D('co','Тотал угловых',totC('m',cl,'co','co','cu'),1)];A_.yel=[D('yo','Тотал жёлтых карточек',totC('m',yl,'yo','yo','yu'),1)];A_.pop.push(D('co','Тотал угловых',totC('m',cl,'co','co','cu'),0))}
+ else{A_.pop=[OM,WN,OP,TB];A_.match=[OM,WN,TB,HC,IT,SC,D('ot','Будет ли овертайм',G([['m|ot|y','Да'],['m|ot|n','Нет']],2),0),NG];
+  [1,2,3].forEach(p=>{A_['t'+p]=[D('o'+p,'Исход в '+p+'-м периоде',out3(String(p)),1),D('p'+p,'Тотал голов в '+p+'-м периоде',totC(String(p),[.5,1.5,2.5,3.5],'p'+p),1)]});
+  const pl_=e.L.pn>3.4?[4.5,5.5,6.5,7.5,8.5,9.5]:[3.5,4.5,5.5,6.5,7.5,8.5];
+  A_.pen=[D('po','Тотал удалений в матче (2 мин)',totC('m',pl_,'pn','po','pu'),1),D('pn','Следующее удаление',G([['m|pn|h',H_],['m|pn|n','Не будет'],['m|pn|a',A]],3),1)]}
+ return A_}
 function cardH(e,c){const id=e.k+c.id,cl=COL[id]!==undefined?COL[id]:!c.open,on=BM.has(c.t);
- return`<div class="mk${cl?' cl':''}"><div class="mkh" data-act="mk" data-id="${id}" data-d="${c.open?1:0}"><span data-act="bm" data-t="${esc(c.t)}" style="font-size:16px;filter:${on?'none':'grayscale(1)'};opacity:${on?1:.55}">🔖</span><span class="tt">${esc(c.t)}</span><span class="cv2">⌃</span></div><div class="mkb">${c.h}</div></div>`}
+ return`<div class="mk${cl?' cl':''}"><div class="mkh" data-act="mk" data-id="${id}" data-d="${c.open?1:0}"><span data-act="bm" data-t="${esc(c.t)}" class="bmk${on?' on':''}">${ico('bm',20)}</span><span class="tt">${esc(c.t)}</span><span class="cv2">${ico('chevu',16)}</span></div><div class="mkb">${c.h}</div></div>`}
 function formB(n,r){let o='';for(let i=0;i<5;i++){const v=rng(n+'f'+i+Math.floor(dayN(NOW)/3))(),w=.25+(r-60)*.007,c=v<w?['w','В']:v<w+.22?['d','Н']:['l','П'];o+=`<div class="fb ${c[0]}">${c[1]}</div>`}return o+'<div class="fb q">?</div>'}
 function banH(e,st){const sp=e.sp,uf=sp==='u',m=uf?sim(e):null,live=st.live,fin=st.fin;
- const top=st.ph==='pre'?whenS(e.st):live?`<span><i class="clk w"></i> ${clkS(e,st)}</span>`:'Завершён';
- let cols='';if(!uf&&!st.pre&&st.ph!=='pre'){const n=sp==='f'?2:3;cols='<span class="cols">'+[...Array(n)].map((_,i)=>`<span>${i+1}</span>`).join('')+(sp==='h'&&sim(e).ot&&(st.per>=4)?'<span>ОТ</span>':'')+'</span>'}
+ const top=st.ph==='pre'?whenS(e.st):live?`<span class="ck">${ico('clock',16)} ${clkS(e,st)}</span>`:'Завершён';let cols='';
+ if(!uf&&st.ph!=='pre'){const n=sp==='f'?2:3;cols='<span class="cols">'+[...Array(n)].map((_,i)=>`<span>${i+1}</span>`).join('')+(sp==='h'&&sim(e).ot&&st.per>=4?'<span>ОТ</span>':'')+'</span>'}
  const row=i=>{const t=i?e.a:e.h;let right='';
   if(uf){if(fin&&m.win===i)right='<div class="scn"><b style="border:0">✔</b></div>'}
   else if(st.ph==='pre')right=`<div class="fm">${formB(t.n,t.r)}</div>`;
   else{const n=sp==='f'?2:3,pc=[...Array(n)].map((_,k)=>sim(e).g.filter(g=>g.s===i&&g.p===k+1&&inc(g,st)).length);if(sp==='h'&&sim(e).ot&&st.per>=4)pc.push(sim(e).g.filter(g=>g.s===i&&g.p===4&&inc(g,st)).length+(st.fin&&sim(e).so&&sim(e).w===i?1:0));right=`<div class="scn"><b>${st.sc[i]}</b>${pc.map(v=>`<span>${v}</span>`).join('')}</div>`}
   return`<div class="br">${lgo(t.w,t.n,32,uf?'p':'')}<div class="nm">${esc(t.n)}</div>${right}</div>`};
- let res='';if(uf&&fin){const w=m.win;res=`<div style="font-size:13px;padding:6px 0 0;opacity:.95">${w<0?'Ничья (решение судей)':'Победил '+esc(w?e.a.n:e.h.n)+' — '+({KO:'нокаут/ТКО',SUB:'сабмишен',DEC:'решение судей'})[m.me]+(m.fin?', раунд '+m.rd+' ('+mmss(m.tin)+')':'')}</div>`}
- return`<div class="ban ${sp}${fin?' d':''}"><div class="bst"><span class="${OVV?'':'on'}" data-act="ovv" data-v="0">Матч</span><span class="${OVV?'on':''}" data-act="ovv" data-v="1">Обзор</span></div><div class="btp"><span>${top}</span><span class="r">${cols}<span data-act="bell">${HID.has('bell'+e.k)?'🔔':'🔕'}</span><span data-act="favm">${FAV.has(e.k)?'★':'☆'}</span></span></div>${row(0)}${row(1)}${res}</div>`}
-function statRows(e,st){if(st.ph==='pre')return null;const sp=e.sp,pr=Math.min(1,st.gt/(sp==='f'?5400:3600)),r=i=>rng(e.k+'s'+i)(),d=e.h.r-e.a.r,m=sim(e);
- if(sp==='f'){const p1=Math.round(Math.max(30,Math.min(70,50+d*.5+(r(1)-.5)*10))),s1=Math.floor(pr*(8+r(2)*8)*(1+d/80)),s2=Math.floor(pr*(8+r(3)*8)*(1-d/80));return[['Владение, %',p1,100-p1,1],['Удары',s1,s2],['Удары в створ',Math.max(st.sc[0],Math.floor(s1*.4)),Math.max(st.sc[1],Math.floor(s2*.4))],['Угловые',Math.floor(pr*(3+r(4)*5)),Math.floor(pr*(3+r(5)*5))],['Жёлтые карточки',Math.floor(pr*(1+r(6)*3)),Math.floor(pr*(1+r(7)*3))],['Опасные атаки',Math.floor(pr*(30+r(8)*30)),Math.floor(pr*(30+r(9)*30))]]}
+ let rs='';if(uf&&fin){const w=m.win;rs=`<div class="bres">${w<0?'Ничья (решение судей)':'Победил '+esc(w?e.a.n:e.h.n)+' — '+({KO:'нокаут/ТКО',SUB:'сабмишен',DEC:'решение судей'})[m.me]+(m.fin?', раунд '+m.rd+' ('+mmss(m.tin)+')':'')}</div>`}
+ return`<div class="ban ${sp}${fin?' d':''}"><div class="bst"><span class="${OVV?'':'on'}" data-act="ovv" data-v="0">Матч</span><span class="${OVV?'on':''}" data-act="ovv" data-v="1">Обзор</span></div><div class="btp"><span>${top}</span><span class="r">${cols}<span data-act="bell" class="${HID.has('bell'+e.k)?'on':''}">${ico('bell',19)}</span><span data-act="favm" class="${FAV.has(e.k)?'on':''}">${ico('star',19)}</span></span></div>${row(0)}${row(1)}${rs}</div>`}
+function statRows(e,st){if(st.ph==='pre')return null;const sp=e.sp,m=sim(e),pr=Math.min(1,st.gt/(sp==='f'?5400:3600)),r=i=>rng(e.k+'s'+i)(),d=e.h.r-e.a.r;
+ if(sp==='f'){const p1=Math.round(Math.max(30,Math.min(70,50+d*.5+(r(1)-.5)*10))),s1=Math.floor(pr*(8+r(2)*8)*(1+d/80)),s2=Math.floor(pr*(8+r(3)*8)*(1-d/80)),cn=s=>m.cor.filter(a=>a.s===s&&inc(a,st)).length,yn=s=>m.yel.filter(a=>a.s===s&&inc(a,st)).length;
+  return[['Владение, %',p1,100-p1],['Удары',s1,s2],['Удары в створ',Math.max(st.sc[0],Math.floor(s1*.4)),Math.max(st.sc[1],Math.floor(s2*.4))],['Угловые',cn(0),cn(1)],['Жёлтые карточки',yn(0),yn(1)],['Опасные атаки',Math.floor(pr*(30+r(8)*30)),Math.floor(pr*(30+r(9)*30))]]}
  const pn=s=>m.pen.filter(p=>p.s===s&&p.g<=st.gt),ppt=s=>Math.round(pn(1-s).reduce((q,p)=>q+Math.max(0,Math.min(p.end,st.gt)-p.g),0));
  return[['Броски',Math.floor(pr*(24+r(1)*12+d*.3)),Math.floor(pr*(24+r(2)*12-d*.3))],['Удаления (мин)',pn(0).length*2,pn(1).length*2],['Время в большинстве',mmss(ppt(0)),mmss(ppt(1))],['Силовые приёмы',Math.floor(pr*(14+r(3)*14)),Math.floor(pr*(14+r(4)*14))]]}
 function statsH(e,st){const R=statRows(e,st);if(!R)return'<div class="no">Статистика появится с началом матча</div>';
  return`<div class="mkb" style="margin:10px"><div class="st1"><span>${esc(e.h.n)}</span><span>${esc(e.a.n)}</span></div>`+R.map(x=>{const t=(+x[1]||0)+(+x[2]||0)||1;return`<div class="st1"><span>${x[1]}</span><span style="color:var(--mu);font-weight:500">${x[0]}</span><span>${x[2]}</span></div>`+(typeof x[1]==='number'?`<div class="stb"><i style="width:${x[1]/t*100}%"></i></div>`:'')}).join('')+'</div>'}
 function ovH(e,st){if(st.ph==='pre')return'<div class="no">События появятся после начала</div>';if(e.sp==='u')return`<div class="mkb" style="margin:10px"><div class="ev"><b>${clkS(e,st)}</b><span>${st.fin?'Бой завершён':'Идёт бой'}</span></div></div>`;
  const m=sim(e),f=e.sp==='f',L=[];m.g.forEach(g=>{if(inc(g,st))L.push({p:g.p,g:g.g,t:(f?(g.p===1?(g.g>2700?'45+'+Math.ceil((g.g-2700)/60):Math.ceil(g.g/60)):(g.g>5400?'90+'+Math.ceil((g.g-5400)/60):45+Math.ceil((g.g-2700)/60)))+"'":mmss(g.g)),x:`${f?'⚽':'🏒'} Гол — ${esc(g.s?e.a.n:e.h.n)}${g.pp?' (в большинстве)':''}`})});
- m.pen.forEach(p=>{if(p.g<=st.gt&&inc({p:p.p,g:p.g},st))L.push({p:p.p,g:p.g,t:mmss(p.g),x:`⏱ Удаление 2 мин — ${esc(p.s?e.a.n:e.h.n)}`})});L.sort((a,b)=>a.p-b.p||a.g-b.g);
+ if(f)m.yel.forEach(g=>{if(inc(g,st))L.push({p:g.p,g:g.g,t:(g.p===1?Math.ceil(g.g/60):45+Math.ceil((g.g-2700)/60))+"'",x:`🟨 Жёлтая карточка — ${esc(g.s?e.a.n:e.h.n)}`})});
+ m.pen.forEach(p=>{if(inc(p,st))L.push({p:p.p,g:p.g,t:mmss(p.g),x:`⏱ Удаление 2 мин — ${esc(p.s?e.a.n:e.h.n)}`})});L.sort((a,b)=>a.p-b.p||a.g-b.g);
  return`<div class="mkb" style="margin:10px">${L.length?L.map(x=>`<div class="ev"><b>${x.t}</b><span>${x.x}</span></div>`).join(''):'<div class="no" style="padding:18px">Пока без событий</div>'}</div>`}
-function openMatch(k){CE=k;MT='pop';MS='';MSO=0;MST=0;MBO=0;OVV=0;const e=getEv(k);if(!e)return;$('#mp').className='full on';$('#mp').scrollTop=0;
- $('#mp').innerHTML=`<div class="top">${topH().split('<div class="tabs">')[0].split('<div class="sports">')[0]}<div class="mhead"><div class="bk" data-act="back">‹</div><div class="bt0">${esc(e.sp==='u'?'Единоборства / '+e.L.ct:e.L.cr)}<b>${esc(e.sp==='u'?e.sub:e.L.ct)}</b></div><div class="nx" data-act="nx">⇅</div></div></div><div id="mban"></div><div id="mtabs"></div><div id="msr"></div><div id="mbody"></div>`;mbH='';mpTick()}
 let mbH='',mtH='';
-function mpTick() {
-    if (!CE) return;
-    const e = getEv(CE);
-    if (!e) return;
-    const st = state(e), bh = banH(e, st);
-    if (bh !== mbH) { $('#mban').innerHTML = bh; mbH = bh }
-    const th = `<div class="mt" style="--tc:${TC[e.sp]}">
-        <div class="ic${MSO?' on':''}" data-act="srch">🔍</div>
-        <div class="ic${MST?' on':''}" data-act="stat">📊</div>
-        <div class="ic${MBO?' on':''}" data-act="bmf">🔖</div>
-        ${TABN[e.sp].map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}
-    </div>`;
-    if (th !== mtH) { $('#mtabs').innerHTML = th; mtH = th }
-    const sb = $('#msr');
-    if (MSO && !sb.firstChild) {
-        sb.innerHTML = `<div class="msr"><input id="msq" placeholder="Поиск по рынкам" value="${esc(MS)}"></div>`;
-        $('#msq').oninput = ev => { MS = ev.target.value.toLowerCase().trim(); mpTick() }
-    } else if (!MSO && sb.firstChild) sb.innerHTML = '';
-    let items;
-    if (OVV) items = [{id:'ov', html:ovH(e,st)}];
-    else if (MST) items = [{id:'st', html:statsH(e,st)}];
-    else {
-        const A = cardsOf(e, st);
-        let list = A[MT] || [];
-        if (MS || MBO) {
-            const mp = new Map();
-            Object.values(A).forEach(a => a.forEach(c => { if (!mp.has(c.t)) mp.set(c.t, c) }));
-            list = [...mp.values()].filter(c => (!MS || c.t.toLowerCase().includes(MS)) && (!MBO || BM.has(c.t)))
-        }
-        items = list.map(c => ({id: e.k + c.id, html: cardH(e, c)}));
-        if (!items.length) items = [{id: 'n', html: '<div class="no">Ничего не найдено</div>'}];
-    }
-    recon($('#mbody'), items);
-}
-const combo=()=>SLP.reduce((a,b)=>a*(b.odds||1),1);
-const lab=(e,key)=>{const[sc,t,x]=key.split('|'),f=e.sp==='f',pf=sc==='m'?'':sc+(f?'Т ':'П ');const M={'1':'Поб 1',X:'Ничья','2':'Поб 2','1X':'1X','12':'12',X2:'X2',w1:'Поб 1 (с ОТ)',w2:'Поб 2 (с ОТ)',ov:'Тотал Б '+x,un:'Тотал М '+x,h1:'Фора 1 ('+sg(+x)+')',h2:'Фора 2 ('+sg(+x)+')',o1:'ИТ1 Б '+x,u1:'ИТ1 М '+x,o2:'ИТ2 Б '+x,u2:'ИТ2 М '+x,bt:'ОЗ '+(x==='y'?'Да':'Нет'),sc1:'Забьёт 1 '+(x==='y'?'Да':'Нет'),sc2:'Забьёт 2 '+(x==='y'?'Да':'Нет'),on1:'Только 1 '+(x==='y'?'Да':'Нет'),on2:'Только 2 '+(x==='y'?'Да':'Нет'),one:'Только одна '+(x==='y'?'Да':'Нет'),nb:'Никто '+(x==='y'?'Да':'Нет'),cs:'Счёт '+(x||'').replace('-',':'),ng:'След. гол: '+({h:'1',a:'2',n:'нет'})[x],ot:'ОТ '+(x==='y'?'Да':'Нет'),po:'Удал. Б '+x,pu:'Удал. М '+x,pn:'След. удал.: '+({h:'1',a:'2',n:'нет'})[x],me:({KO:'Нокаут/ТКО',SUB:'Сабмишен',DEC:'Решение'})[x],rw:x==='DEC'?'Решением':'Победа в раунде '+x,dec:'До решения '+(x==='y'?'Да':'Нет'),ec:'ЕК '+(x==='y'?'Да':'Нет'),co:'Угловые Б '+x,cu:'Угловые М '+x,yo:'Жёлтые Б '+x,yu:'Жёлтые М '+x};
- if(e.sp==='u'&&(t==='1'||t==='2'))return'Поб '+(t==='1'?'1':'2');if(e.sp==='u'&&t==='ov')return'Тотал раундов Б '+x;if(e.sp==='u'&&t==='un')return'Тотал раундов М '+x;return pf+(M[t]||key)};
-const grp=key=>{const[sc,t,x]=key.split('|');if(['1','X','2','1X','12','X2'].includes(t))return sc+'r';if(t==='w1'||t==='w2')return'w';if(t==='ov'||t==='un')return sc+'t'+x;if(t==='h1')return sc+'h'+x;if(t==='h2')return sc+'h'+(-x);if(t==='o1'||t==='u1')return sc+'a'+x;if(t==='o2'||t==='u2')return sc+'b'+x;if(t==='po'||t==='pu')return'p'+x;return sc+t+(t==='cs'||t==='rw'?'':'')};
-function slipOpen(){$('#slip').classList.add('on');$('#slip').innerHTML=`<div class="sheet"><div class="hnd"></div><div class="sh">⚙<span class="on">Купон</span><span>Прогнозы</span><span>Промо</span><div class="x2" data-act="slipclose">⌄</div></div><div class="sb2" id="sbody"></div><div class="sf" id="sfoot"></div></div>`;sbH='';slipTick(1)}
-let sbH='';
-function slipTick(force){if(!$('#slip').classList.contains('on'))return;
- const h=SLP.length?SLP.map((it,i)=>{const e=getEv(it.ek);if(!e)return'';const st=state(e),lr=lockR(e,st),p=price(e,it.key);if(p.o)it.odds=p.o;const off=lr||!p.o,ic={f:'⚽',h:'🏒',u:'🥊'}[e.sp];
-  return`<div class="si${off?' off':''}"><span class="x" data-act="rm" data-i="${i}">×</span><div class="m1">${ic} ${st.ph==='pre'?whenS(e.st):st.fin?'Завершён':'<i class="clk"></i>'+clkS(e,st)}</div><div class="m2">${e.sp==='u'||st.ph==='pre'?'':'<em>'+st.sc[0]+':'+st.sc[1]+'</em>'}${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="m3"><span>${esc(it.lab)}</span><span>${off?(lr||'Закрыт'):it.odds.toFixed(2)}</span></div></div>`}).join(''):'<div class="no">Купон пуст.<br>Нажмите на коэффициент, чтобы добавить исход.</div>';
- if(h!==sbH||force){$('#sbody').innerHTML=h;sbH=h}
- if(document.activeElement&&document.activeElement.id==='stk'&&!force){}else{const n=SLP.length,single=SM==='sg',tot=STK*(single?n:1),pot=single?SLP.reduce((a,b)=>a+STK*b.odds,0):STK*combo(),er=tot>U.balance&&n>0;
-  $('#sfoot').innerHTML=n?`<div class="srow"><div class="sel2" data-act="smode">${single?'Одинар':'Экспресс'} ⌄</div><div class="tot">⇅ ${single?'—':combo().toFixed(2)}</div></div>${U.freebet>0?`<div class="fbt${FBU?' on':''}" data-act="usefb">${FBU?'✅ Фрибет применяется':'🎁 Использовать фрибет ('+money(U.freebet)+')'}</div>`:''}<div class="inb${er?' er':''}"><div class="l"><input id="stk" type="number" inputmode="numeric" value="${STK}"><span class="pot">→ ${Math.round(pot).toLocaleString('ru-RU')}</span></div><div class="r">Баланс<b>${Math.round(U.balance).toLocaleString('ru-RU')}</b></div></div>${er?'<div class="err">Недостаточно средств</div>':''}<div class="qr">${[['20','min'],['50'],['500'],['1000'],['2000'],[String(Math.max(0,Math.floor(Math.min(U.balance,700000)))),'max']].map(q=>`<div class="qb" data-act="q" data-v="${q[0]}">${q[1]?'<small style="display:block;font-size:10px;color:#8a929c">'+q[1]+'</small>':''}${Number(q[0]).toLocaleString('ru-RU')}</div>`).join('')}</div><button class="btn" data-act="${er?'topup':'place'}" style="padding:15px">${er?'Пополнить на '+Math.ceil(tot-U.balance):'Сделать ставку'}</button>`:'';
-  const s=$('#stk');if(s)s.oninput=()=>{STK=+s.value||0;slipTick()}}}
-function place(){if(!SLP.length)return toast('Купон пуст',0);const st=+STK||0;if(st<20)return toast('Минимальная ставка 20 ₽',0);let ch=0;
- for(const it of SLP){const e=getEv(it.ek),s=e&&state(e);if(!e||lockR(e,s)||s.fin)return toast('Исход недоступен: '+(e?e.h.n+' – '+e.a.n:''),0);const p=price(e,it.key);if(!p.o)return toast('Рынок закрыт: '+it.lab,0);if(Math.abs(p.o-it.odds)>.004){it.odds=p.o;ch=1}}
- if(ch){slipTick(1);return toast('Коэффициенты изменились — проверьте и подтвердите',0)}
- if(SM==='ex'&&new Set(SLP.map(i=>i.ek)).size<SLP.length)return toast('В экспрессе нельзя 2 исхода одного матча. Выберите «Одинар»',0);
- const groups=SM==='sg'?SLP.map(i=>[i]):[SLP.slice()],total=st*groups.length;let fb=FBU&&U.freebet>0?Math.min(total,U.freebet):0;if(total-fb>U.balance)return toast('Недостаточно средств',0);
- groups.forEach(g=>{const f=Math.min(st,fb);fb-=f;const to=fl2(g.reduce((a,b)=>a*b.odds,1));H.push({id:Date.now()+Math.floor(Math.random()*1e6),items:g.map(i=>({...i,f:null})),stake:st,fb:f,totalOdds:to,pot:fl2(st*to),status:'pending',t:Date.now()})});
- const used=FBU&&U.freebet>0?Math.min(total,U.freebet):0;U.freebet-=used;U.balance-=total-used;saveDB();hdr();toast('✅ Ставка принята · '+money(total));SLP=[];FBU=0;$('#slip').classList.remove('on');renderTop();renderList();if(page==='bets')renderPage();mpTick()}
-function betH(b){const stT={pending:'⏳ В игре',win:'✅ Выигрыш',lose:'❌ Проигрыш','return':'🔄 Возврат',cashout:'💸 Кэшаут'}[b.status]||b.status,pend=b.status==='pending',co=pend?cashVal(b):0;
- return`<div class="hb"><div class="hbt"><span>${b.items.length>1?'Экспресс ×'+b.items.length:'Одинар'} · ${money(b.stake)}</span><span class="stx ${b.status}">${stT}</span></div>${b.items.map(i=>`<div class="bi"><div>${esc(i.h||i.home||'')} – ${esc(i.a||i.away||'')} ${i.f!=null?(i.f===0?'❌':'✅'):''}</div><div class="bl">${esc(i.lab||((i.market||'Исход')+': '+(i.label||'')))} · <b>${(i.odds||0).toFixed(2)}</b></div></div>`).join('')}<div class="hbf">Коэф. ${(b.totalOdds||1).toFixed(2)} → ${pend?'возможный выигрыш '+money(b.pot||b.potentialWin||0):'выплата '+money(b.paid||0)} · ${new Date(b.t||b.createdAt||0).toLocaleString('ru-RU',{timeZone:'Europe/Moscow',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} МСК</div>${pend?`<div class="cob" data-act="co" data-id="${b.id}" data-cob="${b.id}" style="${co?'':'display:none'}">💸 Забрать <span>${money(co)}</span></div>`:''}</div>`}
-function betsH(){const l=H.filter(b=>BTAB?b.status!=='pending':b.status==='pending').slice().reverse();
- return`<div class="tabs" style="background:var(--hd);color:#fff"><div class="tab${BTAB?'':' on'}" data-act="btab" data-v="0">Активные</div><div class="tab${BTAB?' on':''}" data-act="btab" data-v="1">Рассчитанные</div></div>${l.length?l.map(betH).join(''):'<div class="no">Ставок пока нет</div>'}`}
-function menuH(){const pend=H.filter(b=>b.status==='pending').reduce((a,b)=>a+b.stake,0),dep=(U.depositDate===tk()?U.depositToday:0)||0;
- return`<div class="pc"><h3>👤 ${esc(cur)}</h3><div class="pr"><span>Баланс</span><span>${money(U.balance)}</span></div><div class="pr"><span>Фрибеты</span><span>${money(U.freebet)}</span></div><div class="pr"><span>Всего ставок</span><span>${H.length}</span></div><div class="pr"><span>Выигрышей</span><span>${H.filter(b=>b.status==='win').length}</span></div><div class="pr"><span>В игре</span><span>${money(pend)}</span></div><div class="pr"><span>Лимит пополнения сегодня</span><span>${money(DL-dep)}</span></div><br><button class="btn g" data-act="dep">💳 Пополнить (виртуальные ₽)</button></div>
- <div class="pc"><h3>🎰 Колесо фортуны</h3><p style="color:var(--mu);margin-bottom:10px">Раз в неделю — фрибет до 15 000 ₽</p><button class="btn" id="spinb" data-act="spin">${Date.now()<(U.lastSpin||0)+WEEK?'Доступно через '+Math.ceil(((U.lastSpin||0)+WEEK-Date.now())/36e5)+' ч':'Крутить'}</button></div>
- <div class="pc"><h3>ℹ️ О данных</h3><p style="color:var(--mu);line-height:1.5">Команды, лиги и бойцы настоящие, расписание примерное (время МСК), матчи, счёт и события — симуляция. Коэффициенты считает собственная модель (Пуассон по среднему числу голов лиги). Все деньги виртуальные. Логотипы и фото берутся из Википедии.</p></div><div style="padding:0 12px 12px"><button class="btn s" data-act="logout">Выйти</button></div>`}
-function deposit(need){const t=(U.depositDate===tk()?U.depositToday:0)||0,left=DL-t;if(left<=0)return toast('Дневной лимит исчерпан',0);let n=need;if(!n){const a=prompt('Пополнение (виртуальные ₽)\nСегодня: '+money(t)+'\nОсталось: '+money(left),String(Math.min(1000,left)));if(!a)return;n=Number(a)}
- if(isNaN(n)||n<=0)return toast('Неверная сумма',0);if(n>left)return toast('Максимум '+money(left),0);U.depositDate=tk();U.depositToday=t+n;bal(n);toast('+'+money(n));slipTick(1)}
-function spin(){if(Date.now()<(U.lastSpin||0)+WEEK)return toast('Ещё рано',0);const pz_=PRIZES[Math.floor(Math.random()*6)];U.freebet+=pz_;U.lastSpin=Date.now();saveDB();renderTop();
- $('#res').innerHTML=`<div class="rb"><div class="e">${pz_>=15000?'👑':'🎉'}</div><h2>${pz_>=15000?'ДЖЕКПОТ!':'Поздравляем!'}</h2><div class="a">+${money(pz_)}</div><p style="color:var(--mu);margin-bottom:14px">Фрибет зачислен</p><button class="btn" data-act="resclose">Забрать</button></div>`;$('#res').className='on';if(page==='menu')renderPage()}
-function openSearch(){$('#sr').className='full on';$('#sr').innerHTML=`<div class="gh"><span data-act="srclose">‹</span><input id="srq" placeholder="Поиск команды или бойца"><span data-act="srclose">✕</span></div><div id="srl"></div>`;
- const f=()=>{const q=$('#srq').value.toLowerCase().trim(),l=evs().filter(e=>!q||(e.h.n+' '+e.a.n+' '+e.L.n).toLowerCase().includes(q)).slice(0,40);$('#srl').innerHTML=l.length?l.map(e=>`<div class="sri" data-act="srgo" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${whenS(e.st)}</small></div>`).join(''):'<div class="no">Ничего не найдено</div>'};$('#srq').oninput=f;f();$('#srq').focus()}
+function openMatch(k){CE=k;MT='pop';MS='';MSO=0;MST=0;MBO=0;OVV=0;const e=getEv(k);if(!e)return;$('#mp').className='full on';$('#mp').scrollTop=0;const c=e.L;
+ $('#mp').innerHTML=`<div class="top">${topH(0)}<div class="mhead"><div class="bk" data-act="back">${ico('back',22)}</div><div class="bt0">${esc(e.sp==='u'?'Единоборства / '+c.ct:c.cr)}<b>${esc(e.sp==='u'?e.sub:c.ct)}</b></div><div class="nx" data-act="nx">⇅</div></div></div><div id="mban"></div><div id="mtabs"></div><div id="msr"></div><div id="mbody"></div>`;mbH='';mtH='';mpTick()}
+function mpTick(){if(!CE)return;const e=getEv(CE);if(!e)return;const st=state(e),bh=banH(e,st);if(bh!==mbH){$('#mban').innerHTML=bh;mbH=bh}
+ const th=`<div class="mt" style="--tc:${TC[e.sp]}"><div class="ic2${MSO?' on':''}" data-act="srch">${ico('search',20)}</div><div class="ic2${MST?' on':''}" data-act="stat">${ico('doc',20)}</div><div class="ic2${MBO?' on':''}" data-act="bmf">${ico('bm',20)}</div>${TABN[e.sp].map(([v,n])=>`<div class="mtb${MT===v&&!MST&&!MSO&&!MBO?' on':''}" data-act="mtab" data-v="${v}">${n}</div>`).join('')}</div>`;if(th!==mtH){$('#mtabs').innerHTML=th;mtH=th}
+ const sb=$('#msr');if(MSO&&!sb.firstChild){sb.innerHTML=`<div class="msr"><input id="msq" placeholder="Поиск по рынкам" value="${esc(MS)}"></div>`;$('#msq').oninput=ev=>{MS=ev.target.value.toLowerCase().trim();mpTick()}}else if(!MSO&&sb.firstChild)sb.innerHTML='';
+ let items;if(OVV)items=[{id:'ov',html:ovH(e,st)}];else if(MST)items=[{id:'st',html:statsH(e,st)}];
+ else{const A=cardsOf(e,st);let list=A[MT]||[];if(MS||MBO){const mp=new Map();Object.values(A).forEach(a=>a.forEach(c=>{if(!mp.has(c.t))mp.set(c.t,c)}));list=[...mp.values()].filter(c=>(!MS||c.t.toLowerCase().includes(MS))&&(!MBO||BM.has(c.t)))}
+  items=list.map(c=>({id:e.k+c.id,html:cardH(e,c)}));if(!items.length)items=[{id:'n',html:'<div class="no">Ничего не найдено</div>'}]}
+ recon($('#mbody'),items)}
 
-const ACT = {
-    am(d){am=d.v;$('#tL').className=am==='login'?'on':'';$('#tR').className=am==='reg'?'on':'';$('#pi2').style.display=am==='reg'?'block':'none';$('#sb').textContent=am==='reg'?'Зарегистрироваться':'Войти';$('#amsg').className='amsg'},
-    submit, tab(d){go(d.v)}, dep(){deposit()},
-    mode(d){MODE=d.v;renderTop();renderList()},
-    spf(d){SPF=d.v;renderTop();renderList()},
-    hsp(d){HSP=d.v;renderTop();renderList()},
-    soon(){SOON=!SOON;renderTop();renderList()},
-    favf(){FAVF=!FAVF;renderTop();renderList()},
-    golive(){MODE='live';SPF='all';go('sport')},
-    lg(d){HID.has(d.k)?HID.delete(d.k):HID.add(d.k);renderList()},
-    open(d){openMatch(d.ek)},
-    back(){CE=null;$('#mp').className='full'},
-    nx(){const e=getEv(CE),l=evs().filter(x=>x.L.n===e.L.n),i=l.findIndex(x=>x.k===CE);if(l.length>1)openMatch(l[(i+1)%l.length].k)},
-    mtab(d){MT=d.v;MST=0;MSO=0;OVV=0;mtH='';mpTick()},
-    srch(){MSO=!MSO;mtH='';mpTick();if(MSO&&$('#msq'))$('#msq').focus()},
-    stat(){MST=!MST;mtH='';mpTick()},
-    bmf(){MBO=!MBO;mtH='';mpTick()},
-    ovv(d){OVV=+d.v;mtH='';mpTick()},
-    mk(d){COL[d.id]=d.d?0:1;mpTick()},
-    bm(d){BM.has(d.t)?BM.delete(d.t):BM.add(d.t);U.bm=[...BM];saveDB();mpTick()},
-    line(d){TLN[d.k]=d.v;mtH='';mpTick();},
-    seg(d){TLN[d.k]=+d.v;mtH='';mpTick()},
-    bell(){HID.has('bell'+CE)?HID.delete('bell'+CE):HID.add('bell'+CE);mpTick()},
-    favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();renderList();mpTick()},
-    odd(d){
-        const e=getEv(d.ek);if(!e)return;const st=state(e);if(lockR(e,st)||st.fin)return toast('Приём ставок приостановлен',0);
-        const p=price(e,d.key);if(!p.o)return toast('Рынок недоступен',0);
-        const i=SLP.findIndex(b=>b.ek===d.ek&&b.key===d.key);if(i>=0){SLP.splice(i,1);toast('Убрано из купона')}
-        else{const g=grp(d.key),c=SLP.find(b=>b.ek===d.ek&&grp(b.key)===g);if(c){c.key=d.key;c.odds=p.o;c.lab=lab(e,d.key);c.n0=(d.key.split('|')[2]?+d.key.split('|')[2]:0);toast('Исход заменён')}
-        else{const n0=/^cs\|/.test(d.key)?parseInt(d.key.split('|')[2].split('-')[0]+d.key.split('|')[2].split('-')[1]):0;SLP.push({ek:d.ek,key:d.key,odds:p.o,lab:lab(e,d.key),h:e.h.n,a:e.a.n,n0})}}
-        if(SLP.length>1&&SM==='ex'&&new Set(SLP.map(x=>x.ek)).size<SLP.length){SM='sg';toast('Разные исходы одного матча — включены одинары')}
-        renderTop();mtH='';mpTick();if($('#slip').classList.contains('on'))slipTick(1)
-    },
-    slipopen(){slipOpen()},
-    slipclose(){$('#slip').classList.remove('on')},
-    rm(d){SLP.splice(+d.i,1);renderTop();mtH='';slipTick(1);mpTick()},
-    smode(){SM=SM==='ex'?'sg':'ex';slipTick(1)},
-    usefb(){FBU=!FBU;slipTick(1)},
-    q(d){STK=+d.v;slipTick(1)},
-    place,
-    co(d){const b=H.find(x=>x.id==d.id);if(!b||b.status!=='pending')return;const v=cashVal(b);if(!v)return toast('Кэшаут недоступен',0);
-        if(!confirm('Забрать '+money(v)+'?'))return;b.status='cashout';b.paid=v;bal(v);saveDB();toast('💸 Кэшаут: '+money(v));renderPage()
-    },
-    btab(d){BTAB=+d.v;renderPage()},
-    spin,resclose(){$('#res').className=''},
-    logout(){localStorage.removeItem('betapp_current');location.reload()},
-    srclose(){$('#sr').className='full'},
-    srgo(d){$('#sr').className='full';openMatch(d.ek)},
-    fab(){openSearch()}
-};
-let lastT=0,lastSettle=0,lastRender=0;
-function tick(){const n=Date.now();TS=Math.floor(n/1000);NOW=n;TB=Math.floor(n/BK);
- if(n-lastSettle>1000){lastSettle=n;settleAll()}
- if(CE)mpTick();
- if(n-lastRender>700&&(page==='home'||page==='sport'||page==='bets')){lastRender=n;renderList()}
- if(dirty&&n-lastT>400){lastT=n;dirty=0;saveDB();renderList();if(CE)mpTick()}
-}
-setInterval(tick,500);
-document.addEventListener('click',ev=>{const t=ev.target.closest('[data-act]');if(!t)return;const a=ACT[t.dataset.act];if(!a)return;ev.stopPropagation();a(t.dataset)});
-$('#sb').addEventListener('click',submit);
-$('#pi').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
-$('#pi2').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+/* ================= МЕТКИ ================= */
+const YN=x=>x==='y'?'да':'нет';
+function lab(e,key){const[sc,t,x]=key.split('|'),f=e.sp==='f',pf=sc==='m'?'':sc+(f?'Т ':'П ');
+ if(e.sp==='u'){return({'1':'Поб 1','2':'Поб 2',X:'Ничья',ov:'Тотал раундов > '+x,un:'Тотал раундов < '+x,me:({KO:'Нокаут/ТКО',SUB:'Сабмишен',DEC:'Решение'})[x],rw:x==='DEC'?'Победа решением':'Победа в раунде '+x,dec:'Бой до решения - '+YN(x)})[t]||key}
+ const M={'1':'Поб 1',X:'Ничья','2':'Поб 2','1X':'1X','12':'12',X2:'X2',w1:'Итоговая поб 1',w2:'Итоговая поб 2',ov:'Тотал > '+x,un:'Тотал < '+x,h1:'Фора 1 ('+sg(+x)+')',h2:'Фора 2 ('+sg(+x)+')',o1:'Тотал 1 > '+x,u1:'Тотал 1 < '+x,o2:'Тотал 2 > '+x,u2:'Тотал 2 < '+x,
+  bt:'Обе забьют - '+YN(x),ec:'Каждая команда больше 1.5 - '+YN(x),sc1:'Команда 1 забьёт - '+YN(x),sc2:'Команда 2 забьёт - '+YN(x),on1:'Только 1 забьёт - '+YN(x),on2:'Только 2 забьёт - '+YN(x),one:'Только одна забьёт - '+YN(x),nb:'Никто не забьёт - '+YN(x),
+  cs:'Счёт '+(x||'').replace('-',':'),ng:'След. гол: '+({h:'1',a:'2',n:'никто'})[x],ot:'Овертайм - '+YN(x),po:'Удаления > '+x,pu:'Удаления < '+x,co:'Угловые > '+x,cu:'Угловые < '+x,yo:'Жёлтые > '+x,yu:'Жёлтые < '+x,pn:'След. удаление: '+({h:'1',a:'2',n:'нет'})[x]};
+ return pf+(M[t]||key)}
+function grp(key){const[sc,t,x]=key.split('|');if(['1','X','2','1X','12','X2'].includes(t))return sc+'r';if(t==='w1'||t==='w2')return'w';if(t==='ov'||t==='un')return sc+'t'+x;if(t==='h1')return sc+'h'+x;if(t==='h2')return sc+'h'+(-x);if(t==='o1'||t==='u1')return sc+'a'+x;if(t==='o2'||t==='u2')return sc+'b'+x;if(/^[pcy][ou]$/.test(t))return t[0]+x;return sc+t}
+const SH0={on:0,k:'slip',tab:'slip',sub:'main',q:'',hf:'all',ht:0,ex:0};
+let shH='';
+const combo=()=>SLP.reduce((a,b)=>a*b.odds,1);
+function openSheet(k,tab){SH0.on=1;SH0.k=k;if(tab)SH0.tab=tab;SH0.sub='main';SH0.q='';shH='';renderSheet()}
+function closeSheet(){SH0.on=0;$('#sheet').className='';$('#sheet').innerHTML='';shH='';renderTop()}
+function shHead(){
+ if(SH0.k==='slip')return`<div class="sh">${ico('gear',24)}<span class="${SH0.tab==='slip'?'on':''}" data-act="shtab" data-v="slip">Купон</span><span class="${SH0.tab==='pro'?'on':''}" data-act="shtab" data-v="pro">Прогнозы</span><span class="${SH0.tab==='promo'?'on':''}" data-act="shtab" data-v="promo">Промо</span><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`;
+ if(SH0.k==='flt')return`<div class="sh2"><div class="bk2" data-act="shclose">${ico('back',22)}</div><div class="tt2">Фильтры</div><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`;
+ const T_={main:'Мой профиль',pay:'Выплата',hist:'История',bonus:'Бонусы и акции',req:'Запросы',notif:'Уведомления',data:'Личные данные',set:'Настройки',resp:'Ответственная игра',vip:'Твой VIP-статус'};
+ if(SH0.sub==='main')return`<div class="sh2 c"><div class="tt2c">Мой профиль<small>ID: ${U.id} <span data-act="copy">${ico('copy',14)}</span></small></div><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`;
+ return`<div class="sh2"><div class="bk2" data-act="subback">${ico('back',22)}</div><div class="tt2">${T_[SH0.sub]}</div><div class="x2" data-act="shclose">${ico('chevd',18)}</div></div>`}
+const dgrp=t=>{const dd=dayN(NOW)-dayN(t),x=md(t),d=x.d+' '+MON[x.m].toUpperCase();return dd<=0?'СЕГОДНЯ, '+d:dd===1?'ВЧЕРА, '+d:d};
+function legH(it){const e=getEv(it.ek);if(!e)return'';const st=state(e),ln=legNow(e,it);let top;
+ if(e.sp==='u')top=st.ph==='pre'?whenS(e.st):st.fin?'Бой завершён':clkS(e,st);else top=st.ph==='pre'?whenS(e.st):'Счет матча <b class="sc '+(ln||'')+'">'+st.sc[0]+':'+st.sc[1]+'</b>';
+ return`<div class="bl">${ico(SPI[e.sp],22,'gi')}<div class="blm"><div class="bl1">${top}</div><div class="bl2">${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="bl3"><span>${esc(it.lab)}</span><span>${od2(it.odds)}</span></div></div><i class="bar ${ln||'n'}"></i></div>`}
+function betCard(b){const pend=b.status==='pending',bd=pend?'p':b.status==='win'?'w':b.status==='lose'?'l':b.status==='cashout'?'c':'r',ic={p:'clock',w:'check',l:'x',c:'wallet',r:'rot'}[bd],n=b.items.length,co=pend?cashVal(b):0;
+ return`<div class="bc"><div class="bch"><span class="bb ${bd}">${ico(ic,18)}</span><div><div class="bct">${n>1?'Экспресс <small>× '+n+'</small>':'Одинар'}</div><div class="bcn">№ ${b.id} ${ico('clock',13)} ${dtS(b.t||b.createdAt||0)}</div></div><span class="bhelp" data-act="bhelp" data-id="${b.id}">${ico('help',26)}</span></div>${b.items.map(legH).join('')}<div class="bcf"><span>${ico('wallet',20)} ${num(b.stake)}${b.fb?' <small>(фрибет)</small>':''}</span><span class="bco">${!pend&&b.status==='win'?'<small>Выплата '+money(b.paid)+'</small> ':''}${pend&&co?`<em data-act="co" data-id="${b.id}">Кэшаут ${num(co)}</em> `:''}${od2(b.totalOdds||1)}</span></div></div>`}
+function betsListH(q,flt){q=(q||'').toLowerCase();let l=H.slice().reverse().filter(b=>{if(flt==='win'&&b.status!=='win')return false;if(flt==='lose'&&b.status!=='lose')return false;if(flt==='pending'&&b.status!=='pending')return false;if(q){const s=(String(b.id)+b.items.map(i=>(i.h||'')+(i.a||'')+(i.lab||'')).join(' ')).toLowerCase();if(!s.includes(q))return false}return true});
+ if(!l.length)return'<div class="no">Ставок пока нет</div>';let out='',last='';l.forEach(b=>{const g=dgrp(b.t||b.createdAt||0);if(g!==last){out+=`<div class="bd">${g}</div>`;last=g}out+=betCard(b)});return out}
+const historyH=()=>`<div class="hh">Ставки</div>${betsListH('','all')}`;
+function slipBody(){if(!SLP.length)return'<div class="no">Купон пуст.<br>Нажмите на коэффициент, чтобы добавить исход.</div>';
+ return SLP.map((it,i)=>{const e=getEv(it.ek);if(!e)return'';const st=state(e),lr=lockR(e,st),p=price(e,it.key);if(p.o)it.odds=p.o;const off=lr||!p.o;
+  return`<div class="si${off?' off':''}"><span class="x" data-act="rm" data-i="${i}">${ico('x',18)}</span><div class="m1">${ico(SPI[e.sp],16)} ${st.ph==='pre'?whenS(e.st):st.fin?'Завершён':'<i class="clk"></i>'+clkS(e,st)}</div><div class="m2">${e.sp==='u'||st.ph==='pre'?'':'<em>'+st.sc[0]+':'+st.sc[1]+'</em>'}${esc(e.h.n)} – ${esc(e.a.n)}</div><div class="m3"><span>${esc(it.lab)}</span><span>${off?(lr||'Закрыт'):od2(it.odds)}</span></div></div>`}).join('')}
+function slipTot(){const single=SM==='sg',n=SLP.length;return{tot:STK*(single?n:1),pot:single?SLP.reduce((a,b)=>a+STK*b.odds,0):STK*combo()}}
+function fxH(){const t=slipTot(),er=t.tot>U.balance;
+ return`${er?'<div class="err">Недостаточно средств</div>':''}<div class="qr">${[['20','min'],['50'],['500'],['1000'],['2000'],[String(Math.max(0,Math.floor(Math.min(U.balance,700000)))),'max']].map(q=>`<div class="qb" data-act="q" data-v="${q[0]}">${q[1]?'<small>'+q[1]+'</small>':''}${num(+q[0])}</div>`).join('')}</div><button class="btn red" data-act="${er?'topup':'place'}">${er?'<span class="pl">'+ico('plus',18)+'</span> Пополнить на '+num(Math.ceil(t.tot-U.balance)):'Сделать ставку'}</button>`}
+function slipFoot(){if(!SLP.length)return'';const single=SM==='sg',t=slipTot(),er=t.tot>U.balance;
+ return`<div class="sf"><div class="srow"><div class="sel2" data-act="smode">${single?'Одинар':'Экспресс'} ${ico('chevd',14)}</div><div class="tot">⇅ ${single?'—':od2(fl2(combo()))}</div></div>${U.freebet>0?`<div class="fbt${FBU?' on':''}" data-act="usefb">${FBU?'Фрибет применяется':'Использовать фрибет ('+money(U.freebet)+')'}</div>`:''}<div class="inb${er?' er':''}" id="inb"><div class="l"><input id="stk" type="number" inputmode="numeric" value="${STK}"><span class="pot">→ <span id="pot">${num(Math.floor(t.pot))}</span></span></div><div class="r">Баланс<b>${hs0()}</b></div></div><div id="fx">${fxH()}</div></div>`}
+const hs0=()=>U.st.hide?'••••':num(U.balance);
+function promoH(){const nx=(U.lastSpin||0)+WEEK,ok=NOW>=nx,dd=U.daily===tk();
+ return`<div class="pc"><h3>Колесо фортуны</h3><p class="mu2">Раз в неделю — фрибет от 500 до 15 000 ₽</p><button class="btn red" data-act="spin" ${ok?'':'disabled'}>${ok?'Крутить':'Доступно через '+Math.ceil((nx-NOW)/36e5)+' ч'}</button></div><div class="pc"><h3>Ежедневный бонус</h3><p class="mu2">Серия дней: ${U.streak||0}. Бонус растёт каждый день подряд.</p><button class="btn red" data-act="daily" ${dd?'disabled':''}>${dd?'Уже получен сегодня':'Забрать бонус'}</button></div><div class="pc"><h3>Фрибет</h3><p class="mu2">Баланс фрибета: ${money(U.freebet)}. Включается в купоне перед ставкой.</p></div>`}
+function shBody(){
+ if(SH0.k==='slip'){if(SH0.tab==='slip')return slipBody();if(SH0.tab==='pro')return`<div class="sq">${ico('search',20)}<input id="hq" placeholder="Поиск по прогнозам" value="${esc(SH0.q)}"></div><div id="hl">${betsListH(SH0.q,'all')}</div>`;return promoH()}
+ if(SH0.k==='flt')return`<div class="pc"><h3>Показывать лиги</h3>${LG.map(c=>`<div class="tg"><span>${esc(c.n)}</span><i class="sw${(U.st.hl||[]).includes(c.k)?'':' on'}" data-act="fl" data-v="${c.k}"></i></div>`).join('')}</div>`;
+ return pfBody()}
+function shFoot(){return SH0.k==='slip'&&SH0.tab==='slip'?slipFoot():''}
+const VIP=[[0,'Бронза'],[50e3,'Серебро'],[250e3,'Золото'],[1e6,'Платина'],[5e6,'Бриллиант']];
+const tg=(l,k,on)=>`<div class="tg"><span>${l}</span><i class="sw${on?' on':''}" data-act="tgl" data-v="${k}"></i></div>`;
+const prow=(i,l,s,b)=>`<div class="pi" data-act="sub" data-v="${s}">${ico(i,26)}<span>${l}</span>${b?`<b class="bdg2">${b}</b>`:''}${ico('chev',18,'cv3')}</div>`;
+function pfBody(){const s=SH0.sub;
+ if(s==='main'){const un=(U.notif||[]).filter(n=>n.u).length;return`<div class="balc"><small>Баланс</small><div class="bv">${hs0()}</div><span class="eye" data-act="eye">${ico(U.st.hide?'eyeoff':'eye',24)}</span><button class="btn red" data-act="dep"><span class="pl">${ico('plus',18)}</span> Пополнить</button></div>${prow('wallet','Выплата','pay')}${prow('ticket','История','hist')}${prow('gift','Бонусы и акции','bonus')}${prow('chat','Запросы','req')}${prow('bell','Уведомления','notif',un||'')}${prow('user','Личные данные','data')}${prow('gear','Настройки','set')}${prow('lock','Ответственная игра','resp')}${prow('crown','Твой VIP-статус','vip')}<div class="hr2"></div><div class="pi" data-act="logout">${ico('out',26)}<span>Выйти</span></div>`}
+ if(s==='pay'){return`<div class="pc"><h3>Вывод средств</h3><p class="mu2">Доступно: ${money(U.balance)}. Минимум 100 ₽. Деньги виртуальные.</p><input class="gi" id="pa" type="number" inputmode="numeric" placeholder="Сумма"><button class="btn red" data-act="withdraw">Вывести</button></div><div class="pc"><h3>Мои выплаты</h3>${(U.pay||[]).length?U.pay.map(p=>`<div class="pr"><span>${dtS(p.t)}</span><span>${money(p.a)}</span></div>`).join(''):'<p class="mu2">Выплат пока нет</p>'}</div>`}
+ if(s==='hist'){const ledH=(U.led||[]).slice(0,60).map(x=>`<div class="pr"><span>${esc({dep:'Пополнение',stake:'Ставка',win:'Выигрыш/возврат',pay:'Выплата',bonus:'Бонус',cash:'Кэшаут'}[x.y]||x.y)}<br><small class="mu2">${dtS(x.t)} · ${esc(x.n||'')}</small></span><b style="color:${x.a>=0?'#2e9b49':'#d6455a'}">${x.a>=0?'+':''}${num(x.a)}</b></div>`).join('')||'<div class="no">Операций пока нет</div>';
+  return`<div class="chips2">${[['Ставки',0],['Операции',1]].map(([n,v])=>`<div class="cp2${SH0.ht===v?' on':''}" data-act="ht" data-v="${v}">${n}</div>`).join('')}</div>${SH0.ht?`<div class="pc">${ledH}</div>`:`<div class="chips2">${[['all','Все'],['pending','Активные'],['win','Выигранные'],['lose','Проигранные']].map(([v,n])=>`<div class="cp2${SH0.hf===v?' on':''}" data-act="hf" data-v="${v}">${n}</div>`).join('')}</div>${betsListH('',SH0.hf)}`}`}
+ if(s==='bonus')return promoH();
+ if(s==='req')return`<div class="pc"><h3>Новый запрос</h3><textarea class="gi" id="rq" rows="4" placeholder="Опишите вопрос"></textarea><button class="btn red" data-act="sendreq">Отправить</button></div><div class="pc"><h3>Мои запросы</h3>${(U.req||[]).length?U.req.map(r=>`<div class="rqi"><b>${dtS(r.t)}</b><div>${esc(r.x)}</div><div class="rsp">${r.a?esc(r.a):'Ожидает ответа…'}</div></div>`).join(''):'<p class="mu2">Запросов пока нет</p>'}</div>`;
+ if(s==='notif')return`<div class="pc"><div style="display:flex;justify-content:space-between;align-items:center"><h3>Уведомления</h3><span class="lnk" data-act="clearn">Очистить</span></div>${(U.notif||[]).length?U.notif.map(n=>`<div class="rqi"><b>${dtS(n.t)}</b><div>${esc(n.x)}</div></div>`).join(''):'<p class="mu2">Уведомлений нет</p>'}</div>`;
+ if(s==='data')return`<div class="pc"><h3>Профиль</h3><div class="pr"><span>Логин</span><span>${esc(cur)}</span></div><div class="pr"><span>ID</span><span>${U.id}</span></div><div class="pr"><span>Регистрация</span><span>${dtS(U.created)}</span></div></div><div class="pc"><h3>Смена пароля</h3><input class="gi" id="op" type="password" placeholder="Текущий пароль"><input class="gi" id="np" type="password" placeholder="Новый пароль"><button class="btn red" data-act="savepw">Сохранить</button></div>`;
+ if(s==='set')return`<div class="pc"><h3>Настройки</h3>${tg('Уведомления о голах в моих ставках','goal',U.st.goal)}${tg('Вибрация','vib',U.st.vib)}${tg('Принимать изменения коэффициентов','acc',U.st.acc)}${tg('Скрывать баланс','hide',U.st.hide)}</div><div class="pc"><h3>Данные</h3><button class="btn s" data-act="resetdata">Сбросить баланс и ставки</button></div>`;
+ if(s==='resp'){const paused=U.pause&&U.pause>NOW;return`<div class="pc"><h3>Лимит пополнения в день</h3><div class="chips2">${[1e4,5e4,15e4,15e5].map(v=>`<div class="cp2${U.dl===v?' on':''}" data-act="setlim" data-v="${v}">${num(v)}</div>`).join('')}</div></div><div class="pc"><h3>Перерыв</h3><p class="mu2">${paused?'Перерыв активен до '+dtS(U.pause):'На время перерыва ставки и пополнение недоступны.'}</p><div class="chips2">${[[1,'1 час'],[24,'24 часа'],[168,'7 дней']].map(([h,n])=>`<div class="cp2" data-act="pause" data-v="${h}">${n}</div>`).join('')}${paused?'<div class="cp2" data-act="pause" data-v="0">Снять</div>':''}</div></div>`}
+ if(s==='vip'){let lv=0;VIP.forEach((v,i)=>{if(U.staked>=v[0])lv=i});const nx=VIP[lv+1];return`<div class="pc"><h3>${ico('crown',22)} ${VIP[lv][1]}</h3><p class="mu2">Сумма ставок: ${money(U.staked)}</p>${nx?`<div class="stb" style="height:8px;margin:12px 0"><i style="width:${Math.min(100,(U.staked-VIP[lv][0])/(nx[0]-VIP[lv][0])*100)}%"></i></div><p class="mu2">До уровня «${nx[1]}»: ${money(nx[0]-U.staked)}</p>`:'<p class="mu2">Максимальный уровень!</p>'}</div><div class="pc">${VIP.map((v,i)=>`<div class="pr"><span>${v[1]}</span><span>${i<=lv?'✔':num(v[0])+' ₽'}</span></div>`).join('')}</div>`}
+ return''}
+function renderSheet(){const el=$('#sheet');if(!SH0.on)return;const old=el.querySelector('.sb2'),sc=old?old.scrollTop:0;el.className='on';
+ el.innerHTML=`<div class="sheet${SH0.k==='slip'&&SH0.tab==='slip'?'':' tall'}"><div class="hnd"></div>${shHead()}<div class="sb2" id="sbody">${shBody()}</div><div id="sfoot">${shFoot()}</div></div>`;const nb=el.querySelector('.sb2');if(nb)nb.scrollTop=sc;shH=nb?nb.innerHTML:'';
+ const s=$('#stk');if(s)s.oninput=()=>{STK=+s.value||0;updFx()};const hq=$('#hq');if(hq)hq.oninput=()=>{SH0.q=hq.value;const h=$('#hl');if(h)h.innerHTML=betsListH(SH0.q,'all')}}
+function updFx(){const t=slipTot(),p=$('#pot'),f=$('#fx'),b=$('#inb');if(p)p.textContent=num(Math.floor(t.pot));if(f)f.innerHTML=fxH();if(b)b.className='inb'+(t.tot>U.balance?' er':'')}
+function sheetTick(){if(!SH0.on)return;const sb=$('#sbody');if(!sb)return;if(document.activeElement&&document.activeElement.id==='hq')return;
+ let h=null;if(SH0.k==='slip'&&SH0.tab==='slip')h=slipBody();else if(SH0.k==='slip'&&SH0.tab==='pro'){const x=$('#hl');if(x){const nh=betsListH(SH0.q,'all');if(nh!==x._h){const sc=sb.scrollTop;x.innerHTML=nh;x._h=nh;sb.scrollTop=sc}}return}
+ else if(SH0.k==='pf'&&SH0.sub==='hist'&&!SH0.ht)h=pfBody();
+ if(h!==null&&h!==sb._h){const sc=sb.scrollTop;sb.innerHTML=h;sb._h=h;sb.scrollTop=sc}}
+function deposit(need){if(U.pause&&U.pause>NOW)return toast('Включён перерыв до '+dtS(U.pause),0);const t=(U.depositDate===tk()?U.depositToday:0)||0,left=U.dl-t;if(left<=0)return toast('Дневной лимит пополнения исчерпан',0);let n=need;
+ if(!n){const a=prompt('Пополнение (виртуальные ₽)\nСегодня: '+money(t)+'\nОсталось: '+money(left),String(Math.min(1000,left)));if(!a)return;n=Number(a)}
+ if(isNaN(n)||n<=0)return toast('Неверная сумма',0);if(n>left)return toast('Максимум '+money(left),0);U.depositDate=tk();U.depositToday=t+n;led('dep',n,'Пополнение');bal(n);toast('Баланс пополнен на '+money(n));if(SH0.on)renderSheet()}
+function place(){if(U.pause&&U.pause>NOW)return toast('Включён перерыв до '+dtS(U.pause),0);if(!SLP.length)return toast('Купон пуст',0);const st=+STK||0;if(st<20)return toast('Минимальная ставка 20 ₽',0);let ch=0;
+ for(const it of SLP){const e=getEv(it.ek),s=e&&state(e);if(!e||s.fin||lockR(e,s))return toast('Исход недоступен: '+(e?e.h.n+' – '+e.a.n:''),0);const p=price(e,it.key);if(!p.o)return toast('Рынок закрыт: '+it.lab,0);if(Math.abs(p.o-it.odds)>.004){it.odds=p.o;ch=1}}
+ if(ch&&!U.st.acc){renderSheet();return toast('Коэффициенты изменились — проверьте и подтвердите',0)}
+ if(SM==='ex'&&new Set(SLP.map(i=>i.ek)).size<SLP.length)return toast('В экспрессе нельзя 2 исхода одного матча. Выберите «Одинар»',0);
+ if(SM==='ex'&&SLP.length<2&&0)return;
+ const groups=SM==='sg'?SLP.map(i=>[i]):[SLP.slice()],total=st*groups.length;let fb=FBU&&U.freebet>0?Math.min(total,U.freebet):0;if(total-fb>U.balance)return toast('Недостаточно средств',0);
+ groups.forEach(g=>{const f=Math.min(st,fb);fb-=f;const to=fl2(g.reduce((a,b)=>a*b.odds,1));H.push({id:22200000000+Math.floor(Math.random()*9e7)+Math.floor(NOW%1e3)*1e5,items:g.map(i=>({...i,f:null})),stake:st,fb:f,totalOdds:to,pot:Math.floor(st*to*100)/100,status:'pending',t:NOW})});
+ const used=FBU&&U.freebet>0?Math.min(total,U.freebet):0;U.freebet-=used;U.balance-=total-used;U.staked+=total;led('stake',-(total-used),SM==='sg'?groups.length+' одинар(ов)':'экспресс');saveDB();hdr();toast('Ставка принята · '+money(total));SLP=[];FBU=0;SH0.tab='pro';renderSheet();renderTop();renderList();mpTick()}
+function spin(){if(NOW<(U.lastSpin||0)+WEEK)return toast('Ещё рано',0);const p=[500,1000,2500,5000,10000,15000][Math.floor(Math.random()*6)];U.freebet+=p;U.lastSpin=NOW;led('bonus',p,'Колесо фортуны (фрибет)');notify('Колесо фортуны: фрибет '+money(p));saveDB();renderTop();
+ $('#res').innerHTML=`<div class="rb"><div class="e">${p>=15000?'👑':'🎉'}</div><h2>${p>=15000?'ДЖЕКПОТ!':'Поздравляем!'}</h2><div class="a">+${money(p)}</div><p class="mu2" style="margin-bottom:14px">Фрибет зачислен</p><button class="btn red" data-act="resclose">Забрать</button></div>`;$('#res').className='on';if(SH0.on)renderSheet()}
+function daily(){if(U.daily===tk())return;const y=U.daily&&Math.round((new Date(tk().replace(/-/g,'/'))-new Date(U.daily.replace(/-/g,'/')))/864e5)===1;U.streak=y?(U.streak||0)+1:1;const a=1000+200*Math.min(U.streak-1,5);U.daily=tk();led('bonus',a,'Ежедневный бонус');bal(a);notify('Ежедневный бонус '+money(a));toast('Бонус '+money(a)+' · серия '+U.streak+' дн.');if(SH0.on)renderSheet()}
+function openSearch(){$('#sr').className='full on';$('#sr').innerHTML=`<div class="gh"><span data-act="srclose">${ico('back',24)}</span><input id="srq" placeholder="Поиск команды или бойца"><span data-act="srclose">${ico('x',22)}</span></div><div id="srl"></div>`;
+ const f=()=>{const q=$('#srq').value.toLowerCase().trim(),l=evs().filter(e=>!q||(e.h.n+' '+e.a.n+' '+e.L.n).toLowerCase().includes(q)).slice(0,50);$('#srl').innerHTML=l.length?l.map(e=>`<div class="sri" data-act="srgo" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${whenS(e.st)}</small></div>`).join(''):'<div class="no">Ничего не найдено</div>'};$('#srq').oninput=f;f();$('#srq').focus()}
+const ACT={
+am(d){am=d.v;$('#tL').className=am==='login'?'on':'';$('#tR').className=am==='reg'?'on':'';$('#pi2').style.display=am==='reg'?'block':'none';$('#sb').textContent=am==='reg'?'Зарегистрироваться':'Войти';$('#amsg').className='amsg'},
+submit,tab(d){go(d.v)},menu(){openSheet('pf')},slipopen(){openSheet('slip','slip')},dep(){deposit()},topup(){const t=slipTot();deposit(Math.ceil(t.tot-U.balance))},
+mode(d){MODE=d.v;renderTop();renderList()},spf(d){SPF=d.v;renderTop();renderList()},hsp(d){HSP=d.v;renderTop();renderList()},soon(){SOON=!SOON;renderTop();renderList()},favf(){FAVF=!FAVF;renderTop();renderList()},flt(){openSheet('flt')},
+fl(d){const h=U.st.hl,i=h.indexOf(d.v);i>=0?h.splice(i,1):h.push(d.v);saveDB();renderSheet();renderList()},
+golive(){MODE='live';SPF='all';go('sport')},lg(d){HID.has(d.k)?HID.delete(d.k):HID.add(d.k);renderList()},
+open(d){if(SH0.on)closeSheet();openMatch(d.ek)},back(){CE=null;$('#mp').className='full'},
+nx(){const e=getEv(CE),l=evs().filter(x=>x.L.n===e.L.n),i=l.findIndex(x=>x.k===CE);if(l.length>1)openMatch(l[(i+1)%l.length].k)},
+mtab(d){MT=d.v;MST=0;MSO=0;MBO=0;OVV=0;mpTick()},srch(){MSO=!MSO;mpTick();if(MSO&&$('#msq'))$('#msq').focus()},stat(){MST=!MST;OVV=0;mpTick()},bmf(){MBO=!MBO;mpTick()},ovv(d){OVV=+d.v;mbH='';mpTick()},
+mk(d){const c=COL[d.id]!==undefined?COL[d.id]:d.d==='0';COL[d.id]=!c;mpTick()},
+bm(d,el,ev){ev.stopPropagation();BM.has(d.t)?BM.delete(d.t):BM.add(d.t);U.bm=[...BM];saveDB();mpTick()},
+line(d){TLN[d.k]=parseFloat(d.v);mpTick()},seg(d){TLN[d.k]=+d.v;mpTick()},
+bell(){const k='bell'+CE;HID.has(k)?HID.delete(k):HID.add(k);toast(HID.has(k)?'Уведомления по матчу включены':'Уведомления выключены');mbH='';mpTick()},
+favm(){FAV.has(CE)?FAV.delete(CE):FAV.add(CE);U.favs=[...FAV];saveDB();mbH='';mpTick()},
+odd(d){const e=getEv(d.ek);if(!e)return;const st=state(e),r=lockR(e,st);if(r)return toast(r,0);const i=SLP.findIndex(b=>b.ek===d.ek&&b.key===d.key);
+ if(i>=0)SLP.splice(i,1);else{const p=price(e,d.key);if(!p.o)return toast('Исход закрыт',0);const g=grp(d.key);for(let j=SLP.length-1;j>=0;j--)if(SLP[j].ek===d.ek&&grp(SLP[j].key)===g)SLP.splice(j,1);
+  const t=d.key.split('|')[1],n0=t==='ng'?sim(e).g.filter(x=>inc(x,st)).length:t==='pn'?sim(e).pen.filter(x=>x.g<=st.gt).length:0;
+  SLP.push({ek:d.ek,key:d.key,odds:p.o,n0,h:e.h.n,a:e.a.n,lab:lab(e,d.key)})}renderTop();renderList();mpTick();if(SH0.on&&SH0.k==='slip')renderSheet()},
+shclose:closeSheet,shtab(d){SH0.tab=d.v;renderSheet()},sub(d){SH0.sub=d.v;if(d.v==='notif')setTimeout(()=>{(U.notif||[]).forEach(n=>n.u=0);saveDB()},300);renderSheet()},subback(){SH0.sub='main';renderSheet()},
+rm(d){SLP.splice(+d.i,1);renderTop();renderList();mpTick();renderSheet()},smode(){SM=SM==='ex'?'sg':'ex';renderSheet()},q(d){STK=+d.v;renderSheet()},usefb(){FBU=!FBU;renderSheet()},place,
+co(d,el,ev){ev.stopPropagation();const b=H.find(x=>x.id==d.id);if(!b||b.status!=='pending')return;const v=cashVal(b);if(!v)return toast('Кэшаут недоступен',0);if(!confirm('Забрать '+money(v)+' вместо '+money(b.pot)+'?'))return;b.status='cashout';b.paid=v;led('cash',v,'Кэшаут № '+b.id);bal(Math.max(0,v-(b.fb||0)));notify('Кэшаут '+money(v)+' по ставке № '+b.id);toast('Кэшаут +'+money(v));renderSheet()},
+bhelp(d,el,ev){ev.stopPropagation();const b=H.find(x=>x.id==d.id);if(!b)return;const stT={pending:'В игре',win:'Выигрыш',lose:'Проигрыш','return':'Возврат',cashout:'Кэшаут'}[b.status];
+ $('#res').innerHTML=`<div class="rb" style="text-align:left"><h2 style="font-size:19px">Ставка № ${b.id}</h2><div class="pr"><span>Статус</span><span>${stT}</span></div><div class="pr"><span>Сумма</span><span>${money(b.stake)}</span></div><div class="pr"><span>Коэффициент</span><span>${od2(b.totalOdds)}</span></div><div class="pr"><span>Возможный выигрыш</span><span>${money(b.pot)}</span></div>${b.status!=='pending'?`<div class="pr"><span>Выплата</span><span>${money(b.paid||0)}</span></div>`:''}${b.fb?`<div class="pr"><span>Фрибет</span><span>${money(b.fb)}</span></div>`:''}<button class="btn red" style="margin-top:14px" data-act="resclose">Закрыть</button></div>`;$('#res').className='on'},
+hf(d){SH0.hf=d.v;renderSheet()},ht(d){SH0.ht=+d.v;renderSheet()},eye(){U.st.hide=U.st.hide?0:1;saveDB();hdr();renderSheet()},
+copy(){try{navigator.clipboard.writeText(U.id)}catch(e){}toast('ID скопирован')},
+tgl(d){U.st[d.v]=U.st[d.v]?0:1;saveDB();hdr();renderSheet()},
+withdraw(){const a=+$('#pa').value;if(!(a>=100))return toast('Минимальная выплата 100 ₽',0);if(a>U.balance)return toast('Недостаточно средств',0);U.pay.unshift({t:NOW,a});led('pay',-a,'Выплата');bal(-a);notify('Выплата '+money(a)+' оформлена');toast('Выплата оформлена');renderSheet()},
+sendreq(){const x=($('#rq').value||'').trim();if(x.length<3)return toast('Опишите вопрос',0);const r={t:NOW,x,a:''};U.req.unshift(r);saveDB();renderSheet();toast('Запрос отправлен');setTimeout(()=>{r.a='Спасибо за обращение! Это демо-проект, ответ сформирован автоматически: вопрос принят.';notify('Ответ на ваш запрос получен');saveDB();if(SH0.on&&SH0.sub==='req')renderSheet()},4000)},
+clearn(){U.notif=[];saveDB();renderSheet()},
+savepw(){const o=$('#op').value,n=$('#np').value;if(o!==U.pass)return toast('Неверный текущий пароль',0);if(n.length<3)return toast('Новый пароль слишком короткий',0);U.pass=n;saveDB();toast('Пароль изменён')},
+setlim(d){U.dl=+d.v;saveDB();renderSheet();toast('Лимит установлен')},pause(d){U.pause=+d.v?NOW+(+d.v)*36e5:0;saveDB();renderSheet();toast(+d.v?'Перерыв включён':'Перерыв снят')},
+resetdata(){if(!confirm('Сбросить баланс до 10 000 ₽ и удалить все ставки?'))return;U.balance=10000;U.freebet=0;U.history=[];H=U.history;U.led=[];U.staked=0;saveDB();hdr();renderTop();renderSheet();toast('Данные сброшены')},
+logout(){if(!confirm('Выйти?'))return;localStorage.removeItem('betapp_current');location.reload()},
+promo(d){d.v==='spin'?spin():daily()},spin,daily,resclose(){$('#res').className=''},
+fab:openSearch,srclose(){$('#sr').className='full'},srgo(d){$('#sr').className='full';openMatch(d.ek)}};
+document.addEventListener('click',ev=>{if(ev.target.id==='sheet')return closeSheet();if(ev.target.id==='res')return ACT.resclose();const el=ev.target.closest('[data-act]');if(!el)return;const f=ACT[el.dataset.act];if(f)f(el.dataset,el,ev)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('#auth').style.display!=='none')submit()});
+const LS={};
+function goalWatch(){if(!U.st.goal)return;const seen=new Set();H.forEach(b=>{if(b.status!=='pending')return;b.items.forEach(it=>{if(!it.ek||seen.has(it.ek))return;seen.add(it.ek);const e=getEv(it.ek);if(!e||e.sp==='u')return;const st=state(e);if(!st.live)return;const c=st.sc.join(':');
+ if(LS[it.ek]&&LS[it.ek]!==c){const t='Гол! '+e.h.n+' '+c+' '+e.a.n+' — ваша ставка';toast('⚽ '+t);notify(t)}LS[it.ek]=c})})}
+function tick(){NOW=Date.now();TS=Math.floor(NOW/1000);const nb=Math.floor(NOW/BK);if(nb!==TB){TB=nb;PRC={};DC={}}
+ if(!U)return;try{if(dirty){dirty=0;mbH='';mtH=''}
+ if(page==='home'||page==='sport')renderList();else if(page==='media'&&TS%5===0)renderPage();
+ if(CE)mpTick();settleAll();goalWatch();sheetTick();hdr();
+ document.querySelectorAll('[data-cob]').forEach(el=>{const b=H.find(x=>x.id===el.dataset.cob);if(b){const v=cashVal(b);el.style.display=v?'':'none'}})}catch(e){console.error(e)}}
+setInterval(tick,1000);
 if(cur&&DB[cur])login(cur);
-window.addEventListener('beforeunload',saveDB);
 </script>
 </body>
 </html>
