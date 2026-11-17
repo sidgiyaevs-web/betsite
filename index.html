@@ -400,10 +400,28 @@ function led(y,a,n){U.led=U.led||[];U.led.unshift({t:NOW,y,a,n});if(U.led.length
 function notify(t){U.notif=U.notif||[];U.notif.unshift({t:NOW,x:t,u:1});if(U.notif.length>60)U.notif.length=60}
 let am='login';
 const authMsg=(t,ok)=>{const m=$('#amsg');m.textContent=t;m.className='amsg show '+(ok?'ok':'er')};
-function submit(){const l=$('#li').value.trim(),p=$('#pi').value;if(l.length<3)return authMsg('Логин минимум 3 символа');if(p.length<3)return authMsg('Пароль минимум 3 символа');
- if(am==='reg'){if(p!==$('#pi2').value)return authMsg('Пароли не совпадают');if(DB[l])return authMsg('Такой логин уже занят');
-  DB[l]={pass:p,balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[],id:String(10000000+hs(l)%89999999),created:Date.now()};saveDB();$('#pi').value='';$('#pi2').value='';authMsg('Регистрация прошла успешно! Теперь войдите',1);return ACT.am({v:'login'})}
- if(!DB[l])return authMsg('Такого аккаунта нет');if(DB[l].pass!==p)return authMsg('Неверный пароль');login(l)}
+function submit(){
+    const l=$('#li').value.trim(),p=$('#pi').value;
+    if(l.length<3) return authMsg('Логин минимум 3 символа');
+    if(p.length<3) return authMsg('Пароль минимум 3 символа');
+    if(am==='reg'){
+        if(p!==$('#pi2').value) return authMsg('Пароли не совпадают');
+        if(DB[l]) return authMsg('Такой логин уже занят');
+        DB[l]={
+            pass:p, balance:10000, freebet:0, history:[], 
+            depositToday:0, depositDate:tk(), lastSpin:0, 
+            favs:[], bm:[], 
+            id:String(10000000+hs(l)%89999999), created:Date.now()
+        };
+        saveDB();
+        $('#pi').value=''; $('#pi2').value='';
+        authMsg('Регистрация прошла успешно! Теперь войдите',1);
+        return ACT.am({v:'login'});
+    }
+    if(!DB[l]) return authMsg('Такого аккаунта нет');
+    if(DB[l].pass!==p) return authMsg('Неверный пароль');
+    login(l);
+}
 function login(n){cur=n;U=DB[n];U.favs=U.favs||[];U.bm=U.bm||[];U.history=U.history||[];U.freebet=U.freebet||0;U.led=U.led||[];U.notif=U.notif||[];U.req=U.req||[];U.pay=U.pay||[];U.id=U.id||String(10000000+hs(n)%89999999);U.created=U.created||Date.now();U.staked=U.staked||0;
  U.st=Object.assign({goal:1,vib:1,acc:0,hide:0,hl:[],real:1},U.st||{});U.dl=U.dl||DL0;
  H=U.history;FAV=new Set(U.favs);BM=new Set(U.bm);localStorage.setItem('betapp_current',n);
