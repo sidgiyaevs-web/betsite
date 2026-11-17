@@ -13,12 +13,6 @@
 body{background:var(--bg);color:var(--tx);font-size:14px;padding-bottom:calc(66px + env(safe-area-inset-bottom));overflow-x:hidden}
 input,button,textarea{font:inherit;color:inherit}
 .ic{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:middle}
-#auth{display:none}
-.alogo{font-size:44px;font-weight:900;font-style:italic;color:#fff;letter-spacing:-2px}.alogo i{color:var(--ac)}.asub{color:#9aa1ab;margin:4px 0 24px}
-.abox{width:100%;max-width:380px;background:#fff;border-radius:16px;padding:22px}
-.atabs{display:flex;background:var(--btn);border-radius:10px;padding:3px;margin-bottom:14px}.atabs button{flex:1;padding:10px;border:0;border-radius:8px;background:none;font-weight:700;color:var(--mu);cursor:pointer}.atabs button.on{background:#fff;color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.abox input{width:100%;padding:13px;margin-bottom:10px;border:1.5px solid var(--ln);border-radius:10px;background:var(--btn);outline:none}
-.amsg{display:none;padding:10px;border-radius:8px;margin-bottom:10px;text-align:center;font-weight:600}.amsg.show{display:block}.amsg.er{background:#fde3e3;color:#b3202e}.amsg.ok{background:#dff3e3;color:#1f7a34}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:15px;font-weight:700;cursor:pointer}.btn.red{background:#e8002d}.btn.s{background:var(--btn);color:var(--tx)}.btn.g{background:var(--gr)}.btn:disabled{opacity:.45;cursor:default}.btn:active{opacity:.85}
 .pl{display:inline-flex}
 .top{position:sticky;top:0;z-index:60;background:var(--hd);color:#fff;padding-top:env(safe-area-inset-top)}
@@ -142,9 +136,9 @@ nav a.on{color:var(--tx);font-weight:800}nav a.on .ic{fill-opacity:.55}
 </style>
 </head>
 <body>
-<div id="app"><div class="top" id="top"></div><div id="pg"></div></div>
+<div id="app" style="display:none"><div class="top" id="top"></div><div id="pg"></div></div>
 <div id="fab" data-act="fab"><svg width="30" height="30" viewBox="0 0 34 34" fill="none" stroke="#1d3fb5" stroke-width="3" stroke-linecap="round"><path d="M2 9h9M2 17h6M2 25h9"/><circle cx="21" cy="16" r="8"/><path d="M27 22l5 6"/></svg></div>
-<nav id="nav"></nav><div id="sheet"></div><div id="mp" class="full"></div><div id="sr" class="full"></div><div id="res"></div><div id="toast"></div>
+<nav id="nav" style="display:none"></nav><div id="sheet"></div><div id="mp" class="full"></div><div id="sr" class="full"></div><div id="res"></div><div id="toast"></div>
 <script>
 'use strict';
 const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,'0'),R2=x=>Math.round(x*100)/100,fl2=x=>Math.floor(x*100+1e-6)/100;
@@ -395,8 +389,12 @@ const DL0=1500000,WEEK=6048e5;
 function toast(t,ok){const e=$('#toast');e.textContent=t;e.className='on'+(ok===0?' er':'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',2800);}
 function led(y,a,n){U.led=U.led||[];U.led.unshift({t:NOW,y,a,n});if(U.led.length>200)U.led.length=200}
 function notify(t){U.notif=U.notif||[];U.notif.unshift({t:NOW,x:t,u:1});if(U.notif.length>60)U.notif.length=60}
-let am='login';
-const authMsg=(t,ok)=>{const m=$('#amsg');m.textContent=t;m.className='amsg show '+(ok?'ok':'er')};
+
+function login(n){cur=n;U=DB[n];U.favs=U.favs||[];U.bm=U.bm||[];U.history=U.history||[];U.freebet=U.freebet||0;U.led=U.led||[];U.notif=U.notif||[];U.req=U.req||[];U.pay=U.pay||[];U.id=U.id||String(10000000+hs(n)%89999999);U.created=U.created||Date.now();U.staked=U.staked||0;
+ U.st=Object.assign({goal:1,vib:1,acc:0,hide:0,hl:[],real:1},U.st||{});U.dl=U.dl||DL0;
+ H=U.history;FAV=new Set(U.favs);BM=new Set(U.bm);localStorage.setItem('betapp_current',n);
+ $('#app').style.display='block';$('#nav').style.display='flex';$('#fab').style.display='flex';go('home')}
+
 function hdr(){const b=$('#bal');if(b)b.textContent=U.st&&U.st.hide?'••••':num(U.balance)}
 function bal(d){U.balance+=d;saveDB();hdr()}
 let page='home',MODE='all',SPF='all',SOON=0,FAVF=0,HSP='f',CE=null,MT='pop',MS='',MSO=0,MST=0,MBO=0,OVV=0,SM='ex',STK=100,FBU=0;
@@ -588,8 +586,7 @@ function daily(){if(U.daily===tk())return;const y=U.daily&&Math.round((new Date(
 function openSearch(){$('#sr').className='full on';$('#sr').innerHTML=`<div class="gh"><span data-act="srclose">${ico('back',24)}</span><input id="srq" placeholder="Поиск команды или бойца"><span data-act="srclose">${ico('x',22)}</span></div><div id="srl"></div>`;
  const f=()=>{const q=$('#srq').value.toLowerCase().trim(),l=evs().filter(e=>!q||(e.h.n+' '+e.a.n+' '+e.L.n).toLowerCase().includes(q)).slice(0,50);$('#srl').innerHTML=l.length?l.map(e=>`<div class="sri" data-act="srgo" data-ek="${e.k}"><b>${esc(e.h.n)} – ${esc(e.a.n)}</b><small>${esc(e.L.n)} · ${whenS(e.st)}</small></div>`).join(''):'<div class="no">Ничего не найдено</div>'};$('#srq').oninput=f;f();$('#srq').focus()}
 const ACT={
-am(d){am=d.v;$('#tL').className=am==='login'?'on':'';$('#tR').className=am==='reg'?'on':'';$('#pi2').style.display=am==='reg'?'block':'none';$('#sb').textContent=am==='reg'?'Зарегистрироваться':'Войти';$('#amsg').className='amsg'},
-submit,tab(d){go(d.v)},menu(){openSheet('pf')},slipopen(){openSheet('slip','slip')},dep(){deposit()},topup(){const t=slipTot();deposit(Math.ceil(t.tot-U.balance))},
+tab(d){go(d.v)},menu(){openSheet('pf')},slipopen(){openSheet('slip','slip')},dep(){deposit()},topup(){const t=slipTot();deposit(Math.ceil(t.tot-U.balance))},
 mode(d){MODE=d.v;renderTop();renderList()},spf(d){SPF=d.v;renderTop();renderList()},hsp(d){HSP=d.v;renderTop();renderList()},soon(){SOON=!SOON;renderTop();renderList()},favf(){FAVF=!FAVF;renderTop();renderList()},flt(){openSheet('flt')},
 fl(d){const h=U.st.hl,i=h.indexOf(d.v);i>=0?h.splice(i,1):h.push(d.v);saveDB();renderSheet();renderList()},
 golive(){MODE='live';SPF='all';go('sport')},lg(d){HID.has(d.k)?HID.delete(d.k):HID.add(d.k);renderList()},
@@ -618,18 +615,11 @@ sendreq(){const x=($('#rq').value||'').trim();if(x.length<3)return toast('Опи
 clearn(){U.notif=[];saveDB();renderSheet()},
 savepw(){const o=$('#op').value,n=$('#np').value;if(o!==U.pass)return toast('Неверный текущий пароль',0);if(n.length<3)return toast('Новый пароль слишком короткий',0);U.pass=n;saveDB();toast('Пароль изменён')},
 setlim(d){U.dl=+d.v;saveDB();renderSheet();toast('Лимит установлен')},pause(d){U.pause=+d.v?NOW+(+d.v)*36e5:0;saveDB();renderSheet();toast(+d.v?'Перерыв включён':'Перерыв снят')},
-resetdata(){if(!confirm('Сбросить баланс до 10 000 ₽ и удалить все ставки?'))return;U.balance=10000;U.freebet=0;U.history=[];H=U.history;U.led=[];U.staked=0;saveDB
-Понял, сообщение обрезалось. Я продолжаю код ровно с того места, где остановился.
-
-Скопируй этот кусок и вставь его сразу после предыдущего:
-
-```javascript
-;hdr();renderTop();renderSheet();toast('Данные сброшены')},
+resetdata(){if(!confirm('Сбросить баланс до 10 000 ₽ и удалить все ставки?'))return;U.balance=10000;U.freebet=0;U.history=[];H=U.history;U.led=[];U.staked=0;saveDB();hdr();renderTop();renderSheet();toast('Данные сброшены')},
 logout(){if(!confirm('Выйти?'))return;localStorage.removeItem('betapp_current');location.reload()},
 promo(d){d.v==='spin'?spin():daily()},spin,daily,resclose(){$('#res').className=''},
 fab:openSearch,srclose(){$('#sr').className='full'},srgo(d){$('#sr').className='full';openMatch(d.ek)}};
 document.addEventListener('click',ev=>{if(ev.target.id==='sheet')return closeSheet();if(ev.target.id==='res')return ACT.resclose();const el=ev.target.closest('[data-act]');if(!el)return;const f=ACT[el.dataset.act];if(f)f(el.dataset,el,ev)});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('#auth').style.display!=='none')submit()});
 const LS={};
 function goalWatch(){if(!U.st.goal)return;const seen=new Set();H.forEach(b=>{if(b.status!=='pending')return;b.items.forEach(it=>{if(!it.ek||seen.has(it.ek))return;seen.add(it.ek);const e=getEv(it.ek);if(!e||e.sp==='u')return;const st=state(e);if(!st.live)return;const c=st.sc.join(':');
  if(LS[it.ek]&&LS[it.ek]!==c){const t='Гол! '+e.h.n+' '+c+' '+e.a.n+' — ваша ставка';toast('⚽ '+t);notify(t)}LS[it.ek]=c})})}
@@ -693,14 +683,17 @@ function serE(e){const o={};for(const k in e){if(k==='_s'||k==='_ss'||k==='_ts'|
 function reSave(){try{const ks=new Set();H.forEach(b=>{if(b.status==='pending')b.items.forEach(i=>{if(i.ek&&String(i.ek).indexOf('r.')===0)ks.add(i.ek)})});const o={};ks.forEach(k=>{if(RE[k])o[k]=serE(RE[k])});localStorage.setItem('betapp_re',JSON.stringify(o))}catch(e){}}
 try{const o=JSON.parse(localStorage.getItem('betapp_re')||'{}');Object.keys(o).forEach(k=>{const e=o[k];if(!RE[k]){if(e.sp!=='u')e.L=LG.find(z=>z.k===e.lk);if(e.L){e._ts=-1;e._sb=-1;RE[k]=e}}})}catch(e){}
 
-/* ===== АВТОЗАПУСК БЕЗ ЭКРАНА ВХОДА ===== */
-const guest='guest_'+Math.random().toString(36).slice(2,8);
-DB[guest]={pass:'123',balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[],id:'12345678',created:Date.now(),st:{goal:1,vib:1,acc:0,hide:0,hl:[],real:1}};
-cur=guest;U=DB[guest];H=U.history;FAV=new Set(U.favs||[]);BM=new Set(U.bm||[]);
-$('#app').style.display='block';$('#nav').style.display='flex';$('#fab').style.display='flex';
-go('home');
 setInterval(tick,1000);
+
+// Автоматический вход без экрана авторизации
+if(!cur || !DB[cur]) {
+    cur = 'guest';
+    DB[cur] = {pass:'guest',balance:10000,freebet:0,history:[],depositToday:0,depositDate:tk(),lastSpin:0,favs:[],bm:[],id:String(10000000+Math.floor(Math.random()*89999999)),created:Date.now(),st:{goal:1,vib:1,acc:0,hide:0,hl:[],real:1},dl:DL0,staked:0,led:[],notif:[],req:[],pay:[]};
+    try{localStorage.setItem('betapp_users',JSON.stringify(DB));localStorage.setItem('betapp_current',cur)}catch(e){}
+}
+login(cur);
 realTick();
 </script>
 </body>
 </html>
+```
